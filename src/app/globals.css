@@ -279,7 +279,7 @@ footer.site a:hover { color: var(--gold-light); }
 .legal strong { color: #fff; }
 
 /* reveal (from a visible state) */
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { *:not(.coin):not(.coin-shadow), *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition: none !important; } }
 
 /* phones and touch: no live blur over the moving water */
 @media (hover: none), (pointer: coarse), (max-width: 760px) {

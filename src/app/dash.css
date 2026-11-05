@@ -177,7 +177,7 @@ details.more > summary::-webkit-details-marker { display: none; }
   body { background: #fff; }
   .panel { box-shadow: none; border: 1px solid #ddd; }
 }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { *:not(.coin):not(.coin-shadow), *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition: none !important; } }
 .cols > *, .stack > *, .grid2 > *, .grid3 > * { min-width: 0; }
 @media (max-width: 640px) {
   .file { flex-wrap: wrap; }

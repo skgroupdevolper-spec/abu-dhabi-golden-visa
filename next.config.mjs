@@ -4,7 +4,13 @@ const nextConfig = {
   poweredByHeader: false,
   images: { formats: ['image/avif', 'image/webp'] },
   // Client and team document uploads go through server actions.
-  experimental: { serverActions: { bodySizeLimit: '16mb' } },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '16mb',
+      // Forms post through proxies (Codespaces preview, xCloud, the app. subdomain): allow these origins.
+      allowedOrigins: ['localhost:3000', '*.app.github.dev', '*.github.dev', 'abudhabigoldenvisa.com', '*.abudhabigoldenvisa.com'],
+    },
+  },
   async headers() {
     return [
       {

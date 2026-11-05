@@ -35,9 +35,9 @@ export function Motion() {
 
       const ctx = gsap.context(() => {
         gsap.utils.toArray<HTMLElement>('[data-reveal]').forEach((el, i) => {
-          gsap.from(el, { y: 50, opacity: 0.25, duration: 1, ease: 'expo.out', delay: (i % 3) * 0.06, scrollTrigger: { trigger: el, start: 'top 92%' } });
+          gsap.from(el, { y: 36, duration: 0.9, ease: 'expo.out', delay: (i % 3) * 0.06, scrollTrigger: { trigger: el, start: 'top 92%' } });
         });
-        gsap.from('.phero h1', { y: 40, opacity: 0.3, duration: 1.1, ease: 'expo.out' });
+        gsap.from('.phero h1', { y: 30, duration: 1, ease: 'expo.out' });
       });
       cleanup.push(() => ctx.revert());
 
