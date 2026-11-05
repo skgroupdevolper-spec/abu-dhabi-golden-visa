@@ -15,6 +15,8 @@ export default async function Fees() {
     ['medVip', f.medical.vip.label, f.medical.vip.aed],
     ['sponsorFile', f.sponsorFile.label, f.sponsorFile.aed],
     ['propertyValuation', f.propertyValuation.label, f.propertyValuation.aed],
+    ['pkgNormal', `${f.packages?.normal.label ?? 'Normal service package'} (0 = quoted in writing)`, f.packages?.normal.aed ?? 0],
+    ['pkgVip', `${f.packages?.vip.label ?? 'VIP Fast Track package'} (0 = quoted in writing)`, f.packages?.vip.aed ?? 0],
   ];
   const main = f.perPerson.visa.aed + f.medical.normal.aed + f.perPerson.emiratesId.aed + f.perPerson.changeOfStatus.aed + f.propertyValuation.aed;
   return (

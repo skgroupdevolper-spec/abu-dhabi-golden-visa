@@ -18,4 +18,6 @@ export type Page = {
   cta?: { label: string; href: string };
   sections: Section[];
   related?: string[];
+  /** Blog articles: byline and review date (spec section 11). */
+  article?: { author: string; reviewer: string; reviewed: string; minutes: number; summary: string };
 };

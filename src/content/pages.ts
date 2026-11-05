@@ -1,8 +1,11 @@
 import type { Page } from './types';
 import { GOLDEN_VISA_PAGES } from './pages-golden-visa';
 import { OTHER_PAGES } from './pages-other';
+import { SERVICE_PAGES } from './pages-services';
+import { COUNTRY_PAGES } from './countries';
+import { BLOG } from './blog';
 
-export const PAGES: Page[] = [...GOLDEN_VISA_PAGES, ...OTHER_PAGES];
+export const PAGES: Page[] = [...GOLDEN_VISA_PAGES, ...OTHER_PAGES, ...SERVICE_PAGES, ...COUNTRY_PAGES, ...BLOG];
 
 const BY_PATH = new Map(PAGES.map((p) => [p.path, p]));
 

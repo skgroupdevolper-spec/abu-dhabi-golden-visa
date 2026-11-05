@@ -108,6 +108,19 @@ export const GOLDEN_VISA_PAGES: Page[] = [
       },
       { type: 'tool', tool: 'calculator', title: 'Government fees and service packages', intro: 'See the government fees for you and your family, person by person.' },
       {
+        type: 'table',
+        title: 'Processing timelines and travel requirements',
+        head: ['Stage', 'What to expect'],
+        rows: [
+          ['Valuation certificate', 'About 3 working days after the request, if needed'],
+          ['Nomination and approval', 'Depends on the authority and how complete your file is; we give you a realistic estimate after checking it'],
+          ['From abroad', 'You receive an entry permit, travel to the UAE and complete the steps here'],
+          ['Inside the UAE', 'We change your status, so you do not need to leave the country'],
+          ['Medical and Emirates ID', 'Booked once the entry permit or status change is done; you attend in person'],
+        ],
+        note: 'Nobody can promise a fixed approval time. We update you at every step.',
+      },
+      {
         type: 'list',
         title: 'Spouse, children and parent sponsorship',
         items: [
@@ -177,6 +190,36 @@ export const GOLDEN_VISA_PAGES: Page[] = [
           'If you own both a company and property, we compare the two routes and pick the one with the clearest evidence. Mainland and free-zone companies need different documents, so tell us where your company is licensed.',
           'This route can also cover your spouse, children, one advisor and one executive director.',
         ],
+      },
+      {
+        type: 'text',
+        title: 'Public investment routes',
+        body: ['Investors in UAE investment funds or listed companies may qualify where the investment is at least AED 2 million and held in their own name. We check fund letters and share statements against the current rules before filing.'],
+      },
+      {
+        type: 'table',
+        title: 'Mainland and free-zone documents',
+        head: ['Company type', 'What we usually need'],
+        rows: [
+          ['Mainland', 'Trade licence from the economic department, memorandum of association, commercial register extract'],
+          ['Free zone', 'Free-zone licence, share certificate and register of shareholders, authority letter'],
+          ['Both', 'Audited financial statements, bank letter for capital or deposits, establishment card'],
+        ],
+      },
+      {
+        type: 'steps',
+        title: 'Nomination procedure',
+        items: [
+          { title: 'Route check', text: 'Deposit, capital, fund or tax route, whichever is strongest.' },
+          { title: 'Evidence pack', text: 'Licences, ownership, capital and financial documents.' },
+          { title: 'Nomination', text: 'Submitted through the Abu Dhabi channel for investors.' },
+          { title: 'Entry permit or status change', text: 'Then medical, Emirates ID and residence.' },
+        ],
+      },
+      {
+        type: 'list',
+        title: 'Family sponsorship',
+        items: ['Spouse and children of any age', 'Parents with health insurance', 'One advisor and one executive director under the investor route, where allowed', 'One sponsor file for the whole family'],
       },
       { type: 'tool', tool: 'calculator', title: 'Fees and timelines' },
     ],
@@ -363,7 +406,7 @@ export const GOLDEN_VISA_PAGES: Page[] = [
       { type: 'text', title: 'Frontline heroes', body: ['Frontline workers are nominated by the relevant authorities. Contact us and we will tell you whether a nomination route is open for your role.'] },
     ],
   },
-  ...['doctors', 'engineers', 'teachers', 'executives', 'healthcare-professionals', 'technology-specialists'].map((slug): Page => {
+  ...['doctors', 'engineers', 'teachers', 'executives', 'healthcare-professionals', 'technology-specialists', 'artists-creatives', 'frontline-heroes'].map((slug): Page => {
     const name: Record<string, string> = {
       doctors: 'Doctors',
       engineers: 'Engineers',
@@ -371,20 +414,29 @@ export const GOLDEN_VISA_PAGES: Page[] = [
       executives: 'Executive Directors',
       'healthcare-professionals': 'Healthcare Professionals',
       'technology-specialists': 'Technology Specialists',
+      'artists-creatives': 'Artists & Creative Professionals',
+      'frontline-heroes': 'Frontline Heroes',
     };
+    const special = slug === 'artists-creatives' || slug === 'frontline-heroes';
     return {
       path: `/golden-visa/${slug}/`,
       seoTitle: `Abu Dhabi Golden Visa for ${name[slug]}`,
       meta: `How ${name[slug].toLowerCase()} can qualify for a 10-year Abu Dhabi Golden Visa: salary, degree, work permit and documents.`,
       eyebrow: `Golden Visa for ${name[slug]}`,
       h1: `Abu Dhabi Golden Visa for ${name[slug]}`,
-      intro: `${name[slug]} working in the UAE may qualify through the skilled professional route or a specialist recommendation. We check your contract, salary, classification and degree.`,
+      intro: slug === 'artists-creatives'
+        ? 'Artists, writers, musicians, designers, film makers and other creatives can qualify with a recommendation from the Ministry of Culture or the relevant Abu Dhabi cultural authority. The recommendation for creatives is free; we help you build a strong portfolio file.'
+        : slug === 'frontline-heroes'
+          ? 'Frontline workers who made exceptional contributions, for example during health emergencies, can be nominated for the Golden Visa by the relevant authority. We check whether a nomination route is open for your role and prepare your documents.'
+          : `${name[slug]} working in the UAE may qualify through the skilled professional route or a specialist recommendation. We check your contract, salary, classification and degree.`,
       cta: ELIGIBILITY_CTA,
       sections: [
         {
           type: 'list',
           title: 'Typical requirements',
-          items: [
+          items: special ? (slug === 'artists-creatives'
+            ? ['A recommendation from the Ministry of Culture or the relevant Abu Dhabi cultural authority', 'A portfolio showing recognised work, awards or a significant audience', 'Passport copy, photo and CV', 'Health insurance for you and your family']
+            : ['A nomination from the relevant federal or local authority', 'Evidence of your role and contribution', 'Passport, Emirates ID and employer letter', 'Health insurance for you and your family']) : [
             'At least a bachelor’s degree, attested or with equivalency',
             'A valid UAE work permit in an eligible classification',
             'A monthly salary of AED 30,000 or more, or a recommendation from the relevant authority',
@@ -393,7 +445,7 @@ export const GOLDEN_VISA_PAGES: Page[] = [
         },
         { type: 'tool', tool: 'eligibility' },
       ],
-      related: ['/golden-visa/skilled-professionals/'],
+      related: [special ? (slug === 'artists-creatives' ? '/golden-visa/exceptional-talents/' : '/golden-visa/humanitarian-other/') : '/golden-visa/skilled-professionals/', '/how-to-apply/'],
     };
   }),
 ];

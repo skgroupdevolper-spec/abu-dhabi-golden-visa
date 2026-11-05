@@ -1,4 +1,6 @@
-// Header and mega menu from the Developer Specification, section 2.
+// Header and mega menu from the Developer Specification, section 2, and the Services Menu guide.
+import { SERVICE_CATALOG } from './services-catalog';
+import { COUNTRIES } from './countries';
 export type NavLink = { label: string; href: string; note?: string };
 export type NavGroup = { title: string; links: NavLink[] };
 export type NavItem = { label: string; href: string; groups?: NavGroup[] };
@@ -21,6 +23,23 @@ export const NAV: NavItem[] = [
           { label: 'Outstanding Students', href: '/golden-visa/students-graduates/', note: 'Top grades' },
           { label: 'Humanitarian & Other Categories', href: '/golden-visa/humanitarian-other/', note: 'Pioneers, frontline' },
         ],
+      },
+      {
+        title: 'By profession',
+        links: [
+          { label: 'Doctors', href: '/golden-visa/doctors/' },
+          { label: 'Healthcare Professionals', href: '/golden-visa/healthcare-professionals/' },
+          { label: 'Engineers', href: '/golden-visa/engineers/' },
+          { label: 'Technology Specialists', href: '/golden-visa/technology-specialists/' },
+          { label: 'Teachers & Educators', href: '/golden-visa/teachers/' },
+          { label: 'Executive Directors', href: '/golden-visa/executives/' },
+          { label: 'Artists & Creative Professionals', href: '/golden-visa/artists-creatives/' },
+          { label: 'Frontline Heroes', href: '/golden-visa/frontline-heroes/' },
+        ],
+      },
+      {
+        title: 'By country',
+        links: COUNTRIES.map((c) => ({ label: c.menu, href: c.path })),
       },
     ],
   },
@@ -45,31 +64,7 @@ export const NAV: NavItem[] = [
   {
     label: 'Our Services',
     href: '/services/',
-    groups: [
-      {
-        title: 'Visa Services',
-        links: [
-          { label: 'Golden Visa Renewal', href: '/services/golden-visa-renewal/' },
-          { label: 'Visa Cancellation', href: '/services/visa-cancellation/' },
-          { label: 'Emirates ID Services', href: '/services/emirates-id/' },
-          { label: 'Medical & Biometrics', href: '/services/medical-biometrics/' },
-          { label: 'Entry Permit & Status Change', href: '/services/entry-permit-status-change/' },
-          { label: 'Health Insurance', href: '/services/health-insurance/' },
-        ],
-      },
-      {
-        title: 'Document Services',
-        links: [
-          { label: 'MOFA Attestation', href: '/document-services/mofa-attestation/' },
-          { label: 'Legal Translation', href: '/document-services/legal-translation/' },
-          { label: 'Degree Attestation', href: '/document-services/degree-attestation/' },
-          { label: 'Marriage & Birth Certificates', href: '/document-services/marriage-certificate/' },
-          { label: 'Document Legalisation', href: '/document-services/document-legalisation/' },
-          { label: 'Property Documentation', href: '/document-services/property-documentation/' },
-          { label: 'Valuation Certificate', href: '/document-services/valuation-certificate/' },
-        ],
-      },
-    ],
+    groups: SERVICE_CATALOG.map((g) => ({ title: g.title, links: g.items.map((i) => ({ label: i.label, href: i.href })) })),
   },
   { label: 'Visa Check', href: '/visa-check/' },
   { label: 'Cost Calculator', href: '/golden-visa-cost/' },

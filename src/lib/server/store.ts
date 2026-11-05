@@ -122,7 +122,7 @@ export function updateApplication(id: string, fn: (a: Application) => Applicatio
 /* ---------- settings (editable fees) ---------- */
 export async function getFees(): Promise<Fees> {
   const s = await readJson<Partial<Settings>>('settings.json', {});
-  return s.fees ? { ...FEE_SCHEDULE, ...s.fees, perPerson: { ...FEE_SCHEDULE.perPerson, ...s.fees.perPerson }, medical: { ...FEE_SCHEDULE.medical, ...s.fees.medical } } : FEE_SCHEDULE;
+  return s.fees ? { ...FEE_SCHEDULE, ...s.fees, perPerson: { ...FEE_SCHEDULE.perPerson, ...s.fees.perPerson }, medical: { ...FEE_SCHEDULE.medical, ...s.fees.medical }, packages: { ...FEE_SCHEDULE.packages, ...s.fees.packages } } : FEE_SCHEDULE;
 }
 export function saveFees(fees: Fees) {
   return withLock('settings', async () => {

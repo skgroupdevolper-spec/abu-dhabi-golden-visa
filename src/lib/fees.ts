@@ -15,6 +15,11 @@ export const FEE_SCHEDULE = {
   },
   sponsorFile: { label: 'Sponsor file opening (once)', aed: 353.91 },
   propertyValuation: { label: 'Property value certificate', aed: 1050 },
+  /** Consultancy packages (spec 4.5 and 8). 0 means "quoted in writing". Editable in the admin. */
+  packages: {
+    normal: { label: 'Normal service package', aed: 0 },
+    vip: { label: 'VIP Fast Track package', aed: 0 },
+  },
   vatRate: 0.05,
   assumptions: [
     'Government fees only, for a new 10-year Golden Visa.',

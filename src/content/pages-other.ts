@@ -1,6 +1,9 @@
 import type { Page, Section } from './types';
 import { FAQS } from './faqs';
 import { FEE_SCHEDULE } from '@/lib/fees';
+import { BLOG } from './blog';
+import { COUNTRIES } from './countries';
+import { SERVICE_CATALOG } from './services-catalog';
 
 const CONTACT_CTA = { label: 'Get a Free Consultation', href: '/free-consultation/' };
 
@@ -91,7 +94,25 @@ export const OTHER_PAGES: Page[] = [
     h1: 'Retire in the UAE With a Renewable 5-Year Visa',
     intro: 'Eligible foreign nationals can retire in the UAE on a renewable 5-year residence visa, based on savings, property or retirement income.',
     cta: CONTACT_CTA,
-    sections: [{ type: 'tool', tool: 'lead', title: 'Check your retirement options' }],
+    sections: [
+      {
+        type: 'table',
+        title: 'Who can apply',
+        intro: 'You need to be 55 or older and meet one of these, as set by the authorities:',
+        head: ['Route', 'Usual benchmark'],
+        rows: [
+          ['Property', 'Property in the UAE worth about AED 1 million, owned outright'],
+          ['Savings', 'Financial savings of about AED 1 million'],
+          ['Income', 'A steady monthly retirement income (the benchmark differs by emirate)'],
+          ['Work history', 'Having worked in the UAE or abroad for many years, combined with the financial conditions'],
+        ],
+        note: 'Benchmarks change and differ between emirates. We confirm the current rules for Abu Dhabi before you apply.',
+      },
+      { type: 'list', title: 'What we handle', items: ['Eligibility review of property, savings or income', 'Bank and property documents', 'Entry permit or change of status', 'Medical, Emirates ID and residence', 'Spouse and family sponsorship', 'Renewal every 5 years'] },
+      { type: 'list', title: 'What to send us', items: ['Passport copy and photo', 'Proof of property, savings or pension income', 'Health insurance valid in the UAE', 'Marriage certificate if your spouse joins you'] },
+      { type: 'tool', tool: 'lead', title: 'Check your retirement options' },
+    ],
+    related: ['/blog/golden-visa-vs-retirement-visa/', '/golden-visa/property-investment/', '/services/health-insurance/'],
   },
   {
     path: '/remote-work-visa/',
@@ -101,7 +122,23 @@ export const OTHER_PAGES: Page[] = [
     h1: 'Live in Abu Dhabi While You Work for a Company Abroad',
     intro: 'The virtual work residency is a 1-year visa for eligible remote employees and self-employed professionals whose clients or employers are outside the UAE.',
     cta: CONTACT_CTA,
-    sections: [{ type: 'tool', tool: 'lead', title: 'Ask about remote work residency' }],
+    sections: [
+      {
+        type: 'table',
+        title: 'Who can apply',
+        head: ['Requirement', 'Usual benchmark'],
+        rows: [
+          ['Employment', 'A contract with a company outside the UAE, or proof you own a business abroad'],
+          ['Income', 'A minimum monthly income set by the authorities (around USD 3,500 or the equivalent)'],
+          ['Passport', 'Valid for at least 6 months'],
+          ['Insurance', 'Health insurance valid in the UAE'],
+        ],
+        note: 'Benchmarks change. We confirm them before you apply.',
+      },
+      { type: 'list', title: 'What we handle', items: ['Eligibility and document check', 'Visa application and entry permit', 'Medical, Emirates ID and residence', 'Family sponsorship', 'Renewal'] },
+      { type: 'tool', tool: 'lead', title: 'Ask about remote work residency' },
+    ],
+    related: ['/services/freelancer-visa/', '/services/green-visa/'],
   },
 
   // ---------------- Services hub ----------------
@@ -132,18 +169,7 @@ export const OTHER_PAGES: Page[] = [
           ['Other residency', 'Retirement, virtual work, employment and Green Visa guidance'],
         ],
       },
-      {
-        type: 'cards',
-        title: 'Popular services',
-        items: [
-          { title: 'Golden Visa renewal', text: 'Renew on time with your family.', href: '/services/golden-visa-renewal/' },
-          { title: 'Emirates ID services', text: 'New, renewal, replacement and biometrics.', href: '/services/emirates-id/' },
-          { title: 'Valuation certificate', text: 'Official value of your Abu Dhabi property.', href: '/document-services/valuation-certificate/' },
-          { title: 'MOFA attestation', text: 'Get your documents accepted in the UAE.', href: '/document-services/mofa-attestation/' },
-          { title: 'Legal translation', text: 'Certified Arabic translation.', href: '/document-services/legal-translation/' },
-          { title: 'Entry permit & status change', text: 'Inside or outside the UAE.', href: '/services/entry-permit-status-change/' },
-        ],
-      },
+      ...SERVICE_CATALOG.map((g): Section => ({ type: 'cards', title: g.title, items: g.items.map((i) => ({ title: i.label, text: i.note ?? 'See what we handle, the documents and the steps.', href: i.href })) })),
     ],
   },
   service('/services/golden-visa-renewal/', 'Golden Visa Renewal', 'Renew your Abu Dhabi Golden Visa and your family’s residency on time.', 'Your Golden Visa renews as long as you still meet the conditions. We check your eligibility early and renew your family at the same time.', ['Eligibility review before expiry', 'Renewal application', 'Medical and Emirates ID renewal', 'Family renewals'], ['Passport and current Emirates ID', 'Proof you still meet your route’s conditions', 'Valid health insurance']),
@@ -337,18 +363,10 @@ export const OTHER_PAGES: Page[] = [
     meta: 'Guides on the Abu Dhabi Golden Visa: property, professionals, family, costs and renewals.',
     eyebrow: 'Blog & guides',
     h1: 'Guides and insights',
-    intro: 'Our full guide library is on its way. Start with these:',
+    intro: 'Plain-language guides to the Abu Dhabi Golden Visa, written and reviewed by our advisors.',
     sections: [
-      {
-        type: 'cards',
-        title: 'Start here',
-        items: [
-          { title: 'How to apply, step by step', text: 'The 10 steps from eligibility to Emirates ID.', href: '/how-to-apply/' },
-          { title: 'Golden Visa cost', text: 'Government fees for you and your family.', href: '/golden-visa-cost/' },
-          { title: 'Property investor route', text: 'AED 2 million, off-plan and mortgages explained.', href: '/golden-visa/property-investment/' },
-          { title: 'Family Golden Visa', text: 'Spouse, children and parents.', href: '/family-golden-visa/' },
-        ],
-      },
+      { type: 'cards', title: 'All guides', items: BLOG.map((p) => ({ title: p.h1, text: p.article?.summary ?? p.meta, href: p.path })) },
+      { type: 'cards', title: 'Golden Visa by country', items: COUNTRIES.map((c) => ({ title: c.menu, text: `Documents and process for ${c.people}.`, href: c.path })) },
     ],
   },
 

@@ -54,6 +54,14 @@ jobs:
           admin=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/admin/)
           echo "$admin admin without sign-in (expect redirect)"
           [ "$admin" = "307" ] || [ "$admin" = "303" ] || [ "$admin" = "302" ] || { cat server.log; exit 1; }
+          pdf=$(curl -s -o q.pdf -w "%{http_code} %{content_type}" -X POST -H "Content-Type: application/json" -d '{"name":"CI","desc":"Property investor","lines":[["Visa","1614.25"]],"total":"AED 1,614.25","date":"5 November 2026"}' http://localhost:3000/api/quote-pdf/)
+          echo "$pdf quote pdf"; head -c 5 q.pdf; echo
+          case "$pdf" in "200 application/pdf"*) ;; *) cat server.log; exit 1;; esac
+          for path in /services/maid-visa/ /golden-visa-for-indians/ /blog/abu-dhabi-golden-visa-complete-guide/ /golden-visa/frontline-heroes/ /ar/services/difc-wills/; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:3000$path")
+            echo "$code $path"
+            [ "$code" = "200" ] || { cat server.log; exit 1; }
+          done
           lead=$(curl -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type: application/json" -d '{"name":"CI test","phone":"+971500000000","source":"ci"}' http://localhost:3000/api/leads/)
           echo "$lead lead api"
           [ "$lead" = "200" ]

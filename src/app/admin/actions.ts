@@ -210,6 +210,10 @@ export async function saveFeeSchedule(_: FormState, f: FormData): Promise<FormSt
     medical: { normal: { ...cur.medical.normal, aed: v('medNormal', cur.medical.normal.aed) }, vip: { ...cur.medical.vip, aed: v('medVip', cur.medical.vip.aed) } },
     sponsorFile: { ...cur.sponsorFile, aed: v('sponsorFile', cur.sponsorFile.aed) },
     propertyValuation: { ...cur.propertyValuation, aed: v('propertyValuation', cur.propertyValuation.aed) },
+    packages: {
+      normal: { ...(cur.packages?.normal ?? FEE_SCHEDULE.packages.normal), aed: Math.max(0, n(f, 'pkgNormal')) },
+      vip: { ...(cur.packages?.vip ?? FEE_SCHEDULE.packages.vip), aed: Math.max(0, n(f, 'pkgVip')) },
+    },
   });
   revalidatePath('/', 'layout');
   return { ok: 'Fees saved. The calculator uses them straight away.' };

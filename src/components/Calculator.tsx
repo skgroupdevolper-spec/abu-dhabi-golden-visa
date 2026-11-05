@@ -7,11 +7,12 @@ import { FEE_SCHEDULE, ROUTES, aed, convert } from '@/lib/fees';
 let F: typeof FEE_SCHEDULE = FEE_SCHEDULE;
 let feesLoaded = false;
 import { waLink } from '@/lib/site';
+import { CHECKLISTS, TIMELINE } from '@/lib/checklists';
 import { CURRENCY_EVENT, getCurrency } from './Header';
 import { Icon } from './Icon';
 
-type State = { route: number | null; where: 'in' | 'out' | null; fam: boolean | null; file: boolean | null; adults: number; kids: number; counted: boolean; med: 0 | 1 | null };
-const START: State = { route: null, where: null, fam: null, file: null, adults: 0, kids: 0, counted: false, med: null };
+type State = { route: number | null; where: 'in' | 'out' | null; fam: boolean | null; file: boolean | null; adults: number; kids: number; counted: boolean; med: 0 | 1 | null; pkg: 'normal' | 'vip' | null; ins: boolean; att: boolean };
+const START: State = { route: null, where: null, fam: null, file: null, adults: 0, kids: 0, counted: false, med: null, pkg: null, ins: true, att: false };
 const ICONS = ['home', 'briefcase', 'rocket', 'user', 'cap', 'family'];
 
 type Line = [string, number];
@@ -30,6 +31,7 @@ export function Calculator({ initialRoute = null, bare = false }: { initialRoute
   const [hist, setHist] = useState<State[]>(initialRoute === null ? [] : [START]);
   const [cur, setCur] = useState('AED');
   const [copied, setCopied] = useState('');
+  const [pdfName, setPdfName] = useState('');
 
   const [, setTick] = useState(0);
   useEffect(() => {
@@ -44,9 +46,9 @@ export function Calculator({ initialRoute = null, bare = false }: { initialRoute
     return () => window.removeEventListener(CURRENCY_EVENT, on);
   }, []);
 
-  const steps: string[] = ['route', 'where', 'fam', ...(s.fam ? ['file', 'count'] : []), 'med', 'result'];
+  const steps: string[] = ['route', 'where', 'fam', ...(s.fam ? ['file', 'count'] : []), 'med', 'pkg', 'result'];
   const current =
-    s.route === null ? 'route' : !s.where ? 'where' : s.fam === null ? 'fam' : s.fam && s.file === null ? 'file' : s.fam && !s.counted ? 'count' : s.med === null ? 'med' : 'result';
+    s.route === null ? 'route' : !s.where ? 'where' : s.fam === null ? 'fam' : s.fam && s.file === null ? 'file' : s.fam && !s.counted ? 'count' : s.med === null ? 'med' : s.pkg === null ? 'pkg' : 'result';
   const idx = steps.indexOf(current);
 
   function go(patch: Partial<State>, e?: MouseEvent) {
@@ -151,12 +153,55 @@ export function Calculator({ initialRoute = null, bare = false }: { initialRoute
         </div>
       </>
     );
+  } else if (current === 'pkg') {
+    const price = (k: 'normal' | 'vip') => (F.packages?.[k]?.aed ? `${aed(F.packages[k].aed)} + VAT` : 'Quoted in writing');
+    body = (
+      <>
+        <h3>Choose your service package</h3>
+        <p className="muted" style={{ margin: '6px 0 16px' }}>Both include eligibility and document review, government filing and Emirates ID help. Approval is always decided by the authorities.</p>
+        <div className="opts" style={{ marginBottom: 12 }}>
+          <label className="counter" style={{ cursor: 'pointer' }}><input type="checkbox" checked={s.ins} onChange={(e) => setS((x) => ({ ...x, ins: e.target.checked }))} style={{ width: 20, height: 20 }} /><span><b>Add health insurance</b><small className="muted" style={{ display: 'block' }}>Required for every person; quoted separately</small></span></label>
+          <label className="counter" style={{ cursor: 'pointer' }}><input type="checkbox" checked={s.att} onChange={(e) => setS((x) => ({ ...x, att: e.target.checked }))} style={{ width: 20, height: 20 }} /><span><b>Add attestation and translation</b><small className="muted" style={{ display: 'block' }}>For documents from abroad; quoted separately</small></span></label>
+        </div>
+        <div className="opts">
+          <Opt icon="check" title="Normal" sub="Standard medical booking and case updates" price={price('normal')} onClick={(e) => go({ pkg: 'normal' }, e)} />
+          <Opt icon="crown" title="VIP Fast Track" sub="Priority medical, priority updates, pick-up where offered" price={price('vip')} dark onClick={(e) => go({ pkg: 'vip' }, e)} />
+        </div>
+      </>
+    );
   } else if (s.route !== null) {
     const main = person(s, true, true), ad = person(s, true, false), ch = person(s, false, false);
     const file = s.fam && s.file ? F.sponsorFile.aed : 0;
-    const total = sum(main) + s.adults * sum(ad) + s.kids * sum(ch) + file;
+    const gov = sum(main) + s.adults * sum(ad) + s.kids * sum(ch) + file;
+    const pk = s.pkg ? F.packages?.[s.pkg] : undefined;
+    const fee = pk?.aed ?? 0;
+    const vat = Math.round(fee * (F.vatRate ?? 0.05) * 100) / 100;
+    const total = gov + fee + vat;
+    const checklist = CHECKLISTS[ROUTES[s.route].id] ?? [];
     const people = 1 + s.adults + s.kids;
-    const desc = [ROUTES[s.route].label, s.where === 'in' ? 'Inside the UAE' : 'Outside the UAE', s.med ? 'VIP medical' : 'Normal medical'].join(' · ');
+    const desc = [ROUTES[s.route].label, s.where === 'in' ? 'Inside the UAE' : 'Outside the UAE', s.med ? 'VIP medical' : 'Normal medical', s.pkg === 'vip' ? 'VIP Fast Track' : 'Normal package'].join(' · ');
+    const pdfLines: [string, string][] = [
+      ...main.map(([l, v]): [string, string] => [`Main applicant: ${l}`, v.toFixed(2)]),
+      ...(s.adults ? ad.map(([l, v]): [string, string] => [`Adult x ${s.adults}: ${l}`, (v * s.adults).toFixed(2)]) : []),
+      ...(s.kids ? ch.map(([l, v]): [string, string] => [`Child x ${s.kids}: ${l}`, (v * s.kids).toFixed(2)]) : []),
+      ...(file ? [[F.sponsorFile.label, file.toFixed(2)] as [string, string]] : []),
+      [pk?.label ?? 'Service package', fee ? fee.toFixed(2) : 'Quoted in writing'],
+      ...(fee ? [['VAT 5% on service package', vat.toFixed(2)] as [string, string]] : []),
+      ...(s.ins ? [['Health insurance', 'Quoted separately'] as [string, string]] : []),
+      ...(s.att ? [['Attestation and translation', 'Quoted separately'] as [string, string]] : []),
+    ];
+    const downloadPdf = async () => {
+      setCopied('Preparing PDF…');
+      try {
+        const r = await fetch('/api/quote-pdf/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: pdfName, desc, lines: pdfLines, total: aed(total), converted: convert(total, cur), checklist, timeline: TIMELINE, date: F.date, assumptions: F.assumptions }) });
+        if (!r.ok) throw new Error();
+        const url = URL.createObjectURL(await r.blob());
+        const a = document.createElement('a');
+        a.href = url; a.download = 'Abu-Dhabi-Golden-Visa-quote.pdf'; a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+        setCopied('');
+      } catch { setCopied('PDF not available, please try again'); }
+    };
     const summary = [
       'Abu Dhabi Golden Visa estimate',
       desc,
@@ -164,7 +209,11 @@ export function Calculator({ initialRoute = null, bare = false }: { initialRoute
       s.adults ? `Adults × ${s.adults}: ${aed(s.adults * sum(ad))}` : '',
       s.kids ? `Children × ${s.kids}: ${aed(s.kids * sum(ch))}` : '',
       file ? `Sponsor file: ${aed(file)}` : '',
-      `Total government fees: ${aed(total)}`,
+      `Government fees: ${aed(gov)}`,
+      fee ? `${pk?.label}: ${aed(fee)} + VAT ${aed(vat)}` : `${pk?.label ?? 'Service package'}: quoted in writing`,
+      s.ins ? 'Health insurance: quoted separately' : '',
+      s.att ? 'Attestation and translation: quoted separately' : '',
+      `Estimated total: ${aed(total)}`,
       `Fee schedule: ${F.date}`,
       'Please send me a full quote with insurance and consultancy.',
     ].filter(Boolean).join('\n');
@@ -182,8 +231,13 @@ export function Calculator({ initialRoute = null, bare = false }: { initialRoute
         {s.adults > 0 && <Card title="Adult family member" lines={ad} mult={s.adults} />}
         {s.kids > 0 && <Card title="Child under 18" lines={ch} mult={s.kids} />}
         {file > 0 && <div className="pc"><div className="h"><span>{F.sponsorFile.label}</span><span>{aed(file)}</span></div></div>}
+        <div className="pc"><div className="h"><span>{pk?.label ?? 'Service package'}</span><span>{fee ? aed(fee) : 'Quoted in writing'}</span></div>
+          {fee > 0 && <div className="ln"><span>VAT 5%</span><em /><b>{vat.toFixed(2)}</b></div>}
+          {s.ins && <div className="ln"><span>Health insurance</span><em /><b>Quoted separately</b></div>}
+          {s.att && <div className="ln"><span>Attestation and translation</span><em /><b>Quoted separately</b></div>}
+        </div>
         <div className="total">
-          <small>Government fees for {people} {people > 1 ? 'people' : 'person'}</small>
+          <small>Estimated total for {people} {people > 1 ? 'people' : 'person'} (government fees {aed(gov)})</small>
           <div className="t">{aed(total)}</div>
           {convert(total, cur) && <div style={{ fontSize: 14, opacity: 0.85 }}>{convert(total, cur)} (approximate)</div>}
         </div>
@@ -191,7 +245,14 @@ export function Calculator({ initialRoute = null, bare = false }: { initialRoute
           {F.assumptions.map((a) => <li key={a}>{a}</li>)}
           <li>Fee schedule dated {F.date}.</li>
         </ul>
+        <details style={{ margin: '6px 0 4px' }}>
+          <summary style={{ cursor: 'pointer', fontWeight: 700 }}>Your document checklist and timeline</summary>
+          <ul className="ticks" style={{ fontSize: 14 }}>{checklist.map((c) => <li key={c}>{c}</li>)}</ul>
+          <ol style={{ fontSize: 14, paddingInlineStart: 20 }}>{TIMELINE.map((t) => <li key={t}>{t}</li>)}</ol>
+        </details>
+        <div className="field" style={{ marginTop: 8 }}><label htmlFor="pdfname">Your name for the PDF quote (optional)</label><input id="pdfname" value={pdfName} onChange={(e) => setPdfName(e.target.value)} placeholder="Full name" /></div>
         <div className="row-actions">
+          <button type="button" className="btn btn-gold" onClick={downloadPdf}><Icon name="doc" size={18} /> Download PDF quote</button>
           <a className="btn btn-gold" href={waLink(summary)} target="_blank" rel="noopener"><Icon name="wa" size={18} /> Send to WhatsApp</a>
           <button type="button" className="btn btn-glass" onClick={() => navigator.clipboard?.writeText(summary).then(() => setCopied('Copied'), () => setCopied('Select and copy the text'))}>{copied || 'Copy estimate'}</button>
           <button type="button" className="btn btn-glass" onClick={() => { setS(START); setHist([]); }}>Recalculate</button>

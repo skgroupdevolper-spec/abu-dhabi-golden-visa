@@ -71,18 +71,18 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <section className="hero">
         <div className="wrap hero-grid">
           <div>
-            <div className="badge glass in-hero"><i><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.8" aria-hidden="true"><path d="M5 12l5 5L19 7" /></svg></i>10-year residency in the UAE capital</div>
+            <div className="badge glass in-hero"><i><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.8" aria-hidden="true"><path d="M5 12l5 5L19 7" /></svg></i>Abu Dhabi Golden Visa · Long-term UAE residency</div>
             <h1>
-              <span className="line"><span>Your future</span></span>
-              <span className="line"><span>in Abu Dhabi,</span></span>
-              <span className="line"><span><em className="goldtext">made golden.</em></span></span>
+              <span className="line"><span>Your future in</span></span>
+              <span className="line"><span>Abu Dhabi starts</span></span>
+              <span className="line"><span><em className="goldtext">with a Golden Visa.</em></span></span>
             </h1>
-            <p className="lead in-hero">Find your route, see the full cost in your currency, and follow every step of your application in your own language.</p>
+            <p className="lead in-hero">Explore long-term UAE residency through property investment, business ownership, professional achievements and exceptional talent. From eligibility assessment to Emirates ID issuance, our specialists guide you through every stage.</p>
             <div className="cta in-hero">
-              <a className="btn btn-gold mag" href={lp('/visa-check/')}>Check my eligibility <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></a>
-              <a className="btn btn-glass mag" href={lp('/golden-visa-cost/')} data-open-calc="">Calculate my cost</a>
+              <a className="btn btn-gold mag" href={lp('/visa-check/')}>Check My Eligibility <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></a>
+              <a className="btn btn-glass mag" href={lp('/golden-visa-cost/')} data-open-calc="">Calculate Visa Cost</a>
             </div>
-            <div className="trust in-hero"><span>20 languages</span><span>10 currencies</span><span>Live tracking on WhatsApp</span></div>
+            <div className="trust in-hero"><span>Free Initial Consultation</span><span>Family Applications</span><span>VIP Assistance</span></div>
             <div className="in-hero"><TranslationNotice locale={locale} /></div>
           </div>
           <div className="hero-art" id="heroArt">
@@ -182,16 +182,17 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <div className="wrap jgrid">
           <div className="jsticky">
             <div className="eyebrow">How it works</div>
-            <h2 style={{ marginTop: 14 }}>Four steps.<br /><span className="goldtext">Zero guesswork.</span></h2>
+            <h2 style={{ marginTop: 14 }}>Five stages.<br /><span className="goldtext">Zero guesswork.</span></h2>
             <p style={{ color: 'var(--ink-soft)', maxWidth: '38ch', marginTop: 18 }}>The gold line fills as you scroll. Your real file moves the same way in your client portal, with a WhatsApp message at every step.</p>
             <figure className="simg" style={{ marginInline: 0 }}><div className="im par woman" /><figcaption>From your first question to your residency</figcaption></figure>
           </div>
           <div className="jsteps" id="jsteps">
             <div className="jrail"><div className="jfill" id="jfill" /></div>
-            <div className="jstep glass"><span className="n">1</span><h3>Check your route</h3><p>Answer a few questions and see which category fits you.</p></div>
-            <div className="jstep glass"><span className="n">2</span><h3>Get a written quote</h3><p>Government fees and our service fee, listed separately.</p></div>
-            <div className="jstep glass"><span className="n">3</span><h3>Pay and upload</h3><p>Secure card payment, then send documents from your phone.</p></div>
-            <div className="jstep glass"><span className="n">4</span><h3>Track to approval</h3><p>Live status, messages and receipts in one place.</p></div>
+            <div className="jstep glass"><span className="n">1</span><h3>Free eligibility check</h3><p>We confirm your route and send a written quote with government fees and our fee listed separately.</p></div>
+            <div className="jstep glass"><span className="n">2</span><h3>Documents and attestation</h3><p>Certificates attested, translated and checked before anything is filed. Upload from your phone.</p></div>
+            <div className="jstep glass"><span className="n">3</span><h3>Nomination</h3><p>Your Golden Visa file is submitted through the Abu Dhabi channel for your route.</p></div>
+            <div className="jstep glass"><span className="n">4</span><h3>Entry permit or change of status</h3><p>From abroad you receive an entry permit; inside the UAE we change your status.</p></div>
+            <div className="jstep glass"><span className="n">5</span><h3>Medical, Emirates ID and residence</h3><p>We book both appointments and follow your file until your residency is issued, with live updates in your portal.</p></div>
             <a className="btn btn-glass mag" href={lp('/how-to-apply/')} style={{ alignSelf: 'flex-start' }}>See the full 10-step process</a>
           </div>
         </div>

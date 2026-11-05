@@ -82,7 +82,7 @@ export function Header({ locale }: { locale: Locale }) {
                       {item.label} <Icon name="chev" size={14} />
                     </button>
                     {open === item.label && (
-                      <div className={`mega${item.groups.length > 1 ? ' two' : ''}`}>
+                      <div className={`mega${item.groups.length > 3 ? ' wide' : item.groups.length === 3 ? ' three' : item.groups.length > 1 ? ' two' : ''}`} data-lenis-prevent>
                         {item.groups.map((g) => (
                           <div key={g.title}>
                             <h4>{g.title}</h4>

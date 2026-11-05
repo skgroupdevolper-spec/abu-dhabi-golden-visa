@@ -1,3 +1,5 @@
+import { ServiceSidebar } from './ServiceSidebar';
+import { isServicePage } from '@/content/services-catalog';
 import type { Page, Section } from '@/content/types';
 import { getPage } from '@/content/pages';
 import type { Locale } from '@/lib/i18n';
@@ -106,6 +108,7 @@ export function SectionView({ s, locale, i }: { s: Section; locale: Locale; i: n
 }
 
 export function PageView({ page, locale }: { page: Page; locale: Locale }) {
+  const withSide = isServicePage(page.path);
   const parts = page.path.split('/').filter(Boolean);
   const crumbs = parts.slice(0, -1).map((_, k) => '/' + parts.slice(0, k + 1).join('/') + '/');
   return (
@@ -129,6 +132,14 @@ export function PageView({ page, locale }: { page: Page; locale: Locale }) {
         </div>
       </header>
       <div className="wrap" style={{ position: 'relative', zIndex: 2 }}>
+        <div className={withSide ? 'svc-layout' : undefined}>
+        {withSide && <ServiceSidebar current={page.path} locale={locale} />}
+        <div className={withSide ? 'svc-main' : undefined}>
+        {page.article && (
+          <p className="byline block" style={{ marginBottom: 0 }}>
+            By <b>{page.article.author}</b> · Reviewed by <b>{page.article.reviewer}</b> · Last reviewed {page.article.reviewed} · {page.article.minutes} min read
+          </p>
+        )}
         {page.sections.map((s, i) => <SectionView key={i} s={s} locale={locale} i={i} />)}
         {page.related && page.related.length > 0 && (
           <section className="block" data-reveal>
@@ -144,6 +155,8 @@ export function PageView({ page, locale }: { page: Page; locale: Locale }) {
             </div>
           </section>
         )}
+        </div>
+        </div>
       </div>
     </>
   );
