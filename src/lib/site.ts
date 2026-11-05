@@ -17,3 +17,14 @@ export const SITE = {
 export function waLink(message: string): string {
   return `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(message)}`;
 }
+
+/** Secure client-portal link for one application (served on the portal subdomain). */
+export function portalUrl(token: string): string {
+  const host = process.env.PORTAL_HOST;
+  return host ? `https://${host}/t/${token}/` : `${SITE.url}/portal/t/${token}/`;
+}
+
+/** WhatsApp link to a client's own number. */
+export function waTo(phone: string, message: string): string {
+  return `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+}

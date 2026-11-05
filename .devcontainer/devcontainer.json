@@ -1,0 +1,22 @@
+{
+  "name": "Abu Dhabi Golden Visa",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  "hostRequirements": { "cpus": 2, "memory": "4gb" },
+  "containerEnv": {
+    "DATA_DIR": "/workspaces/adgv-data",
+    "ADMIN_EMAIL": "admin@preview.local",
+    "ADMIN_PASSWORD": "preview-admin-2026",
+    "SESSION_SECRET": "codespaces-preview-secret-not-for-production",
+    "NEXT_TELEMETRY_DISABLED": "1"
+  },
+  "postCreateCommand": "npm install --no-audit --no-fund && node scripts/seed-sample.mjs && npm run build",
+  "postAttachCommand": { "site": "npm start" },
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": { "label": "Website preview", "onAutoForward": "openBrowser", "visibility": "public" }
+  },
+  "customizations": {
+    "codespaces": { "openFiles": ["README.md"] },
+    "vscode": { "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"] }
+  }
+}

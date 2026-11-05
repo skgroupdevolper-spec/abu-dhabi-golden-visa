@@ -1,7 +1,11 @@
 'use client';
 
 import { useEffect, useState, type MouseEvent, type ReactNode } from 'react';
-import { FEE_SCHEDULE as F, ROUTES, aed, convert } from '@/lib/fees';
+import { FEE_SCHEDULE, ROUTES, aed, convert } from '@/lib/fees';
+
+// Live fee schedule from the admin dashboard (falls back to the built-in schedule).
+let F: typeof FEE_SCHEDULE = FEE_SCHEDULE;
+let feesLoaded = false;
 import { waLink } from '@/lib/site';
 import { CURRENCY_EVENT, getCurrency } from './Header';
 import { Icon } from './Icon';
@@ -26,6 +30,12 @@ export function Calculator({ initialRoute = null, bare = false }: { initialRoute
   const [hist, setHist] = useState<State[]>(initialRoute === null ? [] : [START]);
   const [cur, setCur] = useState('AED');
   const [copied, setCopied] = useState('');
+
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (feesLoaded) return;
+    fetch('/api/fees/').then((r) => (r.ok ? r.json() : null)).then((j) => { if (j && j.perPerson) { F = j; feesLoaded = true; setTick((t) => t + 1); } }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     setCur(getCurrency());

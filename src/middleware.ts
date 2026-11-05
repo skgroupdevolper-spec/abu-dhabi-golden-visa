@@ -6,20 +6,24 @@ const PORTAL_HOST = (process.env.PORTAL_HOST || 'app.abudhabigoldenvisa.com').to
 /**
  * English lives at "/" with no prefix, other languages at "/xx/".
  * Internally every page sits under /[locale]/, so unprefixed paths are rewritten to /en/.
- * Requests to the portal host are served the client portal.
+ * Requests to the portal host are served the client portal; /admin is the team dashboard.
  */
 export function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
   const host = (req.headers.get('host') || '').split(':')[0].toLowerCase();
   const { pathname } = url;
 
+  const first = pathname.split('/')[1];
+
+  // Customer dashboard subdomain: everything is served from /portal.
   if (host === PORTAL_HOST) {
-    url.pathname = `/${DEFAULT_LOCALE}/portal${pathname === '/' ? '/' : pathname}`;
-    if (!url.pathname.endsWith('/')) url.pathname += '/';
+    if (first === 'portal' || first === 'admin') return NextResponse.next();
+    url.pathname = `/portal${pathname}`;
     return NextResponse.rewrite(url);
   }
 
-  const first = pathname.split('/')[1];
+  // Dashboards have their own pages (no language prefix).
+  if (first === 'admin' || first === 'portal') return NextResponse.next();
 
   // /en/... is never public: send it to the unprefixed address.
   if (first === DEFAULT_LOCALE) {

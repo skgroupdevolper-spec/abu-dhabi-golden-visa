@@ -33,6 +33,38 @@ for (const path of pages) {
     await page.close();
   }
 }
+// dashboards
+const T = 'a1b2c3d4e5f60718293a4b5c6d7e8f90';
+for (const vp of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
+  const page = await browser.newPage({ viewport: vp });
+  const errors = [];
+  page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
+  await page.goto(base + '/admin/login/');
+  await page.fill('#email', 'admin@ci.local');
+  await page.fill('#password', 'ci-password-123');
+  await Promise.all([page.waitForURL('**/admin/'), page.click('button[type=submit]')]);
+  await page.waitForTimeout(800);
+  await page.screenshot({ path: `shots/admin-overview-${vp.width}.png`, fullPage: true });
+  await page.goto(base + '/admin/applications/sample1/');
+  await page.waitForTimeout(800);
+  await page.screenshot({ path: `shots/admin-app-${vp.width}.png`, fullPage: true });
+  await page.goto(base + '/admin/leads/');
+  await page.screenshot({ path: `shots/admin-leads-${vp.width}.png`, fullPage: true });
+  await page.goto(base + `/portal/t/${T}/`);
+  await page.waitForTimeout(1200);
+  await page.screenshot({ path: `shots/portal-${vp.width}.png`, fullPage: true });
+  report.push({ path: 'dashboards', vp: vp.width, errors, facts: await page.evaluate(() => ({ docW: document.documentElement.scrollWidth })) });
+  await page.close();
+}
+// homepage calculator pop-up
+{
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await page.goto(base + '/');
+  await page.click('.calc-launch button >> nth=0');
+  await page.waitForTimeout(900);
+  await page.screenshot({ path: 'shots/calc-popup.png' });
+  await page.close();
+}
 await browser.close();
 writeFileSync('shots/report.json', JSON.stringify(report, null, 2));
 console.log(JSON.stringify(report, null, 2));

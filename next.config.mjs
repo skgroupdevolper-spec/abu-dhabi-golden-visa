@@ -3,6 +3,8 @@ const nextConfig = {
   trailingSlash: true,
   poweredByHeader: false,
   images: { formats: ['image/avif', 'image/webp'] },
+  // Client and team document uploads go through server actions.
+  experimental: { serverActions: { bodySizeLimit: '16mb' } },
   async headers() {
     return [
       {

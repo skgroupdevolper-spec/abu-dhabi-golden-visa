@@ -1,11 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { appendFile, mkdir } from 'node:fs/promises';
-import path from 'node:path';
+import { addLead } from '@/lib/server/store';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const DIR = path.resolve(process.env.LEADS_DIR || './data');
 const hits = new Map<string, number[]>();
 
 function limited(ip: string): boolean {
@@ -18,7 +16,7 @@ function limited(ip: string): boolean {
 
 const clean = (v: unknown, max = 300) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 
-/** Stores a website enquiry as one JSON line. Phase 3 moves this into the database and admin panel. */
+/** Stores a website enquiry; it appears in the admin dashboard under Enquiries. */
 export async function POST(req: NextRequest) {
   const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'local';
   if (limited(ip)) return NextResponse.json({ ok: false, error: 'Too many requests. Please message us on WhatsApp.' }, { status: 429 });
@@ -31,7 +29,6 @@ export async function POST(req: NextRequest) {
   }
 
   const lead = {
-    at: new Date().toISOString(),
     name: clean(body.name, 120),
     phone: clean(body.phone, 40),
     email: clean(body.email, 160),
@@ -46,8 +43,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    await mkdir(DIR, { recursive: true });
-    await appendFile(path.join(DIR, 'leads.jsonl'), JSON.stringify(lead) + '\n', 'utf8');
+    await addLead(lead);
   } catch (e) {
     console.error('Lead not saved', e);
     return NextResponse.json({ ok: false, error: 'We could not save your request. Please message us on WhatsApp.' }, { status: 500 });
