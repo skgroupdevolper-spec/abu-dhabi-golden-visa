@@ -394,3 +394,35 @@ html[dir='rtl'] .mega.wide { left: 50%; right: auto; }
 .offer .x { position: absolute; top: 8px; inset-inline-end: 8px; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line); background: #fff; cursor: pointer; }
 @media (max-width: 760px) { .offer { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); } }
 @keyframes coinspin { to { transform: rotateY(360deg); } }
+.price-tag { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 8px 16px; border-radius: 999px; background: linear-gradient(135deg, #fff6dc, #f1dc94); font: 700 14px var(--body); color: var(--navy); }
+.prose { max-width: 75ch; }
+.prose h2 { font-size: clamp(28px, 3vw, 40px); margin: 28px 0 10px; }
+.prose h3 { font-size: 24px; margin: 22px 0 8px; }
+.prose p, .prose li { font-size: 17px; line-height: 1.75; color: var(--navy-soft); }
+.prose ul, .prose ol { padding-inline-start: 22px; }
+.prose blockquote { margin: 18px 0; padding: 14px 18px; border-inline-start: 3px solid var(--gold); background: #fffaf0; border-radius: 12px; }
+.prose a { color: var(--gold-deep); }
+
+/* AI chatbot */
+.chatw { position: fixed; z-index: 115; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+.chatw.left { inset-inline-start: 18px; } .chatw.right { inset-inline-end: 90px; }
+.ch-btn { width: 58px; height: 58px; border-radius: 50%; border: 0; cursor: pointer; display: grid; place-items: center; color: var(--navy); font-size: 20px; background: linear-gradient(140deg, var(--gold-light), var(--gold)); box-shadow: 0 16px 30px -12px rgba(138, 106, 18, 0.7); animation: chpulse 3s infinite; }
+@keyframes chpulse { 0%, 70%, 100% { box-shadow: 0 16px 30px -12px rgba(138, 106, 18, 0.7), 0 0 0 0 rgba(212, 175, 55, 0.5); } 85% { box-shadow: 0 16px 30px -12px rgba(138, 106, 18, 0.7), 0 0 0 12px rgba(212, 175, 55, 0); } }
+.chatbox { position: absolute; bottom: 70px; inset-inline-start: 0; width: min(380px, calc(100vw - 36px)); height: min(560px, calc(100dvh - 140px)); display: flex; flex-direction: column; border-radius: 26px; overflow: hidden; background: #fff; box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.45); animation: pop 0.3s cubic-bezier(0.2, 0.9, 0.25, 1.2); }
+.chatw.right .chatbox { inset-inline-start: auto; inset-inline-end: 0; }
+.ch-head { display: flex; align-items: center; gap: 10px; padding: 14px 16px; background: linear-gradient(135deg, #fff6dc, #f1dc94); }
+.ch-head b { display: block; font: 600 15px var(--body); } .ch-head small { color: var(--navy-soft); font-size: 11.5px; }
+.ch-head button { margin-inline-start: auto; width: 34px; height: 34px; border-radius: 50%; border: 0; background: #fff; cursor: pointer; }
+.ch-body { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 8px; background: #faf8f3; overscroll-behavior: contain; }
+.ch-msg { max-width: 86%; padding: 10px 13px; border-radius: 16px; font-size: 14.5px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ch-msg.bot { background: #fff; box-shadow: 0 6px 14px -10px rgba(0, 0, 0, 0.3); align-self: flex-start; }
+.ch-msg.me { background: #fbefc9; align-self: flex-end; }
+.ch-msg a { color: var(--gold-deep); font-weight: 600; }
+.ch-msg.typing { display: inline-flex; gap: 4px; } .ch-msg.typing i { width: 6px; height: 6px; border-radius: 50%; background: #b9ab88; animation: chdots 1s infinite; }
+.ch-msg.typing i:nth-child(2) { animation-delay: 0.15s; } .ch-msg.typing i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes chdots { 50% { transform: translateY(-4px); } }
+.ch-wa { display: block; padding: 8px 14px; font: 600 12.5px var(--body); color: #137a3f; background: #eef8f1; text-decoration: none; }
+.ch-form { display: flex; gap: 6px; padding: 10px; border-top: 1px solid #f1e9d6; }
+.ch-form input { flex: 1; min-width: 0; min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); font: 500 14.5px var(--body); }
+.ch-form button { width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer; background: linear-gradient(140deg, var(--gold-light), var(--gold)); color: var(--navy); }
+@media (max-width: 760px) { .chatw { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); } .chatw.right { inset-inline-end: 18px; } .offer { bottom: calc(170px + env(safe-area-inset-bottom, 0px)); } }

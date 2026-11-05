@@ -49,13 +49,14 @@ export function Footer({ locale }: { locale: Locale }) {
               {SITE.hours && <li><span>{SITE.hours}</span></li>}
               <li><L locale={locale} href="/contact/">Contact us</L></li>
               <li><L locale={locale} href="/about/">About us</L></li>
+              {SITE.nav.footerLinks.map((x) => <li key={x.href + x.label}><L locale={locale} href={x.href}>{x.label}</L></li>)}
             </ul>
           </div>
         </div>
         <div className="legal">
           <strong>{SITE.disclaimer}</strong>
           <span>
-            © {new Date().getFullYear()} {SITE.operator} ·{' '}
+            {SITE.nav.copyright || `© ${new Date().getFullYear()} ${SITE.operator}`} ·{' '}
             <L locale={locale} href="/privacy/">Privacy</L> · <L locale={locale} href="/terms/">Terms</L> ·{' '}
             <L locale={locale} href="/disclaimer/">Disclaimer</L>
           </span>

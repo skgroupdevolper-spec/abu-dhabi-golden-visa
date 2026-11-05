@@ -7,6 +7,7 @@ export type PublicSite = {
   features: { topBar: boolean; topBarText: string; floatingWhatsApp: boolean; mobileBar: boolean; dock: boolean; newsletter: boolean; clientLogin: boolean; chatbot: boolean; offer: boolean; preloader: boolean; languageSwitcher: boolean };
   offer: { title: string; text: string; button: string; link: string; delaySeconds: number };
   colors: { gold: string; goldDeep: string; ink: string; paper: string };
+  nav: { ctaLabel: string; ctaLink: string; extra: { label: string; href: string }[]; footerLinks: { label: string; href: string }[]; copyright: string };
 };
 
 export type Secrets = {
@@ -52,6 +53,7 @@ export const DEFAULT_SITE: PublicSite = {
   features: { topBar: false, topBarText: '', floatingWhatsApp: true, mobileBar: true, dock: true, newsletter: true, clientLogin: true, chatbot: true, offer: false, preloader: false, languageSwitcher: true },
   offer: { title: 'Free eligibility check', text: 'Send us your details and get a written answer on your Golden Visa route.', button: 'Start my free check', link: '/visa-check/', delaySeconds: 12 },
   colors: { gold: '#d4af37', goldDeep: '#8a6a12', ink: '#0d0d0d', paper: '#f8f7f5' },
+  nav: { ctaLabel: 'Check Eligibility', ctaLink: '/visa-check/', extra: [], footerLinks: [], copyright: '' },
 };
 
 export const DEFAULT_SECRETS: Secrets = {
@@ -73,10 +75,10 @@ export const DEFAULT_SECRETS: Secrets = {
   },
   smtp: { host: '', port: 465, secure: true, user: '', pass: '', from: '', notify: '' },
   seo: { homeTitle: '', homeMeta: '', googleVerify: '', bingVerify: '', headCode: '', bodyCode: '' },
-  ai: { provider: '', openaiKey: '', geminiKey: '', anthropicKey: '', model: '', dailyBudget: 2 },
+  ai: { provider: '', openaiKey: '', geminiKey: '', anthropicKey: '', model: '', dailyBudget: 200 },
 };
 
 export function mergeSite(o?: Partial<PublicSite>): PublicSite {
   const d = DEFAULT_SITE;
-  return { ...d, ...o, social: { ...d.social, ...o?.social }, features: { ...d.features, ...o?.features }, offer: { ...d.offer, ...o?.offer }, colors: { ...d.colors, ...o?.colors } };
+  return { ...d, ...o, social: { ...d.social, ...o?.social }, features: { ...d.features, ...o?.features }, offer: { ...d.offer, ...o?.offer }, colors: { ...d.colors, ...o?.colors }, nav: { ...d.nav, ...o?.nav } };
 }

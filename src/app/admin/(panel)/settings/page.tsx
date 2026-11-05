@@ -90,7 +90,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
             <F name="geminiKey" label="Google Gemini API key" type="password" help={mask(sec.ai.geminiKey)} />
             <F name="anthropicKey" label="Anthropic API key" type="password" help={mask(sec.ai.anthropicKey)} />
             <F name="model" label="Model (optional)" value={sec.ai.model} placeholder="Leave empty for a sensible default" />
-            <F name="dailyBudget" label="Daily AI budget (USD, for automatic jobs)" value={sec.ai.dailyBudget} type="number" />
+            <F name="dailyBudget" label="Daily limit of automatic AI requests (translation, Auto Publisher)" value={sec.ai.dailyBudget} type="number" />
             <div className="full row small">
               <label className="row"><input type="checkbox" name="clear_openaiKey" /> Remove OpenAI key</label>
               <label className="row"><input type="checkbox" name="clear_geminiKey" /> Remove Gemini key</label>

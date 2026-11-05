@@ -8,14 +8,17 @@ import { Eligibility } from '@/components/Eligibility';
 import { Icon } from '@/components/Icon';
 import { TranslationNotice } from '@/components/TranslationNotice';
 import { FaqList, HeroFinder, HomeEffects, HomeLeadForm, PhoneChat, ServicesGrid } from '@/components/HomeClient';
+import { getFaqs, getPartners, getTestimonials } from '@/lib/server/content';
+import { getSecrets } from '@/lib/server/settings';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
+  const seo = (await getSecrets()).seo;
   return pageMetadata(
     '/',
     (isLocale(locale) ? locale : 'en') as Locale,
-    'Abu Dhabi Golden Visa | 10-Year UAE Residency Consultants',
-    'Find your Golden Visa route, see the full government cost in your currency and follow every step of your application in your own language.',
+    seo.homeTitle || 'Abu Dhabi Golden Visa | 10-Year UAE Residency Consultants',
+    seo.homeMeta || 'Explore long-term UAE residency through property, business, professional and talent routes. Free eligibility check, cost calculator, family applications and VIP assistance.',
   );
 }
 
@@ -57,6 +60,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const lp = (p: string) => localizePath(p, locale);
   const manifesto = 'From the first question to the day your residency is issued, we handle the forms, the fees and the follow-ups. You get one clear price, one advisor, and every update in your own language.';
   const gold = new Set(['clear', 'price,', 'advisor,', 'language.']);
+  const [storedFaqs, reviews, partners] = await Promise.all([getFaqs(), getTestimonials(), getPartners()]);
+  const faqItems = storedFaqs.length ? storedFaqs.map((f) => ({ q: f.q, a: f.a })) : FAQ;
   const example = F.perPerson.visa.aed + F.medical.normal.aed + F.perPerson.emiratesId.aed + F.perPerson.changeOfStatus.aed + F.propertyValuation.aed;
 
   return (
@@ -289,6 +294,15 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </div>
       </section>
 
+      {partners.length > 0 && (
+        <section className="partners">
+          <div className="wrap">
+            <div className="eyebrow" style={{ textAlign: 'center' }}>Trusted partners</div>
+            <div className="plogos">{partners.map((p) => (p.link ? <a key={p.id} href={p.link} target="_blank" rel="noopener"><img src={p.logo} alt={p.name} loading="lazy" /></a> : <img key={p.id} src={p.logo} alt={p.name} loading="lazy" />))}</div>
+          </div>
+        </section>
+      )}
+
       {/* BENEFITS (spec) */}
       <section className="benefits">
         <div className="wrap">
@@ -319,7 +333,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <a className="seeall" href={lp('/faqs/')}>See all questions →</a>
             <figure className="simg white" style={{ marginInline: 0 }}><div className="im par coin" /><figcaption>Advisors who speak your language</figcaption></figure>
           </div>
-          <FaqList items={FAQ} />
+          <FaqList items={faqItems} />
         </div>
       </section>
 
@@ -342,6 +356,24 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
         </div>
       </section>
+
+      {reviews.length > 0 && (
+        <section className="reviews">
+          <div className="wrap">
+            <div className="eyebrow">Client stories</div>
+            <h2 style={{ marginTop: 14 }}>In their <em className="goldtext">own words.</em></h2>
+            <div className="wgrid">
+              {reviews.slice(0, 6).map((r) => (
+                <figure key={r.id} className="wcard glass tilt" style={{ margin: 0 }}>
+                  <span aria-label={`${r.rating} out of 5`} style={{ color: 'var(--gold)', letterSpacing: 2 }}>{'★'.repeat(Math.max(1, Math.min(5, r.rating)))}</span>
+                  <blockquote style={{ margin: 0, fontSize: 15.5 }}>“{r.text}”</blockquote>
+                  <figcaption><b>{r.name}</b>{r.country && <span className="small" style={{ color: 'var(--ink-soft)' }}> · {r.country}</span>}</figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CONTACT */}
       <section className="contact" id="contact-form">

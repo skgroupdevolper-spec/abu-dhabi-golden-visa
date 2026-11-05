@@ -362,3 +362,7 @@
 .home .gcard p{margin:0;color:var(--ink-soft);font-size:15px;flex:1}
 .home .gcard .go{font:700 14px var(--body);color:var(--gold-deep)}
 .home .seeall{display:inline-flex;margin-top:14px;font:700 14px var(--body);color:var(--gold-deep);text-decoration:none}
+.home .partners,.home .reviews{padding-block:50px}
+.home .plogos{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:22px 40px;margin-top:22px}
+.home .plogos img{height:46px;width:auto;filter:grayscale(1);opacity:.7;transition:filter .3s,opacity .3s}
+.home .plogos a:hover img,.home .plogos img:hover{filter:none;opacity:1}

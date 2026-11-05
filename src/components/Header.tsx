@@ -78,7 +78,7 @@ export function Header({ locale }: { locale: Locale }) {
               <img src="/brand/logo.webp" alt={SITE.name} width={164} height={40} />
             </L>
             <nav className="nav" aria-label="Main">
-              {NAV.map((item) =>
+              {[...NAV, ...SITE.nav.extra.map((x) => ({ label: x.label, href: x.href, groups: undefined }))].map((item) =>
                 item.groups ? (
                   <div key={item.label} onMouseEnter={() => setOpen(item.label)} onMouseLeave={() => setOpen((o) => (o === item.label ? null : o))}>
                     <button type="button" className="nav-link" aria-expanded={open === item.label} onClick={() => toggle(item.label)}>
@@ -150,8 +150,8 @@ export function Header({ locale }: { locale: Locale }) {
               <a className="icon-btn hide-sm" href={waLink('Hello, I would like help with the Abu Dhabi Golden Visa.')} target="_blank" rel="noopener" aria-label="WhatsApp us">
                 <Icon name="wa" size={20} />
               </a>
-              <L locale={locale} href="/visa-check/" className="btn btn-red hide-sm" style={{ minHeight: 44, padding: '0 18px' }}>
-                Check Eligibility
+              <L locale={locale} href={SITE.nav.ctaLink || '/visa-check/'} className="btn btn-red hide-sm" style={{ minHeight: 44, padding: '0 18px' }}>
+                {SITE.nav.ctaLabel || 'Check Eligibility'}
               </L>
               <button type="button" className="burger" aria-label="Open menu" onClick={() => setMobile(true)}>
                 <Icon name="menu" />

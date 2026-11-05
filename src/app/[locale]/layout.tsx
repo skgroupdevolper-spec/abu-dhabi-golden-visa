@@ -8,6 +8,7 @@ import { Water } from '@/components/Water';
 import { Motion } from '@/components/Motion';
 import { CalcModal } from '@/components/CalcModal';
 import { OfferPopup } from '@/components/OfferPopup';
+import { ChatWidget } from '@/components/ChatWidget';
 import { LOCALE_CODES, isLocale, localeInfo } from '@/lib/i18n';
 import { SITE } from '@/lib/site';
 import { applyRuntimeSync, getSecrets } from '@/lib/server/settings';
@@ -61,6 +62,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
         <Motion />
         <CalcModal />
         <OfferPopup />
+        <ChatWidget lang={locale} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

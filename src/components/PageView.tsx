@@ -96,6 +96,13 @@ export function SectionView({ s, locale, i }: { s: Section; locale: Locale; i: n
           ))}
         </section>
       );
+    case 'html':
+      return (
+        <section className="block prose" data-reveal>
+          {s.title && <h2>{s.title}</h2>}
+          <div dangerouslySetInnerHTML={{ __html: s.html }} />
+        </section>
+      );
     case 'tool':
       return (
         <section className="block" data-reveal>
@@ -107,7 +114,7 @@ export function SectionView({ s, locale, i }: { s: Section; locale: Locale; i: n
   }
 }
 
-export function PageView({ page, locale }: { page: Page; locale: Locale }) {
+export function PageView({ page, locale, translated, price, hidden = [] }: { page: Page; locale: Locale; translated?: boolean; price?: string; hidden?: string[] }) {
   const withSide = isServicePage(page.path);
   const parts = page.path.split('/').filter(Boolean);
   const crumbs = parts.slice(0, -1).map((_, k) => '/' + parts.slice(0, k + 1).join('/') + '/');
@@ -122,18 +129,19 @@ export function PageView({ page, locale }: { page: Page; locale: Locale }) {
           <p className="eyebrow" style={{ marginTop: 18 }}>{page.eyebrow}</p>
           <h1>{page.h1}</h1>
           <p className="lead">{page.intro}</p>
+          {price && <p className="price-tag"><Icon name="coins" size={16} /> {price}</p>}
           {page.cta && (
             <div className="cta">
               <L locale={locale} href={page.cta.href} className="btn btn-red">{page.cta.label} <Icon name="arrow" size={18} className="arrow" /></L>
               <L locale={locale} href="/golden-visa-cost/" className="btn btn-glass">Calculate Visa Cost</L>
             </div>
           )}
-          <TranslationNotice locale={locale} />
+          {!translated && <TranslationNotice locale={locale} />}
         </div>
       </header>
       <div className="wrap" style={{ position: 'relative', zIndex: 2 }}>
         <div className={withSide ? 'svc-layout' : undefined}>
-        {withSide && <ServiceSidebar current={page.path} locale={locale} />}
+        {withSide && <ServiceSidebar current={page.path} locale={locale} hidden={hidden} />}
         <div className={withSide ? 'svc-main' : undefined}>
         {page.article && (
           <p className="byline block" style={{ marginBottom: 0 }}>

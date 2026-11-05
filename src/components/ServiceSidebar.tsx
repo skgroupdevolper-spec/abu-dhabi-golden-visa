@@ -6,13 +6,13 @@ import { localizePath, type Locale } from '@/lib/i18n';
 import { Icon } from './Icon';
 
 /** Left-side menu on every service page: search and jump from one service to another. */
-export function ServiceSidebar({ current, locale }: { current: string; locale: Locale }) {
+export function ServiceSidebar({ current, locale, hidden = [] }: { current: string; locale: Locale; hidden?: string[] }) {
   const [q, setQ] = useState('');
   const [open, setOpen] = useState(false);
   const groups = useMemo(() => {
     const n = q.trim().toLowerCase();
-    return SERVICE_CATALOG.map((g) => ({ ...g, items: n ? g.items.filter((i) => `${i.label} ${i.note ?? ''} ${g.title}`.toLowerCase().includes(n)) : g.items })).filter((g) => g.items.length);
-  }, [q]);
+    return SERVICE_CATALOG.map((g) => ({ ...g, items: g.items.filter((i) => !hidden.includes(i.href) && (!n || `${i.label} ${i.note ?? ''} ${g.title}`.toLowerCase().includes(n))) })).filter((g) => g.items.length);
+  }, [q, hidden]);
   const count = groups.reduce((s, g) => s + g.items.length, 0);
   const here = SERVICE_CATALOG.flatMap((g) => g.items).find((i) => i.href === current);
 

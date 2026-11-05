@@ -23,7 +23,7 @@ export default async function Login() {
       <ActionForm action={login} className="stack">
         <div className="field"><label htmlFor="email">{t.email}</label><input id="email" name="email" type="email" autoComplete="username" required /></div>
         <PasswordInput id="password" name="password" label={t.password} autoComplete="current-password" />
-        <a href={`${base}/forgot/`} className="small" style={{ justifySelf: 'end' }}>{t.forgot}</a>
+        <p className="small" style={{ textAlign: 'end', margin: '6px 0 0' }}><a href={`${base}/forgot/`}>{t.forgot}</a></p>
         <Submit className="btn btn-gold">{t.signIn}</Submit>
       </ActionForm>
       <p className="switch-link">{t.newHere} <a href={`${base}/register/`}><b>{t.createAccount}</b></a></p>

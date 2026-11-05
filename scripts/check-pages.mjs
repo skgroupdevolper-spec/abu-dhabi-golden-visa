@@ -50,7 +50,7 @@ for (const vp of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
   await page.screenshot({ path: `shots/admin-app-${vp.width}.png`, fullPage: true });
   await page.goto(base + '/admin/leads/');
   await page.screenshot({ path: `shots/admin-leads-${vp.width}.png`, fullPage: true });
-  for (const p of ['settings', 'whatsapp', 'users']) {
+  for (const p of ['settings', 'whatsapp', 'users', 'chatbot', 'languages', 'autopublisher', 'posts', 'pages', 'services', 'media', 'notifications']) {
     await page.goto(base + `/admin/${p}/`);
     await page.screenshot({ path: `shots/admin-${p}-${vp.width}.png`, fullPage: true });
   }
