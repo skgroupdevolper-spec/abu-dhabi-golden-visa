@@ -62,7 +62,7 @@ export async function clearTranslations(f: FormData) {
 export async function saveAutopub(_: St, f: FormData): Promise<St> {
   await requireAdmin(FULL);
   const cur = await getBlock<AutoPub>('autopub', AP0);
-  await saveBlock<AutoPub>('autopub', { ...cur, on: f.get('on') === 'on', perWeek: Math.max(0, Math.min(21, Number(s(f, 'perWeek', 3)) || 0)), review: f.get('review') === 'on', keywords: s(f, 'keywords', 20000), tone: s(f, 'tone', 200) || AP0.tone, words: Math.max(400, Math.min(2500, Number(s(f, 'words', 5)) || 900)), knowledge: s(f, 'knowledge', 12000), used: f.get('resetUsed') ? [] : cur.used });
+  await saveBlock<AutoPub>('autopub', { ...cur, on: f.get('on') === 'on', perWeek: Math.max(0, Math.min(21, Number(s(f, 'perWeek', 3)) || 0)), review: f.get('review') === 'on', keywords: s(f, 'keywords', 20000), tone: s(f, 'tone', 200) || AP0.tone, words: Math.max(400, Math.min(2500, Number(s(f, 'words', 5)) || 900)), knowledge: s(f, 'knowledge', 12000), used: f.get('resetUsed') ? [] : cur.used, category: s(f, 'category', 80), covers: s(f, 'covers', 6000), audience: s(f, 'audience', 300), faqCount: Math.max(0, Math.min(8, Number(s(f, 'faqCount', 2)) || 4)) });
   return { ok: 'Saved.' };
 }
 export async function draftNow(_: St): Promise<St> {

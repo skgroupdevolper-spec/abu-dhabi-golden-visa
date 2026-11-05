@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { BLOG } from '@/content/blog';
 import { requireAdmin } from '@/lib/server/auth';
-import { getPosts } from '@/lib/server/content';
+import { getCategories, getPosts } from '@/lib/server/content';
 import { day } from '@/lib/stages';
 import { postAction } from '../../content-actions';
 
@@ -11,20 +11,21 @@ export const metadata: Metadata = { title: 'Blog posts' };
 export default async function Posts({ searchParams }: { searchParams: Promise<{ s?: string }> }) {
   await requireAdmin();
   const { s = 'all' } = await searchParams;
-  const posts = await getPosts();
+  const [posts, cats] = await Promise.all([getPosts(), getCategories()]);
   const rows = posts.filter((p) => s === 'all' || p.status === s);
   const n = (k: string) => posts.filter((p) => p.status === k).length;
   return (
     <>
-      <div className="topbar"><div><p className="eyebrow">Blog posts</p><h1>Guides that <span className="gold">bring clients.</span></h1></div><Link className="btn btn-gold" href="/admin/posts/new/">New post</Link></div>
+      <div className="topbar"><div><p className="eyebrow">Blog posts</p><h1>Blog posts</h1></div><div className="row"><Link className="btn" href="/admin/categories/">Categories</Link><Link className="btn btn-gold" href="/admin/posts/new/">New article</Link></div></div>
       <div className="row" style={{ marginBottom: 14 }}>
         {[['all', `All (${posts.length})`], ['review', `Review queue (${n('review')})`], ['published', `Published (${n('published')})`], ['draft', `Drafts (${n('draft')})`]].map(([k, l]) => <Link key={k} href={`/admin/posts/?s=${k}`} className={`btn btn-sm${s === k ? ' btn-gold' : ''}`}>{l}</Link>)}
       </div>
       {rows.length === 0 ? <p className="empty">No posts here. Write one, or let the Auto Publisher draft them for review.</p> : (
-        <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Title</th><th>Status</th><th>Source</th><th>Updated</th><th></th></tr></thead><tbody>
+        <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Article</th><th>Category</th><th>Status</th><th>Source</th><th>Updated</th><th></th></tr></thead><tbody>
           {rows.map((p) => (
             <tr key={p.id}>
-              <td><Link href={`/admin/posts/${p.id}/`}>{p.title}</Link><div className="small muted">/blog/{p.slug}/{p.similarity ? ` · similarity ${Math.round(p.similarity * 100)}%` : ''}</div></td>
+              <td><div className="row" style={{ flexWrap: 'nowrap' }}><span className="thumb">{p.cover ? <img src={p.cover} alt="" /> : null}</span><div><Link href={`/admin/posts/${p.id}/`}>{p.title}</Link><div className="small muted">/blog/{p.slug}/{p.similarity ? ` · similarity ${Math.round(p.similarity * 100)}%` : ''}{p.scheduledAt && p.scheduledAt > new Date().toISOString() ? ` · scheduled ${day(p.scheduledAt)}` : ''}</div></div></div></td>
+              <td className="small">{cats.find((c) => c.slug === p.category)?.name ?? '—'}</td>
               <td><span className={`pill ${p.status === 'published' ? 'ok' : p.status === 'review' ? 'new' : ''}`}>{p.status}</span></td>
               <td>{p.source === 'auto' ? 'Auto Publisher' : 'Manual'}</td>
               <td>{day(p.updatedAt)}</td>

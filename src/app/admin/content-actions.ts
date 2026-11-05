@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { EDIT, FULL, requireAdmin } from '@/lib/server/auth';
 import { insert, list, patch, remove } from '@/lib/server/collections';
-import type { Faq, MediaItem, PageOverride, Partner, Post, ServiceOverrides, Testimonial } from '@/lib/server/content';
+import type { Category, Faq, MediaItem, PageOverride, Partner, Post, ServiceOverrides, Testimonial } from '@/lib/server/content';
 import { getSite, saveSite } from '@/lib/server/settings';
 import { DATA_DIR, newId, now, updateJsonFile } from '@/lib/server/store';
 import { slugify } from '@/lib/markdown';
@@ -27,13 +27,20 @@ export async function savePost(_: St, f: FormData): Promise<St> {
   const posts = await list<Post>('posts');
   if (posts.some((p) => p.slug === slug && p.id !== id)) return { error: 'Another post uses this web address. Change the slug.' };
   const status = (['draft', 'review', 'published'].includes(s(f, 'status')) ? s(f, 'status') : 'draft') as Post['status'];
-  const data = { slug, title, meta: s(f, 'meta', 320), summary: s(f, 'summary', 600), body: s(f, 'body', 60000), faq: faqFrom(f), status, author: s(f, 'author', 120) || 'Abu Dhabi Golden Visa editorial team', reviewer: s(f, 'reviewer', 120) || me.name, cover: s(f, 'cover', 400), updatedAt: now() };
+  const sched = s(f, 'scheduledAt', 40);
+  const data = {
+    slug, title, meta: s(f, 'meta', 320), summary: s(f, 'summary', 600), body: s(f, 'body', 80000), faq: faqFrom(f), status, author: s(f, 'author', 120) || 'Abu Dhabi Golden Visa editorial team', reviewer: s(f, 'reviewer', 120) || me.name,
+    cover: s(f, 'cover', 400), coverAlt: s(f, 'coverAlt', 200), category: s(f, 'category', 80), tags: s(f, 'tags', 300).split(',').map((t) => t.trim()).filter(Boolean).slice(0, 12),
+    seoTitle: s(f, 'seoTitle', 200), ogImage: s(f, 'ogImage', 400), canonical: s(f, 'canonical', 400), noindex: f.get('noindex') === 'on', featured: f.get('featured') === 'on', keyword: s(f, 'keyword', 120),
+    scheduledAt: sched && !Number.isNaN(Date.parse(sched)) ? new Date(sched).toISOString() : undefined, updatedAt: now(),
+  };
   let pid = id;
   if (id) await patch<Post>('posts', id, (p) => ({ ...p, ...data, publishedAt: status === 'published' ? p.publishedAt || now() : p.publishedAt }));
   else { pid = newId(6); await insert<Post>('posts', { id: pid, ...data, source: 'manual', createdAt: now(), publishedAt: status === 'published' ? now() : undefined }); }
   live();
+  if (status === 'published' && !data.noindex) void import('@/lib/server/indexnow').then((m) => m.pingIndexNow([`/blog/${slug}/`, '/blog/'])).catch(() => {});
   if (!id) redirect(`/admin/posts/${pid}/`);
-  return { ok: status === 'published' ? 'Saved and live on the website.' : 'Saved.' };
+  return { ok: status === 'published' ? (data.scheduledAt && data.scheduledAt > now() ? 'Saved. It goes live on the scheduled date.' : 'Saved and live on the website.') : 'Saved.' };
 }
 export async function postAction(f: FormData) {
   await requireAdmin(EDIT);
@@ -163,4 +170,31 @@ export async function saveFooter(_: St, f: FormData): Promise<St> {
   await saveSite({ footerAbout: s(f, 'footerAbout', 800), disclaimer: s(f, 'disclaimer', 400) || cur.disclaimer, nav: { ...cur.nav, footerLinks: links(f, 'foot'), copyright: s(f, 'copyright', 200) } });
   live();
   return { ok: 'Footer saved.' };
+}
+
+/* ---------- blog categories ---------- */
+export async function saveCategory(_: St, f: FormData): Promise<St> {
+  await requireAdmin(EDIT);
+  const id = s(f, 'id', 40), name = s(f, 'name', 80);
+  if (!name) return { error: 'Add a name.' };
+  const slug = slugify(s(f, 'slug', 80) || name);
+  const { getCategories } = await import('@/lib/server/content');
+  const cur = await list<Category>('categories');
+  // First edit: store the starting categories so they become editable.
+  if (!cur.length) for (const c of await getCategories()) await insert<Category>('categories', c);
+  const all = await list<Category>('categories');
+  if (all.some((c) => c.slug === slug && c.id !== id)) return { error: 'Another category uses this address.' };
+  const data = { name, slug, description: s(f, 'description', 400), image: s(f, 'image', 400), seoTitle: s(f, 'seoTitle', 200), meta: s(f, 'meta', 320) };
+  if (id && all.some((c) => c.id === id)) await patch<Category>('categories', id, (c) => ({ ...c, ...data }));
+  else await insert<Category>('categories', { id: newId(6), order: all.length, ...data });
+  live();
+  return { ok: 'Category saved.' };
+}
+export async function deleteCategory(f: FormData) {
+  await requireAdmin(EDIT);
+  const { getCategories } = await import('@/lib/server/content');
+  if (!(await list<Category>('categories')).length) for (const c of await getCategories()) await insert<Category>('categories', c);
+  await remove<Category>('categories', s(f, 'id', 40));
+  live();
+  revalidatePath('/admin/categories/');
 }

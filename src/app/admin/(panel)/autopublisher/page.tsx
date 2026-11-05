@@ -6,6 +6,7 @@ import { FULL, requireAdmin } from '@/lib/server/auth';
 import { aiReady } from '@/lib/server/ai';
 import { AP0, type AutoPub } from '@/lib/server/autopub';
 import { list } from '@/lib/server/collections';
+import { getCategories } from '@/lib/server/content';
 import type { Post } from '@/lib/server/content';
 import { getBlock } from '@/lib/server/settings';
 import type { AiLog } from '@/lib/server/translate';
@@ -17,12 +18,13 @@ export const metadata: Metadata = { title: 'Auto Publisher' };
 
 export default async function AutoPublisher() {
   await requireAdmin(FULL);
-  const [cfg, ready, posts, logs] = await Promise.all([getBlock<AutoPub>('autopub', AP0), aiReady(), list<Post>('posts'), list<AiLog>('ai-log')]);
+  const [cfg, ready, posts, logs, cats] = await Promise.all([getBlock<AutoPub>('autopub', AP0), aiReady(), list<Post>('posts'), list<AiLog>('ai-log'), getCategories()]);
+  const kws = cfg.keywords.split('\n').map((k) => k.trim()).filter(Boolean);
   const queue = posts.filter((p) => p.status === 'review');
   const left = cfg.keywords.split('\n').map((k) => k.trim()).filter((k) => k && !cfg.used.includes(k)).length;
   return (
     <>
-      <div className="topbar"><div><p className="eyebrow">Auto Publisher</p><h1>Original guides, <span className="gold">on schedule.</span></h1></div>
+      <div className="topbar"><div><p className="eyebrow">Auto Publisher</p><h1>Auto Publisher</h1><p className="muted small" style={{ marginTop: 6 }}>Writes original, SEO-ready articles with category, tags, cover image and FAQs, then queues them for your review.</p></div>
         <span className={`pill ${cfg.on && ready ? 'ok' : 'due'}`}>{!ready ? 'No AI key' : cfg.on ? 'On' : 'Off'}</span></div>
       <div className="grid4" style={{ marginBottom: 16 }}>
         <div className="kpi"><small>Review queue</small><b>{queue.length}</b><Link className="small" href="/admin/posts/?s=review">Open queue →</Link></div>
@@ -38,6 +40,10 @@ export default async function AutoPublisher() {
             <F name="words" label="Length (words)" value={cfg.words} type="number" />
             <div className="full"><Toggle name="review" label="Review before publishing (recommended)" help="Articles wait in the review queue until you publish them." on={cfg.review} /></div>
             <F name="tone" label="Tone" value={cfg.tone} full />
+            <F name="audience" label="Audience (who you write for)" value={cfg.audience} placeholder="Investors, professionals and families moving to Abu Dhabi" full />
+            <div className="field"><label htmlFor="category">Category</label><select id="category" name="category" defaultValue={cfg.category ?? ''}><option value="">Let the AI choose</option>{cats.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}</select></div>
+            <F name="faqCount" label="FAQs per article" value={cfg.faqCount ?? 4} type="number" />
+            <F name="covers" label="Cover images (one link per line, used in turn; copy links from Media library)" value={cfg.covers} type="textarea" rows={3} full />
             <F name="keywords" label="Keywords and topics (one per line)" value={cfg.keywords} type="textarea" rows={8} full help="Each keyword becomes one article. Used keywords are skipped." />
             <F name="knowledge" label="Company knowledge for the writer" value={cfg.knowledge} type="textarea" rows={4} full />
             <label className="row small full"><input type="checkbox" name="resetUsed" /> Allow used keywords again</label>
@@ -54,6 +60,10 @@ export default async function AutoPublisher() {
             <h2>Daily schedule</h2>
             <p className="help">In xCloud, add a daily cron job that opens this address (set CRON_SECRET on the server first):</p>
             <code className="k" style={{ display: 'block', padding: 10, overflowWrap: 'anywhere' }}>curl -s &quot;{SITE.url}/api/cron/daily?key=YOUR_CRON_SECRET&quot;</code>
+          </div>
+          <div className="panel">
+            <h2>Topic queue</h2>
+            <div className="files" style={{ marginTop: 8 }}>{kws.slice(0, 20).map((k) => { const used = cfg.used.includes(k); const post = posts.find((p) => p.keyword === k); return <div key={k} className="file"><span className="fi">{used ? '✓' : '•'}</span><span className="fn"><b>{k}</b><small>{post ? `${post.status} · ${post.title}` : used ? 'Written' : 'Waiting'}</small></span>{post && <Link className="btn btn-sm" href={`/admin/posts/${post.id}/`}>Open</Link>}</div>; })}</div>
           </div>
           <div className="panel">
             <h2>Logs</h2>

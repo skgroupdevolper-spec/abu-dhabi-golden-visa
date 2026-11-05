@@ -36,7 +36,7 @@ export const ADMIN_MENU: { title: string; items: Item[] }[] = [
   { title: 'Website', items: [
     { href: '/admin/header/', label: 'Header & menu', ic: 'menu', roles: FULL },
     { href: '/admin/footer/', label: 'Footer', ic: 'layout', roles: FULL },
-    { href: '/admin/design/', label: 'Design & colours', ic: 'palette', roles: FULL },
+    { href: '/admin/design/', label: 'Design & typography', ic: 'palette', roles: FULL },
     { href: '/admin/seo/', label: 'SEO & Google', ic: 'seo', roles: FULL },
     { href: '/admin/languages/', label: 'Languages', ic: 'globe', roles: FULL },
     { href: '/admin/settings/', label: 'Site settings', ic: 'settings', roles: FULL },

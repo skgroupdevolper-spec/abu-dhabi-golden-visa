@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { FULL, requireAdmin } from '@/lib/server/auth';
 import { hashPassword, insert, list, patch, remove, verifyPassword, type Customer, type Note, type Role, type TeamUser } from '@/lib/server/collections';
 import { sendMail } from '@/lib/server/mail';
-import { getSecrets, getSite, saveSecrets, saveSite } from '@/lib/server/settings';
+import { getSecrets, getSite, saveBlock, saveSecrets, saveSite } from '@/lib/server/settings';
 import { newId, now, readJsonFile, updateJsonFile, writeJsonFile } from '@/lib/server/store';
 import { sendWa } from '@/lib/server/whatsapp';
 import { WA_EVENTS, type PublicSite, type WaEvent } from '@/lib/settings-schema';
@@ -175,3 +175,22 @@ export async function restoreBackup(_: St, f: FormData): Promise<St> {
   return { ok: `Restored ${n} data files. Uploaded documents are not part of the backup file; copy the uploads folder separately.` };
 }
 export async function noop() {}
+
+/* ---------- design system ---------- */
+export async function saveDesign(_: St, f: FormData): Promise<St> {
+  await requireAdmin(FULL);
+  const { cleanDesign } = await import('@/lib/design');
+  const g = (k: string) => String(f.get(k) ?? '');
+  const d = cleanDesign({
+    headingFont: g('headingFont'), bodyFont: g('bodyFont'), baseSize: Number(g('baseSize')), h1Size: Number(g('h1Size')), h2Size: Number(g('h2Size')), h3Size: Number(g('h3Size')),
+    headingWeight: Number(g('headingWeight')), lineHeight: Number(g('lineHeight')), letterSpacing: Number(g('letterSpacing')), radius: Number(g('radius')),
+    buttonShape: g('buttonShape') as 'pill', buttonSize: g('buttonSize') as 'm', shadow: g('shadow') as 'soft', container: Number(g('container')), sectionSpace: Number(g('sectionSpace')),
+    uppercaseEyebrow: f.get('uppercaseEyebrow') === 'on', customCss: g('customCss'),
+  });
+  await saveBlock('design', d);
+  const hex = (v: string, dflt: string) => (/^#[0-9a-f]{6}$/i.test(v) ? v : dflt);
+  const cur = await getSite();
+  if (f.get('gold')) await saveSite({ colors: { gold: hex(g('gold'), cur.colors.gold), goldDeep: hex(g('goldDeep'), cur.colors.goldDeep), ink: hex(g('ink'), cur.colors.ink), paper: hex(g('paper'), cur.colors.paper) } });
+  revalidatePath('/', 'layout');
+  return { ok: 'Design saved. The website uses it now.' };
+}

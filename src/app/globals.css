@@ -795,3 +795,27 @@ html[dir='rtl'] .mt-list .mt-arrow { transform: rotate(90deg); }
 .bi-tx p { color: var(--navy-soft); font-size: 15px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .bi-cat { justify-self: start; padding: 4px 10px; border-radius: 999px; background: #fbf4dd; color: var(--gold-deep); font: 700 11.5px var(--body); letter-spacing: 0.06em; text-transform: uppercase; }
 .bi-meta { display: inline-flex; align-items: center; gap: 6px; color: var(--navy-soft); font-size: 13.5px; }
+/* Apply page on tablets and phones: summary below the form, normal (non-floating) buttons */
+@media (max-width: 980px) {
+  .apply-side, .apply-side.panel { position: static; top: auto; }
+  .apply-nav { position: static; margin-inline: 0; padding: 16px 0 0; border-radius: 0; box-shadow: none; }
+  .apply-nav .btn { flex: 1; }
+}
+@media (max-width: 640px) {
+  .apply-main.panel { padding: 18px 14px; border-radius: 20px; }
+  .aw-head { align-items: stretch; }
+  .aw-search { min-width: 0; width: 100%; }
+  .aw-card { min-height: 72px; padding: 12px; }
+  .review > div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .seg button { flex: 1; justify-content: center; padding: 0 10px; font-size: 13.5px; }
+  .phero-grid { margin-top: 12px; }
+  .facts { padding: 18px; }
+  .facts dl > div { flex-direction: column; gap: 2px; }
+  .facts dd { text-align: start; }
+  .onpage { top: 64px; }
+  .cta-band-in { padding: 22px 18px; }
+  .tbl table { min-width: 460px; }
+  .bk-card-img { width: calc(100% + 56px); }
+}
+html, body { max-width: 100%; }
+.page, main { overflow-x: clip; }

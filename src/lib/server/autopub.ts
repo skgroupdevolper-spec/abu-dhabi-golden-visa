@@ -6,10 +6,11 @@ import { complete, parseJson, underDailyLimit } from './ai';
 import { insert, list, notify } from './collections';
 import type { Post } from './content';
 import { getBlock, saveBlock } from './settings';
+import { getCategories } from './content';
 import { newId, now } from './store';
 import type { AiLog } from './translate';
 
-export type AutoPub = { on: boolean; perWeek: number; review: boolean; keywords: string; used: string[]; tone: string; words: number; knowledge: string; lastRun?: string };
+export type AutoPub = { on: boolean; perWeek: number; review: boolean; keywords: string; used: string[]; tone: string; words: number; knowledge: string; lastRun?: string; category?: string; covers?: string; audience?: string; faqCount?: number };
 export const AP0: AutoPub = { on: false, perWeek: 2, review: true, keywords: 'Abu Dhabi Golden Visa for property investors 2026\nGolden Visa for doctors in Abu Dhabi\nHow to add parents to a Golden Visa', used: [], tone: 'clear, friendly, expert, plain English', words: 900, knowledge: '', lastRun: undefined };
 
 const grams = (t: string) => { const w = t.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean); const g = new Set<string>(); for (let i = 0; i + 2 < w.length; i++) g.add(`${w[i]} ${w[i + 1]} ${w[i + 2]}`); return g; };
@@ -29,17 +30,22 @@ export async function generateDraft(force = false): Promise<{ ok: boolean; messa
   if (!force && !(await underDailyLimit('auto'))) return { ok: false, message: 'Daily AI limit reached.' };
   const posts = await list<Post>('posts');
   const titles = [...BLOG.map((b) => b.h1), ...posts.map((p) => p.title)].slice(0, 80);
+  const cats = await getCategories();
+  const covers = (cfg.covers ?? '').split('\n').map((c) => c.trim()).filter(Boolean);
   const links = PAGES.filter((p) => !p.path.startsWith('/blog/')).slice(0, 60).map((p) => `${p.path} = ${p.h1}`).join('\n');
-  const system = `You write original, accurate articles for an Abu Dhabi Golden Visa consultancy website (operator: Brightlink Management Consultancy LLC). Tone: ${cfg.tone}. Rules: write in your own words, never copy other websites; never promise guaranteed approval or fixed processing times; say fees and rules can change and must be confirmed; no invented statistics, quotes or reviews. Use Markdown with ## headings and short paragraphs. Add 3 to 6 internal links using only these paths:\n${links}\n${cfg.knowledge ? `Company knowledge:\n${cfg.knowledge}\n` : ''}Return JSON: {"title","slug","meta" (max 155 chars),"summary" (2 sentences),"body" (Markdown, about ${cfg.words} words),"faq":[{"q","a"}] (3-5 items)}.`;
+  const system = `You write original, accurate articles for an Abu Dhabi Golden Visa consultancy website (operator: Brightlink Management Consultancy LLC). Tone: ${cfg.tone}. Rules: write in your own words, never copy other websites; never promise guaranteed approval or fixed processing times; say fees and rules can change and must be confirmed; no invented statistics, quotes or reviews. Use Markdown with ## headings and short paragraphs. Add 3 to 6 internal links using only these paths:\n${links}\n${cfg.knowledge ? `Company knowledge:\n${cfg.knowledge}\n` : ''}${cfg.audience ? `Audience: ${cfg.audience}.\n` : ''}SEO: put the keyword naturally in the title, the first paragraph and one ## heading; use ## and ### headings, lists and a short conclusion with a call to action.
+Return JSON: {"title" (max 65 chars),"seoTitle" (max 60 chars),"slug","keyword","meta" (130-155 chars),"summary" (2 sentences),"category" (one of: ${cats.map((c) => c.slug).join(', ')}),"tags" (3-6 short tags),"body" (Markdown, about ${cfg.words} words),"faq":[{"q","a"}] (${cfg.faqCount || 4} items)}.`;
   try {
     const out = await complete(system, [{ role: 'user', content: `Keyword: ${keyword}\nAvoid repeating these existing titles: ${titles.join(' | ')}` }], { json: true, maxTokens: 6000, kind: 'auto' });
-    const a = parseJson<{ title: string; slug: string; meta: string; summary: string; body: string; faq: { q: string; a: string }[] }>(out);
+    const a = parseJson<{ title: string; seoTitle?: string; slug: string; keyword?: string; meta: string; summary: string; category?: string; tags?: string[]; body: string; faq: { q: string; a: string }[] }>(out);
     if (!a.title || !a.body) throw new Error('The AI reply was incomplete.');
     const sim = Math.max(0, ...posts.map((p) => similarity(a.body, p.body)));
     let slug = slugify(a.slug || a.title);
     if (posts.some((p) => p.slug === slug) || PAGES.some((p) => p.path === `/blog/${slug}/`)) slug = `${slug}-${newId(2)}`;
     const publish = !cfg.review && sim < 0.35;
-    const post: Post = { id: newId(6), slug, title: a.title.slice(0, 200), meta: (a.meta || a.summary).slice(0, 320), summary: (a.summary || '').slice(0, 600), body: a.body.slice(0, 60000), faq: (a.faq || []).slice(0, 8), status: publish ? 'published' : 'review', source: 'auto', author: 'Abu Dhabi Golden Visa editorial team', reviewer: publish ? 'Auto Publisher' : '', keyword, similarity: Math.round(sim * 100) / 100, createdAt: now(), updatedAt: now(), publishedAt: publish ? now() : undefined };
+    const post: Post = { id: newId(6), slug, title: a.title.slice(0, 200), meta: (a.meta || a.summary).slice(0, 320), summary: (a.summary || '').slice(0, 600), body: a.body.slice(0, 60000), faq: (a.faq || []).slice(0, 8), status: publish ? 'published' : 'review', source: 'auto', author: 'Abu Dhabi Golden Visa editorial team', reviewer: publish ? 'Auto Publisher' : '', keyword, similarity: Math.round(sim * 100) / 100, createdAt: now(), updatedAt: now(), publishedAt: publish ? now() : undefined,
+      seoTitle: (a.seoTitle || '').slice(0, 70), category: cfg.category || (cats.some((c) => c.slug === a.category) ? a.category : undefined), tags: (a.tags || []).slice(0, 8).map((t) => String(t).slice(0, 40)),
+      cover: covers.length ? covers[posts.filter((p) => p.source === 'auto').length % covers.length] : undefined, coverAlt: a.title.slice(0, 120) };
     await insert<Post>('posts', post);
     await saveBlock('autopub', { ...cfg, used: [...cfg.used, keyword], lastRun: now() });
     await insert<AiLog>('ai-log', { id: newId(6), at: now(), kind: 'autopub', text: `${publish ? 'Published' : 'Drafted for review'}: ${post.title} (similarity ${Math.round(sim * 100)}%)`, ok: true }, 1000);

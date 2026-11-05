@@ -11,7 +11,8 @@ import { OfferPopup } from '@/components/OfferPopup';
 import { ChatWidget } from '@/components/ChatWidget';
 import { LOCALE_CODES, isLocale, localeInfo } from '@/lib/i18n';
 import { SITE } from '@/lib/site';
-import { applyRuntimeSync, getSecrets } from '@/lib/server/settings';
+import { applyRuntimeSync, getBlock, getSecrets } from '@/lib/server/settings';
+import { DEFAULT_DESIGN, cleanDesign, designCss, fontHref, type Design } from '@/lib/design';
 import { TrackingCode } from '@/components/SiteRuntime';
 import '../globals.css';
 
@@ -46,11 +47,16 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   const site = applyRuntimeSync();
   const seo = (await getSecrets()).seo;
   const c = site.colors;
+  const design = cleanDesign(await getBlock<Partial<Design>>('design', DEFAULT_DESIGN));
+  const fonts = fontHref(design);
+  const dcss = designCss(design);
   return (
     <html lang={info.htmlLang} dir={info.dir} className={`${display.variable} ${body.variable} ${arabic.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: `window.__ADGV_SITE=${JSON.stringify(site).replace(/</g, '\\u003c')}` }} />
         <style dangerouslySetInnerHTML={{ __html: `:root{--gold:${c.gold};--gold-deep:${c.goldDeep};--navy:${c.ink};--paper:${c.paper}}`.replace(/[<>]/g, '') }} />
+        {fonts && <><link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" /><link rel="stylesheet" href={fonts} /></>}
+        {dcss.trim() && <style id="site-design" dangerouslySetInnerHTML={{ __html: dcss }} />}
       </head>
       <body>
         <TrackingCode head={seo.headCode} body={seo.bodyCode} />
