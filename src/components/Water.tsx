@@ -37,7 +37,7 @@ col=mix(col,vec3(.9,.76,.36),clamp(cc*(.07+g*.12),0.,.2));
 col+=vec3(1.,.93,.75)*clamp(-lap*45.,0.,1.)*.5;
 vec3 L=normalize(vec3(-.4,.55,1.));float lit=dot(n,L)-L.z;col+=lit*vec3(.85,.82,.7)*.45;
 vec3 H=normalize(L+vec3(0,0,1));col+=pow(max(dot(n,H),0.),220.)*.85;
-col=mix(col,vec3(.08,.13,.23),clamp(-lit,0.,.4)*.3);
+col=mix(col,vec3(.08,.08,.08),clamp(-lit,0.,.4)*.3);
 o=vec4(col,1.);}`;
 
 export function Water() {
