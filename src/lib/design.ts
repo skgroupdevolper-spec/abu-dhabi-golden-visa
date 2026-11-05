@@ -4,11 +4,13 @@ export type Design = {
   headingFont: string; bodyFont: string; baseSize: number; h1Size: number; h2Size: number; h3Size: number; headingWeight: number;
   lineHeight: number; letterSpacing: number; radius: number; buttonShape: 'pill' | 'rounded' | 'square'; buttonSize: 's' | 'm' | 'l';
   shadow: 'none' | 'soft' | 'medium' | 'strong'; container: number; sectionSpace: number; uppercaseEyebrow: boolean; customCss: string;
+  /** Motion: overall level, heading text effect, gold cursor, smooth scrolling. */
+  motion: 'full' | 'subtle' | 'off'; textFx: 'words' | 'letters' | 'fade' | 'none'; cursor: boolean; smooth: boolean;
 };
 
 export const DEFAULT_DESIGN: Design = {
   headingFont: 'Instrument Serif', bodyFont: 'Manrope', baseSize: 17, h1Size: 60, h2Size: 38, h3Size: 24, headingWeight: 400,
-  lineHeight: 1.6, letterSpacing: -0.015, radius: 22, buttonShape: 'pill', buttonSize: 'm', shadow: 'soft', container: 1320, sectionSpace: 26, uppercaseEyebrow: true, customCss: '',
+  lineHeight: 1.6, letterSpacing: -0.015, radius: 22, buttonShape: 'pill', buttonSize: 'm', shadow: 'soft', container: 1320, sectionSpace: 26, uppercaseEyebrow: true, customCss: '', motion: 'full', textFx: 'words', cursor: true, smooth: true,
 };
 
 export const HEADING_FONTS = ['Instrument Serif', 'Playfair Display', 'Cormorant Garamond', 'DM Serif Display', 'Libre Baskerville', 'Lora', 'Marcellus', 'Cinzel', 'Poppins', 'Montserrat', 'Inter', 'Manrope', 'Raleway', 'Outfit'];
@@ -29,6 +31,8 @@ export function cleanDesign(o?: Partial<Design>): Design {
     shadow: (['none', 'soft', 'medium', 'strong'] as const).includes(d.shadow) ? d.shadow : 'soft',
     container: n(d.container, 1320, 960, 1800), sectionSpace: n(d.sectionSpace, 26, 0, 120), uppercaseEyebrow: d.uppercaseEyebrow !== false,
     customCss: String(d.customCss ?? '').slice(0, 50000),
+    motion: (['full', 'subtle', 'off'] as const).includes(d.motion) ? d.motion : 'full', textFx: (['words', 'letters', 'fade', 'none'] as const).includes(d.textFx) ? d.textFx : 'words',
+    cursor: d.cursor !== false, smooth: d.smooth !== false,
   };
 }
 

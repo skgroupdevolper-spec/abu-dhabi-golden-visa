@@ -7,6 +7,7 @@ import { applyRuntimeSync } from '@/lib/server/settings';
 import { Icon } from '@/components/Icon';
 import { logout } from '../actions';
 import { AdminNav, AdminSearch } from './nav';
+import { AdminBell } from '@/components/dash/AdminBell';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,9 +34,8 @@ export default async function Panel({ children }: { children: ReactNode }) {
           <AdminSearch role={who.role} perms={who.perms} />
           <div className="appbar-r">
             <a className="ab-btn" href="/" target="_blank" rel="noopener" title="Open website"><Icon name="ext" size={18} /><span>Website</span></a>
-            <Link className="ab-btn ab-icon" href="/admin/notifications/" title="Notifications" aria-label="Notifications">
-              <Icon name="bell" size={18} />{counts.notes > 0 && <i className="dot">{counts.notes}</i>}
-            </Link>
+            <a className="ab-btn" href="/portal/" target="_blank" rel="noopener" title="Customer dashboard"><Icon name="user" size={18} /><span>Customer dashboard</span></a>
+            <AdminBell initial={counts.notes} />
             <details className="ab-user">
               <summary><span className="av">{initials}</span><span className="un"><b>{who.name}</b><small>{who.role}</small></span><Icon name="chev" size={14} /></summary>
               <div className="ab-menu">

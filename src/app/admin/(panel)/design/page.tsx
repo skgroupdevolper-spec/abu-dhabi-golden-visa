@@ -38,6 +38,16 @@ export default async function DesignPage() {
             </div>
           </div>
           <div className="panel">
+            <h2>Motion &amp; effects</h2>
+            <div className="form" style={{ marginTop: 10 }}>
+              <div className="field"><label htmlFor="motion">Animation level</label><select id="motion" name="motion" defaultValue={d.motion}><option value="full">Full (reveals, parallax, tilt, counters, magnetic buttons)</option><option value="subtle">Subtle (gentle reveals only)</option><option value="off">Off</option></select></div>
+              <div className="field"><label htmlFor="textFx">Heading text effect</label><select id="textFx" name="textFx" defaultValue={d.textFx}><option value="words">Words rise in one by one</option><option value="letters">Letters rise in one by one</option><option value="fade">Soft fade and blur</option><option value="none">None</option></select></div>
+              <label className="switch"><input type="checkbox" name="cursor" defaultChecked={d.cursor} /><span><b>Gold cursor on desktop</b></span></label>
+              <label className="switch"><input type="checkbox" name="smooth" defaultChecked={d.smooth} /><span><b>Smooth scrolling on desktop</b></span></label>
+              <p className="help full">Visitors who turn off animations on their device always get a still page.</p>
+            </div>
+          </div>
+          <div className="panel">
             <h2>Shapes, shadows &amp; layout</h2>
             <div className="form" style={{ marginTop: 12 }}>
               <Num name="radius" label="Corner roundness" v={d.radius} min={0} max={40} />

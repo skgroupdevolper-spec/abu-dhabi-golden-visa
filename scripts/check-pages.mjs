@@ -52,7 +52,7 @@ for (const vp of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
   await page.screenshot({ path: `shots/admin-app-${vp.width}.jpg`, fullPage: true });
   await page.goto(base + '/admin/leads/');
   await page.screenshot({ path: `shots/admin-leads-${vp.width}.jpg`, fullPage: true });
-  for (const p of ['settings', 'whatsapp', 'users', 'chatbot', 'languages', 'autopublisher', 'posts', 'pages', 'services', 'media', 'notifications', 'design', 'seo', 'categories', 'posts/new', 'header', 'profile', 'languages/edit', 'fees', 'autopublisher/?tab=missions&edit=new', 'autopublisher/?tab=ai', 'autopublisher/?tab=quality', 'autopublisher/?tab=similarity', 'users/?edit=new', 'pages/edit/?path=%2F']) {
+  for (const p of ['settings', 'whatsapp', 'users', 'chatbot', 'languages', 'autopublisher', 'posts', 'pages', 'services', 'media', 'notifications', 'design', 'seo', 'categories', 'posts/new', 'header', 'profile', 'languages/edit', 'fees', 'customers/?edit=new', 'autopublisher/?tab=missions&edit=new', 'autopublisher/?tab=ai', 'autopublisher/?tab=quality', 'autopublisher/?tab=similarity', 'users/?edit=new', 'pages/edit/?path=%2F']) {
     await page.goto(base + `/admin/${p.includes('?') ? p : p + '/'}`);
     const bad = await page.locator('text=Application error').count();
     if (bad) throw new Error(`Admin page failed: ${p}`);

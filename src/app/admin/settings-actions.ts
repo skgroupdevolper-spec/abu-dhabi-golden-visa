@@ -160,6 +160,41 @@ export async function updateCustomer(f: FormData) {
   await patch<Customer>('customers', id, (c) => { c.active = b(f, 'active'); if (hashed) c.pass = hashed; });
   revalidatePath('/admin/customers/');
 }
+export async function addCustomer(_: St, f: FormData): Promise<St> {
+  await requireAdmin(FULL);
+  const email = s(f, 'email', 160).toLowerCase(), pass = s(f, 'password', 200), name = s(f, 'name', 100);
+  if (!name) return { error: 'Add the client name.' };
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: 'Enter a valid email.' };
+  if (pass.length < 8) return { error: 'Use a password of at least 8 characters.' };
+  if ((await list<Customer>('customers')).some((c) => c.email === email)) return { error: 'This email already has a client account.' };
+  await insert<Customer>('customers', { id: newId(8), name, email, phone: s(f, 'phone', 30), pass: await hashPassword(pass), lang: s(f, 'lang', 5) || 'en', active: true, createdAt: now() });
+  revalidatePath('/admin/customers/');
+  return { ok: 'Client account created. Share the login details privately, for example on WhatsApp.' };
+}
+export async function saveCustomer(_: St, f: FormData): Promise<St> {
+  await requireAdmin(FULL);
+  const id = s(f, 'id', 40), pass = s(f, 'password', 200), email = s(f, 'email', 160).toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: 'Enter a valid email.' };
+  if ((await list<Customer>('customers')).some((c) => c.email === email && c.id !== id)) return { error: 'Another client has this email.' };
+  if (pass && pass.length < 8) return { error: 'Use a password of at least 8 characters.' };
+  const hashed = pass ? await hashPassword(pass) : '';
+  await patch<Customer>('customers', id, (c) => { c.name = s(f, 'name', 100) || c.name; c.email = email; c.phone = s(f, 'phone', 30); c.lang = s(f, 'lang', 5) || c.lang; c.active = b(f, 'active'); if (hashed) c.pass = hashed; });
+  revalidatePath('/admin/customers/');
+  return { ok: hashed ? 'Saved with the new password.' : 'Saved.' };
+}
+export async function customerAction(f: FormData) {
+  await requireAdmin(FULL);
+  const id = s(f, 'id', 40), op = s(f, 'op', 10);
+  if (op === 'delete') await remove<Customer>('customers', id);
+  else if (op === 'toggle') await patch<Customer>('customers', id, (c) => { c.active = !c.active; });
+  else if (op === 'open') {
+    const { startClientSession } = await import('@/lib/server/auth');
+    await startClientSession(id);
+    const { redirect } = await import('next/navigation');
+    redirect('/portal/');
+  }
+  revalidatePath('/admin/customers/');
+}
 
 /* ---------- notifications ---------- */
 export async function readAllNotes() {
@@ -201,6 +236,7 @@ export async function saveDesign(_: St, f: FormData): Promise<St> {
     headingWeight: Number(g('headingWeight')), lineHeight: Number(g('lineHeight')), letterSpacing: Number(g('letterSpacing')), radius: Number(g('radius')),
     buttonShape: g('buttonShape') as 'pill', buttonSize: g('buttonSize') as 'm', shadow: g('shadow') as 'soft', container: Number(g('container')), sectionSpace: Number(g('sectionSpace')),
     uppercaseEyebrow: f.get('uppercaseEyebrow') === 'on', customCss: g('customCss'),
+    motion: g('motion') as 'full', textFx: g('textFx') as 'words', cursor: f.get('cursor') === 'on', smooth: f.get('smooth') === 'on',
   });
   await saveBlock('design', d);
   const hex = (v: string, dflt: string) => (/^#[0-9a-f]{6}$/i.test(v) ? v : dflt);

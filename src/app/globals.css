@@ -839,3 +839,11 @@ html, body { max-width: 100%; }
 .phero-img img, .phero-img.sm img { aspect-ratio: auto; height: auto; object-fit: contain; }
 .bk-hero-im img, .bk-img { height: auto; object-fit: contain; }
 .home-blocks { position: relative; z-index: 2; }
+
+/* Motion: heading text effect, reading bar, gold shine */
+.tx-w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.1em; margin-bottom: -0.1em; }
+.tx-i { display: inline-block; will-change: transform; }
+.read-bar { position: fixed; inset: 0 0 auto 0; height: 3px; z-index: 200; transform: scaleX(0); transform-origin: 0 50%; background: linear-gradient(90deg, var(--gold-deep), var(--gold), #f2d27a); pointer-events: none; }
+[dir='rtl'] .read-bar { transform-origin: 100% 50%; }
+.card, .bk-card { transform-style: preserve-3d; will-change: transform; }
+@media (prefers-reduced-motion: reduce) { .tx-i, .card, .bk-card { will-change: auto; } }

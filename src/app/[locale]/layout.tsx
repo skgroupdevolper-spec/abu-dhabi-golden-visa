@@ -65,7 +65,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
         <Header locale={locale} />
         <main id="main" className="page">{children}</main>
         <Footer locale={locale} />
-        <Motion />
+        <Motion level={design.motion} textFx={design.textFx} cursor={design.cursor} smooth={design.smooth} />
         <CalcModal />
         <OfferPopup />
         <ChatWidget lang={locale} />
