@@ -182,8 +182,8 @@ export function HomeEffects() {
         gsap.utils.toArray<HTMLElement>('.jstep').forEach((s) =>
           ScrollTrigger.create({ trigger: s, start: 'top 62%', onEnter: () => s.classList.add('on'), onLeaveBack: () => s.classList.remove('on') }),
         );
-        gsap.fromTo('.promo.p1', { y: 50 }, { y: -30, ease: 'none', scrollTrigger: { trigger: '.promos', start: 'top bottom', end: 'bottom top', scrub: true } });
-        gsap.fromTo('.promo.p2', { y: 120, rotate: 3 }, { y: -60, rotate: -2, ease: 'none', scrollTrigger: { trigger: '.promos', start: 'top bottom', end: 'bottom top', scrub: true } });
+        if (window.matchMedia('(min-width: 901px)').matches) gsap.fromTo('.promo.p1', { y: 50 }, { y: -30, ease: 'none', scrollTrigger: { trigger: '.promos', start: 'top bottom', end: 'bottom top', scrub: true } });
+        if (window.matchMedia('(min-width: 901px)').matches) gsap.fromTo('.promo.p2', { y: 120, rotate: 3 }, { y: -60, rotate: -2, ease: 'none', scrollTrigger: { trigger: '.promos', start: 'top bottom', end: 'bottom top', scrub: true } });
       });
     })();
     return () => { dead = true; ctx?.revert(); };
