@@ -228,7 +228,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <div className="wrap">
           <div className="family" data-reveal>
             <div>
-              <p className="eyebrow" style={{ color: 'var(--gold-light)' }}>Golden Visa for your family</p>
+              <p className="eyebrow">Golden Visa for your family</p>
               <h2 style={{ marginTop: 12 }}>Bring the people <em className="gold">who matter most.</em></h2>
               <p style={{ marginTop: 14, opacity: 0.85 }}>We handle relationship documents, attestation, medical and Emirates ID for your whole family in one file.</p>
               <div className="cta"><L locale={locale} href="/family-golden-visa/" className="btn btn-gold">Family Golden Visa</L><L locale={locale} href="/golden-visa-cost/" className="btn btn-glass">Add family to my cost</L></div>

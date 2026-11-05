@@ -57,7 +57,7 @@ export function Calculator() {
 
   const Opt = ({ icon, title, sub, price, onClick, dark }: { icon: string; title: string; sub: string; price?: string; onClick: (e: MouseEvent) => void; dark?: boolean }) => (
     <button type="button" className="opt" onClick={onClick}>
-      <span className="oi" style={dark ? { background: 'var(--navy)', color: 'var(--gold-light)' } : undefined}><Icon name={icon} /></span>
+      <span className="oi" style={dark ? { background: 'linear-gradient(135deg, var(--gold-light), var(--gold))', color: 'var(--navy)' } : undefined}><Icon name={icon} /></span>
       <span><b>{title}</b><small>{sub}</small></span>
       {price && <span className="pr">{price}</span>}
     </button>
