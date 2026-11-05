@@ -419,3 +419,10 @@ body:has(.admin) { background: #f7f6f2; }
 .admin .perm-grid fieldset { align-content: start; align-self: start; }
 .admin .perm-grid label { margin: 0; padding: 2px 0; }
 .admin .home-part .switch { border: 0; padding: 0; background: none; box-shadow: none; }
+.admin .fe .pb-top { margin-bottom: 14px; }
+.admin .fe-card { border: 1px solid #ece4d0; border-radius: 12px; padding: 14px; background: #fff; display: grid; gap: 8px; }
+.admin .fe-card.off { opacity: .6; background: #faf8f2; }
+.admin .fe-acts { justify-content: flex-end; }
+.admin .fe-row { grid-template-columns: 2fr 1fr; padding-bottom: 6px; border-bottom: 1px dashed #ece4d0; }
+.admin .fe .tbl input { min-height: 36px; }
+@media (max-width: 700px) { .admin .fe-row { grid-template-columns: 1fr; } }

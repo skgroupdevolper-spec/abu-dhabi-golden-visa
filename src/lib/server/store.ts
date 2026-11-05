@@ -138,7 +138,14 @@ export function updateApplication(id: string, fn: (a: Application) => Applicatio
 /* ---------- settings (editable fees) ---------- */
 export async function getFees(): Promise<Fees> {
   const s = await readJson<Partial<Settings>>('settings.json', {});
-  return s.fees ? { ...FEE_SCHEDULE, ...s.fees, perPerson: { ...FEE_SCHEDULE.perPerson, ...s.fees.perPerson }, medical: { ...FEE_SCHEDULE.medical, ...s.fees.medical }, packages: { ...FEE_SCHEDULE.packages, ...s.fees.packages } } : FEE_SCHEDULE;
+  const d = FEE_SCHEDULE, x = s.fees as Partial<Fees> | undefined;
+  if (!x) return d;
+  return {
+    ...d, ...x, perPerson: { ...d.perPerson, ...x.perPerson }, medical: { ...d.medical, ...x.medical },
+    packages: { normal: { ...d.packages.normal, ...x.packages?.normal }, vip: { ...d.packages.vip, ...x.packages?.vip } },
+    routes: x.routes?.length ? x.routes : d.routes, addons: x.addons ?? d.addons, extraFees: x.extraFees ?? d.extraFees,
+    texts: { ...d.texts, ...x.texts }, options: { ...d.options, ...x.options }, rates: x.rates ?? d.rates, assumptions: x.assumptions?.length ? x.assumptions : d.assumptions,
+  };
 }
 export function saveFees(fees: Fees) {
   return withLock('file:settings.json', async () => {

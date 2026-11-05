@@ -9,7 +9,7 @@ import { EDIT, FULL, checkLogin, endSession, requireAdmin as requireAny, startSe
 const requireAdmin = () => requireAny(EDIT);
 const requireFull = () => requireAny(FULL);
 import { saveUpload } from '@/lib/server/files';
-import { createApplication, getApplication, getFees, newId, now, saveFees, updateApplication, updateLead, listLeads, type Application, type LeadStatus } from '@/lib/server/store';
+import { createApplication, getApplication, getFees, newId, now, saveFees, updateApplication, type Fees, updateLead, listLeads, type Application, type LeadStatus } from '@/lib/server/store';
 import { STAGES, governmentLines, money } from '@/lib/stages';
 import { portalUrl } from '@/lib/site';
 import { sendWa } from '@/lib/server/whatsapp';
@@ -248,6 +248,38 @@ export async function saveFeeSchedule(_: FormState, f: FormData): Promise<FormSt
   });
   revalidatePath('/', 'layout');
   return { ok: 'Fees saved. The calculator uses them straight away.' };
+}
+
+/** Saves the whole cost calculator from the editor (fees, routes, packages, add-ons, extra fees, wording, options, rates). */
+export async function saveFeesJson(_: FormState, f: FormData): Promise<FormState> {
+  await requireFull();
+  let x: Record<string, any>;
+  try { x = JSON.parse(String(f.get('json') ?? '')); } catch { return { error: 'Could not read the form. Refresh and try again.' }; }
+  const d = FEE_SCHEDULE;
+  const m = (v: unknown, dflt: number) => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : dflt; };
+  const t = (v: unknown, max = 300, dflt = '') => (typeof v === 'string' ? v.trim().slice(0, max) : dflt) || dflt;
+  const item = (v: any, dd: { label: string; aed: number }) => ({ label: t(v?.label, 120, dd.label), aed: m(v?.aed, dd.aed) });
+  const PER = ['once', 'person', 'adult', 'child', 'main'];
+  const pkg = (v: any, dd: typeof d.packages.normal) => ({ ...item(v, dd), title: t(v?.title, 80, dd.title), sub: t(v?.sub, 300), hidden: !!v?.hidden });
+  const fees = {
+    ...d,
+    date: t(x.date, 40, d.date),
+    perPerson: { visa: item(x.perPerson?.visa, d.perPerson.visa), emiratesId: item(x.perPerson?.emiratesId, d.perPerson.emiratesId), changeOfStatus: item(x.perPerson?.changeOfStatus, d.perPerson.changeOfStatus) },
+    medical: { normal: item(x.medical?.normal, d.medical.normal), vip: item(x.medical?.vip, d.medical.vip) },
+    sponsorFile: item(x.sponsorFile, d.sponsorFile), propertyValuation: item(x.propertyValuation, d.propertyValuation),
+    packages: { normal: pkg(x.packages?.normal, d.packages.normal), vip: pkg(x.packages?.vip, d.packages.vip) },
+    vatRate: Math.min(0.5, m(x.vatRate, d.vatRate)),
+    assumptions: (Array.isArray(x.assumptions) ? x.assumptions : d.assumptions).map((a: unknown) => t(a, 400)).filter(Boolean).slice(0, 20),
+    routes: (Array.isArray(x.routes) ? x.routes : d.routes).slice(0, 30).map((r: any, i: number) => ({ id: t(r?.id, 40, `route-${i}`).toLowerCase().replace(/[^a-z0-9-]/g, '') || `route-${i}`, label: t(r?.label, 120, 'Route'), note: t(r?.note, 200), valuation: !!r?.valuation, icon: t(r?.icon, 30), hidden: !!r?.hidden, checklist: Array.isArray(r?.checklist) ? r.checklist.map((c: unknown) => t(c, 300)).filter(Boolean).slice(0, 30) : [] })),
+    addons: (Array.isArray(x.addons) ? x.addons : []).slice(0, 20).map((a: any, i: number) => ({ id: t(a?.id, 20, `a${i}`), label: t(a?.label, 120, 'Add-on'), note: t(a?.note, 200), aed: m(a?.aed, 0), per: PER.includes(a?.per) && a.per !== 'main' ? a.per : 'once', on: !!a?.on })),
+    extraFees: (Array.isArray(x.extraFees) ? x.extraFees : []).slice(0, 30).map((a: any, i: number) => ({ id: t(a?.id, 20, `e${i}`), label: t(a?.label, 120, 'Fee'), aed: m(a?.aed, 0), per: PER.includes(a?.per) ? a.per : 'person', routes: Array.isArray(a?.routes) ? a.routes.map((r: unknown) => t(r, 40)).filter(Boolean) : [] })),
+    texts: Object.fromEntries(Object.entries(x.texts && typeof x.texts === 'object' ? x.texts : {}).filter(([k]) => /^[a-zA-Z]{2,12}$/.test(k)).map(([k, v]) => [k, t(v, 400)]).filter(([, v]) => v)),
+    options: Object.fromEntries(Object.keys(d.options).map((k) => [k, k === 'maxPeople' ? Math.max(1, Math.min(30, Number(x.options?.maxPeople) || 10)) : x.options?.[k] === undefined ? (d.options as Record<string, unknown>)[k] : !!x.options[k]])) as typeof d.options,
+    rates: Object.fromEntries(Object.entries(x.rates && typeof x.rates === 'object' ? x.rates : {}).filter(([k]) => /^[A-Z]{3}$/.test(k)).slice(0, 40).map(([k, v]: [string, any]) => [k, { rate: Number(v?.rate) > 0 ? Number(v.rate) : 1, symbol: t(v?.symbol, 6, k + ' '), name: t(v?.name, 40, k) }])),
+  };
+  await saveFees(fees as Fees);
+  revalidatePath('/', 'layout');
+  return { ok: 'Saved. The calculator, apply form and new quotes use these settings now.' };
 }
 
 export async function getAppOrNull(id: string) {

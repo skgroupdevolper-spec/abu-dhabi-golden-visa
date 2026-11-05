@@ -1,44 +1,19 @@
 import type { Metadata } from 'next';
-import { ActionForm, Submit } from '@/components/dash/ActionForm';
+import { FeesEditor } from '@/components/dash/FeesEditor';
+import { FULL, requireAdmin } from '@/lib/server/auth';
 import { getFees } from '@/lib/server/store';
-import { saveFeeSchedule } from '../../actions';
+import { saveFeesJson } from '../../actions';
 
-export const metadata: Metadata = { title: 'Government fees' };
+export const metadata: Metadata = { title: 'Cost calculator' };
 
 export default async function Fees() {
+  await requireAdmin(FULL);
   const f = await getFees();
-  const rows: [string, string, number][] = [
-    ['visa', f.perPerson.visa.label, f.perPerson.visa.aed],
-    ['emiratesId', f.perPerson.emiratesId.label, f.perPerson.emiratesId.aed],
-    ['changeOfStatus', f.perPerson.changeOfStatus.label, f.perPerson.changeOfStatus.aed],
-    ['medNormal', f.medical.normal.label, f.medical.normal.aed],
-    ['medVip', f.medical.vip.label, f.medical.vip.aed],
-    ['sponsorFile', f.sponsorFile.label, f.sponsorFile.aed],
-    ['propertyValuation', f.propertyValuation.label, f.propertyValuation.aed],
-    ['pkgNormal', `${f.packages?.normal.label ?? 'Normal service package'} (0 = quoted in writing)`, f.packages?.normal.aed ?? 0],
-    ['pkgVip', `${f.packages?.vip.label ?? 'VIP Fast Track package'} (0 = quoted in writing)`, f.packages?.vip.aed ?? 0],
-  ];
-  const main = f.perPerson.visa.aed + f.medical.normal.aed + f.perPerson.emiratesId.aed + f.perPerson.changeOfStatus.aed + f.propertyValuation.aed;
   return (
     <>
-      <div className="topbar"><div><p className="eyebrow">Government fees</p><h1>The numbers behind <span className="gold">every quote.</span></h1></div></div>
-      <div className="cols">
-        <div className="panel">
-          <ActionForm action={saveFeeSchedule} className="form">
-            <div className="field full"><label htmlFor="date">Schedule date (shown under every estimate)</label><input id="date" name="date" defaultValue={f.date} /></div>
-            {rows.map(([k, label, v]) => (
-              <div className="field" key={k}><label htmlFor={k}>{label} (AED)</label><input id={k} name={k} inputMode="decimal" defaultValue={v.toFixed(2)} /></div>
-            ))}
-            <div className="full"><Submit>Save fees</Submit></div>
-          </ActionForm>
-        </div>
-        <div className="panel">
-          <h2>Check</h2>
-          <p className="muted">Property investor inside the UAE, main applicant, normal medical:</p>
-          <div className="total"><span>Government fees</span><b>AED {main.toLocaleString('en-US', { minimumFractionDigits: 2 })}</b></div>
-          <p className="small muted" style={{ marginTop: 14 }}>The website calculator and new quotes use these amounts straight away. Fee examples written inside page text update on the next deploy.</p>
-        </div>
-      </div>
+      <div className="topbar"><div><p className="eyebrow">Cost calculator</p><h1>Cost calculator · <span className="gold">full control</span></h1>
+        <p className="muted small" style={{ marginTop: 6 }}>Every fee, name, route, package, add-on, extra charge, step, button, wording and currency rate of the website calculator.</p></div></div>
+      <FeesEditor initial={f} action={saveFeesJson} />
     </>
   );
 }

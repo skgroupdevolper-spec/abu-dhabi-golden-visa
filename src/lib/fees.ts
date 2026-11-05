@@ -1,4 +1,32 @@
-// Government fee schedule used by the cost calculator (AED).
+// Government fee schedule used by the cost calculator (AED). Everything here can be edited in Admin > Cost calculator.
+export type Route = {
+  id: string;
+  label: string;
+  note: string;
+  valuation: boolean;
+  /** Admin options: icon name, hide from the calculator, own document checklist. */
+  icon?: string;
+  hidden?: boolean;
+  checklist?: string[];
+};
+/** Optional add-on shown as a tick box (0 AED = "quoted separately"). */
+export type Addon = { id: string; label: string; note: string; aed: number; per: 'once' | 'person' | 'adult' | 'child'; on: boolean };
+/** Extra fee added automatically (for example a new government charge), optionally for some routes only. */
+export type ExtraFee = { id: string; label: string; aed: number; per: 'once' | 'person' | 'adult' | 'child' | 'main'; routes: string[]; vat?: boolean };
+export type CalcOptions = { where: boolean; family: boolean; medical: boolean; package: boolean; pdf: boolean; whatsapp: boolean; copy: boolean; checklist: boolean; convert: boolean; maxPeople: number; vatOnGov: boolean };
+
+
+export const ROUTES: Route[] = [
+  { id: 'property', label: 'Property investor', note: 'Abu Dhabi property worth AED 2M+', valuation: true },
+  { id: 'investor', label: 'Company owner or investor', note: 'AED 2M deposit or company stake', valuation: false },
+  { id: 'entrepreneur', label: 'Entrepreneur', note: 'Approved idea or AED 1M+ revenue', valuation: false },
+  { id: 'professional', label: 'Skilled professional', note: 'AED 30,000+ salary and a degree', valuation: false },
+  { id: 'graduate', label: 'Outstanding graduate', note: 'GPA 3.5+ in the last 2 years', valuation: false },
+  { id: 'family', label: 'Family member', note: 'Joining a Golden Visa holder', valuation: false },
+];
+
+
+const RATES0 = {} as Record<string, { rate: number; symbol: string; name: string }>;
 // Phase 3 moves these numbers into the admin panel so they can be changed without code.
 // Every calculator result shows the schedule date below (spec section 8 and 16).
 export const FEE_SCHEDULE = {
@@ -17,8 +45,8 @@ export const FEE_SCHEDULE = {
   propertyValuation: { label: 'Property value certificate', aed: 1050 },
   /** Consultancy packages (spec 4.5 and 8). 0 means "quoted in writing". Editable in the admin. */
   packages: {
-    normal: { label: 'Normal service package', aed: 0 },
-    vip: { label: 'VIP Fast Track package', aed: 0 },
+    normal: { label: 'Normal service package', aed: 0, title: 'Normal', sub: 'Standard medical booking and case updates', hidden: false },
+    vip: { label: 'VIP Fast Track package', aed: 0, title: 'VIP Fast Track', sub: 'Priority medical, priority updates, pick-up where offered', hidden: false },
   },
   vatRate: 0.05,
   assumptions: [
@@ -27,23 +55,18 @@ export const FEE_SCHEDULE = {
     'Health insurance, attestation and our consultancy fee are quoted separately (VAT applies to consultancy).',
     'Fees can change. We confirm the final amount in writing before you pay.',
   ],
+  routes: ROUTES as Route[],
+  addons: [
+    { id: 'ins', label: 'Add health insurance', note: 'Required for every person; quoted separately', aed: 0, per: 'person', on: true },
+    { id: 'att', label: 'Add attestation and translation', note: 'For documents from abroad; quoted separately', aed: 0, per: 'once', on: false },
+  ] as Addon[],
+  extraFees: [] as ExtraFee[],
+  /** Custom wording for headings and buttons (empty = default text). */
+  texts: {} as Record<string, string>,
+  options: { where: true, family: true, medical: true, package: true, pdf: true, whatsapp: true, copy: true, checklist: true, convert: true, maxPeople: 10, vatOnGov: false } as CalcOptions,
+  /** Exchange rates for the approximate total (empty = built-in rates). */
+  rates: RATES0,
 };
-
-export type Route = {
-  id: string;
-  label: string;
-  note: string;
-  valuation: boolean;
-};
-
-export const ROUTES: Route[] = [
-  { id: 'property', label: 'Property investor', note: 'Abu Dhabi property worth AED 2M+', valuation: true },
-  { id: 'investor', label: 'Company owner or investor', note: 'AED 2M deposit or company stake', valuation: false },
-  { id: 'entrepreneur', label: 'Entrepreneur', note: 'Approved idea or AED 1M+ revenue', valuation: false },
-  { id: 'professional', label: 'Skilled professional', note: 'AED 30,000+ salary and a degree', valuation: false },
-  { id: 'graduate', label: 'Outstanding graduate', note: 'GPA 3.5+ in the last 2 years', valuation: false },
-  { id: 'family', label: 'Family member', note: 'Joining a Golden Visa holder', valuation: false },
-];
 
 /** Approximate exchange rates, 1 AED = x (early November 2026). Display only. */
 export const RATES: Record<string, { rate: number; symbol: string; name: string }> = {
@@ -63,8 +86,8 @@ export function aed(n: number): string {
   return 'AED ' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-export function convert(n: number, code: string): string | null {
-  const r = RATES[code];
+export function convert(n: number, code: string, rates?: Record<string, { rate: number; symbol: string; name: string }>): string | null {
+  const r = (rates && Object.keys(rates).length ? rates : RATES)[code];
   if (!r || code === 'AED') return null;
   return `≈ ${r.symbol}${Math.round(n * r.rate).toLocaleString('en-US')} ${code}`;
 }
