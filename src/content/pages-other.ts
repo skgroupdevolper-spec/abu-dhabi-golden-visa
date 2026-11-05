@@ -380,9 +380,7 @@ export const OTHER_PAGES: Page[] = [
     intro:
       'Abu Dhabi Golden Visa is an independent residency consultancy website managed by Brightlink Management Consultancy LLC, UAE (Trade Licence No. 1053387). We are not a government body; the authorities decide every application.',
     cta: CONTACT_CTA,
-    sections: [
-      { type: 'list', title: 'How we work', items: ['Transparent, written quotes before you pay', 'One advisor for your whole file', 'Updates in your language on WhatsApp', 'No promises of guaranteed approval'] },
-    ],
+    sections: [{ type: 'tool', tool: 'about-hub' }],
   },
   {
     path: '/why-choose-us/',
@@ -411,7 +409,7 @@ export const OTHER_PAGES: Page[] = [
     eyebrow: 'Contact',
     h1: 'Talk to a Golden Visa advisor',
     intro: 'Send us a message and an advisor replies in your language, or book a time to meet.',
-    sections: [{ type: 'tool', tool: 'lead' }, { type: 'tool', tool: 'booking', title: 'Book a time that suits you' }],
+    sections: [{ type: 'tool', tool: 'contact-hub' }],
   },
   {
     path: '/free-consultation/',

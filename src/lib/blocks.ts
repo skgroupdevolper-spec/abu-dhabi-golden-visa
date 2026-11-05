@@ -25,7 +25,7 @@ export type Block = { id: string; type: BlockType; hidden?: boolean; style?: Blo
 
 export type BlockType =
   | 'hero' | 'text' | 'image' | 'imageText' | 'cards' | 'list' | 'steps' | 'table' | 'faq' | 'cta' | 'stats'
-  | 'video' | 'gallery' | 'testimonials' | 'calculator' | 'eligibility' | 'lead' | 'apply' | 'booking' | 'flight' | 'html' | 'spacer' | 'divider';
+  | 'video' | 'gallery' | 'testimonials' | 'calculator' | 'eligibility' | 'lead' | 'apply' | 'booking' | 'flight' | 'contactHub' | 'aboutHub' | 'html' | 'spacer' | 'divider';
 
 export type FieldKind = 'text' | 'textarea' | 'md' | 'image' | 'link' | 'select' | 'number' | 'lines' | 'items' | 'table' | 'check';
 export type Field = { k: string; label: string; kind: FieldKind; options?: [string, string][]; sub?: Field[]; help?: string };
@@ -64,6 +64,8 @@ export const BLOCKS: Record<BlockType, { label: string; icon: string; group: 'Co
   apply: { label: 'Online application', icon: 'folder', group: 'Widgets', fields: [{ k: 'title', label: 'Heading', kind: 'text' }], make: () => ({ title: 'Apply online' }) },
   booking: { label: 'Appointment booking', icon: 'calendar', group: 'Widgets', fields: [{ k: 'title', label: 'Heading', kind: 'text' }, { k: 'intro', label: 'Introduction', kind: 'textarea' }], make: () => ({ title: 'Book a time that suits you' }) },
   flight: { label: 'Airplane journey (animated)', icon: 'plane', group: 'Widgets', fields: [{ k: 'title', label: 'Heading', kind: 'text' }, { k: 'intro', label: 'Introduction', kind: 'textarea' }], make: () => ({ title: 'Your journey to Abu Dhabi' }) },
+  contactHub: { label: 'Contact page set (cards, form, booking, map, FAQ)', icon: 'phone', group: 'Widgets', fields: [], make: () => ({}) },
+  aboutHub: { label: 'About page set (story, values, licence, office)', icon: 'shield', group: 'Widgets', fields: [], make: () => ({}) },
   html: { label: 'Custom HTML / embed', icon: 'layout', group: 'Widgets', fields: [{ k: 'html', label: 'HTML (maps, forms, embeds)', kind: 'textarea' }], make: () => ({ html: '<p>Your HTML</p>' }) },
   spacer: { label: 'Space', icon: 'down', group: 'Layout', fields: [{ k: 'size', label: 'Height (px)', kind: 'number' }], make: () => ({ size: 40 }) },
   divider: { label: 'Divider line', icon: 'menu', group: 'Layout', fields: [], make: () => ({}) },
@@ -107,7 +109,7 @@ export function sectionsToBlocks(sections: Section[]): Block[] {
       case 'steps': return { id, type: 'steps', data: { title: s.title, intro: s.intro ?? '', items: s.items, note: s.note ?? '' } };
       case 'cards': return { id, type: 'cards', data: { title: s.title, intro: s.intro ?? '', cols: '3', items: s.items.map((i) => ({ ...i, icon: '' })) } };
       case 'faq': return { id, type: 'faq', data: { title: s.title, items: s.items } };
-      case 'tool': return { id, type: s.tool === 'calculator' ? 'calculator' : s.tool === 'eligibility' ? 'eligibility' : s.tool === 'apply' ? 'apply' : s.tool === 'booking' ? 'booking' : s.tool === 'flight' ? 'flight' : 'lead', data: { title: s.title ?? '', intro: s.intro ?? '' } };
+      case 'tool': return { id, type: s.tool === 'calculator' ? 'calculator' : s.tool === 'eligibility' ? 'eligibility' : s.tool === 'apply' ? 'apply' : s.tool === 'booking' ? 'booking' : s.tool === 'flight' ? 'flight' : s.tool === 'contact-hub' ? 'contactHub' : s.tool === 'about-hub' ? 'aboutHub' : 'lead', data: { title: s.title ?? '', intro: s.intro ?? '' } };
       case 'html': return { id, type: 'html', data: { html: s.html, title: s.title ?? '' } };
     }
   });
@@ -131,6 +133,8 @@ export function blockToSection(b: Block): Section | null {
     case 'eligibility': return { type: 'tool', tool: 'eligibility', title: str(d.title) || undefined, intro: str(d.intro) || undefined };
     case 'lead': return { type: 'tool', tool: 'lead', title: str(d.title) || undefined, intro: str(d.intro) || undefined };
     case 'apply': return { type: 'tool', tool: 'apply', title: str(d.title) || undefined };
+    case 'contactHub': return { type: 'tool', tool: 'contact-hub' };
+    case 'aboutHub': return { type: 'tool', tool: 'about-hub' };
     case 'booking': return { type: 'tool', tool: 'booking', title: str(d.title) || undefined, intro: str(d.intro) || undefined };
     case 'flight': return { type: 'tool', tool: 'flight', title: str(d.title) || undefined, intro: str(d.intro) || undefined };
     default: return null;

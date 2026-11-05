@@ -97,6 +97,18 @@ export function Motion({ level = 'full', textFx = 'words', cursor = true, smooth
         ScrollTrigger.batch(icons.filter((s) => s.classList.contains('ic-draw')), { start: 'top 94%', once: true, onEnter: (els) => els.forEach((e, i) => setTimeout(() => e.classList.add('ic-drawn'), i * 70)) });
         cleanup.push(() => icons.forEach((s) => s.classList.remove('ic-draw', 'ic-drawn')));
 
+        // Ticks and steps light up one by one while scrolling (lists, documents, requirements, timelines).
+        const items = gsap.utils.toArray<HTMLElement>('main .ticks li, main .doc-grid li, main .req-grid li, main .timeline li, main .side-apply li, main .trust-row li, main .prose ul li, main .fp-step, main .bk-facts li');
+        items.forEach((li) => {
+          li.classList.add('sk');
+          ScrollTrigger.create({ trigger: li, start: 'top 82%', onEnter: () => li.classList.add('on'), onLeaveBack: () => li.classList.remove('on') });
+        });
+        cleanup.push(() => items.forEach((li) => li.classList.remove('sk', 'on')));
+        gsap.utils.toArray<HTMLElement>('main .timeline').forEach((tl) => {
+          tl.classList.add('sk');
+          ScrollTrigger.create({ trigger: tl, start: 'top 75%', end: 'bottom 70%', scrub: true, onUpdate: (s) => tl.style.setProperty('--p', s.progress.toFixed(3)) });
+        });
+
         if (!full) return;
 
         // Image reveal and gentle parallax

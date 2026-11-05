@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { preload } from 'react-dom';
 import { Booking } from './Booking';
+import { AboutHub, ContactHub } from './CompanyPages';
 import { FlightPath } from './FlightPath';
 import type { Block } from '@/lib/blocks';
 import type { PageOverride } from '@/lib/server/content';
@@ -134,6 +135,8 @@ export function SectionView({ s, locale, i }: { s: Section; locale: Locale; i: n
         </section>
       );
     case 'tool':
+      if (s.tool === 'contact-hub') return <ContactHub locale={locale} />;
+      if (s.tool === 'about-hub') return <AboutHub locale={locale} />;
       return (
         <section className={`block${s.tool === 'flight' ? ' block-flight' : ''}`} id={s.tool === 'apply' ? 'apply' : s.tool === 'booking' ? 'book' : sid(s.title)} data-reveal={s.tool === 'apply' || s.tool === 'flight' ? undefined : ''}>
           {s.title && s.tool !== 'booking' && s.tool !== 'flight' && <Head title={s.title} k={i} icon={s.tool === 'calculator' ? 'calc' : s.tool === 'eligibility' ? 'check' : 'wa'} />}
@@ -196,9 +199,11 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
             {heroImg && !page.article && (!factsOn || !facts.length) && (
               <div className="phero-img"><img decoding="async" fetchPriority="high" width={1200} height={800} src={heroImg} alt={page.imageAlt || page.h1} /></div>
             )}
-            {!isApply && !page.article && factsOn && facts.length > 0 && (
+            {!isApply && !page.article && factsOn && facts.length > 0 && heroImg && (
+              <div className="phero-img hero-pic"><img decoding="async" fetchPriority="high" width={1200} height={800} src={heroImg} alt={page.imageAlt || page.h1} /></div>
+            )}
+            {!isApply && !page.article && factsOn && facts.length > 0 && !heroImg && (
               <div className="phero-side">
-              {heroImg && <div className="phero-img sm"><img decoding="async" fetchPriority="high" width={1200} height={800} src={heroImg} alt={page.imageAlt || page.h1} /></div>}
               <aside className="facts" aria-label="Quick facts">
                 <p className="eyebrow">Quick facts</p>
                 <dl>
@@ -213,6 +218,22 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
           </div>
         </div>
       </header>
+      {!isApply && !page.article && factsOn && facts.length > 0 && heroImg && (
+        <section className="facts-strip" aria-label="Quick facts">
+          <div className="wrap">
+            <div className="fs-in">
+              <dl className="fs-tiles">
+                {facts.slice(0, 5).map((f) => <div key={f.label} className="fs-tile"><dt>{f.label}</dt><dd>{f.value}</dd></div>)}
+              </dl>
+              <div className="fs-cta">
+                <L locale={locale} href={applyHref} className="btn btn-gold">Start my application <Icon name="arrow" size={18} /></L>
+                <L locale={locale} href="/free-consultation/" className="btn btn-glass">Free consultation</L>
+              </div>
+            </div>
+            <p className="fnote">Estimated figures. Final fees are confirmed in writing. Approval rests with the authorities.</p>
+          </div>
+        </section>
+      )}
       {!isApply && jump.length > 2 && (
         <nav className="onpage" aria-label="On this page">
           <div className="wrap"><div className="onpage-in">
