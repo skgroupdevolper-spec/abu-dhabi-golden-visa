@@ -178,3 +178,11 @@ details.more > summary::-webkit-details-marker { display: none; }
   .panel { box-shadow: none; border: 1px solid #ddd; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+.cols > *, .stack > *, .grid2 > *, .grid3 > * { min-width: 0; }
+@media (max-width: 640px) {
+  .file { flex-wrap: wrap; }
+  .file .fn { flex: 1 1 calc(100% - 52px); }
+  .file .fn b { white-space: normal; }
+  .panel { padding: 16px; border-radius: 22px; }
+  .topbar .row { width: 100%; }
+}
