@@ -47,6 +47,7 @@ export function Footer({ locale }: { locale: Locale }) {
               <li><span>{SITE.email}</span></li>
               <li><span>{SITE.office}</span></li>
               {SITE.hours && <li><span>{SITE.hours}</span></li>}
+              <li><L locale={locale} href="/apply/">Apply online</L></li>
               <li><L locale={locale} href="/contact/">Contact us</L></li>
               <li><L locale={locale} href="/about/">About us</L></li>
               {SITE.nav.footerLinks.map((x) => <li key={x.href + x.label}><L locale={locale} href={x.href}>{x.label}</L></li>)}

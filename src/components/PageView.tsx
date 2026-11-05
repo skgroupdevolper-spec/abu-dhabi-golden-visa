@@ -9,39 +9,62 @@ import { LeadForm } from './LeadForm';
 import { Icon } from './Icon';
 import { L } from './L';
 import { TranslationNotice } from './TranslationNotice';
+import { ApplyWizard } from './ApplyWizard';
+import { SITE, waLink } from '@/lib/site';
 
 const CARD_ICONS = ['home', 'briefcase', 'rocket', 'user', 'star', 'spark', 'cap', 'heart', 'shield', 'globe'];
+
+const DOCS_RE = /document|send us|what you need|have ready|to send|bring/i;
+const sid = (t?: string) => (t ? 's-' + t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) : undefined);
+
+function Head({ title, k, icon }: { title?: string; k: number; icon: string }) {
+  if (!title) return null;
+  return (
+    <div className="bh">
+      <span className="bn" aria-hidden="true"><Icon name={icon} size={20} /></span>
+      <h2>{title}</h2>
+    </div>
+  );
+}
 
 export function SectionView({ s, locale, i }: { s: Section; locale: Locale; i: number }) {
   switch (s.type) {
     case 'text':
       return (
-        <section className="block" data-reveal>
-          <h2>{s.title}</h2>
-          <div style={{ display: 'grid', gap: 14, maxWidth: '70ch' }}>
-            {s.body.map((p) => <p key={p.slice(0, 30)} className="lead">{p}</p>)}
+        <section className="block" id={sid(s.title)} data-reveal>
+          <Head title={s.title} k={i} icon="spark" />
+          <div className="prose-lite">
+            {s.body.map((p) => <p key={p.slice(0, 30)}>{p}</p>)}
           </div>
         </section>
       );
-    case 'list':
+    case 'list': {
+      const style = s.style ?? (DOCS_RE.test(s.title) ? 'docs' : 'ticks');
       return (
-        <section className="block" data-reveal>
-          <h2>{s.title}</h2>
+        <section className="block" id={sid(s.title)} data-reveal>
+          <Head title={s.title} k={i} icon={style === 'docs' ? 'doc' : style === 'cards' ? 'shield' : 'check'} />
           {s.intro && <p className="intro">{s.intro}</p>}
-          <ul className="ticks">{s.items.map((it) => <li key={it}>{it}</li>)}</ul>
+          {style === 'docs' ? (
+            <ul className="doc-grid">{s.items.map((it) => <li key={it}><span className="di"><Icon name="doc" size={18} /></span><span>{it}</span></li>)}</ul>
+          ) : style === 'cards' ? (
+            <ul className="req-grid">{s.items.map((it, k) => <li key={it}><span className="rn">{String(k + 1).padStart(2, '0')}</span><span>{it}</span></li>)}</ul>
+          ) : (
+            <ul className="ticks">{s.items.map((it) => <li key={it}>{it}</li>)}</ul>
+          )}
         </section>
       );
+    }
     case 'table':
       return (
-        <section className="block" data-reveal>
-          <h2>{s.title}</h2>
+        <section className="block" id={sid(s.title)} data-reveal>
+          <Head title={s.title} k={i} icon="coins" />
           {s.intro && <p className="intro">{s.intro}</p>}
-          <div className="tbl glass">
+          <div className="tbl">
             <table>
-              <thead><tr>{s.head.map((h) => <th key={h}>{h}</th>)}</tr></thead>
+              <thead><tr>{s.head.map((h, j) => <th key={j}>{h}</th>)}</tr></thead>
               <tbody>
                 {s.rows.map((r) => (
-                  <tr key={r.join('|')}>
+                  <tr key={r.join('|')} className={r[1] === 'Total' ? 'total' : undefined}>
                     {r.map((c, j) => <td key={j}>{c.startsWith('/') ? <L locale={locale} href={c}>{getPage(c)?.h1 ?? c}</L> : c}</td>)}
                   </tr>
                 ))}
@@ -53,24 +76,24 @@ export function SectionView({ s, locale, i }: { s: Section; locale: Locale; i: n
       );
     case 'steps':
       return (
-        <section className="block" data-reveal>
-          <h2>{s.title}</h2>
+        <section className="block" id={sid(s.title)} data-reveal>
+          <Head title={s.title} k={i} icon="clock" />
           {s.intro && <p className="intro">{s.intro}</p>}
-          <div className="steps">
+          <ol className="timeline">
             {s.items.map((st, k) => (
-              <div className="step glass" key={st.title}>
-                <span className="n">{k + 1}</span>
+              <li key={st.title}>
+                <span className="tn">{k + 1}</span>
                 <div><b>{st.title}</b><span>{st.text}</span></div>
-              </div>
+              </li>
             ))}
-          </div>
+          </ol>
           {s.note && <p className="note">{s.note}</p>}
         </section>
       );
     case 'cards':
       return (
-        <section className="block" data-reveal>
-          <h2>{s.title}</h2>
+        <section className="block" id={sid(s.title)} data-reveal>
+          <Head title={s.title} k={i} icon="grid" />
           {s.intro && <p className="intro">{s.intro}</p>}
           <div className="grid">
             {s.items.map((c, k) => (
@@ -86,8 +109,8 @@ export function SectionView({ s, locale, i }: { s: Section; locale: Locale; i: n
       );
     case 'faq':
       return (
-        <section className="block faq" data-reveal>
-          <h2>{s.title}</h2>
+        <section className="block faq" id={sid(s.title)} data-reveal>
+          <Head title={s.title} k={i} icon="spark" />
           {s.items.map((f, k) => (
             <details key={f.q} open={k === 0}>
               <summary>{f.q}<i aria-hidden="true">+</i></summary>
@@ -98,17 +121,17 @@ export function SectionView({ s, locale, i }: { s: Section; locale: Locale; i: n
       );
     case 'html':
       return (
-        <section className="block prose" data-reveal>
-          {s.title && <h2>{s.title}</h2>}
+        <section className="block prose" id={sid(s.title)} data-reveal>
+          {s.title && <Head title={s.title} k={i} icon="doc" />}
           <div dangerouslySetInnerHTML={{ __html: s.html }} />
         </section>
       );
     case 'tool':
       return (
-        <section className="block" data-reveal>
-          {s.title && <h2>{s.title}</h2>}
+        <section className="block" id={s.tool === 'apply' ? 'apply' : sid(s.title)} data-reveal={s.tool === 'apply' ? undefined : ''}>
+          {s.title && <Head title={s.title} k={i} icon={s.tool === 'calculator' ? 'calc' : s.tool === 'eligibility' ? 'check' : 'wa'} />}
           {s.intro && <p className="intro">{s.intro}</p>}
-          {s.tool === 'calculator' ? <Calculator /> : s.tool === 'eligibility' ? <Eligibility /> : <LeadForm source="page" />}
+          {s.tool === 'calculator' ? <Calculator /> : s.tool === 'eligibility' ? <Eligibility /> : s.tool === 'apply' ? <ApplyWizard /> : <LeadForm source="page" />}
         </section>
       );
   }
@@ -116,8 +139,13 @@ export function SectionView({ s, locale, i }: { s: Section; locale: Locale; i: n
 
 export function PageView({ page, locale, translated, price, hidden = [] }: { page: Page; locale: Locale; translated?: boolean; price?: string; hidden?: string[] }) {
   const withSide = isServicePage(page.path);
+  const isApply = page.path === '/apply/';
   const parts = page.path.split('/').filter(Boolean);
   const crumbs = parts.slice(0, -1).map((_, k) => '/' + parts.slice(0, k + 1).join('/') + '/');
+  const applyHref = `/apply/?service=${encodeURIComponent(page.apply || 'golden-visa')}`;
+  const facts = price ? [{ label: 'Price', value: price }, ...(page.facts ?? []).filter((f) => !/price|fees? from|cost/i.test(f.label))] : page.facts ?? [];
+  const jump = page.sections.filter((x) => 'title' in x && x.title && x.type !== 'tool').slice(0, 8) as { title: string }[];
+  const wa = waLink(`Hello, I would like help with: ${page.h1}`);
   return (
     <>
       <header className="phero">
@@ -125,24 +153,59 @@ export function PageView({ page, locale, translated, price, hidden = [] }: { pag
           <nav className="crumbs" aria-label="Breadcrumb">
             <L locale={locale} href="/">Home</L>
             {crumbs.map((c) => getPage(c) && (<span key={c}>/ <L locale={locale} href={c}>{getPage(c)!.eyebrow}</L></span>))}
+            <span aria-current="page">/ {page.eyebrow}</span>
           </nav>
-          <p className="eyebrow" style={{ marginTop: 18 }}>{page.eyebrow}</p>
-          <h1>{page.h1}</h1>
-          <p className="lead">{page.intro}</p>
-          {price && <p className="price-tag"><Icon name="coins" size={16} /> {price}</p>}
-          {page.cta && (
-            <div className="cta">
-              <L locale={locale} href={page.cta.href} className="btn btn-red">{page.cta.label} <Icon name="arrow" size={18} className="arrow" /></L>
-              <L locale={locale} href="/golden-visa-cost/" className="btn btn-glass">Calculate Visa Cost</L>
+          <div className={`phero-grid${isApply || page.article ? ' solo' : ''}`}>
+            <div>
+              <p className="eyebrow pill-eyebrow"><Icon name="star" size={14} /> {page.eyebrow}</p>
+              <h1>{page.h1}</h1>
+              <p className="lead">{page.intro}</p>
+              {!isApply && !page.article && (
+                <div className="cta">
+                  <L locale={locale} href={applyHref} className="btn btn-gold">Apply Now <Icon name="arrow" size={18} className="arrow" /></L>
+                  {page.cta && page.cta.href !== '/free-consultation/' ? (
+                    <L locale={locale} href={page.cta.href} className="btn btn-red">{page.cta.label}</L>
+                  ) : (
+                    <L locale={locale} href="/golden-visa-cost/" className="btn btn-red" data-open-calc="">Calculate Visa Cost</L>
+                  )}
+                  <a className="btn btn-glass" href={wa} target="_blank" rel="noopener"><Icon name="wa" size={18} /> WhatsApp</a>
+                </div>
+              )}
+              {!isApply && !page.article && (
+                <ul className="trust-row">
+                  <li><Icon name="check" size={16} /> Free first review</li>
+                  <li><Icon name="coins" size={16} /> Fees itemised before you pay</li>
+                  <li><Icon name="globe" size={16} /> Inside or outside the UAE</li>
+                </ul>
+              )}
+              {!translated && <TranslationNotice locale={locale} />}
             </div>
-          )}
-          {!translated && <TranslationNotice locale={locale} />}
+            {!isApply && !page.article && facts.length > 0 && (
+              <aside className="facts" aria-label="Quick facts">
+                <p className="eyebrow">Quick facts</p>
+                <dl>
+                  {facts.map((f) => <div key={f.label}><dt>{f.label}</dt><dd>{f.value}</dd></div>)}
+                </dl>
+                <L locale={locale} href={applyHref} className="btn btn-gold" style={{ width: '100%' }}>Start my application</L>
+                <L locale={locale} href="/free-consultation/" className="btn btn-glass" style={{ width: '100%' }}>Free consultation</L>
+                <p className="fnote">Estimated figures. Final fees are confirmed in writing. Approval rests with the authorities.</p>
+              </aside>
+            )}
+          </div>
         </div>
       </header>
+      {!isApply && jump.length > 2 && (
+        <nav className="onpage" aria-label="On this page">
+          <div className="wrap"><div className="onpage-in">
+            <span>On this page</span>
+            {jump.map((j) => <a key={j.title} href={`#${sid(j.title)}`}>{j.title}</a>)}
+          </div></div>
+        </nav>
+      )}
       <div className="wrap" style={{ position: 'relative', zIndex: 2 }}>
         <div className={withSide ? 'svc-layout' : undefined}>
         {withSide && <ServiceSidebar current={page.path} locale={locale} hidden={hidden} />}
-        <div className={withSide ? 'svc-main' : undefined}>
+        <div className={withSide ? 'svc-main' : 'page-main'}>
         {page.article && (
           <p className="byline block" style={{ marginBottom: 0 }}>
             By <b>{page.article.author}</b> · Reviewed by <b>{page.article.reviewer}</b> · Last reviewed {page.article.reviewed} · {page.article.minutes} min read
@@ -151,7 +214,7 @@ export function PageView({ page, locale, translated, price, hidden = [] }: { pag
         {page.sections.map((s, i) => <SectionView key={i} s={s} locale={locale} i={i} />)}
         {page.related && page.related.length > 0 && (
           <section className="block" data-reveal>
-            <h2>Related</h2>
+            <Head title="Related services and guides" k={0} icon="grid" />
             <div className="grid">
               {page.related.map((r) => getPage(r) && (
                 <L key={r} locale={locale} href={r} className="card glass">
@@ -166,6 +229,23 @@ export function PageView({ page, locale, translated, price, hidden = [] }: { pag
         </div>
         </div>
       </div>
+      {!isApply && (
+        <section className="cta-band" data-reveal>
+          <div className="wrap">
+            <div className="cta-band-in">
+              <div>
+                <p className="eyebrow">Ready when you are</p>
+                <h2>Start your application online in a few minutes</h2>
+                <p className="lead">Choose the service, add your family and upload what you have. Your advisor checks everything and confirms the quote before you pay.</p>
+              </div>
+              <div className="cta">
+                <L locale={locale} href={applyHref} className="btn btn-gold">Apply Now <Icon name="arrow" size={18} /></L>
+                <a className="btn btn-glass" href={wa} target="_blank" rel="noopener"><Icon name="wa" size={18} /> {SITE.whatsappDisplay}</a>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
     </>
   );
 }

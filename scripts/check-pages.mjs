@@ -3,7 +3,7 @@ import { chromium } from 'playwright';
 import { writeFileSync } from 'node:fs';
 
 const base = 'http://localhost:3000';
-const pages = ['/', '/ar/', '/ur/golden-visa/', '/golden-visa-cost/'];
+const pages = ['/', '/ar/', '/ur/golden-visa/', '/golden-visa-cost/', '/golden-visa/property-investment/', '/services/maid-visa/', '/family-golden-visa/newborn/', '/apply/'];
 const browser = await chromium.launch({ channel: 'chrome' });
 const report = [];
 for (const path of pages) {
@@ -82,6 +82,47 @@ for (const vp of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
   await page.goto(base + '/services/maid-visa/');
   await page.waitForTimeout(800);
   await page.screenshot({ path: 'shots/service-page.png' });
+  await page.screenshot({ path: 'shots/service-page-full.png', fullPage: true });
+  // mega menus
+  for (const label of ['Golden Visa', 'Our Services']) {
+    await page.hover(`.nav button:has-text("${label}")`);
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: `shots/mega-${label.replace(/ /g, '-').toLowerCase()}.png` });
+    await page.mouse.move(5, 600);
+    await page.waitForTimeout(300);
+  }
+  // online application, start to finish
+  const errs = [];
+  page.on('pageerror', (e) => errs.push('pageerror: ' + e.message));
+  writeFileSync('shots/passport-sample.pdf', '%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF');
+  await page.goto(base + '/apply/?service=gv-property');
+  await page.waitForTimeout(900);
+  await page.fill('#ap-name', 'Sample Applicant');
+  await page.fill('#ap-phone', '+971500000001');
+  await page.fill('#ap-email', 'apply@example.com');
+  await page.fill('#ap-nat', 'British');
+  await page.screenshot({ path: 'shots/apply-1.png', fullPage: true });
+  await page.click('.apply-nav .btn-red');
+  await page.click('text=+ Add spouse');
+  await page.fill('.fam-row input', 'Sample Spouse');
+  await page.click('text=+ Add child');
+  await page.locator('.fam-row input').nth(1).fill('Sample Child');
+  await page.screenshot({ path: 'shots/apply-2.png', fullPage: true });
+  await page.click('.apply-nav .btn-red');
+  await page.locator('.doc-up input').first().setInputFiles('shots/passport-sample.pdf');
+  await page.screenshot({ path: 'shots/apply-3.png', fullPage: true });
+  await page.click('.apply-nav .btn-red');
+  await page.check('.check input');
+  await page.screenshot({ path: 'shots/apply-4.png', fullPage: true });
+  await page.click('.apply-nav .btn-red');
+  await page.waitForSelector('.apply-done', { timeout: 15000 });
+  await page.screenshot({ path: 'shots/apply-done.png', fullPage: true });
+  const ref = await page.textContent('.apply-done h2');
+  report.push({ path: 'apply-flow', vp: 1440, errors: errs, facts: { ref } });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(base + '/golden-visa/property-investment/');
+  await page.waitForTimeout(1200);
+  await page.screenshot({ path: 'shots/property-mobile.png', fullPage: true });
   await page.goto(base + '/');
   await page.click('.calc-launch button >> nth=0');
   await page.waitForTimeout(900);

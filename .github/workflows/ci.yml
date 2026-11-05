@@ -65,6 +65,15 @@ jobs:
           lead=$(curl -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type: application/json" -d '{"name":"CI test","phone":"+971500000000","source":"ci"}' http://localhost:3000/api/leads/)
           echo "$lead lead api"
           [ "$lead" = "200" ]
+          printf 'sample' > doc.txt
+          apply=$(curl -s -w " %{http_code}" -F service=gv-property -F name="CI Applicant" -F phone=+971500000002 -F email=ci@example.com -F where=in -F consent=true -F 'family=[{"relation":"Spouse","name":"CI Spouse","adult":true}]' -F files=@doc.txt -F labels="Passport copy (valid 6+ months)" http://localhost:3000/api/apply/)
+          echo "$apply apply api"
+          case "$apply" in *'"ok":true'*" 200") ;; *) cat server.log; exit 1;; esac
+          for path in /apply/ /ar/apply/ /family-golden-visa/newborn/ /services/iloe-insurance/; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:3000$path")
+            echo "$code $path"
+            [ "$code" = "200" ] || { cat server.log; exit 1; }
+          done
       - name: Screenshots
         run: |
           mkdir -p shots

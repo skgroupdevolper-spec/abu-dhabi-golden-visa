@@ -40,8 +40,8 @@
 .home .trust{display:flex;flex-wrap:wrap;gap:18px;margin-top:30px;font:600 13px var(--body);color:var(--ink-soft)}
 .home .trust span{display:inline-flex;align-items:center;gap:8px}
 .home .trust span::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--gold)}
-.home .live{display:inline-block;width:9px;height:9px;border-radius:50%;background:#1f9d55;margin-right:8px;box-shadow:0 0 0 0 rgba(31,157,85,.6);animation:hm-beat 1.6s infinite}
-@keyframes hm-beat{70%{box-shadow:0 0 0 10px rgba(31,157,85,0)}100%{box-shadow:0 0 0 0 rgba(31,157,85,0)}}
+.home .live{display:inline-block;width:9px;height:9px;border-radius:50%;background:#b8901f;margin-right:8px;box-shadow:0 0 0 0 rgba(184,144,31,.6);animation:hm-beat 1.6s infinite}
+@keyframes hm-beat{70%{box-shadow:0 0 0 10px rgba(184,144,31,0)}100%{box-shadow:0 0 0 0 rgba(184,144,31,0)}}
 .home .float-card{border-radius:24px;padding:16px 20px;max-width:300px}
 .home .float-card .k{font:600 12px var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-deep)}
 .home .float-card .v{font:400 21px/1.25 var(--display);margin-top:6px}
@@ -185,7 +185,7 @@
 .home .form input,.home .form select,.home .form textarea{width:100%;min-height:50px;padding:12px 16px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.8);font:500 15px var(--body);color:var(--ink);transition:border-color .3s,box-shadow .3s,background .3s}
 .home .form textarea{min-height:110px;resize:vertical}
 .home .form input:focus,.home .form select:focus,.home .form textarea:focus{outline:none;border-color:var(--gold);background:#fff;box-shadow:0 0 0 4px rgba(242,210,122,.35)}
-.home .sent{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:16px;background:rgba(31,157,85,.1);color:#146c3a;font-weight:600}
+.home .sent{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:16px;background:rgba(184,144,31,.1);color:#146c3a;font-weight:600}
 .home .office{display:flex;flex-direction:column;gap:12px}
 .home .office .row{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;border-radius:20px;background:rgba(255,255,255,.62)}
 .home .office .row i{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(145deg,#fffaf0,#f8e3a6);color:var(--gold-deep);font-style:normal}

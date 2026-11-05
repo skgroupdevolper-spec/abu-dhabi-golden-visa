@@ -45,7 +45,7 @@ export const DEFAULT_SITE: PublicSite = {
   phone: '+971566556645',
   email: 'info@brightlinkconsulting.ae',
   office: 'Business Bay, Dubai, UAE',
-  hours: 'Monday to Saturday, 9:00 to 18:00 (UAE time)',
+  hours: 'Mon–Fri 9:00–18:00 · Sat 10:00–17:00',
   mapsUrl: '',
   disclaimer: 'Not an official UAE government website. Visa issuance and eligibility are subject to the competent authorities.',
   footerAbout: '',

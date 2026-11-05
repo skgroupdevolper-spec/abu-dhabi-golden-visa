@@ -1,11 +1,11 @@
 export type Section =
   | { type: 'text'; title: string; body: string[] }
-  | { type: 'list'; title: string; intro?: string; items: string[] }
+  | { type: 'list'; title: string; intro?: string; items: string[]; style?: 'docs' | 'cards' | 'ticks' }
   | { type: 'table'; title: string; intro?: string; head: string[]; rows: string[][]; note?: string }
   | { type: 'steps'; title: string; intro?: string; items: { title: string; text: string }[]; note?: string }
   | { type: 'cards'; title: string; intro?: string; items: { title: string; text: string; href: string }[] }
   | { type: 'faq'; title: string; items: { q: string; a: string }[] }
-  | { type: 'tool'; tool: 'calculator' | 'eligibility' | 'lead'; title?: string; intro?: string }
+  | { type: 'tool'; tool: 'calculator' | 'eligibility' | 'lead' | 'apply'; title?: string; intro?: string }
   /** Rendered from the safe Markdown renderer only (blog posts, admin page additions). */
   | { type: 'html'; title?: string; html: string };
 
@@ -20,6 +20,10 @@ export type Page = {
   cta?: { label: string; href: string };
   sections: Section[];
   related?: string[];
+  /** Quick facts shown in the page hero (price from, processing time, validity...). */
+  facts?: { label: string; value: string }[];
+  /** Service preselected in the online application (/apply/?service=...). */
+  apply?: string;
   /** Blog articles: byline and review date (spec section 11). */
   article?: { author: string; reviewer: string; reviewed: string; minutes: number; summary: string };
 };

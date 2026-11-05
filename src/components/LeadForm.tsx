@@ -33,14 +33,14 @@ export function LeadForm({ source = 'contact' }: { source?: string }) {
   if (state === 'done' || state === 'error') {
     return (
       <div className="msg-ok wstep" role="status">
-        <p className="eyebrow" style={{ color: 'var(--gold-light)' }}>Free quote</p>
-        <h3 style={{ color: '#fff', marginTop: 6 }}>{state === 'done' ? 'Your request is ready' : 'Send your request on WhatsApp'}</h3>
+        <p className="eyebrow">Free quote</p>
+        <h3 style={{ marginTop: 6 }}>{state === 'done' ? 'Your request is ready' : 'Send your request on WhatsApp'}</h3>
         <p style={{ opacity: 0.85, marginTop: 8 }}>
           {state === 'done' ? 'Request received. An advisor will reply with your written quote during office hours. You can also send it on WhatsApp now.' : 'We could not save it right now. Send it on WhatsApp and we will reply there.'}
         </p>
         <div className="sum">{summary}</div>
         <div className="row-actions">
-          <a className="btn" style={{ background: '#1f9d55', color: '#fff' }} href={waLink(summary)} target="_blank" rel="noopener"><Icon name="wa" size={18} /> Send on WhatsApp · {SITE.whatsappDisplay}</a>
+          <a className="btn" style={{ background: '#b8901f', color: '#fff' }} href={waLink(summary)} target="_blank" rel="noopener"><Icon name="wa" size={18} /> Send on WhatsApp · {SITE.whatsappDisplay}</a>
           <button type="button" className="btn btn-glass" onClick={() => setState('idle')}>Edit request</button>
         </div>
       </div>

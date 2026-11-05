@@ -20,6 +20,20 @@ export function getCurrency(): string {
   }
 }
 
+const ICON_RULES: [RegExp, string][] = [
+  [/property|valuation|home/i, 'home'], [/company|business|investor|corporate|pro\b|tasheel|tawjeeh|clearing|employment|work permit|freelanc/i, 'briefcase'],
+  [/entrepreneur|startup|technology/i, 'rocket'], [/student|graduate|teacher|degree|education/i, 'cap'], [/doctor|health|medical|frontline/i, 'stetho'],
+  [/talent|artist|creative|exceptional|scientist|research/i, 'spark'], [/spouse|children|family|parent|newborn|baby/i, 'family'], [/retire/i, 'heart'],
+  [/remote|virtual|tourist|entry|travel/i, 'plane'], [/attest|translation|legal|document|certificate|notary|will/i, 'doc'], [/emirates id|insurance|iloe|cancel|renewal|shield/i, 'shield'],
+  [/cost|calculator|fee/i, 'calc'], [/eligib|check|validity/i, 'check'], [/faq|blog|guide|benefit|process|time|requirement/i, 'folder'], [/contact|about|why|consult/i, 'user'],
+  [/indian|pakistan|russia|kazakh|chin|filip|niger|egypt|uk|usa|turk|german|country/i, 'globe'], [/golden/i, 'star'],
+];
+function iconFor(label: string, group: string) {
+  for (const [re, ic] of ICON_RULES) if (re.test(label)) return ic;
+  for (const [re, ic] of ICON_RULES) if (re.test(group)) return ic;
+  return 'star';
+}
+
 export function Header({ locale }: { locale: Locale }) {
   const pathname = usePathname() || '/';
   const { path } = splitLocale(pathname);
@@ -68,41 +82,97 @@ export function Header({ locale }: { locale: Locale }) {
 
   const F = SITE.features;
   const portal = process.env.NEXT_PUBLIC_PORTAL_URL || '/portal/login/';
+  const waHello = waLink('Hello, I would like help with the Abu Dhabi Golden Visa.');
+
+  const langChip = (cls = '') => F.languageSwitcher && (
+    <div className={`chip ${cls}`}>
+      <button type="button" aria-haspopup="true" aria-expanded={open === 'lang' + cls} aria-label="Choose language" onClick={() => toggle('lang' + cls)}>
+        <Icon name="globe" size={16} /> {localeInfo(locale).native}
+      </button>
+      {open === 'lang' + cls && (
+        <div className="drop langs" role="menu">
+          {LOCALES.map((l) => (
+            <a key={l.code} href={localizePath(path, l.code as Locale)} hrefLang={l.htmlLang} aria-current={l.code === locale} role="menuitem">
+              <b>{l.code.toUpperCase()}</b>
+              <span>{l.native}</span>
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <>
       {F.topBar && F.topBarText && <div className="topline">{F.topBarText}</div>}
-      <header className={`top${F.topBar && F.topBarText ? ' with-line' : ''}`} ref={ref}>
-        <div className="wrap">
-          <div className="bar glass" style={{ paddingBlock: small ? 4 : 6 }}>
+      <header className={`top${F.topBar && F.topBarText ? ' with-line' : ''}${small ? ' small' : ''}`} ref={ref}>
+        <div className="utility">
+          <div className="wrap utility-in">
+            <a href={waHello} target="_blank" rel="noopener"><Icon name="wa" size={15} /> {SITE.whatsappDisplay}</a>
+            <a href={`mailto:${SITE.email}`} className="hide-md"><Icon name="mail" size={15} /> {SITE.email}</a>
+            <span className="hide-md"><Icon name="clock" size={15} /> {SITE.hours}</span>
+            <span className="u-sp" />
+            {F.clientLogin && <a href={portal}><Icon name="user" size={15} /> Client login</a>}
+            {langChip('u')}
+            <div className="chip u">
+              <button type="button" aria-haspopup="true" aria-expanded={open === 'cur'} aria-label="Choose currency" onClick={() => toggle('cur')}>
+                <Icon name="coins" size={16} /> {cur}
+              </button>
+              {open === 'cur' && (
+                <div className="drop curs" role="menu">
+                  {Object.entries(RATES).map(([code, r]) => (
+                    <button key={code} type="button" role="menuitemradio" aria-checked={code === cur} onClick={() => pickCurrency(code)}>
+                      <b>{code}</b>
+                      <span style={{ flex: 1 }}>{r.name}</span>
+                      <span className="muted">{r.symbol.trim()}</span>
+                    </button>
+                  ))}
+                  <p className="note">Approximate conversion. Government fees are paid in AED.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="mainbar">
+          <div className="wrap bar">
             <L locale={locale} href="/" className="logo" aria-label={`${SITE.name} home`}>
-              <img src="/brand/logo.webp" alt={SITE.name} width={164} height={40} />
+              <img src="/brand/logo.webp" alt={SITE.name} width={180} height={44} />
             </L>
             <nav className="nav" aria-label="Main">
               {[...NAV, ...SITE.nav.extra.map((x) => ({ label: x.label, href: x.href, groups: undefined }))].map((item) =>
                 item.groups ? (
                   <div key={item.label} onMouseEnter={() => setOpen(item.label)} onMouseLeave={() => setOpen((o) => (o === item.label ? null : o))}>
-                    <button type="button" className="nav-link" aria-expanded={open === item.label} onClick={() => toggle(item.label)}>
+                    <button type="button" className={`nav-link${path.startsWith(item.href) && item.href !== '/' ? ' here' : ''}`} aria-expanded={open === item.label} onClick={() => toggle(item.label)}>
                       {item.label} <Icon name="chev" size={14} />
                     </button>
                     {open === item.label && (
-                      <div className={`mega${item.groups.length > 3 ? ' wide' : item.groups.length === 3 ? ' three' : item.groups.length > 1 ? ' two' : ''}`} data-lenis-prevent>
-                        {item.groups.map((g) => (
-                          <div key={g.title}>
-                            <h4>{g.title}</h4>
-                            {g.links.map((l) => (
-                              <L key={l.href + l.label} locale={locale} href={l.href}>
-                                {l.label}
-                                {l.note && <small>{l.note}</small>}
-                              </L>
-                            ))}
-                          </div>
-                        ))}
+                      <div className={`mega${item.groups.length > 3 ? ' wide' : item.groups.length === 3 ? ' three' : item.groups.length > 1 ? ' two' : ' one'}`} data-lenis-prevent>
+                        <div className="mega-cols">
+                          {item.groups.map((g) => (
+                            <div key={g.title}>
+                              <h4>{g.title}</h4>
+                              {g.links.map((l) => (
+                                <L key={l.href + l.label} locale={locale} href={l.href}>
+                                  <span className="mi"><Icon name={iconFor(l.label, g.title)} size={16} /></span>
+                                  <span>{l.label}{l.note && <small>{l.note}</small>}</span>
+                                </L>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                        <div className="mega-promo">
+                          <p className="eyebrow">Not sure where to start?</p>
+                          <b>Free eligibility check in one minute</b>
+                          <p>Answer a few questions and an advisor confirms your best route on WhatsApp.</p>
+                          <L locale={locale} href="/visa-check/" className="btn btn-red btn-s">Check eligibility</L>
+                          <L locale={locale} href="/apply/" className="btn btn-gold btn-s">Apply online</L>
+                        </div>
                       </div>
                     )}
                   </div>
                 ) : (
                   <div key={item.label}>
-                    <L locale={locale} href={item.href} className="nav-link">
+                    <L locale={locale} href={item.href} className={`nav-link${path === item.href ? ' here' : ''}`} {...(item.href === '/golden-visa-cost/' ? { 'data-open-calc': '' } : {})}>
                       {item.label}
                     </L>
                   </div>
@@ -110,49 +180,14 @@ export function Header({ locale }: { locale: Locale }) {
               )}
             </nav>
             <div className="tools">
-              {F.languageSwitcher && <div className="chip">
-                <button type="button" aria-haspopup="true" aria-expanded={open === 'lang'} aria-label="Choose language" onClick={() => toggle('lang')}>
-                  <Icon name="globe" size={17} /> {localeInfo(locale).code.toUpperCase()}
-                </button>
-                {open === 'lang' && (
-                  <div className="drop langs" role="menu">
-                    {LOCALES.map((l) => (
-                      <a key={l.code} href={localizePath(path, l.code as Locale)} hrefLang={l.htmlLang} aria-current={l.code === locale} role="menuitem">
-                        <b>{l.code.toUpperCase()}</b>
-                        <span>{l.native}</span>
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </div>}
-              <div className="chip hide-sm">
-                <button type="button" aria-haspopup="true" aria-expanded={open === 'cur'} aria-label="Choose currency" onClick={() => toggle('cur')}>
-                  <Icon name="coins" size={17} /> {cur}
-                </button>
-                {open === 'cur' && (
-                  <div className="drop curs" role="menu">
-                    {Object.entries(RATES).map(([code, r]) => (
-                      <button key={code} type="button" role="menuitemradio" aria-checked={code === cur} onClick={() => pickCurrency(code)}>
-                        <b>{code}</b>
-                        <span style={{ flex: 1 }}>{r.name}</span>
-                        <span className="muted">{r.symbol.trim()}</span>
-                      </button>
-                    ))}
-                    <p className="note">Approximate conversion. Government fees are paid in AED.</p>
-                  </div>
-                )}
-              </div>
-              {F.clientLogin && (
-                <a className="icon-btn hide-sm" href={portal} aria-label="Client login" title="Client login">
-                  <Icon name="user" size={19} />
-                </a>
-              )}
-              <a className="icon-btn hide-sm" href={waLink('Hello, I would like help with the Abu Dhabi Golden Visa.')} target="_blank" rel="noopener" aria-label="WhatsApp us">
-                <Icon name="wa" size={20} />
+              {langChip('m')}
+              <a className="icon-btn" href={waHello} target="_blank" rel="noopener" aria-label="WhatsApp us">
+                <Icon name="wa" size={19} />
               </a>
-              <L locale={locale} href={SITE.nav.ctaLink || '/visa-check/'} className="btn btn-red hide-sm" style={{ minHeight: 44, padding: '0 18px' }}>
+              <L locale={locale} href={SITE.nav.ctaLink || '/visa-check/'} className="btn btn-red btn-s hide-sm">
                 {SITE.nav.ctaLabel || 'Check Eligibility'}
               </L>
+              <L locale={locale} href="/apply/" className="btn btn-gold btn-s hide-xs">Apply Now</L>
               <button type="button" className="burger" aria-label="Open menu" onClick={() => setMobile(true)}>
                 <Icon name="menu" />
               </button>
@@ -188,6 +223,9 @@ export function Header({ locale }: { locale: Locale }) {
             ),
           )}
           <div className="cta">
+            <L locale={locale} href="/apply/" className="btn btn-gold">
+              Apply Now
+            </L>
             <L locale={locale} href="/visa-check/" className="btn btn-red">
               Check Eligibility
             </L>
