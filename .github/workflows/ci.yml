@@ -1,0 +1,43 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_SITE_URL: https://www.abudhabigoldenvisa.com
+      PORTAL_HOST: app.abudhabigoldenvisa.com
+      LEADS_DIR: ./data
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: Type check
+        run: npx tsc --noEmit
+      - name: Build
+        run: npm run build
+      - name: Smoke test
+        run: |
+          npm start > server.log 2>&1 &
+          for i in $(seq 1 40); do curl -sf http://localhost:3000/ >/dev/null && break; sleep 2; done
+          set -e
+          for path in / /golden-visa/property-investment/ /golden-visa-cost/ /visa-check/ /ar/ /ur/golden-visa/ /contact/ /sitemap.xml /robots.txt; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:3000$path")
+            echo "$code $path"
+            [ "$code" = "200" ] || { cat server.log; exit 1; }
+          done
+          portal=$(curl -s -o /dev/null -w "%{http_code}" -H "Host: app.abudhabigoldenvisa.com" http://localhost:3000/)
+          echo "$portal portal host"
+          [ "$portal" = "200" ]
+          lead=$(curl -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type: application/json" -d '{"name":"CI test","phone":"+971500000000","source":"ci"}' http://localhost:3000/api/leads/)
+          echo "$lead lead api"
+          [ "$lead" = "200" ]

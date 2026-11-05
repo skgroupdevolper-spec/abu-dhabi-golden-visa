@@ -1,0 +1,39 @@
+const PATHS: Record<string, string> = {
+  home: 'M4 21V9l8-6 8 6v12M9 21v-6h6v6',
+  briefcase: 'M3 7h18v13H3zM8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18',
+  rocket: 'M12 3c3 2 5 5 5 9l-2 4H9l-2-4c0-4 2-7 5-9zM9 16l-2 4M15 16l2 4',
+  user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1-4 4-6 8-6s7 2 8 6',
+  star: 'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z',
+  cap: 'M2 9l10-5 10 5-10 5zM6 11v5c3 2 9 2 12 0v-5',
+  family: 'M8 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM17 11a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM2 20c0-3.5 2.7-6 6-6s6 2.5 6 6M14 20c0-2.6 1.6-4.5 3.5-4.5S21 17.4 21 20',
+  heart: 'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z',
+  shield: 'M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6zM9 12l2 2 4-4',
+  globe: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18',
+  coins: 'M9 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM15 21a6 6 0 1 0 0-12',
+  calc: 'M6 3h12a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01',
+  check: 'M5 12l5 5L19 7',
+  doc: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 14l2 2 4-4',
+  wa: 'M4 20l1.3-3.8A8 8 0 1 1 8 19zM9 9.5c.3 2 2.5 4.2 4.5 4.6l1.2-1.1 1.8.8c-.2 1.3-1.2 2-2.5 1.8-3-.5-5.4-2.9-5.9-5.9-.2-1.3.5-2.3 1.8-2.5l.8 1.8z',
+  arrow: 'M5 12h14M13 6l6 6-6 6',
+  chev: 'M6 9l6 6 6-6',
+  menu: 'M4 7h16M4 12h16M4 17h16',
+  close: 'M6 6l12 12M18 6L6 18',
+  pin: 'M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',
+  plane: 'M2.5 13.5l19-7.5-4.5 13-5.5-4.5-4 3v-5z',
+  clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2',
+  mail: 'M3 6h18v12H3zM3 7l9 6 9-6',
+  grid: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
+  baby: 'M12 14a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM7 21c1-3 3-4.5 5-4.5s4 1.5 5 4.5',
+  folder: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM12 10v6M9 13h6',
+  stetho: 'M6 3v6a4 4 0 0 0 8 0V3M10 13v3a4 4 0 0 0 8 0v-2M18 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
+  crown: 'M3 8l4 4 5-7 5 7 4-4-2 11H5z',
+  spark: 'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z',
+};
+
+export function Icon({ name, size = 22, className }: { name: string; size?: number; className?: string }) {
+  return (
+    <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d={PATHS[name] ?? PATHS.star} />
+    </svg>
+  );
+}

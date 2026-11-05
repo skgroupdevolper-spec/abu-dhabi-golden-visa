@@ -1,0 +1,28 @@
+{
+  "name": "abu-dhabi-golden-visa",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Abu Dhabi Golden Visa website and customer dashboard (Brightlink Management Consultancy LLC)",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start -p ${PORT:-3000}",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "gsap": "3.12.5",
+    "lenis": "1.1.13",
+    "next": "15.5.7",
+    "react": "19.2.1",
+    "react-dom": "19.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.0",
+    "@types/react": "19.1.0",
+    "@types/react-dom": "19.1.0",
+    "typescript": "5.6.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

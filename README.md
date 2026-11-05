@@ -1,5 +1,54 @@
 # Abu Dhabi Golden Visa
 
-Website and customer dashboard for www.abudhabigoldenvisa.com, operated by Brightlink Management Consultancy LLC.
+Website and customer dashboard for **www.abudhabigoldenvisa.com**, operated by Brightlink Management Consultancy LLC (Trade Licence 1053387).
 
-Build plan: see the project blueprint.
+- Next.js 15 (App Router), TypeScript, no CSS framework
+- 20 languages: English at `/`, others at `/ar/`, `/ru/`, `/tr/` … (`/en/…` redirects to `/`)
+- Customer dashboard on a subdomain (default `app.abudhabigoldenvisa.com`), served from the same app
+- Cost calculator, eligibility checker and enquiry form; enquiries are saved to `LEADS_DIR/leads.jsonl`
+
+## Run locally
+
+```bash
+cp .env.example .env
+npm install
+npm run dev        # http://localhost:3000
+```
+
+## Deploy on xCloud
+
+1. **Create the site.** In xCloud, add a Node.js site for `abudhabigoldenvisa.com` (with `www`). Point the domain's DNS A record to the server.
+2. **Connect GitHub.** Use repository `skgroupdevolper-spec/abu-dhabi-golden-visa`, branch `main`.
+3. **Environment.** Add the values from `.env.example` (`NEXT_PUBLIC_SITE_URL`, `PORTAL_HOST`, `LEADS_DIR`, `PORT`). Put `LEADS_DIR` outside the release folder, for example `/home/<user>/adgv-data`, so enquiries survive each deploy.
+4. **Build and start commands.**
+   ```bash
+   npm ci || npm install
+   npm run build
+   pm2 startOrReload ecosystem.config.js
+   ```
+   Then point xCloud's reverse proxy to the app port (default `3000`).
+5. **Customer dashboard subdomain.** Add `app.abudhabigoldenvisa.com` as an alias (or a second site) proxying to the **same** port. The app detects the host and serves the client portal. If you choose another subdomain, change `PORTAL_HOST`.
+6. **SSL.** Enable Let's Encrypt for `abudhabigoldenvisa.com`, `www` and `app`.
+7. **Redirect.** Redirect `abudhabigoldenvisa.com` to `www.abudhabigoldenvisa.com` in xCloud.
+
+Each push to `main` runs the GitHub Actions build (type check, production build, smoke test of pages, languages, portal host and the enquiry API).
+
+## Project layout
+
+```
+src/app/[locale]/page.tsx          homepage
+src/app/[locale]/[...slug]/        all content pages (from src/content)
+src/app/[locale]/portal/           customer dashboard (subdomain)
+src/app/api/leads/                 enquiry API
+src/content/                       page text, navigation, FAQs
+src/lib/fees.ts                    government fee schedule used by the calculator
+src/components/                    header, footer, water background, calculator, forms
+```
+
+To update a government fee, edit `src/lib/fees.ts` (amount and schedule date). Phase 3 moves fees, content, translations and enquiries into the admin panel.
+
+## Content rules
+
+- Never promise approval or a fixed processing time.
+- Every page shows: “Not an official UAE government website. Visa issuance and eligibility are subject to the competent authorities.”
+- Use only images supplied by the owner (`public/brand`, `public/images`).
