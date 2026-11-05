@@ -338,6 +338,55 @@ export const RICH: Record<string, Rich> = {
       { label: 'Issued by', value: 'DMT, through TAMM' },
     ],
   },
+  '/services/tasheel/': {
+    apply: 'tasheel',
+    facts: [
+      { label: 'Authority', value: 'MOHRE (Ministry of Human Resources)' },
+      { label: 'Government fees', value: 'About AED 76 to 5,000 per transaction' },
+      { label: 'New work permit', value: 'Around 2 working days' },
+      { label: 'Channels', value: 'Online, app or service centre' },
+    ],
+    add: [
+      { type: 'list', style: 'cards', title: 'Tasheel transactions we file', items: ['New establishment registration and establishment card', 'Work permit issue and renewal', 'Unified labour contract registration and updates', 'Labour card and establishment card renewal', 'Visa quota applications', 'Wage Protection System (WPS) registration', 'Employee transfers, including free zone to mainland', 'Mission cards, absence reports and e-signature cards'] },
+      { type: 'steps', title: 'How a Tasheel request runs', items: [
+        { title: 'Documents', text: 'We collect and check the passport, trade licence and establishment card.' },
+        { title: 'MOHRE submission', text: 'The transaction is typed and submitted through the official MOHRE channel.' },
+        { title: 'Processing', text: 'MOHRE reviews it; a complete work permit request usually takes about 2 working days.' },
+        { title: 'Approval and records', text: 'We send you the approved documents and confirm your MOHRE records are updated.' },
+      ], note: 'The fee for each transaction depends on its type and your company’s MOHRE classification.' },
+    ],
+  },
+  '/services/tawjeeh/': {
+    apply: 'tawjeeh',
+    facts: [
+      { label: 'Who', value: 'New mainland employees and job changers' },
+      { label: 'Session', value: 'About 30 minutes, in person or online' },
+      { label: 'Languages', value: 'English, Arabic, Urdu and more' },
+      { label: 'Certificate', value: 'Issued on completion' },
+    ],
+    add: [
+      { type: 'list', style: 'cards', title: 'What the orientation covers', items: ['Contract types, working hours, overtime, leave and end-of-service gratuity under the UAE Labour Law (Federal Decree-Law 33 of 2021)', 'The Wage Protection System and how salaries are paid', 'Worker rights, health and safety and how to change employer', 'How to check a contract and file a complaint with MOHRE'] },
+    ],
+  },
+  '/services/adjd-wills/': {
+    apply: 'adjd-wills',
+    facts: [
+      { label: 'Registered with', value: 'Abu Dhabi Judicial Department' },
+      { label: 'Who', value: 'Muslims and non-Muslims, residents or not' },
+      { label: 'Covers', value: 'Assets in all seven emirates' },
+      { label: 'Registration', value: 'Remote, by video call' },
+    ],
+    add: [
+      { type: 'steps', title: 'From draft to registered will', items: [
+        { title: 'Your wishes', text: 'Tell us your assets, heirs and guardianship wishes.' },
+        { title: 'Draft for approval', text: 'We prepare the draft and send it to you to approve.' },
+        { title: 'Arabic translation', text: 'The approved will is prepared in Arabic and English.' },
+        { title: 'Remote registration', text: 'The signed will is uploaded to ADJD; your identity is verified and the will is read over by video call.' },
+        { title: 'Digital copy', text: 'ADJD emails you the registered will.' },
+      ], note: 'An ADJD will covers assets in the UAE only. Assets abroad need a will in that country.' },
+      { type: 'list', style: 'docs', title: 'What to have ready', items: ['Passport or Emirates ID', 'List of UAE assets (property, bank accounts, shares, business ownership)', 'Names of beneficiaries, executor and guardians'] },
+    ],
+  },
   '/services/visa-cancellation/': { apply: 'cancellation', facts: [{ label: 'Covers', value: 'Golden, family and domestic visas' }, { label: 'Grace period', value: 'Checked before you exit' }, { label: 'Fines', value: 'Checked and cleared' }, { label: 'Quote', value: 'In writing first' }] },
   '/services/golden-visa-renewal/': { apply: 'gv-renewal', facts: GV_FACTS({ label: 'When', value: 'Start before expiry' }), add: [GV_FEES] },
   '/services/emirates-id/': { apply: 'emirates-id', facts: [{ label: 'Emirates ID, 10 years', value: `AED ${n(EID)}` }, { label: 'Biometrics', value: 'Only if the system asks' }, { label: 'Delivery', value: 'Courier to your address' }, { label: 'Services', value: 'New, renewal, replacement' }] },

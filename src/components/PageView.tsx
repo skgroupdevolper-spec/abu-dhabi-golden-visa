@@ -146,6 +146,7 @@ export function PageView({ page, locale, translated, price, hidden = [] }: { pag
   const facts = price ? [{ label: 'Price', value: price }, ...(page.facts ?? []).filter((f) => !/price|fees? from|cost/i.test(f.label))] : page.facts ?? [];
   const jump = page.sections.filter((x) => 'title' in x && x.title && x.type !== 'tool').slice(0, 8) as { title: string }[];
   const wa = waLink(`Hello, I would like help with: ${page.h1}`);
+  const showAside = !withSide && !isApply && !page.article;
   return (
     <>
       <header className="phero">
@@ -203,7 +204,7 @@ export function PageView({ page, locale, translated, price, hidden = [] }: { pag
         </nav>
       )}
       <div className="wrap" style={{ position: 'relative', zIndex: 2 }}>
-        <div className={withSide ? 'svc-layout' : undefined}>
+        <div className={withSide ? 'svc-layout' : showAside ? 'page-layout' : undefined}>
         {withSide && <ServiceSidebar current={page.path} locale={locale} hidden={hidden} />}
         <div className={withSide ? 'svc-main' : 'page-main'}>
         {page.article && (
@@ -227,6 +228,19 @@ export function PageView({ page, locale, translated, price, hidden = [] }: { pag
           </section>
         )}
         </div>
+        {showAside && (
+          <aside className="side-apply" aria-label="Apply">
+            <p className="eyebrow">Apply online</p>
+            <h3>{page.eyebrow}</h3>
+            <p>Start in a few minutes. We check your file and confirm the quote before you pay.</p>
+            <ul>
+              {(page.facts ?? []).slice(0, 3).map((f) => <li key={f.label}><Icon name="check" size={15} /> {f.label}: {f.value}</li>)}
+            </ul>
+            <L locale={locale} href={applyHref} className="btn btn-gold">Apply Now <Icon name="arrow" size={18} /></L>
+            <L locale={locale} href="/golden-visa-cost/" className="btn btn-red" data-open-calc="">Calculate cost</L>
+            <a className="btn btn-glass" style={{ border: '1px solid var(--line)' }} href={wa} target="_blank" rel="noopener"><Icon name="wa" size={18} /> WhatsApp</a>
+          </aside>
+        )}
         </div>
       </div>
       {!isApply && (
