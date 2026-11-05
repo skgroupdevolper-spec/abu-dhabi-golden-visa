@@ -6,8 +6,13 @@ Website and customer dashboard for **www.abudhabigoldenvisa.com**, operated by B
 - 20 languages: English at `/`, others at `/ar/`, `/ru/`, `/tr/` … (`/en/…` redirects to `/`)
 - Customer dashboard on a subdomain (default `app.abudhabigoldenvisa.com`), served from the same app
 - Cost calculator (also as a pop-up on every page), eligibility checker and enquiry forms
-- **Team dashboard** at `/admin/`: enquiries, client applications (status, quote, payments and receipts, documents, messages, secure portal link) and editable government fees
-- **Client dashboard** on the portal subdomain: progress, quote acceptance, payments and receipts, document upload and download, messages
+- **Main admin** at `/admin/` controls everything, with roles (owner, admin, staff, viewer):
+  - Work: dashboard, notifications, leads & enquiries, applications (status, quote, PDF, payments, receipts, documents, messages, portal link), customers, WhatsApp, AI chatbot
+  - Content: blog posts with review queue, Auto Publisher (AI), pages, FAQs, services & prices, cost calculator fees, testimonials, partner logos, offer pop-up, media library, subscribers
+  - Website: header & menu, footer, design & colours, languages (AI translation into 19 languages), site settings (contact, social, features, SEO & tracking, email SMTP, AI keys)
+  - Account: admin users, my profile, backup & move (download, restore, CSV exports)
+- **Client dashboard** on the portal subdomain, in all 20 languages: sign in / create account / reset by WhatsApp or email code, my applications, request a new service, progress, quote acceptance and PDF, payments and receipts, document upload and download, messages
+- **WhatsApp**: buttons everywhere; with the WhatsApp Business Cloud API connected, automatic messages for every step and client replies arriving in their file (webhook `/api/whatsapp/webhook`)
 - Data (enquiries, applications, fees, uploads) is saved in `DATA_DIR`
 
 ## Live preview with GitHub Codespaces
@@ -43,6 +48,9 @@ npm run dev        # http://localhost:3000
 5. **Customer dashboard subdomain.** Add `app.abudhabigoldenvisa.com` as an alias (or a second site) proxying to the **same** port. The app detects the host and serves the client portal. If you choose another subdomain, change `PORTAL_HOST`.
 6. **SSL.** Enable Let's Encrypt for `abudhabigoldenvisa.com`, `www` and `app`.
 7. **Redirect.** Redirect `abudhabigoldenvisa.com` to `www.abudhabigoldenvisa.com` in xCloud.
+
+8. **Daily scheduled job.** In xCloud add a daily cron: `curl -s "https://www.abudhabigoldenvisa.com/api/cron/daily?key=YOUR_CRON_SECRET"` (Auto Publisher and ongoing translations).
+9. **First sign-in.** Open `/admin/`, sign in with `ADMIN_EMAIL` / `ADMIN_PASSWORD`, then fill in Site settings (AI keys, email, WhatsApp) and add your team under Admin users.
 
 Each push to `main` runs the GitHub Actions build (type check, production build, smoke test of pages, languages, portal host and the enquiry API).
 
