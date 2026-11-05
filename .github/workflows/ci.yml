@@ -45,7 +45,7 @@ jobs:
         run: |
           mkdir -p shots
           npx -y playwright@1.49.1 screenshot --channel chrome --full-page --wait-for-timeout 2500 --viewport-size 1440,900 http://localhost:3000/ shots/home-desktop.png
-          npx -y playwright@1.49.1 screenshot --channel chrome --full-page --wait-for-timeout 2500 --device "iPhone 13" http://localhost:3000/ shots/home-mobile.png
+          npx -y playwright@1.49.1 screenshot --channel chrome --full-page --wait-for-timeout 2500 -b cr --device "Pixel 7" http://localhost:3000/ shots/home-mobile.png
           npx -y playwright@1.49.1 screenshot --channel chrome --full-page --wait-for-timeout 1500 --viewport-size 1440,900 http://localhost:3000/golden-visa/property-investment/ shots/property.png
           npx -y playwright@1.49.1 screenshot --channel chrome --wait-for-timeout 1500 --viewport-size 1440,900 http://localhost:3000/ar/ shots/arabic.png
       - uses: actions/upload-artifact@v4
