@@ -3,7 +3,7 @@ import { chromium } from 'playwright';
 import { writeFileSync } from 'node:fs';
 
 const base = 'http://localhost:3000';
-const pages = ['/', '/ar/', '/ur/golden-visa/', '/golden-visa-cost/', '/golden-visa/property-investment/', '/services/maid-visa/', '/family-golden-visa/newborn/', '/apply/', '/blog/', '/blog/category/property-investors/'];
+const pages = ['/', '/ar/', '/ur/golden-visa/', '/golden-visa-cost/', '/golden-visa/property-investment/', '/services/maid-visa/', '/family-golden-visa/newborn/', '/apply/', '/blog/', '/blog/category/property-investors/', '/blog/abu-dhabi-golden-visa-complete-guide/'];
 const browser = await chromium.launch({ channel: 'chrome' });
 const report = [];
 for (const path of pages) {
@@ -52,9 +52,11 @@ for (const vp of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
   await page.screenshot({ path: `shots/admin-app-${vp.width}.png`, fullPage: true });
   await page.goto(base + '/admin/leads/');
   await page.screenshot({ path: `shots/admin-leads-${vp.width}.png`, fullPage: true });
-  for (const p of ['settings', 'whatsapp', 'users', 'chatbot', 'languages', 'autopublisher', 'posts', 'pages', 'services', 'media', 'notifications', 'design', 'seo', 'categories', 'posts/new', 'header', 'profile', 'languages/edit']) {
-    await page.goto(base + `/admin/${p}/`);
-    await page.screenshot({ path: `shots/admin-${p.replace('/', '-')}-${vp.width}.png`, fullPage: true });
+  for (const p of ['settings', 'whatsapp', 'users', 'chatbot', 'languages', 'autopublisher', 'posts', 'pages', 'services', 'media', 'notifications', 'design', 'seo', 'categories', 'posts/new', 'header', 'profile', 'languages/edit', 'autopublisher/?tab=missions&edit=new', 'autopublisher/?tab=ai', 'autopublisher/?tab=quality', 'autopublisher/?tab=similarity', 'users/?edit=new', 'pages/edit/?path=%2F']) {
+    await page.goto(base + `/admin/${p.includes('?') ? p : p + '/'}`);
+    const bad = await page.locator('text=Application error').count();
+    if (bad) throw new Error(`Admin page failed: ${p}`);
+    await page.screenshot({ path: `shots/admin-${p.replace(/[^a-z0-9]+/gi, '-')}-${vp.width}.png`, fullPage: true });
   }
   await page.goto(base + '/admin/pages/edit/?path=%2Fgolden-visa%2Fproperty-investment%2F');
   await page.waitForTimeout(1200);
