@@ -6,7 +6,17 @@ function inline(s: string) {
     .replace(/(^|[^*])\*(?!\s)(.+?)\*(?!\*)/g, '$1<em>$2</em>')
     .replace(/\[([^\]]+)\]\(((?:https?:\/\/|\/)[^)\s]+)\)/g, (_, t, u) => `<a href="${u}"${u.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}>${t}</a>`);
 }
+/** Cleans HTML written in the visual editor: removes scripts, styles, event handlers and javascript: links. */
+export function cleanHtml(h: string): string {
+  return h
+    .replace(/<\s*(script|style|iframe|object|embed|form|textarea|select)\b[^>]*>[\s\S]*?<\/\s*\1\s*>/gi, '')
+    .replace(/<\/?\s*(script|style|iframe|object|embed|form|input|button|textarea|select|meta|link|base)\b[^>]*>/gi, '')
+    .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/(href|src)\s*=\s*("|')\s*(javascript|vbscript|data):[^"']*\2/gi, '$1="#"');
+}
+
 export function md(src: string): string {
+  if (/^\s*<(p|h[1-6]|div|ul|ol|table|blockquote|figure|img|section)\b/i.test(src)) return cleanHtml(src);
   const out: string[] = [];
   let list: 'ul' | 'ol' | null = null, para: string[] = [];
   const flushP = () => { if (para.length) { out.push(`<p>${inline(para.join(' '))}</p>`); para = []; } };

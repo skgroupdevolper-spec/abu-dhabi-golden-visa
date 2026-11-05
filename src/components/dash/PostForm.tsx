@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { ActionForm, Submit } from './ActionForm';
 import { MediaPicker } from './MediaPicker';
+import { RichEditor } from './RichEditor';
 import { Icon } from '@/components/Icon';
 
 type P = { id?: string; title?: string; slug?: string; status?: string; meta?: string; summary?: string; body?: string; faq?: string; author?: string; reviewer?: string; cover?: string; coverAlt?: string; category?: string; tags?: string; seoTitle?: string; ogImage?: string; canonical?: string; noindex?: boolean; scheduledAt?: string; featured?: boolean; keyword?: string };
@@ -20,12 +21,12 @@ function mdLite(s: string) {
 
 export function PostForm({ p, categories, action }: { p: P; categories: { slug: string; name: string }[]; action: (s: { ok?: string; error?: string } | undefined, f: FormData) => Promise<{ ok?: string; error?: string } | undefined> }) {
   const [v, setV] = useState<P>(p);
-  const [tab, setTab] = useState<'write' | 'preview'>('write');
+  const [tab, setTab] = useState<'visual' | 'write' | 'preview'>(!p.body || /^\s*</.test(p.body) ? 'visual' : 'write');
   const set = (k: keyof P, x: unknown) => setV((o) => ({ ...o, [k]: x }));
   const title = v.seoTitle || `${v.title ?? ''} | Abu Dhabi Golden Visa`;
   const meta = v.meta || v.summary || '';
   const kw = (v.keyword ?? '').toLowerCase();
-  const words = (v.body ?? '').split(/\s+/).filter(Boolean).length;
+  const words = (v.body ?? '').replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
   const checks = [
     { ok: title.length >= 30 && title.length <= 62, t: `SEO title ${title.length} characters (30–62)` },
     { ok: meta.length >= 110 && meta.length <= 160, t: `Description ${meta.length} characters (110–160)` },
@@ -34,7 +35,7 @@ export function PostForm({ p, categories, action }: { p: P; categories: { slug: 
     { ok: words >= 600, t: `${words} words (600+ recommended)` },
     { ok: !kw || (v.title ?? '').toLowerCase().includes(kw), t: 'Focus keyword in the title' },
     { ok: !kw || meta.toLowerCase().includes(kw), t: 'Focus keyword in the description' },
-    { ok: /\]\(\//.test(v.body ?? ''), t: 'Links to other pages of the site' },
+    { ok: /\]\(\/|href="\//.test(v.body ?? ''), t: 'Links to other pages of the site' },
   ];
   const score = Math.round((checks.filter((c) => c.ok).length / checks.length) * 100);
   const insert = (a: string, b = '') => { set('body', `${v.body ?? ''}${(v.body ?? '').endsWith('\n') || !v.body ? '' : '\n\n'}${a}${b}`); };
@@ -50,7 +51,8 @@ export function PostForm({ p, categories, action }: { p: P; categories: { slug: 
           <div className="field" style={{ marginTop: 10 }}><label>Summary (under the title and on cards)</label><textarea name="summary" rows={2} value={v.summary ?? ''} onChange={(e) => set('summary', e.target.value)} /></div>
           <div className="md" style={{ marginTop: 12 }}>
             <div className="md-bar">
-              <button type="button" className={tab === 'write' ? 'on' : ''} onClick={() => setTab('write')}>Write</button>
+              <button type="button" className={tab === 'visual' ? 'on' : ''} onClick={() => setTab('visual')}>Visual</button>
+              <button type="button" className={tab === 'write' ? 'on' : ''} onClick={() => setTab('write')}>Markdown</button>
               <button type="button" className={tab === 'preview' ? 'on' : ''} onClick={() => setTab('preview')}>Preview</button>
               <span style={{ width: 10 }} />
               <button type="button" onClick={() => insert('## Heading')}>H2</button><button type="button" onClick={() => insert('### Heading')}>H3</button>
@@ -59,7 +61,9 @@ export function PostForm({ p, categories, action }: { p: P; categories: { slug: 
               <button type="button" onClick={() => insert('![image description](/media/your-image.webp)')}>Image</button>
               <span className="muted small" style={{ marginInlineStart: 'auto', padding: '0 8px' }}>{words} words</span>
             </div>
-            {tab === 'write'
+            {tab === 'visual'
+              ? <><input type="hidden" name="body" value={v.body ?? ''} /><RichEditor value={v.body ?? ''} onChange={(h) => set('body', h)} /></>
+              : tab === 'write'
               ? <textarea name="body" rows={22} value={v.body ?? ''} onChange={(e) => set('body', e.target.value)} placeholder="Write the article. Use ## for headings, - for lists and [text](/page/) for links." />
               : <><input type="hidden" name="body" value={v.body ?? ''} /><div className="post-prev" dangerouslySetInnerHTML={{ __html: mdLite(v.body ?? '') }} /></>}
           </div>

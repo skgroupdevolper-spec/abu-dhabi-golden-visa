@@ -34,6 +34,8 @@ function iconFor(label: string, group: string) {
   return 'star';
 }
 
+const MENU = () => (SITE.nav.menu?.length ? SITE.nav.menu : NAV);
+
 export function Header({ locale }: { locale: Locale }) {
   const pathname = usePathname() || '/';
   const { path } = splitLocale(pathname);
@@ -144,7 +146,7 @@ export function Header({ locale }: { locale: Locale }) {
               <img src="/brand/logo.webp" alt={SITE.name} width={180} height={44} />
             </L>
             <nav className="nav" aria-label="Main">
-              {[...NAV, ...SITE.nav.extra.map((x) => ({ label: x.label, href: x.href, groups: undefined }))].map((item) =>
+              {[...MENU(), ...SITE.nav.extra.map((x) => ({ label: x.label, href: x.href, groups: undefined }))].map((item) =>
                 item.groups ? (
                   <div key={item.label} className="has-mega" onMouseEnter={() => enter(item.label)} onMouseLeave={() => leave(item.label)}>
                     <button type="button" className={`nav-link${path.startsWith(item.href) && item.href !== '/' ? ' here' : ''}`} aria-expanded={open === item.label} onClick={(e) => ((e.nativeEvent as PointerEvent).pointerType === 'mouse' ? setOpen(item.label) : toggle(item.label))}>
@@ -242,7 +244,7 @@ export function Header({ locale }: { locale: Locale }) {
               <Icon name="close" />
             </button>
           </div>
-          {NAV.map((item) =>
+          {MENU().map((item) =>
             item.groups ? (
               <details key={item.label}>
                 <summary>

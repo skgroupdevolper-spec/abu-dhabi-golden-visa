@@ -7,8 +7,13 @@ export type PublicSite = {
   features: { topBar: boolean; topBarText: string; floatingWhatsApp: boolean; mobileBar: boolean; dock: boolean; newsletter: boolean; clientLogin: boolean; chatbot: boolean; offer: boolean; preloader: boolean; languageSwitcher: boolean };
   offer: { title: string; text: string; button: string; link: string; delaySeconds: number };
   colors: { gold: string; goldDeep: string; ink: string; paper: string };
-  nav: { ctaLabel: string; ctaLink: string; extra: { label: string; href: string }[]; footerLinks: { label: string; href: string }[]; copyright: string };
+  nav: { ctaLabel: string; ctaLink: string; extra: { label: string; href: string }[]; footerLinks: { label: string; href: string }[]; copyright: string; menu?: MenuItem[]; footerCols?: MenuGroup[] };
 };
+
+export type MenuLink = { label: string; href: string; note?: string };
+export type MenuGroup = { title: string; links: MenuLink[] };
+/** Main menu item; with groups it opens a drop-down (4+ groups show as a tabbed panel). */
+export type MenuItem = { label: string; href: string; groups?: MenuGroup[] };
 
 export type Secrets = {
   whatsapp: {

@@ -12,7 +12,7 @@ import { getBlock } from '@/lib/server/settings';
 import type { AiLog } from '@/lib/server/translate';
 import { SITE } from '@/lib/site';
 import { when } from '@/lib/stages';
-import { draftNow, saveAutopub } from '../../ai-actions';
+import { draftNow, saveAutopub, suggestKeywordsNow } from '../../ai-actions';
 
 export const metadata: Metadata = { title: 'Auto Publisher' };
 
@@ -45,6 +45,12 @@ export default async function AutoPublisher() {
             <F name="faqCount" label="FAQs per article" value={cfg.faqCount ?? 4} type="number" />
             <F name="covers" label="Cover images (one link per line, used in turn; copy links from Media library)" value={cfg.covers} type="textarea" rows={3} full />
             <F name="keywords" label="Keywords and topics (one per line)" value={cfg.keywords} type="textarea" rows={8} full help="Each keyword becomes one article. Used keywords are skipped." />
+            <div className="full"><span className="lbl">Quality gates (articles that fail stay as drafts)</span></div>
+            <F name="minWords" label="Minimum words" value={cfg.minWords ?? 600} type="number" />
+            <F name="maxSimilarity" label="Maximum similarity to your posts (%)" value={cfg.maxSimilarity ?? 35} type="number" />
+            <F name="banned" label="Blocked phrases (one per line)" value={cfg.banned ?? 'guaranteed approval\n100% approval\nguarantee'} type="textarea" rows={3} full />
+            <div className="full"><Toggle name="requireFaq" label="Every article must have FAQs" on={cfg.requireFaq ?? true} /></div>
+            <div className="full"><Toggle name="aiCovers" label="Create an original AI cover image when no cover is set (OpenAI key)" help="Abu Dhabi scenes in white and gold, with no text, logos or government emblems." on={!!cfg.aiCovers} /></div>
             <F name="knowledge" label="Company knowledge for the writer" value={cfg.knowledge} type="textarea" rows={4} full />
             <label className="row small full"><input type="checkbox" name="resetUsed" /> Allow used keywords again</label>
             <div className="full"><Submit>Save</Submit></div>
@@ -55,6 +61,7 @@ export default async function AutoPublisher() {
             <h2>Write one now</h2>
             <p className="help">Drafts an original article for the next keyword, checks its similarity to your existing posts and puts it in the review queue.</p>
             <ActionForm action={draftNow}><Submit>Draft an article now</Submit></ActionForm>
+            <ActionForm action={suggestKeywordsNow}><div style={{ marginTop: 10 }}><Submit className="btn">Suggest 10 keyword ideas</Submit></div></ActionForm>
           </div>
           <div className="panel">
             <h2>Daily schedule</h2>

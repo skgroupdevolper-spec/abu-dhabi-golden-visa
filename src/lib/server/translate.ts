@@ -30,7 +30,7 @@ async function allPages(): Promise<Page[]> {
   return [...PAGES, ...(await getPublishedPosts()).map(postToPage)];
 }
 
-async function translatePage(p: Page, lang: string) {
+export async function translatePage(p: Page, lang: string) {
   const name = LOCALES.find((l) => l.code === lang)?.name ?? lang;
   const src = { seoTitle: p.seoTitle, meta: p.meta, eyebrow: p.eyebrow, h1: p.h1, intro: p.intro, sections: p.sections };
   const system = `You are a professional legal-immigration translator for a UAE residency consultancy website. Translate every human-readable string value in the JSON into ${name}${lang === 'at' ? ' (Austrian German)' : ''}. Keep the JSON structure and keys identical. Do not translate or change values of "type", "tool" or "href". Keep numbers, currency (AED), names of authorities and brand names accurate. Natural, clear, polite tone; never add promises or guarantees. Return JSON only.`;

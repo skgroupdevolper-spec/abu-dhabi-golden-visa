@@ -7,10 +7,42 @@ import { insert, list, notify } from './collections';
 import type { Post } from './content';
 import { getBlock, saveBlock } from './settings';
 import { getCategories } from './content';
+import { getSecrets } from './settings';
+import { mkdir, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { DATA_DIR } from './store';
+import type { MediaItem } from './content';
+
+/** Creates an original cover picture with OpenAI images (needs an OpenAI key). Returns the media link. */
+export async function aiCover(title: string): Promise<string | undefined> {
+  const key = (await getSecrets()).ai.openaiKey;
+  if (!key) return undefined;
+  const prompt = `Editorial photograph for an article titled "${title}". Modern Abu Dhabi skyline or luxury residential setting, warm golden light, white and gold colour palette, professional people where relevant. No text, no letters, no logos, no flags, no government emblems, no passports with readable details.`;
+  const r = await fetch('https://api.openai.com/v1/images/generations', { method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-image-1', prompt, size: '1536x1024', quality: 'medium', n: 1 }), signal: AbortSignal.timeout(120000) });
+  if (!r.ok) throw new Error(`Cover image: ${r.status}`);
+  const j = await r.json();
+  const b64 = j?.data?.[0]?.b64_json as string | undefined;
+  if (!b64) return undefined;
+  const name = `${newId(4)}-cover.png`;
+  await mkdir(path.join(DATA_DIR, 'media'), { recursive: true });
+  await writeFile(path.join(DATA_DIR, 'media', name), Buffer.from(b64, 'base64'));
+  await insert<MediaItem>('media', { id: newId(6), file: name, name: `Cover: ${title}`.slice(0, 100), type: 'image/png', size: Math.round(b64.length * 0.75), alt: title.slice(0, 200), at: now() });
+  return `/media/${name}`;
+}
+
+/** Suggests new article keywords that are not covered yet. */
+export async function suggestKeywords(n = 10): Promise<string[]> {
+  const cfg = await getBlock<AutoPub>('autopub', AP0);
+  const posts = await list<Post>('posts');
+  const have = [...BLOG.map((b) => b.h1), ...posts.map((p) => p.title), ...cfg.keywords.split('\n')].slice(0, 120);
+  const out = await complete('You plan SEO content for an Abu Dhabi Golden Visa consultancy. Suggest search phrases real people type into Google (long-tail, specific, 2026). Return JSON {"keywords": string[]}.', [{ role: 'user', content: `Give ${n} new keywords not covered by: ${have.join(' | ')}` }], { json: true, maxTokens: 1200, kind: 'auto' });
+  return (parseJson<{ keywords: string[] }>(out).keywords || []).map((k) => String(k).trim()).filter(Boolean).slice(0, n);
+}
 import { newId, now } from './store';
 import type { AiLog } from './translate';
 
-export type AutoPub = { on: boolean; perWeek: number; review: boolean; keywords: string; used: string[]; tone: string; words: number; knowledge: string; lastRun?: string; category?: string; covers?: string; audience?: string; faqCount?: number };
+export type AutoPub = { on: boolean; perWeek: number; review: boolean; keywords: string; used: string[]; tone: string; words: number; knowledge: string; lastRun?: string; category?: string; covers?: string; audience?: string; faqCount?: number;
+  minWords?: number; maxSimilarity?: number; banned?: string; requireFaq?: boolean; aiCovers?: boolean };
 export const AP0: AutoPub = { on: false, perWeek: 2, review: true, keywords: 'Abu Dhabi Golden Visa for property investors 2026\nGolden Visa for doctors in Abu Dhabi\nHow to add parents to a Golden Visa', used: [], tone: 'clear, friendly, expert, plain English', words: 900, knowledge: '', lastRun: undefined };
 
 const grams = (t: string) => { const w = t.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean); const g = new Set<string>(); for (let i = 0; i + 2 < w.length; i++) g.add(`${w[i]} ${w[i + 1]} ${w[i + 2]}`); return g; };
@@ -42,13 +74,23 @@ Return JSON: {"title" (max 65 chars),"seoTitle" (max 60 chars),"slug","keyword",
     const sim = Math.max(0, ...posts.map((p) => similarity(a.body, p.body)));
     let slug = slugify(a.slug || a.title);
     if (posts.some((p) => p.slug === slug) || PAGES.some((p) => p.path === `/blog/${slug}/`)) slug = `${slug}-${newId(2)}`;
-    const publish = !cfg.review && sim < 0.35;
+    const words = a.body.split(/\s+/).filter(Boolean).length;
+    const banned = (cfg.banned ?? 'guaranteed approval\n100% approval\nguarantee').split('\n').map((x) => x.trim().toLowerCase()).filter(Boolean);
+    const gates = [
+      words < (cfg.minWords ?? 600) && `only ${words} words`,
+      sim > (cfg.maxSimilarity ?? 35) / 100 && `similarity ${Math.round(sim * 100)}%`,
+      banned.find((b) => a.body.toLowerCase().includes(b)) && 'contains a blocked phrase',
+      (cfg.requireFaq ?? true) && !(a.faq || []).length && 'no FAQs',
+    ].filter(Boolean) as string[];
+    const publish = !cfg.review && !gates.length;
     const post: Post = { id: newId(6), slug, title: a.title.slice(0, 200), meta: (a.meta || a.summary).slice(0, 320), summary: (a.summary || '').slice(0, 600), body: a.body.slice(0, 60000), faq: (a.faq || []).slice(0, 8), status: publish ? 'published' : 'review', source: 'auto', author: 'Abu Dhabi Golden Visa editorial team', reviewer: publish ? 'Auto Publisher' : '', keyword, similarity: Math.round(sim * 100) / 100, createdAt: now(), updatedAt: now(), publishedAt: publish ? now() : undefined,
       seoTitle: (a.seoTitle || '').slice(0, 70), category: cfg.category || (cats.some((c) => c.slug === a.category) ? a.category : undefined), tags: (a.tags || []).slice(0, 8).map((t) => String(t).slice(0, 40)),
       cover: covers.length ? covers[posts.filter((p) => p.source === 'auto').length % covers.length] : undefined, coverAlt: a.title.slice(0, 120) };
+    if (gates.length) post.status = 'draft';
+    if (!post.cover && cfg.aiCovers) post.cover = await aiCover(post.title).catch(() => undefined);
     await insert<Post>('posts', post);
     await saveBlock('autopub', { ...cfg, used: [...cfg.used, keyword], lastRun: now() });
-    await insert<AiLog>('ai-log', { id: newId(6), at: now(), kind: 'autopub', text: `${publish ? 'Published' : 'Drafted for review'}: ${post.title} (similarity ${Math.round(sim * 100)}%)`, ok: true }, 1000);
+    await insert<AiLog>('ai-log', { id: newId(6), at: now(), kind: 'autopub', text: `${publish ? 'Published' : gates.length ? `Held as draft (${gates.join(', ')})` : 'Drafted for review'}: ${post.title} (similarity ${Math.round(sim * 100)}%)`, ok: true }, 1000);
     await notify('request', `Auto Publisher: "${post.title}" ${publish ? 'published' : 'is waiting for your review'}`, `/admin/posts/${post.id}/`);
     return { ok: true, message: publish ? 'Article published.' : 'Article drafted and waiting in the review queue.', id: post.id };
   } catch (e) {

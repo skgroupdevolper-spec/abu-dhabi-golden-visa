@@ -19,8 +19,8 @@ export default async function Languages() {
   const langs = LOCALES.filter((l) => l.code !== 'en');
   return (
     <>
-      <div className="topbar"><div><p className="eyebrow">Languages & translation</p><h1>One website, <span className="gold">20 languages.</span></h1></div>
-        {job.running && <form action={stopTranslation}><button className="btn" type="submit">Stop translating</button></form>}</div>
+      <div className="topbar"><div><p className="eyebrow">Languages & translation</p><h1>Languages &amp; translation</h1></div>
+        <div className="row"><a className="btn" href="/admin/languages/edit/">Edit a translation by hand</a>{job.running && <form action={stopTranslation}><button className="btn" type="submit">Stop translating</button></form>}</div></div>
       {job.running ? (
         <div className="notice" style={{ marginBottom: 16 }}><b>Translating… {job.done} of {job.total}</b>{job.errors ? ` · ${job.errors} errors` : ''}<div className="bar" style={{ margin: '8px 0' }}><i style={{ width: `${job.total ? (job.done / job.total) * 100 : 0}%` }} /></div><span className="small muted">{job.current}</span></div>
       ) : job.finishedAt && <p className="notice" style={{ marginBottom: 16 }}>Last run finished {when(job.finishedAt)}: {job.done} translated{job.errors ? `, ${job.errors} errors` : ''}. {job.message}</p>}

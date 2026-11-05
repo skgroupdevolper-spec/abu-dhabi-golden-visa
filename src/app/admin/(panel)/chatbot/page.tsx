@@ -57,6 +57,11 @@ export default async function Chatbot({ searchParams }: { searchParams: Promise<
             <F name="knowledge" label="Extra company knowledge (prices, offers, hours, policies)" value={cfg.knowledge} type="textarea" rows={8} full help="The bot already knows your services, government fees, FAQs and contact details. Add anything else here." />
             <div className="full"><Toggle name="askContact" label="Invite visitors to share their WhatsApp number" on={cfg.askContact} /></div>
             {LOCALES.map((l) => <input key={l.code} type="hidden" name={`g_${l.code}`} value={cfg.greeting[l.code] ?? ''} />)}
+            <input type="hidden" name="t_set" value="1" />
+            <div className="full"><span className="lbl">Hand the chat over to WhatsApp when visitors…</span></div>
+            {([['t_human', 'ask for a human', 'human'], ['t_unknown', 'ask something the bot cannot answer', 'unknown'], ['t_quote', 'want a personal quote', 'quote'], ['t_apply', 'want to apply', 'apply']] as const).map(([n, l, k]) => (
+              <div key={n}><Toggle name={n} label={l} on={cfg.triggers ? cfg.triggers[k] : true} /></div>
+            ))}
             <div className="full"><Submit>Save</Submit></div>
           </ActionForm>
           <ActionForm action={testAi} className="row" ><Submit className="btn">Test the AI connection</Submit></ActionForm>

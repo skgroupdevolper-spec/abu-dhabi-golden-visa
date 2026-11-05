@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation';
 import { PostForm } from '@/components/dash/PostForm';
 import { requireAdmin } from '@/lib/server/auth';
 import { getCategories, getPosts } from '@/lib/server/content';
-import { savePost } from '../../../content-actions';
+import { restoreRevision, savePost } from '../../../content-actions';
+import { when } from '@/lib/stages';
 
 export const metadata: Metadata = { title: 'Edit article' };
 
@@ -24,6 +25,16 @@ export default async function EditPost({ params }: { params: Promise<{ id: strin
         cover: p?.cover, coverAlt: p?.coverAlt, category: p?.category, tags: p?.tags?.join(', '), seoTitle: p?.seoTitle, ogImage: p?.ogImage, canonical: p?.canonical,
         noindex: p?.noindex, scheduledAt: local(p?.scheduledAt), featured: p?.featured, keyword: p?.keyword,
       }} />
+      {p?.revisions?.length ? (
+        <div className="panel" style={{ marginTop: 16 }}>
+          <h2>Earlier versions</h2>
+          <p className="help">Every save keeps the previous version (last 15). Restoring keeps the current text as a version too.</p>
+          <div className="files" style={{ marginTop: 10 }}>{p.revisions.map((r) => (
+            <div key={r.at} className="file"><span className="fn"><b>{r.title}</b><small>{when(r.at)} · {r.by} · {r.body.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length} words</small></span>
+              <form action={restoreRevision}><input type="hidden" name="id" value={p.id} /><input type="hidden" name="at" value={r.at} /><button className="btn btn-sm" type="submit">Restore</button></form></div>
+          ))}</div>
+        </div>
+      ) : null}
     </>
   );
 }

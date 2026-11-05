@@ -35,7 +35,8 @@ export async function savePost(_: St, f: FormData): Promise<St> {
     scheduledAt: sched && !Number.isNaN(Date.parse(sched)) ? new Date(sched).toISOString() : undefined, updatedAt: now(),
   };
   let pid = id;
-  if (id) await patch<Post>('posts', id, (p) => ({ ...p, ...data, publishedAt: status === 'published' ? p.publishedAt || now() : p.publishedAt }));
+  if (id) await patch<Post>('posts', id, (p) => ({ ...p, ...data, publishedAt: status === 'published' ? p.publishedAt || now() : p.publishedAt,
+    revisions: p.body !== data.body || p.title !== data.title ? [{ at: p.updatedAt, by: me.name, title: p.title, summary: p.summary, meta: p.meta, body: p.body }, ...(p.revisions ?? [])].slice(0, 15) : p.revisions }));
   else { pid = newId(6); await insert<Post>('posts', { id: pid, ...data, source: 'manual', createdAt: now(), publishedAt: status === 'published' ? now() : undefined }); }
   live();
   if (status === 'published' && !data.noindex) void import('@/lib/server/indexnow').then((m) => m.pingIndexNow([`/blog/${slug}/`, '/blog/'])).catch(() => {});
@@ -197,4 +198,16 @@ export async function deleteCategory(f: FormData) {
   await remove<Category>('categories', s(f, 'id', 40));
   live();
   revalidatePath('/admin/categories/');
+}
+
+export async function restoreRevision(f: FormData) {
+  const me = await requireAdmin(EDIT);
+  const id = s(f, 'id', 40), at = s(f, 'at', 40);
+  await patch<Post>('posts', id, (p) => {
+    const r = p.revisions?.find((x) => x.at === at);
+    if (!r) return p;
+    return { ...p, title: r.title, summary: r.summary, meta: r.meta, body: r.body, updatedAt: now(), revisions: [{ at: p.updatedAt, by: me.name, title: p.title, summary: p.summary, meta: p.meta, body: p.body }, ...(p.revisions ?? []).filter((x) => x.at !== at)].slice(0, 15) };
+  });
+  live();
+  redirect(`/admin/posts/${id}/?restored=1`);
 }

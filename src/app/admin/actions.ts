@@ -36,6 +36,12 @@ export async function login(_: FormState, f: FormData): Promise<FormState> {
     tries.set(email, [...recent, t]);
     return { error: 'Email or password is not correct.' };
   }
+  const { checkSecondStep, getTotp } = await import('@/lib/server/totp');
+  if ((await getTotp(who.email))?.enabled) {
+    const code = s(f, 'code', 20);
+    if (!code) return { error: 'Two-step login is on: enter the 6-digit code from your authenticator app (or a backup code).' };
+    if (!(await checkSecondStep(who.email, code))) { tries.set(email, [...recent, t]); return { error: 'The code is not correct or has expired.' }; }
+  }
   tries.delete(email);
   await startSession(who);
   redirect('/admin/');
@@ -247,4 +253,32 @@ export async function saveFeeSchedule(_: FormState, f: FormData): Promise<FormSt
 export async function getAppOrNull(id: string) {
   await requireAdmin();
   return getApplication(id);
+}
+
+/* ---------- two-step login ---------- */
+export async function totpStart(): Promise<FormState & { secret?: string; uri?: string }> {
+  const me = await requireAny();
+  const { newSecret, setTotp, getTotp, uri } = await import('@/lib/server/totp');
+  if ((await getTotp(me.email))?.enabled) return { error: 'Two-step login is already on.' };
+  const secret = newSecret();
+  await setTotp(me.email, { secret, enabled: false, backup: [] });
+  return { ok: 'start', secret, uri: uri(secret, me.email) };
+}
+export async function totpEnable(_: FormState, f: FormData): Promise<FormState & { codes?: string[] }> {
+  const me = await requireAny();
+  const { getTotp, setTotp, verify, backupCodes, hashCodes } = await import('@/lib/server/totp');
+  const e = await getTotp(me.email);
+  if (!e) return { error: 'Start the set-up first.' };
+  if (!verify(e.secret, s(f, 'code', 10))) return { error: 'The code is not correct. Check the time on your phone and try again.' };
+  const codes = backupCodes();
+  await setTotp(me.email, { ...e, enabled: true, backup: hashCodes(codes) });
+  return { ok: 'Two-step login is on. Save these backup codes somewhere safe; each works once.', codes };
+}
+export async function totpDisable(_: FormState, f: FormData): Promise<FormState> {
+  const me = await requireAny();
+  const { checkSecondStep, setTotp } = await import('@/lib/server/totp');
+  if (!(await checkSecondStep(me.email, s(f, 'code', 20)))) return { error: 'Enter a current code to turn two-step login off.' };
+  await setTotp(me.email, null);
+  revalidatePath('/admin/profile/');
+  return { ok: 'Two-step login is off.' };
 }

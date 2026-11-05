@@ -5,6 +5,7 @@ import { useMemo, useRef, useState } from 'react';
 import { BLOCKS, STYLE_FIELDS, arr, str, uid, type Block, type BlockType, type Field } from '@/lib/blocks';
 import { Icon } from '@/components/Icon';
 import { MediaPicker } from './MediaPicker';
+import { RichEditor } from './RichEditor';
 
 type Over = Record<string, unknown> & { facts?: { label: string; value: string }[] };
 type Props = { path: string; custom: boolean; original: { h1: string; intro: string; eyebrow: string; seoTitle: string; meta: string; facts: { label: string; value: string }[] }; initial: Over; blocks: Block[]; hasOverride: boolean };
@@ -12,7 +13,7 @@ type Props = { path: string; custom: boolean; original: { h1: string; intro: str
 function FieldInput({ f, value, set }: { f: Field; value: unknown; set: (v: unknown) => void }) {
   switch (f.kind) {
     case 'textarea': return <textarea rows={3} value={str(value)} onChange={(e) => set(e.target.value)} />;
-    case 'md': return <MdField value={str(value)} set={set} />;
+    case 'md': return <RichEditor value={str(value)} onChange={(h) => set(h)} minHeight={220} />;
     case 'number': return <input type="number" value={str(value)} onChange={(e) => set(Number(e.target.value))} />;
     case 'check': return <label className="row small"><input type="checkbox" checked={!!value} onChange={(e) => set(e.target.checked)} /> {f.label}</label>;
     case 'image': return <MediaPicker value={str(value)} onChange={(u) => set(u)} />;
@@ -90,6 +91,7 @@ export function PageBuilder({ path, custom, original, initial, blocks: start, ha
   const [busy, setBusy] = useState(false);
   const [preview, setPreview] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop');
   const frame = useRef<HTMLIFrameElement>(null);
 
   const cur = blocks.find((b) => b.id === sel) ?? null;
@@ -234,7 +236,12 @@ export function PageBuilder({ path, custom, original, initial, blocks: start, ha
             </div>
           )}
         </div>
-        {preview && <div className="pb-preview"><iframe ref={frame} src={path} title="Live preview" /></div>}
+        {preview && (
+          <div className={`pb-preview ${device}`}>
+            <div className="pb-dev"><button type="button" className={device === 'desktop' ? 'on' : ''} onClick={() => setDevice('desktop')}>Desktop</button><button type="button" className={device === 'mobile' ? 'on' : ''} onClick={() => setDevice('mobile')}>Mobile</button></div>
+            <iframe ref={frame} src={path} title="Live preview" />
+          </div>
+        )}
       </div>
 
       {adding !== null && (

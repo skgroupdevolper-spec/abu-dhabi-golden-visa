@@ -12,6 +12,7 @@ export type Post = {
   status: 'draft' | 'review' | 'published'; source: 'manual' | 'auto'; author: string; reviewer: string; keyword?: string; similarity?: number;
   createdAt: string; updatedAt: string; publishedAt?: string; cover?: string;
   coverAlt?: string; category?: string; tags?: string[]; seoTitle?: string; ogImage?: string; canonical?: string; noindex?: boolean; scheduledAt?: string; featured?: boolean;
+  revisions?: { at: string; by: string; title: string; summary: string; meta: string; body: string }[];
 };
 export type Category = { id: string; slug: string; name: string; description: string; image?: string; seoTitle?: string; meta?: string; order: number };
 /** Pages created in the admin page builder. */

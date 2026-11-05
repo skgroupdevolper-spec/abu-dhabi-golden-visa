@@ -5,9 +5,9 @@ import { L } from './L';
 import { Newsletter } from './Newsletter';
 
 export function Footer({ locale }: { locale: Locale }) {
-  const groups = NAV.flatMap((n) => n.groups ?? []);
+  const groups = (SITE.nav.menu?.length ? SITE.nav.menu : NAV).flatMap((n) => n.groups ?? []);
   const pick = (title: string) => groups.find((g) => g.title === title)?.links ?? [];
-  const cols = [
+  const cols = SITE.nav.footerCols?.length ? SITE.nav.footerCols : [
     { title: 'Golden Visa', links: pick('Golden Visa') },
     { title: 'Family & Residency', links: pick('Family & Residency') },
     { title: 'Resources', links: pick('Resources') },

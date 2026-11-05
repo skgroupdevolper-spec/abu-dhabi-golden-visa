@@ -21,6 +21,7 @@ export default async function Login() {
           <div style={{ height: 8 }} />
           <div className="field"><label htmlFor="email">Email</label><input id="email" name="email" type="email" autoComplete="username" required /></div>
           <div className="field"><label htmlFor="password">Password</label><input id="password" name="password" type="password" autoComplete="current-password" required /></div>
+          <div className="field"><label htmlFor="code">Two-step code <span className="muted">(only if turned on)</span></label><input id="code" name="code" inputMode="numeric" autoComplete="one-time-code" placeholder="123 456" /></div>
           <Submit className="btn btn-gold" >Sign in</Submit>
         </ActionForm>
       </div>
