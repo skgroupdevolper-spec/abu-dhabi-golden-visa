@@ -152,7 +152,7 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
   const wa = waLink(`Hello, I would like help with: ${page.h1}`);
   const showAside = !withSide && !isApply && !page.article && !o.hideAside && !before;
   const heroImg = page.image;
-  const factsOn = !o.hideFacts;
+  const factsOn = !o.hideFacts && !before;
   return (
     <>
       <header className={`phero${isApply ? ' phero-apply' : ''}${o.heroStyle === 'minimal' ? ' phero-min' : ''}${o.heroStyle === 'image' && heroImg ? ' phero-cover' : ''}`} style={o.heroStyle === 'image' && heroImg ? ({ ['--hero-img' as string]: `url("${heroImg}")` } as CSSProperties) : undefined}>
@@ -218,7 +218,7 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
       <div className="wrap" style={{ position: 'relative', zIndex: 2 }}>
         <div className={withSide ? 'svc-layout' : showAside ? 'page-layout' : undefined}>
         {withSide && <ServiceSidebar current={page.path} locale={locale} hidden={hidden} />}
-        <div className={withSide ? 'svc-main' : isApply ? 'apply-main-wrap' : 'page-main'}>
+        <div className={withSide ? 'svc-main' : isApply || before ? 'apply-main-wrap' : 'page-main'}>
         {page.article && (
           <p className="byline block" style={{ marginBottom: 0 }}>
             By <b>{page.article.author}</b> · Reviewed by <b>{page.article.reviewer}</b> · Last reviewed {page.article.reviewed} · {page.article.minutes} min read
