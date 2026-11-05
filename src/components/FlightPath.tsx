@@ -85,7 +85,7 @@ export function FlightPath({ title = 'Your journey to Abu Dhabi', intro = 'Scrol
           </defs>
           <path d={D} className="fp-route" fill="none" />
           <path d={D} className="fp-trail" fill="none" stroke="url(#fpg)" filter="url(#fpglow)" />
-          <g className="fp-skyline" transform="translate(1110 112)" aria-hidden="true">
+          <g className="fp-skyline" transform="translate(1178 92) scale(.8)" aria-hidden="true">
             <path d="M-34 0v-22h8v22M-22 0v-40l5-8 5 8v40M-8 0v-30h9v30M5 0v-52l3-14 3 14v52M16 0v-26h10v26" />
           </g>
           {pts.map((s, i) => (

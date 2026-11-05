@@ -1152,3 +1152,6 @@ li.sk.on { opacity: 1; transform: none; }
 @media (max-width: 1000px) { .cp-grid4 { grid-template-columns: 1fr 1fr; } .cp-enquiry, .cp-here, .cp-story, .cp-licence { grid-template-columns: 1fr; } .cp-grid3, .cp-steps { grid-template-columns: 1fr; } }
 @media (max-width: 520px) { .cp-grid4 { grid-template-columns: 1fr; } .cp-dl > div { grid-template-columns: 1fr; gap: 2px; } .cp-photo figcaption { inset-inline-start: 10px; } }
 .dock a[href*="wa.me"] .si-wa { animation: ic-ring 4.5s ease-in-out infinite; }
+.fp-from { left: 2%; top: 0; bottom: auto; }
+.flight .fp-head .lead, .home .flight .lead { color: rgba(245, 239, 224, .78); }
+.fp-step { background: rgba(255, 255, 255, .06); }
