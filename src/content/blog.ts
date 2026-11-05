@@ -11,6 +11,22 @@ type A = {
   body: [string, string | string[]][]; faq: [string, string][]; links: string[]; cta?: { label: string; href: string };
 };
 
+// Blog categories for the starting articles (admins can add more in the dashboard).
+export const BLOG_CATEGORIES = [
+  { slug: 'getting-started', name: 'Getting started', description: 'How the Abu Dhabi Golden Visa works, what it costs and how to apply.' },
+  { slug: 'property-investors', name: 'Property investors', description: 'Golden Visa through Abu Dhabi property: off-plan, mortgages and selling.' },
+  { slug: 'professionals-business', name: 'Professionals & business', description: 'Routes for professionals, doctors, teachers, engineers and business owners.' },
+  { slug: 'family-renewal', name: 'Family & renewal', description: 'Sponsoring your family, medical, Emirates ID and renewals.' },
+  { slug: 'comparisons', name: 'Comparisons', description: 'Golden Visa compared with other UAE residency options.' },
+];
+const CAT_OF: Record<string, string> = {
+  'abu-dhabi-golden-visa-complete-guide': 'getting-started', 'how-to-apply-abu-dhabi-golden-visa': 'getting-started', 'abu-dhabi-golden-visa-cost': 'getting-started', 'golden-visa-from-outside-uae': 'getting-started', 'golden-visa-application-mistakes': 'getting-started',
+  'golden-visa-through-property-investment': 'property-investors', 'off-plan-property-golden-visa': 'property-investors', 'mortgaged-property-golden-visa': 'property-investors', 'selling-golden-visa-property': 'property-investors',
+  'golden-visa-skilled-professionals': 'professionals-business', 'golden-visa-aed-30000-salary': 'professionals-business', 'golden-visa-doctors-healthcare': 'professionals-business', 'golden-visa-teachers-engineers': 'professionals-business', 'golden-visa-business-owners-shareholders': 'professionals-business',
+  'golden-visa-family-members': 'family-renewal', 'sponsor-parents-golden-visa': 'family-renewal', 'golden-visa-medical-emirates-id': 'family-renewal', 'golden-visa-renewal-requirements': 'family-renewal',
+  'abu-dhabi-vs-dubai-golden-visa': 'comparisons', 'golden-visa-vs-retirement-visa': 'comparisons',
+};
+
 function art(a: A): Page {
   const sections: Section[] = a.body.map(([title, b]) => (Array.isArray(b) ? { type: 'list', title, items: b } : { type: 'text', title, body: b.split('\n\n') }));
   sections.push({ type: 'faq', title: 'Frequently asked questions', items: a.faq.map(([q, ans]) => ({ q, a: ans })) });
@@ -19,7 +35,8 @@ function art(a: A): Page {
     path: `/blog/${a.slug}/`,
     seoTitle: `${a.title} | Abu Dhabi Golden Visa`,
     meta: a.meta,
-    eyebrow: 'Guide',
+    eyebrow: BLOG_CATEGORIES.find((c) => c.slug === CAT_OF[a.slug])?.name ?? 'Guide',
+    category: CAT_OF[a.slug],
     h1: a.title,
     intro: a.summary,
     cta: a.cta ?? { label: 'Check My Eligibility', href: '/visa-check/' },

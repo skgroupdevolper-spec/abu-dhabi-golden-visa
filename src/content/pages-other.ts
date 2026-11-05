@@ -365,7 +365,6 @@ export const OTHER_PAGES: Page[] = [
     h1: 'Guides and insights',
     intro: 'Plain-language guides to the Abu Dhabi Golden Visa, written and reviewed by our advisors.',
     sections: [
-      { type: 'cards', title: 'All guides', items: BLOG.map((p) => ({ title: p.h1, text: p.article?.summary ?? p.meta, href: p.path })) },
       { type: 'cards', title: 'Golden Visa by country', items: COUNTRIES.map((c) => ({ title: c.menu, text: `Documents and process for ${c.people}.`, href: c.path })) },
     ],
   },

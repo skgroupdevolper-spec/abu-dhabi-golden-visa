@@ -22,6 +22,11 @@ export type Page = {
   related?: string[];
   /** Quick facts shown in the page hero (price from, processing time, validity...). */
   facts?: { label: string; value: string }[];
+  /** Featured image (hero and social sharing). */
+  image?: string;
+  imageAlt?: string;
+  /** Blog category name (articles). */
+  category?: string;
   /** Service preselected in the online application (/apply/?service=...). */
   apply?: string;
   /** Blog articles: byline and review date (spec section 11). */

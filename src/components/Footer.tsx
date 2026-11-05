@@ -55,7 +55,6 @@ export function Footer({ locale }: { locale: Locale }) {
           </div>
         </div>
         <div className="legal">
-          <strong>{SITE.disclaimer}</strong>
           <span>
             {SITE.nav.copyright || `© ${new Date().getFullYear()} ${SITE.operator}`} ·{' '}
             <L locale={locale} href="/privacy/">Privacy</L> · <L locale={locale} href="/terms/">Terms</L> ·{' '}

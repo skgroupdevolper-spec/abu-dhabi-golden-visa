@@ -1,3 +1,7 @@
+import type { CSSProperties, ReactNode } from 'react';
+import type { Block } from '@/lib/blocks';
+import type { PageOverride } from '@/lib/server/content';
+import { BlockView } from './BlockView';
 import { ServiceSidebar } from './ServiceSidebar';
 import { isServicePage } from '@/content/services-catalog';
 import type { Page, Section } from '@/content/types';
@@ -137,31 +141,33 @@ export function SectionView({ s, locale, i }: { s: Section; locale: Locale; i: n
   }
 }
 
-export function PageView({ page, locale, translated, price, hidden = [] }: { page: Page; locale: Locale; translated?: boolean; price?: string; hidden?: string[] }) {
+export function PageView({ page, locale, translated, price, hidden = [], blocks, o = {}, reviews = [], before }: { page: Page; locale: Locale; translated?: boolean; price?: string; hidden?: string[]; blocks?: Block[]; o?: PageOverride; reviews?: { name: string; country: string; text: string; rating: number }[]; before?: ReactNode }) {
   const withSide = isServicePage(page.path);
   const isApply = page.path === '/apply/';
   const parts = page.path.split('/').filter(Boolean);
   const crumbs = parts.slice(0, -1).map((_, k) => '/' + parts.slice(0, k + 1).join('/') + '/');
   const applyHref = `/apply/?service=${encodeURIComponent(page.apply || 'golden-visa')}`;
   const facts = price ? [{ label: 'Price', value: price }, ...(page.facts ?? []).filter((f) => !/price|fees? from|cost/i.test(f.label))] : page.facts ?? [];
-  const jump = page.sections.filter((x) => 'title' in x && x.title && x.type !== 'tool').slice(0, 8) as { title: string }[];
+  const jump = (blocks ? [] : page.sections).filter((x) => 'title' in x && x.title && x.type !== 'tool').slice(0, 8) as { title: string }[];
   const wa = waLink(`Hello, I would like help with: ${page.h1}`);
-  const showAside = !withSide && !isApply && !page.article;
+  const showAside = !withSide && !isApply && !page.article && !o.hideAside && !before;
+  const heroImg = page.image;
+  const factsOn = !o.hideFacts;
   return (
     <>
-      <header className={`phero${isApply ? ' phero-apply' : ''}`}>
+      <header className={`phero${isApply ? ' phero-apply' : ''}${o.heroStyle === 'minimal' ? ' phero-min' : ''}${o.heroStyle === 'image' && heroImg ? ' phero-cover' : ''}`} style={o.heroStyle === 'image' && heroImg ? ({ ['--hero-img' as string]: `url("${heroImg}")` } as CSSProperties) : undefined}>
         <div className="wrap">
           <nav className="crumbs" aria-label="Breadcrumb">
             <L locale={locale} href="/">Home</L>
             {crumbs.map((c) => getPage(c) && (<span key={c}>/ <L locale={locale} href={c}>{getPage(c)!.eyebrow}</L></span>))}
             <span aria-current="page">/ {page.eyebrow}</span>
           </nav>
-          <div className={`phero-grid${isApply || page.article ? ' solo' : ''}`}>
+          <div className={`phero-grid${isApply || (!heroImg && (page.article || !factsOn || !facts.length)) ? ' solo' : ''}`}>
             <div>
               <p className="eyebrow pill-eyebrow"><Icon name="star" size={14} /> {page.eyebrow}</p>
               <h1>{page.h1}</h1>
               <p className="lead">{page.intro}</p>
-              {!isApply && !page.article && (
+              {!isApply && !page.article && !o.hideCta && (
                 <div className="cta">
                   <L locale={locale} href={applyHref} className="btn btn-gold">Apply Now <Icon name="arrow" size={18} className="arrow" /></L>
                   {page.cta && page.cta.href !== '/free-consultation/' ? (
@@ -181,7 +187,12 @@ export function PageView({ page, locale, translated, price, hidden = [] }: { pag
               )}
               {!translated && <TranslationNotice locale={locale} />}
             </div>
-            {!isApply && !page.article && facts.length > 0 && (
+            {heroImg && (page.article || !factsOn || !facts.length) && (
+              <div className="phero-img"><img src={heroImg} alt={page.imageAlt || page.h1} /></div>
+            )}
+            {!isApply && !page.article && factsOn && facts.length > 0 && (
+              <div className="phero-side">
+              {heroImg && <div className="phero-img sm"><img src={heroImg} alt={page.imageAlt || page.h1} /></div>}
               <aside className="facts" aria-label="Quick facts">
                 <p className="eyebrow">Quick facts</p>
                 <dl>
@@ -191,6 +202,7 @@ export function PageView({ page, locale, translated, price, hidden = [] }: { pag
                 <L locale={locale} href="/free-consultation/" className="btn btn-glass" style={{ width: '100%' }}>Free consultation</L>
                 <p className="fnote">Estimated figures. Final fees are confirmed in writing. Approval rests with the authorities.</p>
               </aside>
+              </div>
             )}
           </div>
         </div>
@@ -212,7 +224,8 @@ export function PageView({ page, locale, translated, price, hidden = [] }: { pag
             By <b>{page.article.author}</b> · Reviewed by <b>{page.article.reviewer}</b> · Last reviewed {page.article.reviewed} · {page.article.minutes} min read
           </p>
         )}
-        {page.sections.map((s, i) => <SectionView key={i} s={s} locale={locale} i={i} />)}
+        {before}
+        {blocks ? <BlockView blocks={blocks} locale={locale} reviews={reviews} /> : page.sections.map((s, i) => <SectionView key={i} s={s} locale={locale} i={i} />)}
         {page.related && page.related.length > 0 && (
           <section className="block" data-reveal>
             <Head title="Related services and guides" k={0} icon="grid" />
