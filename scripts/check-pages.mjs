@@ -3,7 +3,7 @@ import { chromium } from 'playwright';
 import { writeFileSync } from 'node:fs';
 
 const base = 'http://localhost:3000';
-const pages = ['/', '/ar/', '/ur/golden-visa/', '/golden-visa-cost/', '/golden-visa/property-investment/', '/services/maid-visa/', '/family-golden-visa/newborn/', '/apply/'];
+const pages = ['/', '/ar/', '/ur/golden-visa/', '/golden-visa-cost/', '/golden-visa/property-investment/', '/services/maid-visa/', '/family-golden-visa/newborn/', '/apply/', '/blog/', '/blog/category/property-investors/'];
 const browser = await chromium.launch({ channel: 'chrome' });
 const report = [];
 for (const path of pages) {
@@ -50,10 +50,14 @@ for (const vp of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
   await page.screenshot({ path: `shots/admin-app-${vp.width}.png`, fullPage: true });
   await page.goto(base + '/admin/leads/');
   await page.screenshot({ path: `shots/admin-leads-${vp.width}.png`, fullPage: true });
-  for (const p of ['settings', 'whatsapp', 'users', 'chatbot', 'languages', 'autopublisher', 'posts', 'pages', 'services', 'media', 'notifications']) {
+  for (const p of ['settings', 'whatsapp', 'users', 'chatbot', 'languages', 'autopublisher', 'posts', 'pages', 'services', 'media', 'notifications', 'design', 'seo', 'categories', 'posts/new']) {
     await page.goto(base + `/admin/${p}/`);
-    await page.screenshot({ path: `shots/admin-${p}-${vp.width}.png`, fullPage: true });
+    await page.screenshot({ path: `shots/admin-${p.replace('/', '-')}-${vp.width}.png`, fullPage: true });
   }
+  await page.goto(base + '/admin/pages/edit/?path=%2Fgolden-visa%2Fproperty-investment%2F');
+  await page.waitForTimeout(1200);
+  await page.screenshot({ path: `shots/admin-builder-${vp.width}.png`, fullPage: true });
+  if (vp.width > 1000) { await page.click('text=Add section at top'); await page.waitForTimeout(400); await page.screenshot({ path: 'shots/admin-builder-add.png' }); await page.keyboard.press('Escape'); }
   await page.goto(base + '/portal/login/');
   await page.waitForTimeout(1500);
   await page.screenshot({ path: `shots/portal-login-${vp.width}.png`, fullPage: true });
