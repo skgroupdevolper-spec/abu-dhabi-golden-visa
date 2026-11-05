@@ -33,6 +33,20 @@ for (const path of pages) {
     await page.close();
   }
 }
+// full pages after scrolling through (booking calendar, flight path, ticks)
+for (const path of ['/contact/', '/how-to-apply/', '/about/', '/']) {
+  const pg = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  const errs = [];
+  pg.on('pageerror', (e) => errs.push('pageerror: ' + e.message));
+  await pg.goto(base + path, { waitUntil: 'networkidle' });
+  for (let y = 0; y < 30; y++) { await pg.mouse.wheel(0, 700); await pg.waitForTimeout(120); }
+  await pg.waitForTimeout(800);
+  await pg.evaluate(() => window.scrollTo(0, 0));
+  await pg.waitForTimeout(300);
+  await pg.screenshot({ path: `shots/full${(path.replace(/\//g, '_') || 'home')}.jpg`, fullPage: true, quality: 60 });
+  report.push({ path: 'full ' + path, vp: 1440, errors: errs, facts: {} });
+  await pg.close();
+}
 // automatic cover
 { const pg = await browser.newPage(); const r = await pg.goto(base + '/api/cover/?t=Abu%20Dhabi%20Golden%20Visa%20Through%20Property%20Investment&c=Property%20investors'); report.push({ path: 'cover', vp: 0, errors: r.status() === 200 ? [] : ['cover ' + r.status()], facts: { type: r.headers()['content-type'] } }); await pg.screenshot({ path: 'shots/cover.jpg' }); await pg.close(); }
 // dashboards
