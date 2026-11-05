@@ -55,7 +55,7 @@ export function Booking({ title, intro, service = '' }: { title?: string; intro?
   const len = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 0)).getUTCDate();
   const lastDay = d?.days.length ? d.days[d.days.length - 1].date : addDays(today, 21);
   const times = date ? byDate.get(date)?.times ?? [] : [];
-  const parts = (t: string) => [t.filter((x) => Number(x.slice(0, 2)) < 12), t.filter((x) => Number(x.slice(0, 2)) >= 12)];
+  const parts = (t: string[]) => [t.filter((x) => Number(x.slice(0, 2)) < 12), t.filter((x) => Number(x.slice(0, 2)) >= 12)];
 
   async function book() {
     setErr('');
