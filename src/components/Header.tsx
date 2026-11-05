@@ -79,6 +79,10 @@ export function Header({ locale }: { locale: Locale }) {
   }
 
   const toggle = (k: string) => setOpen((o) => (o === k ? null : k));
+  // Hover menus: open at once, close after a short delay so the pointer can travel to the panel.
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const enter = (k: string) => { if (timer.current) clearTimeout(timer.current); setOpen(k); };
+  const leave = (k: string) => { if (timer.current) clearTimeout(timer.current); timer.current = setTimeout(() => setOpen((o) => (o === k ? null : o)), 220); };
 
   const F = SITE.features;
   const portal = process.env.NEXT_PUBLIC_PORTAL_URL || '/portal/login/';
@@ -141,8 +145,8 @@ export function Header({ locale }: { locale: Locale }) {
             <nav className="nav" aria-label="Main">
               {[...NAV, ...SITE.nav.extra.map((x) => ({ label: x.label, href: x.href, groups: undefined }))].map((item) =>
                 item.groups ? (
-                  <div key={item.label} onMouseEnter={() => setOpen(item.label)} onMouseLeave={() => setOpen((o) => (o === item.label ? null : o))}>
-                    <button type="button" className={`nav-link${path.startsWith(item.href) && item.href !== '/' ? ' here' : ''}`} aria-expanded={open === item.label} onClick={() => toggle(item.label)}>
+                  <div key={item.label} className="has-mega" onMouseEnter={() => enter(item.label)} onMouseLeave={() => leave(item.label)}>
+                    <button type="button" className={`nav-link${path.startsWith(item.href) && item.href !== '/' ? ' here' : ''}`} aria-expanded={open === item.label} onClick={(e) => ((e.nativeEvent as PointerEvent).pointerType === 'mouse' ? setOpen(item.label) : toggle(item.label))}>
                       {item.label} <Icon name="chev" size={14} />
                     </button>
                     {open === item.label && (

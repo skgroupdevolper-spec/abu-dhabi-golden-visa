@@ -612,3 +612,9 @@ footer.site .legal { color: var(--navy-soft); }
 .side-apply li { display: flex; gap: 8px; align-items: center; }
 .side-apply li svg { color: var(--gold-deep); flex: none; }
 @media (max-width: 1100px) { .page-layout { grid-template-columns: minmax(0, 1fr); } .side-apply { display: none; } }
+/* hover bridge between a menu item and its panel */
+.mega::before { content: ''; position: absolute; left: 0; right: 0; top: -22px; height: 22px; }
+.mega.wide::before { top: -60px; height: 60px; }
+.mega { overflow: visible; }
+.mega-cols { border-radius: 22px 0 0 22px; }
+.mega-promo { border-radius: 0 22px 22px 0; }
