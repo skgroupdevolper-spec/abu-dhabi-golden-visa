@@ -148,7 +148,7 @@ export function ApplyWizard() {
                     {items.map((s) => (
                       <button key={s.id} type="button" className="aw-card" aria-pressed={svc?.id === s.id} onClick={() => { setSvc(s); setErr(''); }}>
                         <span className="aw-ic"><Icon name={SVC_ICON[s.id] || GROUP_ICON[s.group] || 'doc'} size={20} /></span>
-                        <span className="aw-tx"><b>{s.label.replace(/^Golden Visa: /, '')}</b><small>{s.note || (s.family ? 'Family can be added' : 'Quote before you pay')}</small></span>
+                        <span className="aw-tx"><b>{s.label.replace(/^Golden Visa: (.)/, (_, c: string) => c.toUpperCase())}</b><small>{s.note || (s.family ? 'Family can be added' : 'Quote before you pay')}</small></span>
                         <span className="aw-ok" aria-hidden="true"><Icon name="check" size={14} /></span>
                       </button>
                     ))}

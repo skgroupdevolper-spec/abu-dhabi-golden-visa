@@ -693,3 +693,4 @@ html[dir='rtl'] .mt-list .mt-arrow { transform: rotate(90deg); }
 .elig-opts .opt:hover, .home .elig-opts .opt:hover { border-color: var(--gold); background: #fff; }
 .elig-opts .opt[aria-pressed='true'], .home .elig-opts .opt[aria-pressed='true'] { color: var(--navy); background: #fffcf3; border-color: var(--gold); box-shadow: inset 0 0 0 1.5px var(--gold), 0 18px 36px -26px rgba(160, 120, 10, 0.7); }
 .elig-opts .opt[aria-pressed='true'] .oi { background: linear-gradient(135deg, var(--gold-light), var(--gold)); color: var(--navy); }
+.apply-nav { box-shadow: 0 -14px 24px -18px rgba(0, 0, 0, 0.25); }
