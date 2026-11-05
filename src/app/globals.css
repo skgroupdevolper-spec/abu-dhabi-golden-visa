@@ -472,7 +472,7 @@ html[dir='rtl'] .mega.wide { left: 50%; right: auto; }
 .top.with-line { top: 30px; }
 .phero { padding-block: 168px 34px; }
 @media (max-width: 640px) { .phero { padding-block: 104px 20px; } }
-.home .hero { padding-block: 150px 48px; }
+.home .hero { padding-block: 176px 48px; }
 @media (max-width: 900px) { .home .hero { padding-block: 110px 30px; } }
 .dock { top: 58%; }
 .dock .ic.w, .icon-btn.wa { background: #fff; color: var(--gold-deep); }
