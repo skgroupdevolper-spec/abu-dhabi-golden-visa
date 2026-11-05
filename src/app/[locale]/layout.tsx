@@ -33,7 +33,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   return (
     <html lang={info.htmlLang} dir={info.dir} className={`${display.variable} ${body.variable} ${arabic.variable}`}>
       <body>
-        <a href="#main" className="btn btn-navy" style={{ position: 'absolute', left: -9999, top: 8, zIndex: 300 }}>Skip to content</a>
+        <a href="#main" className="skip btn btn-navy">Skip to content</a>
         <Water />
         <Header locale={locale} />
         <main id="main" className="page">{children}</main>

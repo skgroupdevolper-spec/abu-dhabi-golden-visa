@@ -448,3 +448,7 @@ footer.site a:hover { color: var(--gold-light); }
 
 /* Never let decorative layers widen the page on phones */
 .hero, .manifesto, .portal, .band { overflow-x: clip; }
+
+/* Skip link: hidden without pushing the page sideways (safe in RTL) */
+.skip { position: fixed; top: 8px; inset-inline-start: 8px; z-index: 300; clip-path: inset(50%); pointer-events: none; }
+.skip:focus { clip-path: none; pointer-events: auto; }
