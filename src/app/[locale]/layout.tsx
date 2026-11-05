@@ -6,6 +6,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Water } from '@/components/Water';
 import { Motion } from '@/components/Motion';
+import { CalcModal } from '@/components/CalcModal';
 import { LOCALE_CODES, isLocale, localeInfo } from '@/lib/i18n';
 import { SITE } from '@/lib/site';
 import '../globals.css';
@@ -39,6 +40,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
         <main id="main" className="page">{children}</main>
         <Footer locale={locale} />
         <Motion />
+        <CalcModal />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

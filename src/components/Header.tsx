@@ -191,7 +191,7 @@ export function Header({ locale }: { locale: Locale }) {
       )}
 
       <nav className="dock" aria-label="Quick actions">
-        <L locale={locale} href="/golden-visa-cost/">
+        <L locale={locale} href="/golden-visa-cost/" data-open-calc="">
           <span className="ic g"><Icon name="calc" /></span>
           <span className="lb">Cost calculator</span>
         </L>
@@ -212,7 +212,7 @@ export function Header({ locale }: { locale: Locale }) {
       <nav className="mnav" aria-label="Mobile">
         <L locale={locale} href="/"><Icon name="home" />Home</L>
         <L locale={locale} href="/golden-visa/"><Icon name="star" />Golden Visa</L>
-        <L locale={locale} href="/golden-visa-cost/" className="mid" aria-label="Cost calculator"><Icon name="calc" size={26} /></L>
+        <L locale={locale} href="/golden-visa-cost/" className="mid" aria-label="Cost calculator" data-open-calc=""><Icon name="calc" size={26} /></L>
         <L locale={locale} href="/visa-check/"><Icon name="check" />Visa Check</L>
         <a href={waLink('Hello, I would like help with the Abu Dhabi Golden Visa.')} target="_blank" rel="noopener"><Icon name="wa" />WhatsApp</a>
       </nav>

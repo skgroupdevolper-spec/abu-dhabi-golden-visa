@@ -223,7 +223,7 @@ export function Water() {
     };
     raf = requestAnimationFrame(loop);
     const coinDrops = window.setInterval(() => {
-      const el = document.querySelector('.coin-wrap');
+      const el = document.querySelector('#coinStage');
       if (!el) return;
       const r = el.getBoundingClientRect();
       if (r.bottom > 0 && r.top < window.innerHeight) pending.push([r.left + r.width / 2, r.top + r.height / 2, 0.05, -0.55]);

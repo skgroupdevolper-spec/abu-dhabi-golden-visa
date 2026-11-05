@@ -37,7 +37,7 @@ export function Motion() {
         gsap.utils.toArray<HTMLElement>('[data-reveal]').forEach((el, i) => {
           gsap.from(el, { y: 50, opacity: 0.25, duration: 1, ease: 'expo.out', delay: (i % 3) * 0.06, scrollTrigger: { trigger: el, start: 'top 92%' } });
         });
-        gsap.from('.hero h1, .phero h1', { y: 40, opacity: 0.3, duration: 1.1, ease: 'expo.out' });
+        gsap.from('.phero h1', { y: 40, opacity: 0.3, duration: 1.1, ease: 'expo.out' });
       });
       cleanup.push(() => ctx.revert());
 
@@ -53,7 +53,12 @@ export function Motion() {
             rx(e.clientX);
             ry(e.clientY);
           };
-          const over = (e: PointerEvent) => document.body.classList.toggle('c-hover', !!(e.target as HTMLElement).closest('a,button'));
+          const over = (e: PointerEvent) => {
+            const t = e.target as HTMLElement;
+            const v = !!t.closest('[data-view]');
+            document.body.classList.toggle('c-view', v);
+            document.body.classList.toggle('c-hover', !v && !!t.closest('a,button'));
+          };
           window.addEventListener('pointermove', move, { passive: true });
           document.addEventListener('pointerover', over);
           cleanup.push(() => {
@@ -82,7 +87,7 @@ export function Motion() {
 
   return (
     <>
-      <div className="cur-ring" aria-hidden="true" />
+      <div className="cur-ring" aria-hidden="true"><span>VIEW</span></div>
       <div className="cur-dot" aria-hidden="true" />
     </>
   );

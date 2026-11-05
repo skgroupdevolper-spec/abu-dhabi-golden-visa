@@ -21,9 +21,9 @@ function person(s: State, adult: boolean, main: boolean): Line[] {
 }
 const sum = (l: Line[]) => l.reduce((a, x) => a + x[1], 0);
 
-export function Calculator() {
-  const [s, setS] = useState<State>(START);
-  const [hist, setHist] = useState<State[]>([]);
+export function Calculator({ initialRoute = null, bare = false }: { initialRoute?: number | null; bare?: boolean }) {
+  const [s, setS] = useState<State>(initialRoute === null ? START : { ...START, route: initialRoute });
+  const [hist, setHist] = useState<State[]>(initialRoute === null ? [] : [START]);
   const [cur, setCur] = useState('AED');
   const [copied, setCopied] = useState('');
 
@@ -191,7 +191,7 @@ export function Calculator() {
   }
 
   return (
-    <div className="panel glass" aria-live="polite">
+    <div className={bare ? 'calc-bare' : 'panel glass'} aria-live="polite">
       <div className="bar-steps" aria-hidden="true">{steps.slice(0, -1).map((k, i) => <i key={k} className={i <= idx ? 'on' : ''} />)}</div>
       {hist.length > 0 && current !== 'result' && (
         <button type="button" className="btn btn-glass" style={{ minHeight: 40, padding: '0 14px', marginBottom: 12 }} onClick={back}>‹ Back</button>
