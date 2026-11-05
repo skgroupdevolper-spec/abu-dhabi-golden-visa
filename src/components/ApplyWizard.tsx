@@ -13,11 +13,17 @@ type Member = { relation: 'Spouse' | 'Child' | 'Parent'; name: string; adult: bo
 const STEPS = ['Service', 'Your details', 'Family', 'Documents', 'Review & submit'];
 const GROUP_ICON: Record<string, string> = { 'Golden Visa': 'star', 'Family & residency': 'family', Visas: 'plane', Employment: 'briefcase', 'Employment visas & permits': 'briefcase', 'Property & documents': 'home', 'Visa services': 'shield', 'Attestation & legalisation': 'doc', 'Property & business': 'home', 'Other services': 'globe', 'Wills & estate planning': 'heart' };
 const MAX = 15 * 1024 * 1024;
+const SVC_ICON: Record<string, string> = {
+  'gv-property': 'home', 'gv-investor': 'briefcase', 'gv-entrepreneur': 'rocket', 'gv-professional': 'user', 'gv-talent': 'spark', 'gv-student': 'cap', 'gv-other': 'heart', 'golden-visa': 'star',
+  'gv-family': 'family', 'gv-renewal': 'shield', newborn: 'baby', retirement: 'heart', 'virtual-work': 'plane', 'investor-visa': 'briefcase', 'maid-visa': 'home', 'tourist-visa': 'plane',
+  employment: 'briefcase', iloe: 'shield', valuation: 'coins', cancellation: 'close', 'emirates-id': 'user', medical: 'stetho', 'visa-check': 'check',
+};
 
 export function ApplyWizard() {
   const [step, setStep] = useState(0);
   const [svc, setSvc] = useState<ApplyService | null>(null);
   const [q, setQ] = useState('');
+  const [cat, setCat] = useState('All');
   const [d, setD] = useState({ name: '', phone: '', email: '', nationality: '', where: 'in' as 'in' | 'out', visa: '', notes: '', pkg: 'normal' as 'normal' | 'vip', consent: false });
   const [fam, setFam] = useState<Member[]>([]);
   const [files, setFiles] = useState<Record<string, File | null>>({});
@@ -44,6 +50,7 @@ export function ApplyWizard() {
     return [...m.entries()];
   }, [q]);
 
+  const allGroups = useMemo(() => [...new Set(APPLY_SERVICES.map((x) => x.group))], []);
   const route = svc?.route ? ROUTES.find((r) => r.id === svc.route) : undefined;
   const adults = fam.filter((m) => m.adult).length, kids = fam.length - adults;
   const famOnly = svc?.route === 'family';
@@ -114,6 +121,7 @@ export function ApplyWizard() {
 
   return (
     <div className="apply" id="apply-top">
+      <div className="aw-progress" aria-hidden="true"><span style={{ width: `${(step / 4) * 100}%` }} /></div>
       <ol className="apply-steps" aria-label="Application steps">
         {STEPS.map((t, i) => (i === 2 && !famOn && svc ? null : (
           <li key={t} className={i === step ? 'on' : i < step ? 'done' : ''}><span>{i < step ? <Icon name="check" size={14} /> : i + 1}</span>{t}</li>
@@ -124,16 +132,24 @@ export function ApplyWizard() {
         <div className="apply-main panel glass">
           {step === 0 && (
             <div className="wstep">
-              <h3>Which visa or service do you need?</h3>
-              <div className="field" style={{ margin: '14px 0 6px' }}><input type="search" placeholder="Search services" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search services" /></div>
-              {groups.map(([g, items]) => (
+              <div className="aw-head">
+                <div><h3>Which visa or service do you need?</h3><p className="muted">Pick one. You can add family members in a later step.</p></div>
+                <label className="aw-search"><Icon name="grid" size={17} /><input type="search" placeholder="Search services" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search services" /></label>
+              </div>
+              <div className="aw-cats" role="tablist" aria-label="Service categories">
+                {['All', ...allGroups].map((g) => (
+                  <button key={g} type="button" role="tab" aria-selected={cat === g} onClick={() => setCat(g)}>{g}</button>
+                ))}
+              </div>
+              {groups.filter(([g]) => cat === 'All' || cat === g).map(([g, items]) => (
                 <div key={g} className="apply-group">
-                  <p className="eyebrow"><Icon name={GROUP_ICON[g] || 'star'} size={14} /> {g}</p>
-                  <div className="apply-opts">
+                  <p className="aw-gt"><Icon name={GROUP_ICON[g] || 'star'} size={15} /> {g}</p>
+                  <div className="aw-grid">
                     {items.map((s) => (
-                      <button key={s.id} type="button" className="opt" aria-pressed={svc?.id === s.id} onClick={() => { setSvc(s); setErr(''); }}>
-                        <span className="oi"><Icon name={GROUP_ICON[s.group] || 'star'} size={20} /></span>
-                        <span><b>{s.label}</b>{s.family && <small>Family can be added</small>}</span>
+                      <button key={s.id} type="button" className="aw-card" aria-pressed={svc?.id === s.id} onClick={() => { setSvc(s); setErr(''); }}>
+                        <span className="aw-ic"><Icon name={SVC_ICON[s.id] || GROUP_ICON[s.group] || 'doc'} size={20} /></span>
+                        <span className="aw-tx"><b>{s.label.replace(/^Golden Visa: /, '')}</b><small>{s.note || (s.family ? 'Family can be added' : 'Quote before you pay')}</small></span>
+                        <span className="aw-ok" aria-hidden="true"><Icon name="check" size={14} /></span>
                       </button>
                     ))}
                   </div>

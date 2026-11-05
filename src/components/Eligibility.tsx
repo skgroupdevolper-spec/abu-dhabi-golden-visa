@@ -73,10 +73,10 @@ export function Eligibility() {
       <form onSubmit={check} className="form">
         <div className="full">
           <span className="field"><label>Application category</label></span>
-          <div className="opts two" role="group" aria-label="Application category">
+          <div className="opts two elig-opts" role="group" aria-label="Application category">
             {CATS.map((c) => (
               <button key={c.id} type="button" className="opt" aria-pressed={cat === c.id} onClick={() => { setCat(c.id); setResult(null); }}>
-                <span className="oi"><Icon name={c.icon} /></span><span><b>{c.label}</b></span>
+                <span className="oi"><Icon name={c.icon} /></span><span><b>{c.label}</b></span><span className="aw-ok" aria-hidden="true"><Icon name="check" size={14} /></span>
               </button>
             ))}
           </div>

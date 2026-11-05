@@ -149,7 +149,7 @@ export function PageView({ page, locale, translated, price, hidden = [] }: { pag
   const showAside = !withSide && !isApply && !page.article;
   return (
     <>
-      <header className="phero">
+      <header className={`phero${isApply ? ' phero-apply' : ''}`}>
         <div className="wrap">
           <nav className="crumbs" aria-label="Breadcrumb">
             <L locale={locale} href="/">Home</L>
@@ -206,7 +206,7 @@ export function PageView({ page, locale, translated, price, hidden = [] }: { pag
       <div className="wrap" style={{ position: 'relative', zIndex: 2 }}>
         <div className={withSide ? 'svc-layout' : showAside ? 'page-layout' : undefined}>
         {withSide && <ServiceSidebar current={page.path} locale={locale} hidden={hidden} />}
-        <div className={withSide ? 'svc-main' : 'page-main'}>
+        <div className={withSide ? 'svc-main' : isApply ? 'apply-main-wrap' : 'page-main'}>
         {page.article && (
           <p className="byline block" style={{ marginBottom: 0 }}>
             By <b>{page.article.author}</b> · Reviewed by <b>{page.article.reviewer}</b> · Last reviewed {page.article.reviewed} · {page.article.minutes} min read
