@@ -411,4 +411,4 @@
 .home .ob-in{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;background:rgba(255,255,255,.85);border:1px solid rgba(212,175,55,.55);color:#8a6a12;box-shadow:0 14px 26px -16px rgba(122,82,0,.7);backdrop-filter:blur(6px);animation:hm-orbit 36s linear infinite reverse, hm-bob 3.2s ease-in-out infinite;animation-delay:0s, calc(var(--k) * -.5s)}
 @keyframes hm-orbit{to{transform:rotate(360deg)}}
 @keyframes hm-bob{50%{translate:0 -6px}}
-@media (max-width:900px){.home .ob{width:36px;height:36px;margin:-18px 0 0 -18px}.home .ob .ic{width:16px;height:16px}}
+@media (max-width:900px){.home .ob{width:36px;height:36px;margin:-18px 0 0 -18px}.home .ob .si{width:16px;height:16px}}

@@ -92,10 +92,10 @@ export function Motion({ level = 'full', textFx = 'words', cursor = true, smooth
         } else gsap.from('.phero h1', { y: 30, duration: 1, ease: 'expo.out' });
 
         // Icons draw themselves in when they scroll into view (outside header and menus).
-        const icons = gsap.utils.toArray<SVGSVGElement>('main .ic, footer .ic').filter((s) => !s.closest('.top, .mega, .btn, .bell, [data-noanim]'));
-        icons.forEach((s) => { const p = s.querySelector('path'); if (!p) return; try { s.style.setProperty('--ic-len', String(Math.ceil(p.getTotalLength()) + 2)); } catch { return; } s.classList.add('ic-draw'); });
-        ScrollTrigger.batch(icons.filter((s) => s.classList.contains('ic-draw')), { start: 'top 94%', once: true, onEnter: (els) => els.forEach((e, i) => setTimeout(() => e.classList.add('ic-drawn'), i * 70)) });
-        cleanup.push(() => icons.forEach((s) => s.classList.remove('ic-draw', 'ic-drawn')));
+        const icons = gsap.utils.toArray<SVGSVGElement>('main .si, footer .si').filter((s) => !s.closest('.top, .mega, .btn, .bell, [data-noanim]'));
+        icons.forEach((s) => { const p = s.querySelector('path'); if (!p) return; try { s.style.setProperty('--ic-len', String(Math.ceil(p.getTotalLength()) + 2)); } catch { return; } s.classList.add('si-draw'); });
+        ScrollTrigger.batch(icons.filter((s) => s.classList.contains('si-draw')), { start: 'top 94%', once: true, onEnter: (els) => els.forEach((e, i) => setTimeout(() => e.classList.add('si-drawn'), i * 70)) });
+        cleanup.push(() => icons.forEach((s) => s.classList.remove('si-draw', 'si-drawn')));
 
         // Ticks and steps light up one by one while scrolling (lists, documents, requirements, timelines).
         const items = gsap.utils.toArray<HTMLElement>('main .ticks li, main .doc-grid li, main .req-grid li, main .timeline li, main .side-apply li, main .trust-row li, main .prose ul li, main .fp-step, main .bk-facts li');

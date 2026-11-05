@@ -157,7 +157,8 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
   const facts = price ? [{ label: 'Price', value: price }, ...(page.facts ?? []).filter((f) => !/price|fees? from|cost/i.test(f.label))] : page.facts ?? [];
   const jump = (blocks ? [] : page.sections).filter((x) => 'title' in x && x.title && x.type !== 'tool').slice(0, 8) as { title: string }[];
   const wa = waLink(`Hello, I would like help with: ${page.h1}`);
-  const showAside = !withSide && !isApply && !page.article && !o.hideAside && !before;
+  const hub = page.sections.some((x) => x.type === 'tool' && (x.tool === 'contact-hub' || x.tool === 'about-hub'));
+  const showAside = !withSide && !isApply && !page.article && !o.hideAside && !before && !hub;
   const postSide = !!page.article && !o.hideAside;
   const heroImg = page.image;
   if (heroImg) preload(heroImg, { as: 'image', fetchPriority: 'high' });

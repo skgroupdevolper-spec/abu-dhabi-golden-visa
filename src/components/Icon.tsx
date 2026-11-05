@@ -59,7 +59,7 @@ const PATHS: Record<string, string> = {
 
 export function Icon({ name, size = 22, className }: { name: string; size?: number; className?: string }) {
   return (
-    <svg className={`ic ic-${name}${className ? ` ${className}` : ''}`} data-i={name} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg className={`si si-${name}${className ? ` ${className}` : ''}`} data-i={name} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d={PATHS[name] ?? PATHS.star} />
     </svg>
   );
