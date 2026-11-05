@@ -33,6 +33,8 @@ for (const path of pages) {
     await page.close();
   }
 }
+// automatic cover
+{ const pg = await browser.newPage(); const r = await pg.goto(base + '/api/cover/?t=Abu%20Dhabi%20Golden%20Visa%20Through%20Property%20Investment&c=Property%20investors'); report.push({ path: 'cover', vp: 0, errors: r.status() === 200 ? [] : ['cover ' + r.status()], facts: { type: r.headers()['content-type'] } }); await pg.screenshot({ path: 'shots/cover.png' }); await pg.close(); }
 // dashboards
 const T = 'a1b2c3d4e5f60718293a4b5c6d7e8f90';
 for (const vp of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {

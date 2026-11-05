@@ -8,14 +8,14 @@ import { getBlock } from '@/lib/server/settings';
 import { JOB0, translationProgress, type AiLog, type TranslateJob } from '@/lib/server/translate';
 import { LOCALES } from '@/lib/i18n';
 import { when } from '@/lib/stages';
-import { clearTranslations, startTranslation, stopTranslation } from '../../ai-actions';
+import { clearTranslations, saveLangCfg, startTranslation, stopTranslation } from '../../ai-actions';
 
 export const metadata: Metadata = { title: 'Languages' };
 export const dynamic = 'force-dynamic';
 
 export default async function Languages() {
   await requireAdmin(FULL);
-  const [prog, job, ready, logs] = await Promise.all([translationProgress(), getBlock<TranslateJob>('translateJob', JOB0), aiReady(), list<AiLog>('ai-log')]);
+  const [prog, job, ready, logs, langcfg] = await Promise.all([translationProgress(), getBlock<TranslateJob>('translateJob', JOB0), aiReady(), list<AiLog>('ai-log'), getBlock<{ onSave: boolean }>('langcfg', { onSave: true })]);
   const langs = LOCALES.filter((l) => l.code !== 'en');
   return (
     <>
@@ -43,6 +43,10 @@ export default async function Languages() {
         </div>
         <div className="panel">
           <h2>Translate automatically</h2>
+          <ActionForm action={saveLangCfg} className="row" >
+            <Toggle name="onSave" label="Translate into all 20 languages every time I save" help="Pages, page-builder sections and blog posts are translated in the background after each save." on={langcfg.onSave} />
+            <Submit className="btn btn-sm">Save</Submit>
+          </ActionForm>
           {!ready && <p className="notice err">Add an AI key in <a href="/admin/settings/?tab=ai">Site settings › AI keys</a> first.</p>}
           <ActionForm action={startTranslation} className="stack">
             <span className="lbl">Languages</span>

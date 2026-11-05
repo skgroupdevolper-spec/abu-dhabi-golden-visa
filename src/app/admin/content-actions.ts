@@ -39,6 +39,7 @@ export async function savePost(_: St, f: FormData): Promise<St> {
     revisions: p.body !== data.body || p.title !== data.title ? [{ at: p.updatedAt, by: me.name, title: p.title, summary: p.summary, meta: p.meta, body: p.body }, ...(p.revisions ?? [])].slice(0, 15) : p.revisions }));
   else { pid = newId(6); await insert<Post>('posts', { id: pid, ...data, source: 'manual', createdAt: now(), publishedAt: status === 'published' ? now() : undefined }); }
   live();
+  if (status === 'published') void import('@/lib/server/translate').then((m) => m.autoTranslate([`/blog/${slug}/`])).catch(() => {});
   if (status === 'published' && !data.noindex) void import('@/lib/server/indexnow').then((m) => m.pingIndexNow([`/blog/${slug}/`, '/blog/'])).catch(() => {});
   if (!id) redirect(`/admin/posts/${pid}/`);
   return { ok: status === 'published' ? (data.scheduledAt && data.scheduledAt > now() ? 'Saved. It goes live on the scheduled date.' : 'Saved and live on the website.') : 'Saved.' };

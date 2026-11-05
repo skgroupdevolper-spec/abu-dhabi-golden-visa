@@ -56,6 +56,7 @@ export async function POST(req: NextRequest) {
   } else return NextResponse.json({ ok: false, error: 'Unknown page.' }, { status: 404 });
   revalidatePath('/', 'layout');
   if (!o.noindex && !o.hidden) void pingIndexNow([path]).catch(() => {});
+  void import('@/lib/server/translate').then((m) => m.autoTranslate([path])).catch(() => {});
   return NextResponse.json({ ok: true });
 }
 

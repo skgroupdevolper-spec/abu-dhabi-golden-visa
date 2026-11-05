@@ -4,6 +4,7 @@ import type { Locale } from '@/lib/i18n';
 import type { Category, Post } from '@/lib/server/content';
 import { Icon } from './Icon';
 import { L } from './L';
+import { coverUrl } from '@/lib/cover';
 
 type Item = { href: string; title: string; summary: string; image?: string; cat?: string; minutes: number; date?: string; featured?: boolean };
 
@@ -16,7 +17,7 @@ export function BlogIndex({ locale, posts, categories, current }: { locale: Loca
   const top = items.find((x) => x.featured) ?? items[0];
   const rest = items.filter((x) => x !== top);
   const Img = ({ it, big }: { it: Item; big?: boolean }) => (
-    it.image ? <img src={it.image} alt={it.title} loading={big ? 'eager' : 'lazy'} /> : <div className="bi-ph"><Icon name="doc" size={big ? 44 : 30} /><span>{name(it.cat) ?? 'Guide'}</span></div>
+    <img src={it.image || coverUrl(it.title, name(it.cat))} alt={it.title} loading={big ? 'eager' : 'lazy'} />
   );
   return (
     <section className="block blog-index">

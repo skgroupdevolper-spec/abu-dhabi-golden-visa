@@ -67,7 +67,8 @@ async function resolve(locale: string, slug: string[]): Promise<Resolved | null>
     translated = true;
     page = { ...page, seoTitle: t.seoTitle || page.seoTitle, meta: t.meta || page.meta, eyebrow: t.eyebrow || page.eyebrow, h1: t.h1 || page.h1, intro: t.intro || page.intro, sections: t.sections?.length ? t.sections : page.sections };
   }
-  return { page, loc, translated, price: svc.prices[path], hidden: svc.hidden, o, blocks: o.blocks?.length ? o.blocks : undefined, post, blog };
+  const blocks = o.blocks?.length ? (t?.blocks?.length ? t.blocks : o.blocks) : undefined;
+  return { page, loc, translated, price: svc.prices[path], hidden: svc.hidden, o, blocks, post, blog };
 }
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {

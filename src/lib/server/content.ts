@@ -4,6 +4,8 @@ import type { Page, Section } from '@/content/types';
 import type { Block } from '@/lib/blocks';
 import { md } from '@/lib/markdown';
 import { BLOG_CATEGORIES } from '@/content/blog';
+import { coverUrl } from '@/lib/cover';
+const catName = (slug?: string) => BLOG_CATEGORIES.find((c) => c.slug === slug)?.name ?? (slug ? slug.replace(/-/g, ' ').replace(/^./, (x) => x.toUpperCase()) : 'Guide');
 import { list } from './collections';
 import { readJsonFile } from './store';
 
@@ -28,7 +30,7 @@ export type Testimonial = { id: string; name: string; country: string; text: str
 export type Partner = { id: string; name: string; logo: string; link: string };
 export type MediaItem = { id: string; file: string; name: string; type: string; size: number; alt: string; at: string };
 export type ServiceOverrides = { hidden: string[]; prices: Record<string, string>; notes: Record<string, string> };
-export type PageTranslation = { seoTitle?: string; meta?: string; eyebrow?: string; h1?: string; intro?: string; sections?: Section[]; at: string };
+export type PageTranslation = { seoTitle?: string; meta?: string; eyebrow?: string; h1?: string; intro?: string; sections?: Section[]; blocks?: Block[]; at: string; manual?: boolean };
 export type Translations = Record<string, Record<string, PageTranslation>>;
 
 export const getPosts = cache(() => list<Post>('posts'));
@@ -48,7 +50,7 @@ export const getTranslations = cache(() => readJsonFile<Translations>('translati
 
 export function postToPage(p: Post): Page {
   return {
-    path: `/blog/${p.slug}/`, seoTitle: p.seoTitle || `${p.title} | Abu Dhabi Golden Visa`, meta: p.meta || p.summary, eyebrow: p.category ? p.category : 'Guide', h1: p.title, intro: p.summary, image: p.cover, imageAlt: p.coverAlt || p.title,
+    path: `/blog/${p.slug}/`, seoTitle: p.seoTitle || `${p.title} | Abu Dhabi Golden Visa`, meta: p.meta || p.summary, eyebrow: catName(p.category), h1: p.title, intro: p.summary, image: p.cover || coverUrl(p.title, catName(p.category)), imageAlt: p.coverAlt || p.title,
     cta: { label: 'Check My Eligibility', href: '/visa-check/' },
     sections: [
       { type: 'html', html: md(p.body) },

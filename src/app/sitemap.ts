@@ -32,7 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: e.path === '/' ? ('daily' as const) : ('weekly' as const),
       priority: e.pri,
       alternates: { languages },
-      ...(e.image ? { images: [abs(e.image)!] } : {}),
+      ...(e.image && !e.image.includes('?') ? { images: [abs(e.image)!] } : {}),
     }));
   });
 }

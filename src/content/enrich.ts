@@ -403,6 +403,15 @@ const DEFAULT_FACTS: Fact[] = [
 
 const isGv = (p: string) => p.startsWith('/golden-visa/') || /^\/golden-visa-(for|from)-/.test(p);
 
+/** Featured image by topic (owner's photos). */
+function defaultImage(p: string) {
+  if (/property|valuation|retirement|real-estate/.test(p)) return '/images/property.webp';
+  if (/investor|business|entrepreneur|company|employment|work-permit|freelanc|executive|professional|tasheel|tawjeeh|clearing|bank|engineer|technology|doctor|healthcare|teacher|scientist|talent|artist|student|humanitarian|frontline/.test(p)) return '/images/investor.webp';
+  if (/family|newborn|spouse|children|parent|maid|marriage|birth/.test(p)) return /newborn|children/.test(p) ? '/images/family-2.webp' : '/images/family.webp';
+  if (/golden-visa|visa-check|benefits|how-to-apply|processing|requirements|cost|for-|from-/.test(p)) return '/images/skyline.webp';
+  return '/images/skyline-2.webp';
+}
+
 /** Adds quick facts, the apply link and detailed sections to every page. */
 export function enrich(page: Page): Page {
   if (page.article || ['/privacy/', '/terms/', '/disclaimer/', '/apply/'].includes(page.path)) return page;
@@ -420,6 +429,7 @@ export function enrich(page: Page): Page {
     sections = tail >= 0 ? [...sections.slice(0, tail), ...extra, ...sections.slice(tail)] : [...sections, ...extra];
   }
   const facts = page.facts ?? r?.facts ?? (isGv(page.path) ? GV_FACTS({ label: 'Route', value: page.eyebrow.replace(/^Golden Visa for /, '') }) : DEFAULT_FACTS);
+  const image = page.image ?? defaultImage(page.path);
   const apply = page.apply ?? r?.apply ?? (isGv(page.path) ? 'golden-visa' : page.path.split('/').filter(Boolean).pop());
-  return { ...page, sections, facts, apply };
+  return { ...page, sections, facts, apply, image, imageAlt: page.imageAlt ?? page.h1 };
 }

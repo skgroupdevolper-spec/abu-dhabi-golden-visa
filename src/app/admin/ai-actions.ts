@@ -114,3 +114,8 @@ export async function suggestKeywordsNow(_: St): Promise<St> {
     return { ok: `Added ${k.length} keyword ideas: ${k.slice(0, 4).join(' · ')}…` };
   } catch (e) { return { error: (e as Error).message }; }
 }
+export async function saveLangCfg(_: St, f: FormData): Promise<St> {
+  await requireAdmin(FULL);
+  await saveBlock('langcfg', { onSave: f.get('onSave') === 'on' });
+  return { ok: 'Saved.' };
+}

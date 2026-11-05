@@ -1,6 +1,7 @@
 // The initial 20 blog articles (developer specification, section 11). Own wording; every article has
 // a service CTA, FAQs, author/reviewer, last-reviewed date and internal links.
 import type { Page, Section } from './types';
+import { coverUrl } from '@/lib/cover';
 
 const AUTHOR = 'Abu Dhabi Golden Visa editorial team';
 const REVIEWER = 'Senior residency advisor, Brightlink Management Consultancy';
@@ -37,6 +38,8 @@ function art(a: A): Page {
     meta: a.meta,
     eyebrow: BLOG_CATEGORIES.find((c) => c.slug === CAT_OF[a.slug])?.name ?? 'Guide',
     category: CAT_OF[a.slug],
+    image: coverUrl(a.title, BLOG_CATEGORIES.find((c) => c.slug === CAT_OF[a.slug])?.name),
+    imageAlt: a.title,
     h1: a.title,
     intro: a.summary,
     cta: a.cta ?? { label: 'Check My Eligibility', href: '/visa-check/' },

@@ -4,7 +4,9 @@ import type { Page } from '@/content/types';
 import { LOCALES } from '@/lib/i18n';
 import { complete, parseJson, underDailyLimit } from './ai';
 import { insert } from './collections';
-import { getPublishedPosts, postToPage, type Translations } from './content';
+import { getOverrides, getPublishedPosts, postToPage, type Translations } from './content';
+import type { Block } from '@/lib/blocks';
+import { aiReady } from './ai';
 import { getBlock, saveBlock } from './settings';
 import { newId, now, readJsonFile, updateJsonFile } from './store';
 
@@ -14,7 +16,7 @@ export type AiLog = { id: string; at: string; kind: 'translate' | 'autopub' | 'c
 
 declare global { var __adgvTranslating: boolean | undefined }
 
-const KEEP = new Set(['type', 'tool', 'href']);
+const KEEP = new Set(['type', 'tool', 'href', 'id', 'src', 'image', 'bgImage', 'style', 'icon', 'layout', 'side', 'cols', 'size', 'anchor', 'className', 'url', 'html', 'hidden']);
 /** Puts back structural values (types, tools, links) from the original, whatever the AI returned. */
 function restore(orig: unknown, tr: unknown): unknown {
   if (Array.isArray(orig)) return orig.map((o, i) => restore(o, Array.isArray(tr) ? tr[i] : undefined));
@@ -32,7 +34,9 @@ async function allPages(): Promise<Page[]> {
 
 export async function translatePage(p: Page, lang: string) {
   const name = LOCALES.find((l) => l.code === lang)?.name ?? lang;
-  const src = { seoTitle: p.seoTitle, meta: p.meta, eyebrow: p.eyebrow, h1: p.h1, intro: p.intro, sections: p.sections };
+  const o = (await getOverrides())[p.path];
+  const blocks: Block[] | undefined = o?.blocks?.length ? o.blocks : undefined;
+  const src = { seoTitle: o?.seoTitle || p.seoTitle, meta: o?.meta || p.meta, eyebrow: o?.eyebrow || p.eyebrow, h1: o?.h1 || p.h1, intro: o?.intro || p.intro, sections: blocks ? [] : p.sections, ...(blocks ? { blocks } : {}) };
   const system = `You are a professional legal-immigration translator for a UAE residency consultancy website. Translate every human-readable string value in the JSON into ${name}${lang === 'at' ? ' (Austrian German)' : ''}. Keep the JSON structure and keys identical. Do not translate or change values of "type", "tool" or "href". Keep numbers, currency (AED), names of authorities and brand names accurate. Natural, clear, polite tone; never add promises or guarantees. Return JSON only.`;
   const out = await complete(system, [{ role: 'user', content: JSON.stringify(src) }], { json: true, maxTokens: 8000, kind: 'auto' });
   const t = restore(src, parseJson(out)) as typeof src;
@@ -51,7 +55,9 @@ export async function runTranslation(langs: string[], auto = false) {
     const pages = await allPages();
     const tr = await readJsonFile<Translations>('translations.json', {});
     const todo: [Page, string][] = [];
-    for (const l of langs) for (const p of pages) if (!tr[l]?.[p.path]) todo.push([p, l]);
+    const over = await getOverrides();
+    // Missing translations, and pages edited after they were translated.
+    for (const l of langs) for (const p of pages) { const t = tr[l]?.[p.path]; if (!t || (over[p.path]?.at && over[p.path].at! > t.at && !(t as { manual?: boolean }).manual)) todo.push([p, l]); }
     let job: TranslateJob = { running: true, langs, total: todo.length, done: 0, errors: 0, startedAt: now(), auto };
     await saveBlock('translateJob', job);
     for (const [p, l] of todo) {
@@ -79,4 +85,15 @@ export async function translationProgress() {
   const pages = await allPages();
   const tr = await readJsonFile<Translations>('translations.json', {});
   return { total: pages.length, perLang: Object.fromEntries(LOCALES.filter((l) => l.code !== 'en').map((l) => [l.code, Object.keys(tr[l.code] ?? {}).length])) as Record<string, number> };
+}
+
+/** Translates changed pages into all languages in the background after an admin saves (if switched on). */
+export async function autoTranslate(paths: string[]) {
+  const cfg = await getBlock<{ onSave: boolean }>('langcfg', { onSave: true });
+  if (!cfg.onSave || !(await aiReady())) return;
+  await updateJsonFile<Translations>('translations.json', {}, (all) => {
+    for (const l of Object.keys(all)) for (const p of paths) if (!(all[l][p] as { manual?: boolean } | undefined)?.manual) delete all[l][p];
+    return all;
+  });
+  void runTranslation(LOCALES.filter((l) => l.code !== 'en').map((l) => l.code), true).catch(() => {});
 }
