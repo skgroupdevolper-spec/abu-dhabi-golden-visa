@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import { Icon } from '@/components/Icon';
 
 type Role = 'owner' | 'admin' | 'staff' | 'viewer';
 type Item = { href: string; label: string; ic: string; roles?: Role[]; badge?: 'leads' | 'unread' | 'notes' };
@@ -10,38 +11,40 @@ const FULL: Role[] = ['owner', 'admin'];
 
 export const ADMIN_MENU: { title: string; items: Item[] }[] = [
   { title: 'Work', items: [
-    { href: '/admin/', label: 'Dashboard', ic: '◎' },
-    { href: '/admin/notifications/', label: 'Notifications', ic: '◉', badge: 'notes' },
-    { href: '/admin/leads/', label: 'Leads & enquiries', ic: '✉', badge: 'leads' },
-    { href: '/admin/applications/', label: 'Applications', ic: '▤', badge: 'unread' },
-    { href: '/admin/customers/', label: 'Customers', ic: '☺' },
-    { href: '/admin/whatsapp/', label: 'WhatsApp', ic: '✆', roles: FULL },
-    { href: '/admin/chatbot/', label: 'AI chatbot', ic: '✦' },
+    { href: '/admin/', label: 'Dashboard', ic: 'chart' },
+    { href: '/admin/notifications/', label: 'Notifications', ic: 'bell', badge: 'notes' },
+    { href: '/admin/leads/', label: 'Leads & enquiries', ic: 'inbox', badge: 'leads' },
+    { href: '/admin/applications/', label: 'Applications', ic: 'folder', badge: 'unread' },
+    { href: '/admin/customers/', label: 'Customers', ic: 'users' },
+    { href: '/admin/whatsapp/', label: 'WhatsApp', ic: 'wa', roles: FULL },
+    { href: '/admin/chatbot/', label: 'AI chatbot', ic: 'spark' },
   ] },
   { title: 'Content', items: [
-    { href: '/admin/posts/', label: 'Blog posts', ic: '✎' },
-    { href: '/admin/autopublisher/', label: 'Auto Publisher', ic: '⚡', roles: FULL },
-    { href: '/admin/pages/', label: 'Pages', ic: '▦' },
-    { href: '/admin/faqs/', label: 'FAQs', ic: '?' },
-    { href: '/admin/services/', label: 'Services & prices', ic: '◇' },
-    { href: '/admin/fees/', label: 'Cost calculator', ic: '◈', roles: FULL },
-    { href: '/admin/testimonials/', label: 'Testimonials', ic: '❝' },
-    { href: '/admin/partners/', label: 'Partner logos', ic: '◫' },
-    { href: '/admin/offer/', label: 'Offer pop-up', ic: '✷', roles: FULL },
-    { href: '/admin/media/', label: 'Media library', ic: '▣' },
-    { href: '/admin/subscribers/', label: 'Subscribers', ic: '✉' },
+    { href: '/admin/posts/', label: 'Blog posts', ic: 'pen' },
+    { href: '/admin/categories/', label: 'Blog categories', ic: 'tag' },
+    { href: '/admin/autopublisher/', label: 'Auto Publisher', ic: 'bolt', roles: FULL },
+    { href: '/admin/pages/', label: 'Pages & builder', ic: 'layout' },
+    { href: '/admin/faqs/', label: 'FAQs', ic: 'question' },
+    { href: '/admin/services/', label: 'Services & prices', ic: 'tag' },
+    { href: '/admin/fees/', label: 'Cost calculator', ic: 'calc', roles: FULL },
+    { href: '/admin/testimonials/', label: 'Testimonials', ic: 'quote' },
+    { href: '/admin/partners/', label: 'Partner logos', ic: 'star' },
+    { href: '/admin/offer/', label: 'Offer pop-up', ic: 'spark', roles: FULL },
+    { href: '/admin/media/', label: 'Media library', ic: 'image' },
+    { href: '/admin/subscribers/', label: 'Subscribers', ic: 'mail' },
   ] },
   { title: 'Website', items: [
-    { href: '/admin/header/', label: 'Header & menu', ic: '☰', roles: FULL },
-    { href: '/admin/footer/', label: 'Footer', ic: '▁', roles: FULL },
-    { href: '/admin/design/', label: 'Design & colours', ic: '◐', roles: FULL },
-    { href: '/admin/languages/', label: 'Languages', ic: '⌘', roles: FULL },
-    { href: '/admin/settings/', label: 'Site settings', ic: '⚙', roles: FULL },
+    { href: '/admin/header/', label: 'Header & menu', ic: 'menu', roles: FULL },
+    { href: '/admin/footer/', label: 'Footer', ic: 'layout', roles: FULL },
+    { href: '/admin/design/', label: 'Design & colours', ic: 'palette', roles: FULL },
+    { href: '/admin/seo/', label: 'SEO & Google', ic: 'seo', roles: FULL },
+    { href: '/admin/languages/', label: 'Languages', ic: 'globe', roles: FULL },
+    { href: '/admin/settings/', label: 'Site settings', ic: 'settings', roles: FULL },
   ] },
   { title: 'Account', items: [
-    { href: '/admin/users/', label: 'Admin users', ic: '♚', roles: FULL },
-    { href: '/admin/profile/', label: 'My profile', ic: '☻' },
-    { href: '/admin/backup/', label: 'Backup & move', ic: '⇩', roles: FULL },
+    { href: '/admin/users/', label: 'Admin users', ic: 'users', roles: FULL },
+    { href: '/admin/profile/', label: 'My profile', ic: 'user' },
+    { href: '/admin/backup/', label: 'Backup & move', ic: 'download', roles: FULL },
   ] },
 ];
 
@@ -71,16 +74,32 @@ export function AdminNav({ counts, role, mobile }: { counts: { leads: number; ap
     <nav aria-label="Admin" className="anav">
       {groups.map((g) => (
         <div key={g.title}>
-          <p className="eyebrow" style={{ margin: '14px 14px 6px' }}>{g.title}</p>
+          <p className="anav-h">{g.title}</p>
           {g.items.map((i) => (
             <Link key={i.href} href={i.href} className={on(i.href) ? 'on' : ''}>
-              <span aria-hidden="true" className="ai">{i.ic}</span>{i.label}
+              <span aria-hidden="true" className="ai"><Icon name={i.ic} size={18} /></span><span className="al">{i.label}</span>
               {n(i.badge) > 0 && <span className="c">{n(i.badge)}</span>}
             </Link>
           ))}
         </div>
       ))}
-      <a href="/" target="_blank" rel="noopener"><span aria-hidden="true" className="ai">↗</span>Open website</a>
+      <a href="/" target="_blank" rel="noopener"><span aria-hidden="true" className="ai"><Icon name="ext" size={18} /></span><span className="al">Open website</span></a>
     </nav>
+  );
+}
+
+/** Quick search across the admin menu (Ctrl+K). */
+export function AdminSearch({ role }: { role: Role }) {
+  const [q, setQ] = useState('');
+  const items = ADMIN_MENU.flatMap((g) => g.items.filter((i) => !i.roles || i.roles.includes(role)).map((i) => ({ ...i, g: g.title })));
+  const hits = q.trim() ? items.filter((i) => `${i.label} ${i.g}`.toLowerCase().includes(q.trim().toLowerCase())).slice(0, 8) : [];
+  return (
+    <div className="ab-search">
+      <Icon name="search" size={17} />
+      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search the dashboard…" aria-label="Search the dashboard" onKeyDown={(e) => { if (e.key === 'Enter' && hits[0]) window.location.href = hits[0].href; if (e.key === 'Escape') setQ(''); }} />
+      {hits.length > 0 && (
+        <div className="ab-hits">{hits.map((h) => <Link key={h.href} href={h.href} onClick={() => setQ('')}><Icon name={h.ic} size={16} /> {h.label}<small>{h.g}</small></Link>)}</div>
+      )}
+    </div>
   );
 }
