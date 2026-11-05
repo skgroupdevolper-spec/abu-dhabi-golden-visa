@@ -6,6 +6,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -48,7 +51,11 @@ jobs:
           npx -y playwright@1.49.1 screenshot --channel chrome --full-page --wait-for-timeout 2500 -b cr --device "Pixel 7" http://localhost:3000/ shots/home-mobile.png
           npx -y playwright@1.49.1 screenshot --channel chrome --full-page --wait-for-timeout 1500 --viewport-size 1440,900 http://localhost:3000/golden-visa/property-investment/ shots/property.png
           npx -y playwright@1.49.1 screenshot --channel chrome --wait-for-timeout 1500 --viewport-size 1440,900 http://localhost:3000/ar/ shots/arabic.png
-      - uses: actions/upload-artifact@v4
-        with:
-          name: screenshots
-          path: shots/
+      - name: Publish screenshots to ci-shots branch
+        if: github.event_name == 'push'
+        run: |
+          cd shots
+          git init -q -b ci-shots
+          git -c user.name=ci -c user.email=ci@users.noreply.github.com add .
+          git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "Screenshots for ${GITHUB_SHA::7}"
+          git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" ci-shots
