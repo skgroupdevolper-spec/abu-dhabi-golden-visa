@@ -819,3 +819,4 @@ html[dir='rtl'] .mt-list .mt-arrow { transform: rotate(90deg); }
 }
 html, body { max-width: 100%; }
 .page, main { overflow-x: clip; }
+.bi-feat .bi-im { min-height: 0; aspect-ratio: 1200 / 630; align-self: center; } .bi-im { aspect-ratio: 1200 / 630; }
