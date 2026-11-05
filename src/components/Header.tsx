@@ -157,11 +157,11 @@ export function Header({ locale }: { locale: Locale }) {
                           {item.groups.map((g, gi) => (
                             <button key={g.title} type="button" role="tab" aria-selected={tab === gi} onMouseEnter={() => setTab(gi)} onFocus={() => setTab(gi)} onClick={() => setTab(gi)}>
                               <span className="mi"><Icon name={iconFor(g.links[0]?.label ?? '', g.title)} size={17} /></span>
-                              <span>{g.title}<small>{g.links.length} services</small></span>
+                              <span>{g.title}<small>{g.links.length} {item.href === '/blog/' ? 'guides' : 'services'}</small></span>
                               <Icon name="chev" size={14} className="mt-arrow" />
                             </button>
                           ))}
-                          <L locale={locale} href={item.href} className="mt-all">See all services →</L>
+                          <L locale={locale} href={item.href} className="mt-all">{item.href === '/blog/' ? 'All blog posts →' : 'See all services →'}</L>
                         </div>
                         <div className="mt-panel" role="tabpanel">
                           <h4>{item.groups[tab]?.title}</h4>
@@ -175,15 +175,15 @@ export function Header({ locale }: { locale: Locale }) {
                           </div>
                         </div>
                         <div className="mega-promo">
-                          <p className="eyebrow">Need help choosing?</p>
-                          <b>Tell us what you need</b>
+                          <p className="eyebrow">{item.href === '/blog/' ? 'Have a question?' : 'Need help choosing?'}</p>
+                          <b>{item.href === '/blog/' ? 'Ask an advisor for free' : 'Tell us what you need'}</b>
                           <p>An advisor replies on WhatsApp with the steps, documents and a written quote.</p>
                           <L locale={locale} href="/apply/" className="btn btn-gold btn-s">Apply online</L>
                           <a href={waHello} target="_blank" rel="noopener" className="btn btn-red btn-s">WhatsApp us</a>
                         </div>
                       </div>
                       ) : (
-                      <div className={`mega${item.groups.length === 3 ? ' three' : item.groups.length > 1 ? ' two' : ' one'}`} data-lenis-prevent>
+                      <div className={`mega${item.groups.length === 3 ? ' three' : item.groups.length > 1 ? ' two' : ' one'}${item.href === '/contact/' ? ' end' : ''}`} data-lenis-prevent>
                         <div className="mega-cols">
                           {item.groups.map((g) => (
                             <div key={g.title}>

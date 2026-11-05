@@ -644,3 +644,4 @@ html[dir='rtl'] .mt-list .mt-arrow { transform: rotate(90deg); }
 /* centre the full-width services menu under the header */
 .mega.wide, html[dir='rtl'] .mega.wide { left: 0; right: 0; inset-inline: 0; margin-inline: auto; transform: none; animation: megatab 0.25s cubic-bezier(0.2, 0.9, 0.25, 1.2); }
 @keyframes megatab { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+.mega.end { inset-inline-start: auto; inset-inline-end: -120px; }

@@ -84,7 +84,7 @@ for (const vp of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
   await page.screenshot({ path: 'shots/service-page.png' });
   await page.screenshot({ path: 'shots/service-page-full.png', fullPage: true });
   // mega menus
-  for (const label of ['Golden Visa', 'Our Services']) {
+  for (const label of ['Golden Visa', 'Our Services', 'Blog', 'Contact']) {
     await page.hover(`.nav button:has-text("${label}")`);
     await page.waitForTimeout(500);
     await page.screenshot({ path: `shots/mega-${label.replace(/ /g, '-').toLowerCase()}.png` });
