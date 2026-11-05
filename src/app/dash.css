@@ -409,3 +409,9 @@ body:has(.admin) { background: #f7f6f2; }
 .pb-preview.mobile iframe { width: 390px; max-width: 100%; margin: 12px auto; border-radius: 22px; box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.4); background: #fff; }
 .kv { display: grid; grid-template-columns: 130px 1fr; gap: 8px 12px; margin: 0; font-size: 14px; } .kv dt { color: #8d8471; } .kv dd { margin: 0; }
 .codes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; } .codes code { padding: 8px; text-align: center; font-size: 15px; }
+.admin .perm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; margin-top: 10px; }
+.admin .perm-grid fieldset { border: 1px solid #ece4d0; border-radius: 10px; padding: 8px 12px 10px; margin: 0; display: grid; gap: 4px; }
+.admin .perm-grid legend { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: #8a6d1e; padding: 0 4px; }
+.admin .home-parts { display: grid; gap: 8px; }
+.admin .home-part { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; border: 1px solid #ece4d0; border-radius: 10px; background: #fff; }
+.admin .home-part.off { opacity: .6; background: #faf8f2; }

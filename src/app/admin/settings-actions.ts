@@ -76,7 +76,7 @@ export async function saveAi(_: St, f: FormData): Promise<St> {
   await requireAdmin(FULL);
   const cur = (await getSecrets()).ai;
   const keep = (k: 'openaiKey' | 'geminiKey' | 'anthropicKey') => (f.get(`clear_${k}`) ? '' : s(f, k, 400) || cur[k]);
-  await saveSecrets({ ai: { provider: s(f, 'provider', 20) as 'openai' | 'gemini' | 'anthropic' | '', openaiKey: keep('openaiKey'), geminiKey: keep('geminiKey'), anthropicKey: keep('anthropicKey'), model: s(f, 'model', 80), dailyBudget: Math.max(0, Number(s(f, 'dailyBudget', 8)) || 0) } });
+  await saveSecrets({ ai: { provider: s(f, 'provider', 20) as 'openai' | 'gemini' | 'anthropic' | '', openaiKey: keep('openaiKey'), geminiKey: keep('geminiKey'), anthropicKey: keep('anthropicKey'), model: s(f, 'model', 80), dailyBudget: Math.max(0, Number(s(f, 'dailyBudget', 8)) || 0), routes: cur.routes, images: cur.images } });
   return { ok: 'Saved.' };
 }
 
@@ -102,27 +102,42 @@ export async function testWhatsApp(_: St, f: FormData): Promise<St> {
 }
 
 /* ---------- team users ---------- */
+const ROLES = ['admin', 'staff', 'viewer'];
+const permsOf = (f: FormData) => (f.get('custom') === 'on' ? f.getAll('perm').map(String).filter((h) => /^\/admin\/[\w-]*\/?$/.test(h)) : []);
 export async function addUser(_: St, f: FormData): Promise<St> {
   await requireAdmin(FULL);
   const email = s(f, 'email', 160).toLowerCase(), pass = s(f, 'password', 200);
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: 'Enter a valid email.' };
   if (pass.length < 10) return { error: 'Use a password of at least 10 characters.' };
   if ((await list<TeamUser>('team')).some((u) => u.email === email)) return { error: 'This email already has an account.' };
-  const role = (['admin', 'staff', 'viewer'].includes(s(f, 'role')) ? s(f, 'role') : 'staff') as Role;
-  await insert<TeamUser>('team', { id: newId(6), email, name: s(f, 'name', 80) || email, role, pass: await hashPassword(pass), active: true, createdAt: now() });
+  const role = (ROLES.includes(s(f, 'role')) ? s(f, 'role') : 'staff') as Role;
+  await insert<TeamUser>('team', { id: newId(6), email, name: s(f, 'name', 80) || email, role, pass: await hashPassword(pass), active: true, createdAt: now(), phone: s(f, 'phone', 30), title: s(f, 'title', 80), perms: permsOf(f) });
   revalidatePath('/admin/users/');
   return { ok: 'User added. Share the password with them privately.' };
 }
-export async function updateUser(f: FormData) {
+export async function saveUser(_: St, f: FormData): Promise<St> {
   await requireAdmin(FULL);
   const id = s(f, 'id', 40), pass = s(f, 'password', 200);
-  const hashed = pass.length >= 10 ? await hashPassword(pass) : '';
-  if (f.get('delete')) await remove<TeamUser>('team', id);
-  else await patch<TeamUser>('team', id, (u) => {
-    u.role = (['admin', 'staff', 'viewer'].includes(s(f, 'role')) ? s(f, 'role') : u.role) as Role;
-    u.active = b(f, 'active');
+  const users = await list<TeamUser>('team');
+  const email = s(f, 'email', 160).toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: 'Enter a valid email.' };
+  if (users.some((u) => u.email === email && u.id !== id)) return { error: 'Another user has this email.' };
+  if (pass && pass.length < 10) return { error: 'Use a password of at least 10 characters.' };
+  const hashed = pass ? await hashPassword(pass) : '';
+  await patch<TeamUser>('team', id, (u) => {
+    u.name = s(f, 'name', 80) || u.name; u.email = email; u.phone = s(f, 'phone', 30); u.title = s(f, 'title', 80); u.note = s(f, 'note', 600);
+    u.role = (ROLES.includes(s(f, 'role')) ? s(f, 'role') : u.role) as Role;
+    u.active = b(f, 'active'); u.perms = permsOf(f);
     if (hashed) u.pass = hashed;
   });
+  revalidatePath('/admin/users/');
+  return { ok: hashed ? 'Saved. The new password works from now on.' : 'Saved.' };
+}
+export async function updateUser(f: FormData) {
+  await requireAdmin(FULL);
+  const id = s(f, 'id', 40), op = s(f, 'op', 12);
+  if (op === 'delete' || f.get('delete')) await remove<TeamUser>('team', id);
+  else if (op === 'toggle') await patch<TeamUser>('team', id, (u) => { u.active = !u.active; });
   revalidatePath('/admin/users/');
 }
 export async function changeMyPassword(_: St, f: FormData): Promise<St> {
@@ -193,4 +208,20 @@ export async function saveDesign(_: St, f: FormData): Promise<St> {
   if (f.get('gold')) await saveSite({ colors: { gold: hex(g('gold'), cur.colors.gold), goldDeep: hex(g('goldDeep'), cur.colors.goldDeep), ink: hex(g('ink'), cur.colors.ink), paper: hex(g('paper'), cur.colors.paper) } });
   revalidatePath('/', 'layout');
   return { ok: 'Design saved. The website uses it now.' };
+}
+
+/** Keys plus the provider and model for one feature (chatbot, translation, writer, editor, pictures). */
+export async function saveAiRoute(_: St, f: FormData): Promise<St> {
+  await requireAdmin(FULL);
+  const cur = (await getSecrets()).ai;
+  const keep = (k: 'openaiKey' | 'geminiKey' | 'anthropicKey') => (f.get(`clear_${k}`) ? '' : s(f, k, 400) || cur[k]);
+  const routes = { ...(cur.routes ?? {}) };
+  for (const use of ['chat', 'translate', 'writer', 'editor'] as const) {
+    if (f.has(`p_${use}`)) routes[use] = { provider: s(f, `p_${use}`, 20) as 'openai' | 'gemini' | 'anthropic' | '', model: s(f, `m_${use}`, 80) };
+  }
+  const images = f.has('p_images') ? { provider: (['openai', 'gemini'].includes(s(f, 'p_images')) ? s(f, 'p_images') : 'none') as 'none' | 'openai' | 'gemini', model: s(f, 'm_images', 80) } : cur.images;
+  const provider = f.has('provider') ? (s(f, 'provider', 20) as 'openai' | 'gemini' | 'anthropic' | '') : cur.provider;
+  await saveSecrets({ ai: { ...cur, provider, openaiKey: keep('openaiKey'), geminiKey: keep('geminiKey'), anthropicKey: keep('anthropicKey'), routes, images, dailyBudget: f.has('dailyBudget') ? Math.max(0, Number(s(f, 'dailyBudget', 8)) || 0) : cur.dailyBudget } });
+  revalidatePath('/admin/', 'layout');
+  return { ok: 'AI settings saved.' };
 }

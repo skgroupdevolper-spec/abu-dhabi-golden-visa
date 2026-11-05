@@ -32,7 +32,7 @@ export function replaceAll<T>(name: string, items: T[]) {
 
 /* ---------- team users ---------- */
 export type Role = 'owner' | 'admin' | 'staff' | 'viewer';
-export type TeamUser = { id: string; email: string; name: string; role: Role; pass: string; active: boolean; createdAt: string; lastLogin?: string };
+export type TeamUser = { id: string; email: string; name: string; role: Role; pass: string; active: boolean; createdAt: string; lastLogin?: string; perms?: string[]; phone?: string; title?: string; note?: string; logins?: number };
 export const ROLE_LABEL: Record<Role, string> = { owner: 'Owner (all access)', admin: 'Admin (all access)', staff: 'Staff (enquiries and applications)', viewer: 'Viewer (read only)' };
 
 /* ---------- customers ---------- */

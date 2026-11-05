@@ -8,17 +8,20 @@ import { Eligibility } from '@/components/Eligibility';
 import { Icon } from '@/components/Icon';
 import { TranslationNotice } from '@/components/TranslationNotice';
 import { FaqList, HeroFinder, HomeEffects, HomeLeadForm, PhoneChat, ServicesGrid } from '@/components/HomeClient';
-import { getFaqs, getPartners, getTestimonials } from '@/lib/server/content';
+import { getFaqs, getOverrides, getPartners, getTestimonials, getTranslations } from '@/lib/server/content';
+import { BlockView } from '@/components/BlockView';
+import type { Block } from '@/lib/blocks';
 import { getSecrets } from '@/lib/server/settings';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const seo = (await getSecrets()).seo;
+  const ho = (await getOverrides())['/'] ?? {};
   return pageMetadata(
     '/',
     (isLocale(locale) ? locale : 'en') as Locale,
-    seo.homeTitle || 'Abu Dhabi Golden Visa | 10-Year UAE Residency Consultants',
-    seo.homeMeta || 'Explore long-term UAE residency through property, business, professional and talent routes. Free eligibility check, cost calculator, family applications and VIP assistance.',
+    ho.seoTitle || seo.homeTitle || 'Abu Dhabi Golden Visa | 10-Year UAE Residency Consultants',
+    ho.meta || seo.homeMeta || 'Explore long-term UAE residency through property, business, professional and talent routes. Free eligibility check, cost calculator, family applications and VIP assistance.',
   );
 }
 
@@ -60,7 +63,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const lp = (p: string) => localizePath(p, locale);
   const manifesto = 'From the first question to the day your residency is issued, we handle the forms, the fees and the follow-ups. You get one clear price, one advisor, and every update in your own language.';
   const gold = new Set(['clear', 'price,', 'advisor,', 'language.']);
-  const [storedFaqs, reviews, partners] = await Promise.all([getFaqs(), getTestimonials(), getPartners()]);
+  const [storedFaqs, reviews, partners, over, tr] = await Promise.all([getFaqs(), getTestimonials(), getPartners(), getOverrides(), getTranslations()]);
+  const ho = over['/'] ?? {};
+  const hb: Block[] = (locale !== 'en' && tr[locale]?.['/']?.blocks?.length ? tr[locale]['/'].blocks! : ho.blocks) ?? [];
+  const show = (k: string) => !(ho.homeHide ?? []).includes(k);
+  const at = (k: string) => { const list = hb.filter((b) => (b.style?.place || 'contact') === k); return list.length ? <div className="home-blocks"><BlockView blocks={list} locale={locale} reviews={reviews} /></div> : null; };
   const faqItems = storedFaqs.length ? storedFaqs.map((f) => ({ q: f.q, a: f.a })) : FAQ;
   const example = F.perPerson.visa.aed + F.medical.normal.aed + F.perPerson.emiratesId.aed + F.perPerson.changeOfStatus.aed + F.propertyValuation.aed;
 
@@ -72,6 +79,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <div className="progress" id="progress" aria-hidden="true" />
       <HomeEffects />
 
+      {at('top')}
+      {show('hero') && (<>
       {/* HERO */}
       <section className="hero">
         <div className="wrap hero-grid">
@@ -114,12 +123,18 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
         </div>
       </section>
+      </>)}
+      {at('hero')}
 
+      {show('band') && (<>
       {/* GIANT BAND */}
       <div className="band" aria-hidden="true">
         <div className="band-row" id="band"><span>Abu Dhabi</span><span className="f">✦</span><span>Golden Visa</span><span className="f">✦</span><span>Abu Dhabi</span><span className="f">✦</span><span>Golden Visa</span><span className="f">✦</span><span>Abu Dhabi</span></div>
       </div>
+      </>)}
+      {at('band')}
 
+      {show('manifesto') && (<>
       {/* MANIFESTO */}
       <section className="manifesto">
         <div className="wrap mgrid">
@@ -134,7 +149,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
         </div>
       </section>
+      </>)}
+      {at('manifesto')}
 
+      {show('routes') && (<>
       {/* ROUTES */}
       <section className="routes" id="routes">
         <div className="wrap routes-head">
@@ -159,7 +177,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
         </div>
       </section>
+      </>)}
+      {at('routes')}
 
+      {show('eligibility') && (<>
       {/* ELIGIBILITY CHECKER (spec) */}
       <section className="elig" id="eligibility">
         <div className="wrap">
@@ -170,7 +191,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <div style={{ marginTop: 36 }}><Eligibility /></div>
         </div>
       </section>
+      </>)}
+      {at('eligibility')}
 
+      {show('services') && (<>
       {/* SERVICES */}
       <section className="services" id="services">
         <div className="wrap">
@@ -181,7 +205,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <ServicesGrid locale={locale} />
         </div>
       </section>
+      </>)}
+      {at('services')}
 
+      {show('journey') && (<>
       {/* JOURNEY */}
       <section className="journey" id="journey">
         <div className="wrap jgrid">
@@ -202,7 +229,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
         </div>
       </section>
+      </>)}
+      {at('journey')}
 
+      {show('portal') && (<>
       {/* PORTAL */}
       <section className="portal" id="portal">
         <div className="wrap pgrid">
@@ -221,7 +251,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <PhoneChat />
         </div>
       </section>
+      </>)}
+      {at('portal')}
 
+      {show('calculator') && (<>
       {/* CALCULATOR */}
       <section className="calc" id="calculator">
         <div className="wrap">
@@ -255,7 +288,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
         </div>
       </section>
+      </>)}
+      {at('calculator')}
 
+      {show('family') && (<>
       {/* FAMILY (spec) */}
       <section className="famband">
         <div className="wrap">
@@ -279,7 +315,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
         </div>
       </section>
+      </>)}
+      {at('family')}
 
+      {show('why') && (<>
       {/* WHY */}
       <section className="why">
         <div className="wrap">
@@ -293,7 +332,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
         </div>
       </section>
+      </>)}
+      {at('why')}
 
+      {show('partners') && (<>
       {partners.length > 0 && (
         <section className="partners">
           <div className="wrap">
@@ -302,7 +344,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
         </section>
       )}
+      </>)}
+      {at('partners')}
 
+      {show('benefits') && (<>
       {/* BENEFITS (spec) */}
       <section className="benefits">
         <div className="wrap">
@@ -322,7 +367,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
         </div>
       </section>
+      </>)}
+      {at('benefits')}
 
+      {show('faq') && (<>
       {/* FAQ */}
       <section className="faq" id="faq">
         <div className="wrap fqgrid">
@@ -336,7 +384,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <FaqList items={faqItems} />
         </div>
       </section>
+      </>)}
+      {at('faq')}
 
+      {show('guides') && (<>
       {/* GUIDES (spec) */}
       <section className="guides">
         <div className="wrap">
@@ -356,7 +407,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
         </div>
       </section>
+      </>)}
+      {at('guides')}
 
+      {show('reviews') && (<>
       {reviews.length > 0 && (
         <section className="reviews">
           <div className="wrap">
@@ -374,7 +428,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
         </section>
       )}
+      </>)}
+      {at('reviews')}
 
+      {show('contact') && (<>
       {/* CONTACT */}
       <section className="contact" id="contact-form">
         <div className="wrap">
@@ -394,7 +451,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
         </div>
       </section>
+      </>)}
+      {at('contact')}
 
+      {show('finale') && (<>
       {/* FINALE */}
       <section className="finale" id="contact">
         <div className="wrap">
@@ -411,6 +471,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
         </div>
       </section>
+      </>)}
+      {at('finale')}
+
+      {ho.css && <style dangerouslySetInnerHTML={{ __html: ho.css.replace(/<\/?style/gi, '') }} />}
     </div>
   );
 }

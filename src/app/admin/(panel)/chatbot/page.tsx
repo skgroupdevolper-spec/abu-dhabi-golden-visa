@@ -10,7 +10,8 @@ import { getBlock, getSite } from '@/lib/server/settings';
 import { LOCALES } from '@/lib/i18n';
 import { when } from '@/lib/stages';
 import type { Chat } from '@/lib/server/content';
-import { saveChatbot, testAi } from '../../ai-actions';
+import { saveChatbot, toggleChatbot } from '../../ai-actions';
+import { AiPanel } from '@/components/dash/AiPanel';
 
 export const metadata: Metadata = { title: 'AI chatbot' };
 
@@ -24,9 +25,16 @@ export default async function Chatbot({ searchParams }: { searchParams: Promise<
   const open = chats.find((c) => c.id === chat);
   return (
     <>
-      <div className="topbar"><div><p className="eyebrow">AI chatbot</p><h1>Answers visitors <span className="gold">from your own content.</span></h1></div>
-        <span className={`pill ${site.features.chatbot && ready ? 'ok' : 'due'}`}>{!ready ? 'No AI key' : site.features.chatbot ? 'Live on the website' : 'Off'}</span></div>
-      <Tabs base="/admin/chatbot/" tabs={full ? [['chats', `Chats (${chats.length})`], ['settings', 'Look & hand-over'], ['greetings', 'Greeting per language']] : [['chats', `Chats (${chats.length})`]]} cur={tab} />
+      <div className="topbar"><div><p className="eyebrow">AI chatbot</p><h1>AI chatbot</h1></div>
+        <div className="row"><span className={`pill ${site.features.chatbot && ready ? 'ok' : 'due'}`}>{!ready ? 'No AI key' : site.features.chatbot ? 'Live on the website' : 'Off'}</span>
+          {full && <form action={toggleChatbot}><input type="hidden" name="on" value={site.features.chatbot ? '0' : '1'} /><button className={`btn ${site.features.chatbot ? '' : 'btn-gold'}`} type="submit">{site.features.chatbot ? 'Turn chatbot off' : 'Turn chatbot on'}</button></form>}</div></div>
+      <div className="grid4" style={{ marginBottom: 16 }}>
+        <div className="kpi"><small>All chats</small><b>{chats.length}</b></div>
+        <div className="kpi"><small>Last 7 days</small><b>{chats.filter((c) => Date.now() - new Date(c.updated).getTime() < 7 * 864e5).length}</b></div>
+        <div className="kpi"><small>Answered by the bot</small><b>{chats.reduce((n, c) => n + c.messages.filter((m) => m.role === 'assistant').length, 0)}</b></div>
+        <div className="kpi goldbg"><small>Sent to WhatsApp</small><b>{chats.filter((c) => c.messages.some((m) => m.role === 'assistant' && /wa\.me|whatsapp/i.test(m.content))).length}</b></div>
+      </div>
+      <Tabs base="/admin/chatbot/" tabs={full ? [['chats', `Chats (${chats.length})`], ['settings', 'Look & hand-over'], ['greetings', 'Greeting per language'], ['ai', 'AI provider & API key']] : [['chats', `Chats (${chats.length})`]]} cur={tab} />
       {tab === 'chats' && (
         <div className="cols">
           <div className="panel">
@@ -55,7 +63,12 @@ export default async function Chatbot({ searchParams }: { searchParams: Promise<
             <div className="field"><label htmlFor="position">Position</label><select id="position" name="position" defaultValue={cfg.position}><option value="left">Bottom left</option><option value="right">Bottom right</option></select></div>
             <F name="handover" label="Hand-over text (shown with the WhatsApp button)" value={cfg.handover} full />
             <F name="knowledge" label="Extra company knowledge (prices, offers, hours, policies)" value={cfg.knowledge} type="textarea" rows={8} full help="The bot already knows your services, government fees, FAQs and contact details. Add anything else here." />
-            <div className="full"><Toggle name="askContact" label="Invite visitors to share their WhatsApp number" on={cfg.askContact} /></div>
+            <div className="full"><Toggle name="askContact" label="First ask once for name and WhatsApp number" on={cfg.askContact} /></div>
+            <F name="waNumber" label="WhatsApp number for hand-over" value={cfg.waNumber} placeholder={`Empty = the site's number (${site.whatsappDisplay})`} />
+            <F name="maxPerDay" label="Max AI replies per day (0 = no limit)" value={cfg.maxPerDay ?? 0} type="number" />
+            <F name="maxPerChat" label="Max messages per chat (then send to WhatsApp; 0 = no limit)" value={cfg.maxPerChat ?? 0} type="number" />
+            <F name="keepDays" label="Delete chats after (days, 0 = keep)" value={cfg.keepDays ?? 0} type="number" />
+            <F name="rules" label="Extra rules for the bot (one per line)" value={cfg.rules} type="textarea" rows={3} placeholder="e.g. Always mention our office hours when someone asks to visit." full />
             {LOCALES.map((l) => <input key={l.code} type="hidden" name={`g_${l.code}`} value={cfg.greeting[l.code] ?? ''} />)}
             <input type="hidden" name="t_set" value="1" />
             <div className="full"><span className="lbl">Hand the chat over to WhatsApp when visitors…</span></div>
@@ -64,9 +77,10 @@ export default async function Chatbot({ searchParams }: { searchParams: Promise<
             ))}
             <div className="full"><Submit>Save</Submit></div>
           </ActionForm>
-          <ActionForm action={testAi} className="row" ><Submit className="btn">Test the AI connection</Submit></ActionForm>
+
         </div>
       )}
+      {tab === 'ai' && full && <AiPanel uses={['chat']} title="Chatbot AI provider & API key" />}
       {tab === 'greetings' && full && (
         <div className="panel">
           <ActionForm action={saveChatbot} className="form">

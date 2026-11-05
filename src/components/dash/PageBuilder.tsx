@@ -2,13 +2,13 @@
 
 // Page builder: edit every section of a page, add widgets, change styles, page hero, featured image and SEO.
 import { useMemo, useRef, useState } from 'react';
-import { BLOCKS, STYLE_FIELDS, arr, str, uid, type Block, type BlockType, type Field } from '@/lib/blocks';
+import { BLOCKS, HOME_SECTIONS, STYLE_FIELDS, arr, str, uid, type Block, type BlockType, type Field } from '@/lib/blocks';
 import { Icon } from '@/components/Icon';
 import { MediaPicker } from './MediaPicker';
 import { RichEditor } from './RichEditor';
 
 type Over = Record<string, unknown> & { facts?: { label: string; value: string }[] };
-type Props = { path: string; custom: boolean; original: { h1: string; intro: string; eyebrow: string; seoTitle: string; meta: string; facts: { label: string; value: string }[] }; initial: Over; blocks: Block[]; hasOverride: boolean };
+type Props = { path: string; custom: boolean; original: { h1: string; intro: string; eyebrow: string; seoTitle: string; meta: string; facts: { label: string; value: string }[] }; initial: Over; blocks: Block[]; hasOverride: boolean; home?: boolean };
 
 function FieldInput({ f, value, set }: { f: Field; value: unknown; set: (v: unknown) => void }) {
   switch (f.kind) {
@@ -80,13 +80,14 @@ function seoChecks(title: string, meta: string, h1: string, kw: string, img: str
   ];
 }
 
-export function PageBuilder({ path, custom, original, initial, blocks: start, hasOverride }: Props) {
-  const [tab, setTab] = useState<'sections' | 'page' | 'seo' | 'css'>('sections');
+export function PageBuilder({ path, custom, original, initial, blocks: start, hasOverride, home = false }: Props) {
+  const [tab, setTab] = useState<'sections' | 'page' | 'seo' | 'css' | 'home'>(home ? 'home' : 'sections');
   const [o, setO] = useState<Over>(initial);
   const [blocks, setBlocks] = useState<Block[]>(start);
   const [sel, setSel] = useState<string | null>(start[0]?.id ?? null);
   const [side, setSide] = useState<'content' | 'style'>('content');
   const [adding, setAdding] = useState<number | null>(null);
+  const [placeFor, setPlaceFor] = useState('contact');
   const [msg, setMsg] = useState<{ ok?: string; error?: string }>({});
   const [busy, setBusy] = useState(false);
   const [preview, setPreview] = useState(false);
@@ -98,7 +99,7 @@ export function PageBuilder({ path, custom, original, initial, blocks: start, ha
   const setOv = (k: string, v: unknown) => { setO((x) => ({ ...x, [k]: v })); setDirty(true); };
   const upd = (id: string, fn: (b: Block) => Block) => { setBlocks((bs) => bs.map((b) => (b.id === id ? fn(b) : b))); setDirty(true); };
   const move = (i: number, d: number) => { setBlocks((bs) => { const c = [...bs]; const j = i + d; if (j < 0 || j >= c.length) return bs; [c[i], c[j]] = [c[j], c[i]]; return c; }); setDirty(true); };
-  const add = (type: BlockType, at: number) => { const b: Block = { id: uid(), type, data: BLOCKS[type].make(), style: {} }; setBlocks((bs) => [...bs.slice(0, at), b, ...bs.slice(at)]); setSel(b.id); setSide('content'); setAdding(null); setDirty(true); };
+  const add = (type: BlockType, at: number) => { const b: Block = { id: uid(), type, data: BLOCKS[type].make(), style: home ? { place: placeFor } : {} }; setBlocks((bs) => [...bs.slice(0, at), b, ...bs.slice(at)]); setSel(b.id); setSide('content'); setAdding(null); setDirty(true); };
   const groups = useMemo(() => (['Content', 'Media', 'Widgets', 'Layout'] as const).map((g) => ({ g, items: (Object.keys(BLOCKS) as BlockType[]).filter((t) => BLOCKS[t].group === g) })), []);
 
   async function save() {
@@ -125,7 +126,7 @@ export function PageBuilder({ path, custom, original, initial, blocks: start, ha
     <div className="pb">
       <div className="pb-top">
         <nav className="pb-tabs">
-          {([['sections', 'Sections & widgets', 'grid'], ['page', 'Page header & image', 'image'], ['seo', `SEO · ${score}%`, 'seo'], ['css', 'Custom CSS', 'palette']] as const).map(([k, l, ic]) => (
+          {((home ? [['home', 'Homepage sections', 'layout'], ['sections', 'Added sections & widgets', 'grid'], ['seo', `SEO · ${score}%`, 'seo'], ['css', 'Custom CSS', 'palette']] : [['sections', 'Sections & widgets', 'grid'], ['page', 'Page header & image', 'image'], ['seo', `SEO · ${score}%`, 'seo'], ['css', 'Custom CSS', 'palette']]) as ['sections' | 'page' | 'seo' | 'css' | 'home', string, string][]).map(([k, l, ic]) => (
             <button key={k} type="button" className={tab === k ? 'on' : ''} onClick={() => setTab(k)}><Icon name={ic} size={16} /> {l}</button>
           ))}
         </nav>
@@ -150,7 +151,7 @@ export function PageBuilder({ path, custom, original, initial, blocks: start, ha
                   <div key={b.id}>
                     <div className={`pb-row${sel === b.id ? ' on' : ''}${b.hidden ? ' off' : ''}`} onClick={() => setSel(b.id)}>
                       <span className="pb-ic"><Icon name={BLOCKS[b.type]?.icon ?? 'doc'} size={16} /></span>
-                      <span className="pb-tx"><b>{str(b.data.title) || str(b.data.eyebrow) || BLOCKS[b.type]?.label}</b><small>{BLOCKS[b.type]?.label}{b.hidden ? ' · hidden' : ''}</small></span>
+                      <span className="pb-tx"><b>{str(b.data.title) || str(b.data.eyebrow) || BLOCKS[b.type]?.label}</b><small>{BLOCKS[b.type]?.label}{home ? ` · after ${HOME_SECTIONS.find(([k]) => k === (b.style?.place || 'contact'))?.[1] ?? b.style?.place}` : ''}{b.hidden ? ' · hidden' : ''}</small></span>
                       <span className="pb-acts" onClick={(e) => e.stopPropagation()}>
                         <button type="button" className="ib" onClick={() => move(i, -1)} disabled={i === 0} aria-label="Move up"><Icon name="up" size={14} /></button>
                         <button type="button" className="ib" onClick={() => move(i, 1)} disabled={i === blocks.length - 1} aria-label="Move down"><Icon name="down" size={14} /></button>
@@ -179,6 +180,10 @@ export function PageBuilder({ path, custom, original, initial, blocks: start, ha
                       </div>
                     ) : (
                       <div className="pb-fields two">
+                        {home && (
+                          <div className="field full"><label>Show this section on the homepage after</label>
+                            <select value={cur.style?.place || 'contact'} onChange={(e) => upd(cur.id, (x) => ({ ...x, style: { ...x.style, place: e.target.value } }))}>{HOME_SECTIONS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></div>
+                        )}
                         {STYLE_FIELDS.filter((f) => f.k !== 'bgImage' || cur.style?.bg === 'image').map((f) => (
                           <div className={`field${f.kind === 'image' ? ' full' : ''}`} key={f.k}>{f.kind !== 'check' && <label>{f.label}</label>}<FieldInput f={f} value={(cur.style as Record<string, unknown> | undefined)?.[f.k]} set={(v) => upd(cur.id, (x) => ({ ...x, style: { ...x.style, [f.k]: v } }))} /></div>
                         ))}
@@ -189,6 +194,26 @@ export function PageBuilder({ path, custom, original, initial, blocks: start, ha
               </div>
             </div>
           )}
+
+          {tab === 'home' && (() => {
+            const hide = (o.homeHide as string[] | undefined) ?? [];
+            return (
+              <div className="pb-fields panel-in">
+                <p className="help">Turn built-in homepage parts on or off, and add your own sections between them in “Added sections &amp; widgets”. Each added section has a “Show after” choice in its Design tab.</p>
+                <div className="home-parts">
+                  {HOME_SECTIONS.filter(([k]) => k !== 'top').map(([k, l]) => {
+                    const added = blocks.filter((b) => (b.style?.place || 'contact') === k).length;
+                    return (
+                      <div key={k} className={`home-part${hide.includes(k) ? ' off' : ''}`}>
+                        <label className="switch"><input type="checkbox" checked={!hide.includes(k)} onChange={(e) => setOv('homeHide', e.target.checked ? hide.filter((x) => x !== k) : [...hide, k])} /><span><b>{l}</b><small>{hide.includes(k) ? 'Hidden' : 'Shown'}{added ? ` · ${added} added section${added > 1 ? 's' : ''} after it` : ''}</small></span></label>
+                        <button type="button" className="btn btn-sm" onClick={() => { setPlaceFor(k); setTab('sections'); setAdding(blocks.length); }}><Icon name="plus" size={13} /> Add after</button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
 
           {tab === 'page' && (
             <div className="pb-fields two panel-in">

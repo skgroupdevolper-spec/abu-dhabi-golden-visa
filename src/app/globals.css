@@ -820,3 +820,22 @@ html[dir='rtl'] .mt-list .mt-arrow { transform: rotate(90deg); }
 html, body { max-width: 100%; }
 .page, main { overflow-x: clip; }
 .bi-feat .bi-im { min-height: 0; aspect-ratio: 1200 / 630; align-self: center; } .bi-im { aspect-ratio: 1200 / 630; }
+
+/* Single article: full cover (never cropped) and contact sidebar */
+.post-cover { margin: 26px 0 0; }
+.post-cover img { display: block; width: 100%; height: auto; border-radius: var(--radius); box-shadow: 0 30px 60px -36px rgba(0, 0, 0, 0.45); background: #f7f3e8; }
+.side-post { position: sticky; top: 130px; margin-top: 26px; display: grid; gap: 16px; align-self: start; }
+.side-post .side-apply { position: static; margin-top: 0; }
+.sp-box .btn { justify-content: center; font-size: 14px; overflow-wrap: anywhere; }
+.sp-more { gap: 4px !important; }
+.sp-item { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); text-decoration: none; color: inherit; }
+.sp-item:first-of-type { border-top: 0; }
+.sp-item img { width: 72px; height: auto; border-radius: 8px; flex: none; }
+.sp-item small { display: block; color: var(--gold-deep); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+.sp-item b { font-size: 14px; line-height: 1.35; }
+@media (max-width: 1100px) { .side-post { position: static; } .page-layout .side-post .side-apply { display: grid; } }
+
+/* No cropping: featured and builder images keep their natural shape */
+.phero-img img, .phero-img.sm img { aspect-ratio: auto; height: auto; object-fit: contain; }
+.bk-hero-im img, .bk-img { height: auto; object-fit: contain; }
+.home-blocks { position: relative; z-index: 2; }

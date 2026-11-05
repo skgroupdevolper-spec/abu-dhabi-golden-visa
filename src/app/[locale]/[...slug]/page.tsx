@@ -10,6 +10,7 @@ import { SITE } from '@/lib/site';
 import { getCategories, getCustomPages, getFaqs, getOverrides, getPublishedPosts, getServiceOverrides, getTestimonials, getTranslations, postToPage, type PageOverride, type Post } from '@/lib/server/content';
 import { PageView } from '@/components/PageView';
 import { BlogIndex } from '@/components/BlogIndex';
+import { BLOG } from '@/content/blog';
 
 type Params = Promise<{ locale: string; slug: string[] }>;
 
@@ -87,9 +88,11 @@ export default async function ContentPage({ params }: { params: Params }) {
   if (!r) notFound();
   const reviews = r.blocks?.some((b) => b.type === 'testimonials') ? await getTestimonials() : [];
   const blogData = r.blog ? { posts: await getPublishedPosts(), categories: await getCategories(), current: r.blog.category } : undefined;
+  const isArticle = !!(r.post || r.page.article);
+  const more = isArticle ? [...(await getPublishedPosts()).map(postToPage), ...BLOG].filter((p) => p.path !== r.page.path).sort((a, b) => Number(b.category === r.page.category) - Number(a.category === r.page.category)).slice(0, 5).map((p) => ({ href: p.path, title: p.h1, image: p.image, label: p.eyebrow })) : [];
   return (
     <>
-      <PageView page={r.page} locale={r.loc} translated={r.translated} price={r.price} hidden={r.hidden} blocks={r.blocks} o={r.o} reviews={reviews}
+      <PageView page={r.page} locale={r.loc} translated={r.translated} price={r.price} hidden={r.hidden} blocks={r.blocks} o={r.o} reviews={reviews} more={more}
         before={blogData ? <BlogIndex locale={r.loc} {...blogData} /> : undefined} />
       {(r.post || r.page.article) && (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({

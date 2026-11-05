@@ -23,6 +23,7 @@ function clean(o: Record<string, unknown>): PageOverride {
     noindex: !!o.noindex, hidden: !!o.hidden, hideFacts: !!o.hideFacts, hideCta: !!o.hideCta, hideAside: !!o.hideAside,
     heroStyle: (['default', 'image', 'minimal'].includes(s(o.heroStyle)) ? s(o.heroStyle) : 'default') as PageOverride['heroStyle'],
     facts, blocks: blocks?.length ? blocks : undefined, css: s(o.css, 30000), at: now(),
+    homeHide: Array.isArray(o.homeHide) ? (o.homeHide as unknown[]).map((x) => s(x, 30)).filter(Boolean).slice(0, 30) : undefined,
   };
 }
 
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest) {
   const custom = customs.find((c) => c.path === path);
   if (custom) {
     await updateJsonFile<CustomPage[]>('custom-pages.json', [], (all) => all.map((c) => (c.path === path ? { ...c, ...o, title: o.h1 || c.title } : c)));
-  } else if (getPage(path)) {
+  } else if (getPage(path) || path === '/') {
     await updateJsonFile<Record<string, PageOverride>>('content.json', {}, (all) => { all[path] = o; return all; });
   } else return NextResponse.json({ ok: false, error: 'Unknown page.' }, { status: 404 });
   revalidatePath('/', 'layout');

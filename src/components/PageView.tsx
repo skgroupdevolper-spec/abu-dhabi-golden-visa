@@ -141,7 +141,8 @@ export function SectionView({ s, locale, i }: { s: Section; locale: Locale; i: n
   }
 }
 
-export function PageView({ page, locale, translated, price, hidden = [], blocks, o = {}, reviews = [], before }: { page: Page; locale: Locale; translated?: boolean; price?: string; hidden?: string[]; blocks?: Block[]; o?: PageOverride; reviews?: { name: string; country: string; text: string; rating: number }[]; before?: ReactNode }) {
+export type MoreLink = { href: string; title: string; image?: string; label?: string };
+export function PageView({ page, locale, translated, price, hidden = [], blocks, o = {}, reviews = [], before, more = [] }: { page: Page; locale: Locale; translated?: boolean; price?: string; hidden?: string[]; blocks?: Block[]; o?: PageOverride; reviews?: { name: string; country: string; text: string; rating: number }[]; before?: ReactNode; more?: MoreLink[] }) {
   const withSide = isServicePage(page.path);
   const isApply = page.path === '/apply/';
   const parts = page.path.split('/').filter(Boolean);
@@ -151,6 +152,7 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
   const jump = (blocks ? [] : page.sections).filter((x) => 'title' in x && x.title && x.type !== 'tool').slice(0, 8) as { title: string }[];
   const wa = waLink(`Hello, I would like help with: ${page.h1}`);
   const showAside = !withSide && !isApply && !page.article && !o.hideAside && !before;
+  const postSide = !!page.article && !o.hideAside;
   const heroImg = page.image;
   const factsOn = !o.hideFacts && !before;
   return (
@@ -162,7 +164,7 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
             {crumbs.map((c) => getPage(c) && (<span key={c}>/ <L locale={locale} href={c}>{getPage(c)!.eyebrow}</L></span>))}
             <span aria-current="page">/ {page.eyebrow}</span>
           </nav>
-          <div className={`phero-grid${isApply || (!heroImg && (page.article || !factsOn || !facts.length)) ? ' solo' : ''}`}>
+          <div className={`phero-grid${isApply || page.article || (!heroImg && (!factsOn || !facts.length)) ? ' solo' : ''}`}>
             <div>
               <p className="eyebrow pill-eyebrow"><Icon name="star" size={14} /> {page.eyebrow}</p>
               <h1>{page.h1}</h1>
@@ -187,7 +189,7 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
               )}
               {!translated && <TranslationNotice locale={locale} />}
             </div>
-            {heroImg && (page.article || !factsOn || !facts.length) && (
+            {heroImg && !page.article && (!factsOn || !facts.length) && (
               <div className="phero-img"><img src={heroImg} alt={page.imageAlt || page.h1} /></div>
             )}
             {!isApply && !page.article && factsOn && facts.length > 0 && (
@@ -216,9 +218,12 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
         </nav>
       )}
       <div className="wrap" style={{ position: 'relative', zIndex: 2 }}>
-        <div className={withSide ? 'svc-layout' : showAside ? 'page-layout' : undefined}>
+        <div className={withSide ? 'svc-layout' : showAside || postSide ? 'page-layout' : undefined}>
         {withSide && <ServiceSidebar current={page.path} locale={locale} hidden={hidden} />}
         <div className={withSide ? 'svc-main' : isApply || before ? 'apply-main-wrap' : 'page-main'}>
+        {page.article && heroImg && (
+          <figure className="post-cover"><img src={heroImg} alt={page.imageAlt || page.h1} fetchPriority="high" /></figure>
+        )}
         {page.article && (
           <p className="byline block" style={{ marginBottom: 0 }}>
             By <b>{page.article.author}</b> · Reviewed by <b>{page.article.reviewer}</b> · Last reviewed {page.article.reviewed} · {page.article.minutes} min read
@@ -241,6 +246,32 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
           </section>
         )}
         </div>
+        {postSide && (
+          <aside className="side-post" aria-label="Contact and related">
+            <div className="side-apply sp-box">
+              <p className="eyebrow">Talk to an advisor</p>
+              <h3>Questions about your visa?</h3>
+              <p>Free first review of your case. We reply on WhatsApp within working hours.</p>
+              <a className="btn btn-gold" href={wa} target="_blank" rel="noopener"><Icon name="wa" size={18} /> WhatsApp {SITE.whatsappDisplay}</a>
+              <a className="btn btn-glass" style={{ border: '1px solid var(--line)' }} href={`tel:${SITE.phone}`}><Icon name="phone" size={18} /> Call us</a>
+              <a className="btn btn-glass" style={{ border: '1px solid var(--line)' }} href={`mailto:${SITE.email}`}><Icon name="mail" size={18} /> {SITE.email}</a>
+              <L locale={locale} href="/apply/" className="btn btn-red">Apply online <Icon name="arrow" size={18} /></L>
+              {SITE.hours && <p className="fnote">{SITE.hours}</p>}
+            </div>
+            {more.length > 0 && (
+              <div className="side-apply sp-more">
+                <p className="eyebrow">More articles</p>
+                {more.slice(0, 5).map((m) => (
+                  <L key={m.href} locale={locale} href={m.href} className="sp-item">
+                    {m.image && <img src={m.image} alt="" loading="lazy" />}
+                    <span>{m.label && <small>{m.label}</small>}<b>{m.title}</b></span>
+                  </L>
+                ))}
+                <L locale={locale} href="/blog/" className="go small">All articles →</L>
+              </div>
+            )}
+          </aside>
+        )}
         {showAside && (
           <aside className="side-apply" aria-label="Apply">
             <p className="eyebrow">Apply online</p>

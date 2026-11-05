@@ -1,6 +1,6 @@
 import 'server-only';
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { list, patch, verifyPassword, type Role, type TeamUser } from './collections';
 import { now } from './store';
@@ -32,15 +32,15 @@ function envUsers(): [string, string][] {
 }
 export const adminConfigured = () => envUsers().length > 0;
 
-export type Admin = { email: string; name: string; role: Role; env: boolean };
+export type Admin = { email: string; name: string; role: Role; env: boolean; perms?: string[] };
 
 export async function checkLogin(email: string, password: string): Promise<Admin | null> {
   const e = email.trim().toLowerCase();
   if (envUsers().some(([u, p]) => safeEq(u, e) && safeEq(p, password))) return { email: e, name: 'Owner', role: 'owner', env: true };
   const u = (await list<TeamUser>('team')).find((x) => x.email === e && x.active);
   if (u && (await verifyPassword(password, u.pass))) {
-    await patch<TeamUser>('team', u.id, (x) => { x.lastLogin = now(); });
-    return { email: u.email, name: u.name, role: u.role, env: false };
+    await patch<TeamUser>('team', u.id, (x) => { x.lastLogin = now(); x.logins = (x.logins ?? 0) + 1; });
+    return { email: u.email, name: u.name, role: u.role, env: false, perms: u.perms };
   }
   return null;
 }
@@ -70,13 +70,22 @@ export async function currentAdmin(): Promise<Admin | null> {
   if (!d) return null;
   if (envUsers().some(([u]) => u === d.e)) return { email: d.e, name: 'Owner', role: 'owner', env: true };
   const u = (await list<TeamUser>('team')).find((x) => x.email === d.e && x.active);
-  return u ? { email: u.email, name: u.name, role: u.role, env: false } : null;
+  return u ? { email: u.email, name: u.name, role: u.role, env: false, perms: u.perms } : null;
 }
 
 /** Signed-in team member; optionally limited to certain roles. */
 export async function requireAdmin(roles?: Role[]) {
   const a = await currentAdmin();
   if (!a) redirect('/admin/login/');
+  // Custom permissions: only the chosen sections (and their actions) open; the role decides otherwise.
+  if (a.perms?.length) {
+    const p = (await headers()).get('x-admin-path') || '';
+    const sec = p.match(/^\/admin\/[^/]+\//)?.[0] ?? '/admin/';
+    const free = ['/admin/', '/admin/profile/', '/admin/notifications/', '/admin/login/'];
+    if (p && !free.includes(sec) && !a.perms.includes(sec)) redirect('/admin/?denied=1');
+    if (!p && roles && !roles.includes(a.role)) redirect('/admin/?denied=1');
+    return a;
+  }
   if (roles && !roles.includes(a.role)) redirect('/admin/?denied=1');
   return a;
 }

@@ -4,7 +4,7 @@ import type { Page } from '@/content/types';
 import { LOCALES } from '@/lib/i18n';
 import { complete, parseJson, underDailyLimit } from './ai';
 import { insert } from './collections';
-import { getOverrides, getPublishedPosts, postToPage, type Translations } from './content';
+import { getCustomPages, getOverrides, getPublishedPosts, postToPage, type Translations } from './content';
 import type { Block } from '@/lib/blocks';
 import { aiReady } from './ai';
 import { getBlock, saveBlock } from './settings';
@@ -29,16 +29,20 @@ function restore(orig: unknown, tr: unknown): unknown {
 }
 
 async function allPages(): Promise<Page[]> {
-  return [...PAGES, ...(await getPublishedPosts()).map(postToPage)];
+  const over = await getOverrides();
+  const customs = (await getCustomPages()).filter((c) => !c.hidden);
+  const home: Page[] = over['/']?.blocks?.length ? [{ path: '/', seoTitle: over['/'].seoTitle || 'Abu Dhabi Golden Visa', meta: over['/'].meta || '', eyebrow: 'Home', h1: 'Home', intro: '', sections: [] }] : [];
+  const cp: Page[] = customs.map((c) => ({ path: c.path, seoTitle: c.seoTitle || c.title, meta: c.meta || '', eyebrow: c.eyebrow || c.title, h1: c.h1 || c.title, intro: c.intro || '', sections: [] }));
+  return [...PAGES, ...home, ...cp, ...(await getPublishedPosts()).map(postToPage)];
 }
 
 export async function translatePage(p: Page, lang: string) {
   const name = LOCALES.find((l) => l.code === lang)?.name ?? lang;
-  const o = (await getOverrides())[p.path];
+  const o = (await getOverrides())[p.path] ?? (await getCustomPages()).find((c) => c.path === p.path);
   const blocks: Block[] | undefined = o?.blocks?.length ? o.blocks : undefined;
   const src = { seoTitle: o?.seoTitle || p.seoTitle, meta: o?.meta || p.meta, eyebrow: o?.eyebrow || p.eyebrow, h1: o?.h1 || p.h1, intro: o?.intro || p.intro, sections: blocks ? [] : p.sections, ...(blocks ? { blocks } : {}) };
   const system = `You are a professional legal-immigration translator for a UAE residency consultancy website. Translate every human-readable string value in the JSON into ${name}${lang === 'at' ? ' (Austrian German)' : ''}. Keep the JSON structure and keys identical. Do not translate or change values of "type", "tool" or "href". Keep numbers, currency (AED), names of authorities and brand names accurate. Natural, clear, polite tone; never add promises or guarantees. Return JSON only.`;
-  const out = await complete(system, [{ role: 'user', content: JSON.stringify(src) }], { json: true, maxTokens: 8000, kind: 'auto' });
+  const out = await complete(system, [{ role: 'user', content: JSON.stringify(src) }], { json: true, maxTokens: 8000, kind: 'auto', use: 'translate' });
   const t = restore(src, parseJson(out)) as typeof src;
   await updateJsonFile<Translations>('translations.json', {}, (all) => {
     all[lang] = all[lang] ?? {};

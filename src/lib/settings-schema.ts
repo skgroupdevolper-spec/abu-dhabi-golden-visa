@@ -22,9 +22,15 @@ export type Secrets = {
   };
   smtp: { host: string; port: number; secure: boolean; user: string; pass: string; from: string; notify: string };
   seo: { homeTitle: string; homeMeta: string; googleVerify: string; bingVerify: string; headCode: string; bodyCode: string };
-  ai: { provider: 'openai' | 'gemini' | 'anthropic' | ''; openaiKey: string; geminiKey: string; anthropicKey: string; model: string; dailyBudget: number };
+  ai: {
+    provider: 'openai' | 'gemini' | 'anthropic' | ''; openaiKey: string; geminiKey: string; anthropicKey: string; model: string; dailyBudget: number;
+    /** Optional provider and model per feature (empty = main provider). */
+    routes?: Partial<Record<AiUse, { provider: 'openai' | 'gemini' | 'anthropic' | ''; model: string }>>;
+    images?: { provider: 'none' | 'openai' | 'gemini'; model: string };
+  };
 };
 
+export type AiUse = 'chat' | 'translate' | 'writer' | 'editor';
 export type WaEvent = 'leadTeam' | 'welcome' | 'status' | 'quote' | 'payment' | 'paid' | 'message' | 'document' | 'reset';
 
 export const WA_EVENTS: { key: WaEvent; label: string; to: 'team' | 'client'; vars: string }[] = [

@@ -23,7 +23,7 @@ export type PageOverride = {
   seoTitle?: string; meta?: string; h1?: string; intro?: string; extra?: string; hidden?: boolean; at?: string;
   eyebrow?: string; image?: string; imageAlt?: string; ogImage?: string; canonical?: string; noindex?: boolean; keyword?: string;
   heroStyle?: 'default' | 'image' | 'minimal'; hideFacts?: boolean; hideCta?: boolean; hideAside?: boolean; facts?: { label: string; value: string }[];
-  blocks?: Block[]; css?: string;
+  blocks?: Block[]; css?: string; homeHide?: string[];
 };
 export type Faq = { id: string; q: string; a: string; order: number };
 export type Testimonial = { id: string; name: string; country: string; text: string; rating: number; approved: boolean; consent: boolean; at: string };

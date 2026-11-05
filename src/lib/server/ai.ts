@@ -1,13 +1,21 @@
 import 'server-only';
 import { getSecrets } from './settings';
 import { readJsonFile, updateJsonFile } from './store';
+import type { AiUse } from '@/lib/settings-schema';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 const DEFAULT_MODEL = { openai: 'gpt-4.1-mini', gemini: 'gemini-2.5-flash', anthropic: 'claude-haiku-4-5' } as const;
 
-export async function aiReady() {
+async function pick(use?: AiUse) {
   const a = (await getSecrets()).ai;
-  const p = a.provider;
+  const r = use ? a.routes?.[use] : undefined;
+  const p = (r?.provider || a.provider) as 'openai' | 'gemini' | 'anthropic' | '';
+  const model = r?.provider ? r.model || (p ? DEFAULT_MODEL[p] : '') : a.model || (p ? DEFAULT_MODEL[p] : '');
+  return { a, p, model };
+}
+
+export async function aiReady(use?: AiUse) {
+  const { a, p } = await pick(use);
   return !!p && !!(p === 'openai' ? a.openaiKey : p === 'gemini' ? a.geminiKey : a.anthropicKey);
 }
 
@@ -25,11 +33,9 @@ async function count() {
 }
 
 /** One chat completion with whichever provider the admin chose. */
-export async function complete(system: string, messages: Msg[], o: { json?: boolean; maxTokens?: number; kind?: 'auto' | 'chat' } = {}): Promise<string> {
-  const a = (await getSecrets()).ai;
-  const p = a.provider;
-  if (!p) throw new Error('AI is switched off. Add a key in Admin > Site settings > AI keys.');
-  const model = a.model || DEFAULT_MODEL[p];
+export async function complete(system: string, messages: Msg[], o: { json?: boolean; maxTokens?: number; kind?: 'auto' | 'chat'; use?: AiUse } = {}): Promise<string> {
+  const { a, p, model } = await pick(o.use ?? (o.kind === 'chat' ? 'chat' : undefined));
+  if (!p) throw new Error('AI is switched off. Add a key in the AI settings.');
   const max = o.maxTokens ?? 1200;
   let text = '';
   if (p === 'openai') {

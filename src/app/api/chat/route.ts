@@ -32,9 +32,17 @@ export async function POST(req: NextRequest) {
   const lang = String(b.lang || 'en').slice(0, 5);
   const msgs = (Array.isArray(b.messages) ? b.messages : []).slice(-12).map((m: { role: string; content: string }) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: String(m.content || '').slice(0, 1500) })) as { role: 'user' | 'assistant'; content: string }[];
   if (!msgs.length || msgs[msgs.length - 1].role !== 'user') return NextResponse.json({ error: 'Empty message' }, { status: 400 });
+  const cfg = await getBlock<ChatbotCfg>('chatbot', CB0);
+  const wa = `https://wa.me/${(cfg.waNumber || site.whatsapp).replace(/\D/g, '')}`;
+  const today = new Date().toISOString().slice(0, 10);
+  if (cfg.maxPerChat && msgs.filter((m) => m.role === 'user').length > cfg.maxPerChat) return NextResponse.json({ reply: `Let’s continue with an advisor on WhatsApp: ${wa}`, handover: true });
+  if (cfg.maxPerDay) {
+    const u = await updateJsonFile<{ day: string; n: number }>('chat-usage.json', { day: today, n: 0 }, (x) => (x.day === today ? { day: today, n: x.n + 1 } : { day: today, n: 1 }));
+    if (u.n > cfg.maxPerDay) return NextResponse.json({ reply: `Our assistant is resting for today. Please message us on WhatsApp: ${wa}`, handover: true });
+  }
   let reply = '';
   try {
-    reply = await complete(await chatSystemPrompt(lang), msgs, { maxTokens: 500, kind: 'chat' });
+    reply = await complete(await chatSystemPrompt(lang), msgs, { maxTokens: 500, kind: 'chat', use: 'chat' });
   } catch {
     return NextResponse.json({ reply: `Sorry, I can’t answer right now. Please message us on WhatsApp: https://wa.me/${site.whatsapp}` });
   }
@@ -46,7 +54,8 @@ export async function POST(req: NextRequest) {
     const messages = [...msgs.slice(-1).map((m) => ({ ...m, at: stamp })), { role: 'assistant' as const, content: reply, at: stamp }];
     if (i < 0) { first = true; all.unshift({ id, at: stamp, updated: stamp, lang, page: String(b.page || '').slice(0, 200), messages }); }
     else { all[i].messages.push(...messages); all[i].messages = all[i].messages.slice(-80); all[i].updated = stamp; }
-    return all.slice(0, 2000);
+    const keep = cfg.keepDays ? Date.now() - cfg.keepDays * 864e5 : 0;
+    return all.filter((c) => !keep || new Date(c.updated).getTime() > keep).slice(0, 2000);
   });
   if (first) await notify('chat', `New chatbot conversation: “${msgs[msgs.length - 1].content.slice(0, 90)}”`, `/admin/chatbot/?tab=chats&chat=${id}`);
   return NextResponse.json({ reply, session: id });

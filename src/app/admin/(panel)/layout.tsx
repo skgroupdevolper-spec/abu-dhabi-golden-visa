@@ -25,12 +25,12 @@ export default async function Panel({ children }: { children: ReactNode }) {
     <div className="admin">
       <aside className="side">
         <Link href="/admin/" className="brand"><img src="/brand/logo.webp" alt="Abu Dhabi Golden Visa" /></Link>
-        <AdminNav counts={counts} role={who.role} />
+        <AdminNav counts={counts} role={who.role} perms={who.perms} />
       </aside>
       <div className="admin-body">
-        <AdminNav counts={counts} role={who.role} mobile />
+        <AdminNav counts={counts} role={who.role} perms={who.perms} mobile />
         <header className="appbar">
-          <AdminSearch role={who.role} />
+          <AdminSearch role={who.role} perms={who.perms} />
           <div className="appbar-r">
             <a className="ab-btn" href="/" target="_blank" rel="noopener" title="Open website"><Icon name="ext" size={18} /><span>Website</span></a>
             <Link className="ab-btn ab-icon" href="/admin/notifications/" title="Notifications" aria-label="Notifications">

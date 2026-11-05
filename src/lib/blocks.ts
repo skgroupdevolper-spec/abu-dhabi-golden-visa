@@ -17,6 +17,8 @@ export type BlockStyle = {
   className?: string;
   hideMobile?: boolean;
   hideDesktop?: boolean;
+  /** Homepage only: built-in section after which this block shows. */
+  place?: string;
 };
 
 export type Block = { id: string; type: BlockType; hidden?: boolean; style?: BlockStyle; data: Record<string, unknown> };
@@ -80,6 +82,14 @@ export const STYLE_FIELDS: Field[] = [
   { k: 'className', label: 'Extra CSS class', kind: 'text' },
   { k: 'hideMobile', label: 'Hide on mobile', kind: 'check' },
   { k: 'hideDesktop', label: 'Hide on desktop', kind: 'check' },
+];
+
+/** Built-in homepage sections: they can be hidden, and new blocks placed after any of them. */
+export const HOME_SECTIONS: [string, string][] = [
+  ['top', 'Very top (before the hero)'], ['hero', 'Hero with route finder'], ['band', 'Moving “Abu Dhabi Golden Visa” band'], ['manifesto', 'Manifesto text'], ['routes', 'Visa routes cards'],
+  ['eligibility', 'Eligibility checker'], ['services', 'Services grid'], ['journey', 'Journey steps'], ['portal', 'Client portal promo'], ['calculator', 'Cost calculator'],
+  ['family', 'Family band'], ['why', 'Why choose us'], ['partners', 'Partner logos'], ['benefits', 'Benefits'], ['faq', 'FAQs'], ['guides', 'Guides'],
+  ['reviews', 'Reviews'], ['contact', 'Contact form'], ['finale', 'Final call to action'],
 ];
 
 export const uid = () => Math.random().toString(36).slice(2, 10);
