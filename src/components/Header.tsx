@@ -41,6 +41,7 @@ export function Header({ locale }: { locale: Locale }) {
   const [mobile, setMobile] = useState(false);
   const [cur, setCur] = useState('AED');
   const [small, setSmall] = useState(false);
+  const [tab, setTab] = useState(0);
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => setCur(getCurrency()), []);
@@ -116,7 +117,7 @@ export function Header({ locale }: { locale: Locale }) {
             <a href={`mailto:${SITE.email}`} className="hide-md"><Icon name="mail" size={15} /> {SITE.email}</a>
             <span className="hide-md"><Icon name="clock" size={15} /> {SITE.hours}</span>
             <span className="u-sp" />
-            {F.clientLogin && <a href={portal}><Icon name="user" size={15} /> Client login</a>}
+            {F.clientLogin && <a href={portal}><Icon name="user" size={15} /> Login</a>}
             {langChip('u')}
             <div className="chip u">
               <button type="button" aria-haspopup="true" aria-expanded={open === 'cur'} aria-label="Choose currency" onClick={() => toggle('cur')}>
@@ -150,7 +151,39 @@ export function Header({ locale }: { locale: Locale }) {
                       {item.label} <Icon name="chev" size={14} />
                     </button>
                     {open === item.label && (
-                      <div className={`mega${item.groups.length > 3 ? ' wide' : item.groups.length === 3 ? ' three' : item.groups.length > 1 ? ' two' : ' one'}`} data-lenis-prevent>
+                      item.groups.length > 3 ? (
+                      <div className="mega wide tabs" data-lenis-prevent>
+                        <div className="mt-list" role="tablist" aria-label={item.label}>
+                          {item.groups.map((g, gi) => (
+                            <button key={g.title} type="button" role="tab" aria-selected={tab === gi} onMouseEnter={() => setTab(gi)} onFocus={() => setTab(gi)} onClick={() => setTab(gi)}>
+                              <span className="mi"><Icon name={iconFor(g.links[0]?.label ?? '', g.title)} size={17} /></span>
+                              <span>{g.title}<small>{g.links.length} services</small></span>
+                              <Icon name="chev" size={14} className="mt-arrow" />
+                            </button>
+                          ))}
+                          <L locale={locale} href={item.href} className="mt-all">See all services →</L>
+                        </div>
+                        <div className="mt-panel" role="tabpanel">
+                          <h4>{item.groups[tab]?.title}</h4>
+                          <div className="mt-grid">
+                            {(item.groups[tab]?.links ?? []).map((l) => (
+                              <L key={l.href + l.label} locale={locale} href={l.href} className="mt-card">
+                                <span className="mi"><Icon name={iconFor(l.label, item.groups![tab].title)} size={18} /></span>
+                                <span><b>{l.label}</b>{l.note && <small>{l.note}</small>}</span>
+                              </L>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="mega-promo">
+                          <p className="eyebrow">Need help choosing?</p>
+                          <b>Tell us what you need</b>
+                          <p>An advisor replies on WhatsApp with the steps, documents and a written quote.</p>
+                          <L locale={locale} href="/apply/" className="btn btn-gold btn-s">Apply online</L>
+                          <a href={waHello} target="_blank" rel="noopener" className="btn btn-red btn-s">WhatsApp us</a>
+                        </div>
+                      </div>
+                      ) : (
+                      <div className={`mega${item.groups.length === 3 ? ' three' : item.groups.length > 1 ? ' two' : ' one'}`} data-lenis-prevent>
                         <div className="mega-cols">
                           {item.groups.map((g) => (
                             <div key={g.title}>
@@ -172,6 +205,7 @@ export function Header({ locale }: { locale: Locale }) {
                           <L locale={locale} href="/apply/" className="btn btn-gold btn-s">Apply online</L>
                         </div>
                       </div>
+                      )
                     )}
                   </div>
                 ) : (
@@ -260,7 +294,7 @@ export function Header({ locale }: { locale: Locale }) {
         {F.clientLogin && (
           <a href={portal}>
             <span className="ic"><Icon name="user" /></span>
-            <span className="lb">Client login</span>
+            <span className="lb">Login</span>
           </a>
         )}
       </nav>}

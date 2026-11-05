@@ -618,3 +618,26 @@ footer.site .legal { color: var(--navy-soft); }
 .mega { overflow: visible; }
 .mega-cols { border-radius: 22px 0 0 22px; }
 .mega-promo { border-radius: 0 22px 22px 0; }
+/* Our Services: tabbed mega menu */
+.mega.tabs { grid-template-columns: 270px minmax(0, 1fr) 240px; width: min(1180px, calc(100vw - 32px)); }
+.mt-list { display: flex; flex-direction: column; gap: 2px; padding: 14px; background: #fffcf4; border-inline-end: 1px solid #f1e8cc; border-radius: 22px 0 0 22px; }
+.mt-list button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 0; border-radius: 12px; background: none; font: 600 14.5px var(--body); color: var(--navy); text-align: start; cursor: pointer; }
+.mt-list button > span:nth-child(2) { flex: 1; }
+.mt-list small { display: block; font: 500 12px var(--body); color: var(--navy-soft); }
+.mt-list .mt-arrow { transform: rotate(-90deg); opacity: 0; color: var(--gold-deep); transition: opacity 0.2s; }
+html[dir='rtl'] .mt-list .mt-arrow { transform: rotate(90deg); }
+.mt-list button[aria-selected='true'] { background: #fff; box-shadow: 0 8px 20px -14px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(212, 175, 55, 0.5); }
+.mt-list button[aria-selected='true'] .mt-arrow { opacity: 1; }
+.mt-list button[aria-selected='true'] .mi { background: linear-gradient(135deg, var(--gold-light), var(--gold)); color: var(--navy); }
+.mega .mt-list a.mt-all { display: block; margin-top: 8px; padding: 10px; font: 700 13.5px var(--body); color: var(--gold-deep); }
+.mt-panel { padding: 20px 22px; min-height: 420px; }
+.mt-panel h4 { padding: 0 0 10px; margin: 0 0 12px; }
+.mt-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.mega a.mt-card { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 16px; border: 1px solid #f1e8cc; background: #fff; transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
+.mega a.mt-card:hover { border-color: var(--gold); box-shadow: 0 14px 30px -22px rgba(0, 0, 0, 0.5); transform: translateY(-1px); background: #fff; }
+.mt-card .mi { width: 38px; height: 38px; border-radius: 12px; }
+.mt-card b { display: block; font: 700 14.5px var(--body); }
+.mt-card small { display: block; font-size: 12.5px; color: var(--navy-soft); }
+.mega.tabs .mega-promo { border-radius: 0 22px 22px 0; }
+.mega.wide.tabs { gap: 0; overflow: visible; max-height: none; padding: 0; }
+@media (max-height: 760px) { .mt-panel { min-height: 0; } }
