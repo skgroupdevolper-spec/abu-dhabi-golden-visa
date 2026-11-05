@@ -246,7 +246,7 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
       <div className="wrap" style={{ position: 'relative', zIndex: 2 }}>
         <div className={withSide ? 'svc-layout' : showAside || postSide ? 'page-layout' : undefined}>
         {withSide && <ServiceSidebar current={page.path} locale={locale} hidden={hidden} />}
-        <div className={withSide ? 'svc-main' : isApply || before ? 'apply-main-wrap' : 'page-main'}>
+        <div className={withSide ? 'svc-main' : isApply || before || hub ? 'apply-main-wrap' : 'page-main'}>
         {page.article && heroImg && (
           <figure className="post-cover"><img decoding="async" width={1200} height={630} src={heroImg} alt={page.imageAlt || page.h1} fetchPriority="high" /></figure>
         )}

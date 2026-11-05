@@ -98,7 +98,7 @@ export function Motion({ level = 'full', textFx = 'words', cursor = true, smooth
         cleanup.push(() => icons.forEach((s) => s.classList.remove('si-draw', 'si-drawn')));
 
         // Ticks and steps light up one by one while scrolling (lists, documents, requirements, timelines).
-        const items = gsap.utils.toArray<HTMLElement>('main .ticks li, main .doc-grid li, main .req-grid li, main .timeline li, main .side-apply li, main .trust-row li, main .prose ul li, main .fp-step, main .bk-facts li');
+        const items = gsap.utils.toArray<HTMLElement>('main .ticks li, main .doc-grid li, main .req-grid li, main .timeline li, main .side-apply li, main .trust-row li, main .prose ul li, main .bk-facts li');
         items.forEach((li) => {
           li.classList.add('sk');
           ScrollTrigger.create({ trigger: li, start: 'top 82%', onEnter: () => li.classList.add('on'), onLeaveBack: () => li.classList.remove('on') });
