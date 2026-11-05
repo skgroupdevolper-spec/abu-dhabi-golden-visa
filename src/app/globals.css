@@ -22,8 +22,8 @@
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-html { background: var(--paper); -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--paper); color: var(--navy); font: 400 17px/1.6 var(--body); overflow-x: hidden; }
+html { background: var(--paper); -webkit-text-size-adjust: 100%; overflow-x: hidden; overflow-x: clip; }
+body { margin: 0; background: var(--paper); color: var(--navy); font: 400 17px/1.6 var(--body); overflow-x: hidden; overflow-x: clip; }
 html[dir='rtl'] body { font-family: var(--font-arabic), var(--body); }
 img { max-width: 100%; display: block; }
 a { color: var(--gold-deep); }
@@ -445,3 +445,6 @@ footer.site a:hover { color: var(--gold-light); }
 .office .row b { display: block; font-size: 14px; }
 .office .row span { font-size: 14.5px; color: var(--navy-soft); }
 @media (max-width: 900px) { .contact-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* Never let decorative layers widen the page on phones */
+.hero, .manifesto, .portal, .band { overflow-x: clip; }
