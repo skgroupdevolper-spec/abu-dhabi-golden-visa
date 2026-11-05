@@ -7,19 +7,30 @@ import { Footer } from '@/components/Footer';
 import { Water } from '@/components/Water';
 import { Motion } from '@/components/Motion';
 import { CalcModal } from '@/components/CalcModal';
+import { OfferPopup } from '@/components/OfferPopup';
 import { LOCALE_CODES, isLocale, localeInfo } from '@/lib/i18n';
 import { SITE } from '@/lib/site';
+import { applyRuntimeSync, getSecrets } from '@/lib/server/settings';
+import { TrackingCode } from '@/components/SiteRuntime';
 import '../globals.css';
 
 const display = Instrument_Serif({ weight: '400', style: ['normal', 'italic'], subsets: ['latin'], variable: '--font-display', display: 'swap' });
 const body = Manrope({ subsets: ['latin', 'latin-ext', 'cyrillic'], variable: '--font-body', display: 'swap' });
 const arabic = Noto_Naskh_Arabic({ subsets: ['arabic'], variable: '--font-arabic', display: 'swap' });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE.url),
-  title: { default: `${SITE.name} | ${SITE.tagline}`, template: '%s' },
-  description: 'Long-term UAE residency through property, business, professional and talent routes, with family sponsorship and full application support.',
-};
+// Pages are static for speed and refresh themselves at most every 60 seconds (and at once when the admin saves).
+export const revalidate = 60;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const site = applyRuntimeSync();
+  const seo = (await getSecrets()).seo;
+  return {
+    metadataBase: new URL(site.url),
+    title: { default: `${site.name} | ${site.tagline}`, template: '%s' },
+    description: 'Long-term UAE residency through property, business, professional and talent routes, with family sponsorship and full application support.',
+    verification: { google: seo.googleVerify || undefined, other: seo.bingVerify ? { 'msvalidate.01': seo.bingVerify } : undefined },
+  };
+}
 
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#f8f7f5' };
 
@@ -31,9 +42,17 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const info = localeInfo(locale);
+  const site = applyRuntimeSync();
+  const seo = (await getSecrets()).seo;
+  const c = site.colors;
   return (
     <html lang={info.htmlLang} dir={info.dir} className={`${display.variable} ${body.variable} ${arabic.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `window.__ADGV_SITE=${JSON.stringify(site).replace(/</g, '\\u003c')}` }} />
+        <style dangerouslySetInnerHTML={{ __html: `:root{--gold:${c.gold};--gold-deep:${c.goldDeep};--navy:${c.ink};--paper:${c.paper}}`.replace(/[<>]/g, '') }} />
+      </head>
       <body>
+        <TrackingCode head={seo.headCode} body={seo.bodyCode} />
         <a href="#main" className="skip btn btn-navy">Skip to content</a>
         <Water />
         <Header locale={locale} />
@@ -41,6 +60,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
         <Footer locale={locale} />
         <Motion />
         <CalcModal />
+        <OfferPopup />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

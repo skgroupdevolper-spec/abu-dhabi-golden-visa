@@ -1,28 +1,72 @@
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { ActionForm, Submit } from '@/components/dash/ActionForm';
-import { SITE, waLink } from '@/lib/site';
-import { findFile } from './actions';
+import { PortalTop } from '@/components/dash/PortalTop';
+import { SERVICE_CATALOG } from '@/content/services-catalog';
+import { currentCustomer, portalBase, T } from '@/lib/server/portal';
+import { listApplications, listLeads } from '@/lib/server/store';
+import { SITE } from '@/lib/site';
+import { STAGES, day } from '@/lib/stages';
+import { requestService } from './actions';
 
-export const metadata: Metadata = { title: 'Open my file' };
+export const metadata: Metadata = { title: 'My applications' };
 export const dynamic = 'force-dynamic';
+const dg = (p: string) => p.replace(/\D/g, '').slice(-9);
 
-export default function PortalHome() {
+export default async function Home() {
+  const base = await portalBase();
+  const me = await currentCustomer();
+  if (!me) redirect(`${base}/login/`);
+  const { t, lang } = await T();
+  const [apps, leads] = await Promise.all([listApplications(), listLeads()]);
+  const mine = apps.filter((a) => !a.archived && ((a.client.email && a.client.email.toLowerCase() === me.email) || (dg(a.client.phone) && dg(a.client.phone) === dg(me.phone))));
+  const requests = leads.filter((l) => l.source === 'portal' && l.email === me.email && l.status !== 'converted');
   return (
-    <main className="login">
-      <div className="card reveal">
-        <img className="coin" src="/brand/coin.webp" alt="" width={92} height={92} />
-        <img src="/brand/logo.webp" alt="Abu Dhabi Golden Visa" style={{ height: 46, width: 'auto', margin: '0 auto 18px' }} />
-        <p className="eyebrow" style={{ textAlign: 'center' }}>Client portal</p>
-        <h1 style={{ textAlign: 'center', marginTop: 8, fontSize: 34 }}>Your Golden Visa file, <span className="gold">in one place.</span></h1>
-        <p className="muted" style={{ textAlign: 'center', fontSize: 14.5 }}>Use the secure link we sent on WhatsApp, or open your file with your reference and WhatsApp number.</p>
-        <ActionForm action={findFile} className="stack">
-          <div className="field"><label htmlFor="ref">Reference</label><input id="ref" name="ref" placeholder="ADGV-0001" autoCapitalize="characters" required /></div>
-          <div className="field"><label htmlFor="phone">WhatsApp number</label><input id="phone" name="phone" type="tel" placeholder="+971" autoComplete="tel" required /></div>
-          <Submit>Open my file</Submit>
-        </ActionForm>
-        <a className="btn btn-wa" style={{ width: '100%', marginTop: 12 }} href={waLink('Hello, please send me the link to my Golden Visa portal.')} target="_blank" rel="noopener">Ask for my link on WhatsApp</a>
-        <p className="small muted" style={{ textAlign: 'center', marginTop: 16 }}>{SITE.disclaimer}</p>
-      </div>
-    </main>
+    <>
+      <PortalTop t={t} lang={lang.code} base={base} back={`${base}/`} signedIn />
+      <main className="pwrap">
+        <section className="phero reveal">
+          <div>
+            <p className="eyebrow">{t.myFiles}</p>
+            <h1 style={{ marginTop: 8 }}>{t.hello} {me.name.split(' ')[0]}, <span className="gold">{t.yourFile}.</span></h1>
+          </div>
+          <img className="coinb" src="/brand/coin.webp" alt="" width={120} height={120} />
+        </section>
+        <div className="cols" style={{ marginTop: 18 }}>
+          <div className="stack">
+            {mine.length === 0 ? <p className="empty">{t.noFiles}</p> : mine.map((a) => (
+              <a key={a.id} href={`${base}/t/${a.token}/`} className="panel reveal" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+                <div className="panel-h"><div><p className="eyebrow">{a.ref}</p><h2 style={{ marginTop: 6 }}>{a.route}</h2></div><span className="btn btn-gold btn-sm">{t.open} →</span></div>
+                <p style={{ margin: '0 0 8px', fontWeight: 700 }}>{t.step} {a.stage + 1} {t.of} {STAGES.length}: {t.stages[a.stage]}</p>
+                <div className="bar"><i style={{ width: `${((a.stage + 1) / STAGES.length) * 100}%` }} /></div>
+                {a.nextStep && <p className="small muted" style={{ margin: '10px 0 0' }}>{t.next}: {a.nextStep}</p>}
+              </a>
+            ))}
+            {requests.length > 0 && (
+              <div className="panel">
+                <h2>{t.myRequests}</h2>
+                <div className="files" style={{ marginTop: 12 }}>
+                  {requests.map((r) => <div className="file" key={r.id}><span className="fi">✉</span><span className="fn"><b>{r.service}</b><small>{day(r.at)}</small></span><span className="pill new">{r.status === 'new' ? t.received : t.inProgress}</span></div>)}
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="panel reveal">
+            <h2>{t.newRequest}</h2>
+            <ActionForm action={requestService} className="stack" reset>
+              <div className="field"><label htmlFor="service">{t.chooseService}</label>
+                <select id="service" name="service" required defaultValue="">
+                  <option value="" disabled>{t.chooseService}</option>
+                  {SERVICE_CATALOG.filter((g) => g.title !== 'Quick access').map((g) => <optgroup key={g.title} label={g.title}>{g.items.map((i) => <option key={i.href}>{i.label}</option>)}</optgroup>)}
+                </select>
+              </div>
+              <div className="field"><label htmlFor="message">{t.details}</label><textarea id="message" name="message" /></div>
+              <Submit>{t.sendRequest}</Submit>
+            </ActionForm>
+          </div>
+        </div>
+        <p className="pfoot">{SITE.operator} · {SITE.disclaimer}</p>
+      </main>
+    </>
   );
 }

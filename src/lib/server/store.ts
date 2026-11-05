@@ -39,6 +39,22 @@ async function withLock<T>(name: string, fn: () => Promise<T>): Promise<T> {
   return next;
 }
 
+export async function readJsonFile<T>(name: string, fallback: T): Promise<T> {
+  return readJson(name, fallback);
+}
+export async function writeJsonFile(name: string, data: unknown) {
+  return withLock('file:' + name, () => writeJson(name, data));
+}
+/** Read, change and save one file under a lock. */
+export function updateJsonFile<T>(name: string, fallback: T, fn: (v: T) => T | void): Promise<T> {
+  return withLock('file:' + name, async () => {
+    const cur = await readJson<T>(name, fallback);
+    const next = (fn(cur) ?? cur) as T;
+    await writeJson(name, next);
+    return next;
+  });
+}
+
 async function readJson<T>(name: string, fallback: T): Promise<T> {
   try {
     return JSON.parse(await readFile(path.join(DATA_DIR, name), 'utf8')) as T;
@@ -125,7 +141,7 @@ export async function getFees(): Promise<Fees> {
   return s.fees ? { ...FEE_SCHEDULE, ...s.fees, perPerson: { ...FEE_SCHEDULE.perPerson, ...s.fees.perPerson }, medical: { ...FEE_SCHEDULE.medical, ...s.fees.medical }, packages: { ...FEE_SCHEDULE.packages, ...s.fees.packages } } : FEE_SCHEDULE;
 }
 export function saveFees(fees: Fees) {
-  return withLock('settings', async () => {
+  return withLock('file:settings.json', async () => {
     const s = await readJson<Partial<Settings>>('settings.json', {});
     await writeJson('settings.json', { ...s, fees });
   });

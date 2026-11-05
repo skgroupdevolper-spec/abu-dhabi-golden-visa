@@ -66,9 +66,12 @@ export function Header({ locale }: { locale: Locale }) {
 
   const toggle = (k: string) => setOpen((o) => (o === k ? null : k));
 
+  const F = SITE.features;
+  const portal = process.env.NEXT_PUBLIC_PORTAL_URL || '/portal/login/';
   return (
     <>
-      <header className="top" ref={ref}>
+      {F.topBar && F.topBarText && <div className="topline">{F.topBarText}</div>}
+      <header className={`top${F.topBar && F.topBarText ? ' with-line' : ''}`} ref={ref}>
         <div className="wrap">
           <div className="bar glass" style={{ paddingBlock: small ? 4 : 6 }}>
             <L locale={locale} href="/" className="logo" aria-label={`${SITE.name} home`}>
@@ -107,7 +110,7 @@ export function Header({ locale }: { locale: Locale }) {
               )}
             </nav>
             <div className="tools">
-              <div className="chip">
+              {F.languageSwitcher && <div className="chip">
                 <button type="button" aria-haspopup="true" aria-expanded={open === 'lang'} aria-label="Choose language" onClick={() => toggle('lang')}>
                   <Icon name="globe" size={17} /> {localeInfo(locale).code.toUpperCase()}
                 </button>
@@ -121,7 +124,7 @@ export function Header({ locale }: { locale: Locale }) {
                     ))}
                   </div>
                 )}
-              </div>
+              </div>}
               <div className="chip hide-sm">
                 <button type="button" aria-haspopup="true" aria-expanded={open === 'cur'} aria-label="Choose currency" onClick={() => toggle('cur')}>
                   <Icon name="coins" size={17} /> {cur}
@@ -139,6 +142,11 @@ export function Header({ locale }: { locale: Locale }) {
                   </div>
                 )}
               </div>
+              {F.clientLogin && (
+                <a className="icon-btn hide-sm" href={portal} aria-label="Client login" title="Client login">
+                  <Icon name="user" size={19} />
+                </a>
+              )}
               <a className="icon-btn hide-sm" href={waLink('Hello, I would like help with the Abu Dhabi Golden Visa.')} target="_blank" rel="noopener" aria-label="WhatsApp us">
                 <Icon name="wa" size={20} />
               </a>
@@ -190,7 +198,7 @@ export function Header({ locale }: { locale: Locale }) {
         </div>
       )}
 
-      <nav className="dock" aria-label="Quick actions">
+      {F.dock && <nav className="dock" aria-label="Quick actions">
         <L locale={locale} href="/golden-visa-cost/" data-open-calc="">
           <span className="ic g"><Icon name="calc" /></span>
           <span className="lb">Cost calculator</span>
@@ -207,15 +215,24 @@ export function Header({ locale }: { locale: Locale }) {
           <span className="ic"><Icon name="doc" /></span>
           <span className="lb">Free consultation</span>
         </L>
-      </nav>
+        {F.clientLogin && (
+          <a href={portal}>
+            <span className="ic"><Icon name="user" /></span>
+            <span className="lb">Client login</span>
+          </a>
+        )}
+      </nav>}
 
-      <nav className="mnav" aria-label="Mobile">
+      {F.mobileBar && <nav className="mnav" aria-label="Mobile">
         <L locale={locale} href="/"><Icon name="home" />Home</L>
         <L locale={locale} href="/golden-visa/"><Icon name="star" />Golden Visa</L>
         <L locale={locale} href="/golden-visa-cost/" className="mid" aria-label="Cost calculator" data-open-calc=""><Icon name="calc" size={26} /></L>
         <L locale={locale} href="/visa-check/"><Icon name="check" />Visa Check</L>
         <a href={waLink('Hello, I would like help with the Abu Dhabi Golden Visa.')} target="_blank" rel="noopener"><Icon name="wa" />WhatsApp</a>
-      </nav>
+      </nav>}
+      {F.floatingWhatsApp && !F.dock && (
+        <a className="wa-float" href={waLink('Hello, I would like help with the Abu Dhabi Golden Visa.')} target="_blank" rel="noopener" aria-label="WhatsApp us"><Icon name="wa" size={26} /></a>
+      )}
     </>
   );
 }

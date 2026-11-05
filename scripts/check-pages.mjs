@@ -50,15 +50,38 @@ for (const vp of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
   await page.screenshot({ path: `shots/admin-app-${vp.width}.png`, fullPage: true });
   await page.goto(base + '/admin/leads/');
   await page.screenshot({ path: `shots/admin-leads-${vp.width}.png`, fullPage: true });
+  for (const p of ['settings', 'whatsapp', 'users']) {
+    await page.goto(base + `/admin/${p}/`);
+    await page.screenshot({ path: `shots/admin-${p}-${vp.width}.png`, fullPage: true });
+  }
+  await page.goto(base + '/portal/login/');
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: `shots/portal-login-${vp.width}.png`, fullPage: true });
   await page.goto(base + `/portal/t/${T}/`);
   await page.waitForTimeout(1200);
   await page.screenshot({ path: `shots/portal-${vp.width}.png`, fullPage: true });
+  // customer sign-up, Arabic, dashboard
+  const cust = await browser.newPage({ viewport: vp });
+  await cust.goto(base + '/portal/register/');
+  await cust.selectOption('select[name=lang]', 'ar');
+  await cust.waitForLoadState('networkidle');
+  await cust.fill('#name', 'Sample Customer');
+  await cust.fill('#email', `c${vp.width}@example.com`);
+  await cust.fill('#phone', '+971500000000');
+  await cust.fill('#password', 'sample-pass-123');
+  await Promise.all([cust.waitForURL('**/portal/'), cust.click('button[type=submit]')]);
+  await cust.waitForTimeout(800);
+  await cust.screenshot({ path: `shots/portal-home-ar-${vp.width}.png`, fullPage: true });
+  await cust.close();
   report.push({ path: 'dashboards', vp: vp.width, errors, facts: await page.evaluate(() => ({ docW: document.documentElement.scrollWidth })) });
   await page.close();
 }
 // homepage calculator pop-up
 {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await page.goto(base + '/services/maid-visa/');
+  await page.waitForTimeout(800);
+  await page.screenshot({ path: 'shots/service-page.png' });
   await page.goto(base + '/');
   await page.click('.calc-launch button >> nth=0');
   await page.waitForTimeout(900);

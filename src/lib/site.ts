@@ -1,18 +1,22 @@
-// Brand, operator and contact details from the Developer Specification (section 1 and 13).
-export const SITE = {
-  name: 'Abu Dhabi Golden Visa',
-  tagline: 'Long-Term Residency & Investment Advisory',
-  url: (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.abudhabigoldenvisa.com').replace(/\/$/, ''),
-  operator: 'Brightlink Management Consultancy LLC',
-  licence: '1053387',
-  whatsapp: '971566556645',
-  whatsappDisplay: '+971 56 655 6645',
-  phone: '+971566556645',
-  email: 'info@brightlinkconsulting.ae',
-  office: 'Business Bay, Dubai, UAE',
-  disclaimer:
-    'Not an official UAE government website. Visa issuance and eligibility are subject to the competent authorities.',
-};
+// Brand, operator and contact details. Defaults come from the Developer Specification (sections 1 and 13);
+// the main admin can change them at any time (Settings), and the change applies to the live site.
+import { DEFAULT_SITE, type PublicSite } from './settings-schema';
+
+declare global {
+  // eslint-disable-next-line no-var
+  var __ADGV_SITE: PublicSite | undefined;
+  interface Window { __ADGV_SITE?: PublicSite }
+}
+
+function current(): PublicSite {
+  if (typeof window !== 'undefined') return window.__ADGV_SITE ?? DEFAULT_SITE;
+  return globalThis.__ADGV_SITE ?? DEFAULT_SITE;
+}
+
+/** Live site details: reads the admin's saved settings on the server and in the browser. */
+export const SITE: PublicSite = new Proxy({} as PublicSite, {
+  get: (_, k: string) => (current() as unknown as Record<string, unknown>)[k],
+}) as PublicSite;
 
 export function waLink(message: string): string {
   return `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(message)}`;
