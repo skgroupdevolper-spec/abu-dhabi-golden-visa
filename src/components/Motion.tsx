@@ -44,7 +44,7 @@ function split(el: HTMLElement, mode: 'words' | 'letters') {
 // Smooth scroll, scroll reveals, heading text effects, parallax images, count-up numbers, card tilt,
 // magnetic buttons, gold cursor and a reading progress bar. Levels and effects are set in Admin > Design.
 // Everything starts from a visible state, and nothing runs for reduced motion.
-export function Motion({ level = 'full', textFx = 'words', cursor = true, smooth = true }: Props) {
+export function Motion({ level = 'full', textFx = 'words', cursor = true, smooth = false }: Props) {
   const pathname = usePathname();
 
   useEffect(() => {
@@ -62,7 +62,7 @@ export function Motion({ level = 'full', textFx = 'words', cursor = true, smooth
       if (fine && smooth && full) {
         const { default: Lenis } = await import('lenis');
         if (cancelled) return;
-        const l = new Lenis({ lerp: 0.22, smoothWheel: true, wheelMultiplier: 1.1 });
+        const l = new Lenis({ lerp: 0.35, smoothWheel: true, wheelMultiplier: 1.2 });
         l.on('scroll', () => ScrollTrigger.update());
         const tick = (t: number) => l.raf(t * 1000);
         gsap.ticker.add(tick);
@@ -90,6 +90,12 @@ export function Motion({ level = 'full', textFx = 'words', cursor = true, smooth
             gsap.from(parts, { yPercent: 110, opacity: 0, rotate: textFx === 'letters' ? 6 : 2, duration: textFx === 'letters' ? 0.7 : 0.9, ease: 'expo.out', stagger: textFx === 'letters' ? 0.018 : 0.06, scrollTrigger: first ? undefined : { trigger: h, start: 'top 90%' } });
           });
         } else gsap.from('.phero h1', { y: 30, duration: 1, ease: 'expo.out' });
+
+        // Icons draw themselves in when they scroll into view (outside header and menus).
+        const icons = gsap.utils.toArray<SVGSVGElement>('main .ic, footer .ic').filter((s) => !s.closest('.top, .mega, .btn, .bell, [data-noanim]'));
+        icons.forEach((s) => { const p = s.querySelector('path'); if (!p) return; try { s.style.setProperty('--ic-len', String(Math.ceil(p.getTotalLength()) + 2)); } catch { return; } s.classList.add('ic-draw'); });
+        ScrollTrigger.batch(icons.filter((s) => s.classList.contains('ic-draw')), { start: 'top 94%', once: true, onEnter: (els) => els.forEach((e, i) => setTimeout(() => e.classList.add('ic-drawn'), i * 70)) });
+        cleanup.push(() => icons.forEach((s) => s.classList.remove('ic-draw', 'ic-drawn')));
 
         if (!full) return;
 
@@ -130,8 +136,14 @@ export function Motion({ level = 'full', textFx = 'words', cursor = true, smooth
         const dot = document.querySelector<HTMLElement>('.cur-dot');
         const ring = document.querySelector<HTMLElement>('.cur-ring');
         if (cursor && dot && ring) {
-          const rx = gsap.quickTo(ring, 'x', { duration: 0.12, ease: 'power2' });
-          const ry = gsap.quickTo(ring, 'y', { duration: 0.12, ease: 'power2' });
+          // Centre both on the pointer (GSAP x/y replace the CSS translate), follow almost instantly.
+          gsap.set([dot, ring], { xPercent: -50, yPercent: -50 });
+          const rx = gsap.quickTo(ring, 'x', { duration: 0.06, ease: 'power3' });
+          const ry = gsap.quickTo(ring, 'y', { duration: 0.06, ease: 'power3' });
+          const hide = () => document.body.classList.remove('c-on');
+          document.addEventListener('pointerleave', hide);
+          window.addEventListener('blur', hide);
+          cleanup.push(() => { document.removeEventListener('pointerleave', hide); window.removeEventListener('blur', hide); });
           const move = (e: PointerEvent) => { document.body.classList.add('c-on'); gsap.set(dot, { x: e.clientX, y: e.clientY }); rx(e.clientX); ry(e.clientY); };
           const over = (e: PointerEvent) => {
             const t = e.target as HTMLElement;

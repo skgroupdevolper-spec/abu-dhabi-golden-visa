@@ -261,3 +261,30 @@ export async function saveAiRoute(_: St, f: FormData): Promise<St> {
   revalidatePath('/admin/', 'layout');
   return { ok: 'AI settings saved.' };
 }
+
+/* ---------- appointments ---------- */
+export async function bookingAction(f: FormData) {
+  await requireAdmin();
+  const id = s(f, 'id', 20), op = s(f, 'op', 12);
+  const { patch: p2, remove: r2 } = await import('@/lib/server/collections');
+  type B = import('@/lib/booking').Booking;
+  if (op === 'delete') await r2<B>('bookings', id);
+  else if (['new', 'confirmed', 'done', 'cancelled', 'noshow'].includes(op)) await p2<B>('bookings', id, (b) => { b.status = op as B['status']; });
+  else if (op === 'move') { const date = s(f, 'date', 10), time = s(f, 'time', 5); if (/^\d{4}-\d{2}-\d{2}$/.test(date) && /^\d{2}:\d{2}$/.test(time)) await p2<B>('bookings', id, (b) => { b.date = date; b.time = time; b.status = 'confirmed'; }); }
+  else if (op === 'note') await p2<B>('bookings', id, (b) => { b.note = s(f, 'note', 1000); });
+  revalidatePath('/admin/bookings/');
+}
+export async function saveBookingCfg(_: St, f: FormData): Promise<St> {
+  await requireAdmin(FULL);
+  const { cleanCfg } = await import('@/lib/booking');
+  const cfg = cleanCfg({
+    on: f.get('on') === 'on', types: { office: f.get('t_office') === 'on', video: f.get('t_video') === 'on', phone: f.get('t_phone') === 'on' },
+    hours: Array.from({ length: 7 }, (_, i) => ({ open: f.get(`d${i}`) === 'on', from: s(f, `f${i}`, 5), to: s(f, `t${i}`, 5) })),
+    slot: Number(s(f, 'slot', 3)), daysAhead: Number(s(f, 'daysAhead', 3)), notice: Number(s(f, 'notice', 3)), perSlot: Number(s(f, 'perSlot', 3)),
+    closed: s(f, 'closed', 4000).split(/[\s,]+/).filter(Boolean), breakFrom: s(f, 'breakFrom', 5), breakTo: s(f, 'breakTo', 5),
+    office: s(f, 'office', 300), videoNote: s(f, 'videoNote', 300), title: s(f, 'title', 120), intro: s(f, 'intro', 400),
+  });
+  await saveBlock('booking', cfg);
+  revalidatePath('/', 'layout');
+  return { ok: 'Booking settings saved. The calendar on the website uses them now.' };
+}

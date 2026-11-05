@@ -32,7 +32,7 @@ export type Fees = typeof FEE_SCHEDULE;
 type Settings = { fees: Fees };
 
 const locks = new Map<string, Promise<unknown>>();
-async function withLock<T>(name: string, fn: () => Promise<T>): Promise<T> {
+export async function withLock<T>(name: string, fn: () => Promise<T>): Promise<T> {
   const prev = locks.get(name) ?? Promise.resolve();
   const next = prev.then(fn, fn);
   locks.set(name, next.catch(() => undefined));

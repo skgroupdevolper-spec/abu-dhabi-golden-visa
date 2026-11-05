@@ -1,5 +1,7 @@
 import { ImageResponse } from 'next/og';
-import { readFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { DATA_DIR } from '@/lib/server/store';
 import path from 'node:path';
 
 export const runtime = 'nodejs';
@@ -20,8 +22,13 @@ export async function GET(req: Request) {
   const cut = Math.max(1, Math.ceil(words.length * 0.55));
   const a = words.slice(0, cut).join(' '), b = words.slice(cut).join(' ');
   const size = title.length > 70 ? 54 : title.length > 45 ? 62 : 72;
+  // Each cover is drawn once, then served from disk (fast, no re-rendering).
+  const key = createHash('sha1').update(`v1|${title}|${cat}`).digest('hex').slice(0, 20);
+  const file = path.join(DATA_DIR, 'cache', 'covers', `${key}.png`);
+  const headers = { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=31536000, immutable' };
+  try { return new Response(new Uint8Array(await readFile(file)), { headers }); } catch { /* not drawn yet */ }
   const { bg: img, coin: c } = await assets();
-  return new ImageResponse(
+  const res = new ImageResponse(
     (
       <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', background: 'linear-gradient(120deg,#fffaf0 0%,#f8edd0 55%,#f1dc94 100%)', position: 'relative', fontFamily: 'sans-serif' }}>
         <img src={img} width={1200} height={630} style={{ position: 'absolute', left: 0, top: 0, width: 1200, height: 630, objectFit: 'cover', opacity: 0.22 }} />
@@ -46,6 +53,9 @@ export async function GET(req: Request) {
         </div>
       </div>
     ),
-    { width: 1200, height: 630, headers: { 'Cache-Control': 'public, max-age=31536000, immutable' } },
+    { width: 1200, height: 630 },
   );
+  const buf = new Uint8Array(await res.arrayBuffer());
+  void mkdir(path.dirname(file), { recursive: true }).then(() => writeFile(file, buf)).catch(() => {});
+  return new Response(buf, { headers });
 }

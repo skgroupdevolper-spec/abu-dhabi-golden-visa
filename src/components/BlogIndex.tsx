@@ -17,7 +17,7 @@ export function BlogIndex({ locale, posts, categories, current }: { locale: Loca
   const top = items.find((x) => x.featured) ?? items[0];
   const rest = items.filter((x) => x !== top);
   const Img = ({ it, big }: { it: Item; big?: boolean }) => (
-    <img src={it.image || coverUrl(it.title, name(it.cat))} alt={it.title} loading={big ? 'eager' : 'lazy'} />
+    <img decoding="async" src={it.image || coverUrl(it.title, name(it.cat))} alt={it.title} loading={big ? 'eager' : 'lazy'} />
   );
   return (
     <section className="block blog-index">

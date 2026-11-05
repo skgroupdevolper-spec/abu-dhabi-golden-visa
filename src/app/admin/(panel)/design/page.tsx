@@ -43,7 +43,7 @@ export default async function DesignPage() {
               <div className="field"><label htmlFor="motion">Animation level</label><select id="motion" name="motion" defaultValue={d.motion}><option value="full">Full (reveals, parallax, tilt, counters, magnetic buttons)</option><option value="subtle">Subtle (gentle reveals only)</option><option value="off">Off</option></select></div>
               <div className="field"><label htmlFor="textFx">Heading text effect</label><select id="textFx" name="textFx" defaultValue={d.textFx}><option value="words">Words rise in one by one</option><option value="letters">Letters rise in one by one</option><option value="fade">Soft fade and blur</option><option value="none">None</option></select></div>
               <label className="switch"><input type="checkbox" name="cursor" defaultChecked={d.cursor} /><span><b>Gold cursor on desktop</b></span></label>
-              <label className="switch"><input type="checkbox" name="smooth" defaultChecked={d.smooth} /><span><b>Smooth scrolling on desktop</b></span></label>
+              <label className="switch"><input type="checkbox" name="smooth" defaultChecked={d.smooth} /><span><b>Smooth (eased) scrolling on desktop</b><small>Off = normal browser scrolling, the fastest feel. Scroll effects work either way.</small></span></label>
               <p className="help full">Visitors who turn off animations on their device always get a still page.</p>
             </div>
           </div>

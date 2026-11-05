@@ -21,6 +21,7 @@ const PATHS: Record<string, string> = {
   pin: 'M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',
   plane: 'M2.5 13.5l19-7.5-4.5 13-5.5-4.5-4 3v-5z',
   clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2',
+  calendar: 'M4 6h16v15H4zM4 10h16M8 3v5M16 3v5',
   mail: 'M3 6h18v12H3zM3 7l9 6 9-6',
   phone: 'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z',
   grid: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
@@ -58,7 +59,7 @@ const PATHS: Record<string, string> = {
 
 export function Icon({ name, size = 22, className }: { name: string; size?: number; className?: string }) {
   return (
-    <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg className={`ic ic-${name}${className ? ` ${className}` : ''}`} data-i={name} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d={PATHS[name] ?? PATHS.star} />
     </svg>
   );

@@ -366,3 +366,49 @@
 .home .plogos{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:22px 40px;margin-top:22px}
 .home .plogos img{height:46px;width:auto;filter:grayscale(1);opacity:.7;transition:filter .3s,opacity .3s}
 .home .plogos a:hover img,.home .plogos img:hover{filter:none;opacity:1}
+
+/* WhatsApp-style phone chat */
+.home .screen.wa{background:#efe7dc;position:relative;min-height:620px}
+.home .screen.wa::before{content:'';position:absolute;inset:0;opacity:.35;background-image:radial-gradient(circle at 20% 20%,rgba(122,82,0,.18) 1.2px,transparent 1.6px),radial-gradient(circle at 70% 60%,rgba(122,82,0,.14) 1.2px,transparent 1.6px);background-size:28px 28px,36px 36px;pointer-events:none}
+.home .wa-bar{display:flex;justify-content:space-between;align-items:center;padding:10px 22px 4px;background:#111;color:#fff;font:600 12px var(--body)}
+.home .wa-sig{display:flex;gap:2px;align-items:flex-end}.home .wa-sig i{width:3px;background:#fff;border-radius:1px}.home .wa-sig i:nth-child(1){height:4px}.home .wa-sig i:nth-child(2){height:6px}.home .wa-sig i:nth-child(3){height:8px}.home .wa-sig i:nth-child(4){height:10px}
+.home .screen.wa .head{display:flex;align-items:center;gap:10px;padding:10px 14px 12px;background:#111;color:#fff;position:relative;z-index:1}
+.home .wa-back{font-size:28px;line-height:1;color:#e8c766;margin-inline-end:-4px}
+.home .wa-avatar{position:relative;flex:none;width:40px;height:40px;border-radius:50%;background:linear-gradient(140deg,#f2d27a,#c8961e);display:grid;place-items:center;overflow:visible}
+.home .wa-avatar svg,.home .av svg{width:70%;height:70%;fill:none;stroke:#111;stroke-width:2.6;stroke-linecap:round}
+.home .wa-avatar svg circle,.home .av svg circle{fill:rgba(17,17,17,.12)}
+.home .wa-avatar i{position:absolute;right:0;bottom:1px;width:10px;height:10px;border-radius:50%;background:#25d366;border:2px solid #111}
+.home .wa-who{flex:1;min-width:0;display:grid;line-height:1.2}
+.home .wa-who b{font:600 15px var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0}
+.home .wa-who small{font-size:12px;color:rgba(255,255,255,.7);letter-spacing:0;text-transform:none;opacity:1}
+.home .wa-who small.typing{color:#7CFC9A}
+.home .wa-ic{display:flex;gap:14px}.home .wa-ic svg{width:20px;height:20px;fill:none;stroke:#e8c766;stroke-width:1.8;stroke-linejoin:round}
+.home .wa-day{position:relative;z-index:1;text-align:center;margin:10px 0 2px}.home .wa-day span{display:inline-block;padding:4px 10px;border-radius:8px;background:#fff8e2;color:#6b5a2e;font-size:11px;box-shadow:0 1px 1px rgba(0,0,0,.08)}
+.home .screen.wa .msgs{position:relative;z-index:1;height:420px;padding:10px 12px 8px;gap:8px}
+.home .screen.wa .msg{position:relative;display:grid;grid-template-columns:auto 1fr;column-gap:8px;max-width:92%;border-radius:12px;padding:8px 10px 6px;box-shadow:0 1px 1px rgba(0,0,0,.12);background:#fff;border-top-left-radius:4px}
+.home .screen.wa .msg.me{grid-template-columns:1fr;background:#e9f9d6;border-top-left-radius:12px;border-top-right-radius:4px}
+.home .screen.wa .msg .tx{grid-column:2;min-width:0}.home .screen.wa .msg.me .tx{grid-column:1}
+.home .screen.wa .msg .meta{grid-column:1/-1;margin-top:2px}
+.home .screen.wa .msg::before{content:'';position:absolute;top:0;left:-7px;border:8px solid transparent;border-top-color:#fff;border-right-width:0}
+.home .screen.wa .msg.me::before{left:auto;right:-7px;border-top-color:#e9f9d6;border-right-width:8px;border-left-width:0}
+.home .screen.wa .msg.typing::before{display:none}
+.home .av{grid-row:1/span 2;width:28px;height:28px;border-radius:50%;background:linear-gradient(140deg,#f2d27a,#c8961e);display:grid;place-items:center;align-self:start}
+.home .screen.wa .msg.typing{display:flex}.home .screen.wa .msg.typing .av{width:22px;height:22px}
+.home .msg .tick{color:#9aa0a6;margin-left:4px;transition:color .3s}.home .msg .tick.seen{color:#53bdeb}
+.home .msg .doc{display:flex;gap:10px;align-items:center;margin:6px 0;padding:8px;border-radius:8px;background:#f5f1e6}
+.home .msg .doc i{flex:none;width:30px;height:36px;border-radius:4px;background:#d64545;color:#fff;font:700 9px/36px var(--body);text-align:center;font-style:normal}
+.home .msg .doc b{font-size:12.5px;margin:0}.home .msg .doc small{display:block;font-size:11px;color:#8a8270}
+.home .msg .btnl{display:block;margin:8px -10px -2px;padding:8px 0 2px;border-top:1px solid #eee5cf;text-align:center;color:#8a6a12;font-weight:700;font-size:13px}
+.home .wa-input{position:relative;z-index:1;display:flex;gap:8px;align-items:center;padding:8px 10px 12px}
+.home .wa-field{flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:24px;background:#fff;color:#8a8270;font-size:14px}
+.home .wa-field em{flex:1;font-style:normal}.home .wa-field i{font-style:normal}
+.home .wa-mic{width:42px;height:42px;border-radius:50%;background:linear-gradient(140deg,#f2d27a,#c8961e);display:grid;place-items:center}
+.home .wa-mic svg{width:20px;height:20px;fill:none;stroke:#111;stroke-width:2;stroke-linecap:round}
+
+/* Icons orbiting the hero coin */
+.home .orbit{position:absolute;inset:2%;border-radius:50%;animation:hm-orbit 36s linear infinite;pointer-events:none;z-index:3}
+.home .ob{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;transform:rotate(calc(var(--k) * 60deg)) translateY(calc(-1 * min(220px, 38vw))) rotate(calc(var(--k) * -60deg))}
+.home .ob-in{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;background:rgba(255,255,255,.85);border:1px solid rgba(212,175,55,.55);color:#8a6a12;box-shadow:0 14px 26px -16px rgba(122,82,0,.7);backdrop-filter:blur(6px);animation:hm-orbit 36s linear infinite reverse, hm-bob 3.2s ease-in-out infinite;animation-delay:0s, calc(var(--k) * -.5s)}
+@keyframes hm-orbit{to{transform:rotate(360deg)}}
+@keyframes hm-bob{50%{translate:0 -6px}}
+@media (max-width:900px){.home .ob{width:36px;height:36px;margin:-18px 0 0 -18px}.home .ob .ic{width:16px;height:16px}}

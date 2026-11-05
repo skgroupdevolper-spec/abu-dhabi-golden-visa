@@ -1,5 +1,6 @@
 'use client';
 
+import { BrandLogo } from './BrandLogo';
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { NAV } from '@/content/nav';
@@ -143,7 +144,7 @@ export function Header({ locale }: { locale: Locale }) {
         <div className="mainbar">
           <div className="wrap bar">
             <L locale={locale} href="/" className="logo" aria-label={`${SITE.name} home`}>
-              <img src="/brand/logo.webp" alt={SITE.name} width={180} height={44} />
+              <BrandLogo alt={SITE.name} />
             </L>
             <nav className="nav" aria-label="Main">
               {[...MENU(), ...SITE.nav.extra.map((x) => ({ label: x.label, href: x.href, groups: undefined }))].map((item) =>
@@ -159,7 +160,7 @@ export function Header({ locale }: { locale: Locale }) {
                           {item.groups.map((g, gi) => (
                             <button key={g.title} type="button" role="tab" aria-selected={tab === gi} onMouseEnter={() => setTab(gi)} onFocus={() => setTab(gi)} onClick={() => setTab(gi)}>
                               <span className="mi"><Icon name={iconFor(g.links[0]?.label ?? '', g.title)} size={17} /></span>
-                              <span>{g.title}<small>{g.links.length} {item.href === '/blog/' ? 'guides' : 'services'}</small></span>
+                              <span>{g.title}</span><em className="mt-count">{g.links.length}</em>
                               <Icon name="chev" size={14} className="mt-arrow" />
                             </button>
                           ))}
@@ -188,7 +189,7 @@ export function Header({ locale }: { locale: Locale }) {
                       <div className={`mega${item.groups.length === 3 ? ' three' : item.groups.length > 1 ? ' two' : ' one'}${item.href === '/contact/' ? ' end' : ''}`} data-lenis-prevent>
                         <div className="mega-cols">
                           {item.groups.map((g) => (
-                            <div key={g.title}>
+                            <div key={g.title} className={g.links.length > 8 ? 'mg-dense' : g.links.some((l) => l.note) ? 'mg-notes' : 'mg-plain'}>
                               <h4>{g.title}</h4>
                               {g.links.map((l) => (
                                 <L key={l.href + l.label} locale={locale} href={l.href}>
@@ -239,7 +240,7 @@ export function Header({ locale }: { locale: Locale }) {
       {mobile && (
         <div className="mobile-panel" role="dialog" aria-modal="true" aria-label="Menu">
           <div className="mp-head">
-            <img src="/brand/logo.webp" alt={SITE.name} width={140} height={34} style={{ height: 34, width: 'auto' }} />
+            <BrandLogo alt={SITE.name} size={34} />
             <button type="button" className="burger" style={{ display: 'grid' }} aria-label="Close menu" onClick={() => setMobile(false)}>
               <Icon name="close" />
             </button>

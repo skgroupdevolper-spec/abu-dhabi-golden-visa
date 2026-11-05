@@ -5,6 +5,7 @@ import { requireAdmin } from '@/lib/server/auth';
 import { getCategories, getPosts } from '@/lib/server/content';
 import { restoreRevision, savePost } from '../../../content-actions';
 import { when } from '@/lib/stages';
+import { TranslatePanel } from '@/components/dash/TranslatePanel';
 
 export const metadata: Metadata = { title: 'Edit article' };
 
@@ -25,6 +26,7 @@ export default async function EditPost({ params }: { params: Promise<{ id: strin
         cover: p?.cover, coverAlt: p?.coverAlt, category: p?.category, tags: p?.tags?.join(', '), seoTitle: p?.seoTitle, ogImage: p?.ogImage, canonical: p?.canonical,
         noindex: p?.noindex, scheduledAt: local(p?.scheduledAt), featured: p?.featured, keyword: p?.keyword,
       }} />
+      {p && <TranslatePanel path={`/blog/${p.slug}/`} updated={p.updatedAt} live={p.status === 'published'} />}
       {p?.revisions?.length ? (
         <div className="panel" style={{ marginTop: 16 }}>
           <h2>Earlier versions</h2>

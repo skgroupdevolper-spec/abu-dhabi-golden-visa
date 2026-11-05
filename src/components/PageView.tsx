@@ -1,4 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
+import { preload } from 'react-dom';
+import { Booking } from './Booking';
+import { FlightPath } from './FlightPath';
 import type { Block } from '@/lib/blocks';
 import type { PageOverride } from '@/lib/server/content';
 import { BlockView } from './BlockView';
@@ -132,10 +135,10 @@ export function SectionView({ s, locale, i }: { s: Section; locale: Locale; i: n
       );
     case 'tool':
       return (
-        <section className="block" id={s.tool === 'apply' ? 'apply' : sid(s.title)} data-reveal={s.tool === 'apply' ? undefined : ''}>
-          {s.title && <Head title={s.title} k={i} icon={s.tool === 'calculator' ? 'calc' : s.tool === 'eligibility' ? 'check' : 'wa'} />}
-          {s.intro && <p className="intro">{s.intro}</p>}
-          {s.tool === 'calculator' ? <Calculator /> : s.tool === 'eligibility' ? <Eligibility /> : s.tool === 'apply' ? <ApplyWizard /> : <LeadForm source="page" />}
+        <section className={`block${s.tool === 'flight' ? ' block-flight' : ''}`} id={s.tool === 'apply' ? 'apply' : s.tool === 'booking' ? 'book' : sid(s.title)} data-reveal={s.tool === 'apply' || s.tool === 'flight' ? undefined : ''}>
+          {s.title && s.tool !== 'booking' && s.tool !== 'flight' && <Head title={s.title} k={i} icon={s.tool === 'calculator' ? 'calc' : s.tool === 'eligibility' ? 'check' : 'wa'} />}
+          {s.intro && s.tool !== 'booking' && s.tool !== 'flight' && <p className="intro">{s.intro}</p>}
+          {s.tool === 'calculator' ? <Calculator /> : s.tool === 'eligibility' ? <Eligibility /> : s.tool === 'apply' ? <ApplyWizard /> : s.tool === 'booking' ? <Booking title={s.title} intro={s.intro} /> : s.tool === 'flight' ? <FlightPath title={s.title} intro={s.intro} /> : <LeadForm source="page" />}
         </section>
       );
   }
@@ -154,6 +157,7 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
   const showAside = !withSide && !isApply && !page.article && !o.hideAside && !before;
   const postSide = !!page.article && !o.hideAside;
   const heroImg = page.image;
+  if (heroImg) preload(heroImg, { as: 'image', fetchPriority: 'high' });
   const factsOn = !o.hideFacts && !before;
   return (
     <>
@@ -190,11 +194,11 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
               {!translated && <TranslationNotice locale={locale} />}
             </div>
             {heroImg && !page.article && (!factsOn || !facts.length) && (
-              <div className="phero-img"><img src={heroImg} alt={page.imageAlt || page.h1} /></div>
+              <div className="phero-img"><img decoding="async" fetchPriority="high" width={1200} height={800} src={heroImg} alt={page.imageAlt || page.h1} /></div>
             )}
             {!isApply && !page.article && factsOn && facts.length > 0 && (
               <div className="phero-side">
-              {heroImg && <div className="phero-img sm"><img src={heroImg} alt={page.imageAlt || page.h1} /></div>}
+              {heroImg && <div className="phero-img sm"><img decoding="async" fetchPriority="high" width={1200} height={800} src={heroImg} alt={page.imageAlt || page.h1} /></div>}
               <aside className="facts" aria-label="Quick facts">
                 <p className="eyebrow">Quick facts</p>
                 <dl>
@@ -222,7 +226,7 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
         {withSide && <ServiceSidebar current={page.path} locale={locale} hidden={hidden} />}
         <div className={withSide ? 'svc-main' : isApply || before ? 'apply-main-wrap' : 'page-main'}>
         {page.article && heroImg && (
-          <figure className="post-cover"><img src={heroImg} alt={page.imageAlt || page.h1} fetchPriority="high" /></figure>
+          <figure className="post-cover"><img decoding="async" width={1200} height={630} src={heroImg} alt={page.imageAlt || page.h1} fetchPriority="high" /></figure>
         )}
         {page.article && (
           <p className="byline block" style={{ marginBottom: 0 }}>
@@ -263,7 +267,7 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
                 <p className="eyebrow">More articles</p>
                 {more.slice(0, 5).map((m) => (
                   <L key={m.href} locale={locale} href={m.href} className="sp-item">
-                    {m.image && <img src={m.image} alt="" loading="lazy" />}
+                    {m.image && <img decoding="async" src={m.image} alt="" loading="lazy" />}
                     <span>{m.label && <small>{m.label}</small>}<b>{m.title}</b></span>
                   </L>
                 ))}

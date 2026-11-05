@@ -42,7 +42,7 @@ export default async function ClientFile({ params }: { params: Promise<{ token: 
             <div className="bar" style={{ maxWidth: 520, background: 'rgba(255,255,255,.6)' }}><i style={{ width: `${pct}%` }} /></div>
             {a.nextStep && <p className="small" style={{ margin: '12px 0 0' }}><b>{t.next}:</b> {a.nextStep}{a.expected ? ` · ${t.expected} ${a.expected}` : ''}</p>}
           </div>
-          <img className="coinb" src="/brand/coin.webp" alt="" width={120} height={120} />
+          <img decoding="async" className="coinb" src="/brand/coin.webp" alt="" width={120} height={120} />
         </section>
 
         <nav className="ptabs" aria-label="Sections">

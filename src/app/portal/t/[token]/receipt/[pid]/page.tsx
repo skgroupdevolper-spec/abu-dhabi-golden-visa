@@ -17,7 +17,7 @@ export default async function Receipt({ params }: { params: Promise<{ token: str
     <main className="pwrap" style={{ maxWidth: 760 }}>
       <div className="panel">
         <div className="panel-h">
-          <img src="/brand/logo.webp" alt="Abu Dhabi Golden Visa" style={{ height: 48, width: 'auto' }} />
+          <img decoding="async" src="/brand/logo.webp" alt="Abu Dhabi Golden Visa" style={{ height: 48, width: 'auto' }} />
           <div style={{ textAlign: 'end' }}><p className="eyebrow">Payment receipt</p><b style={{ fontSize: 18 }}>{p.receiptNo}</b></div>
         </div>
         <div className="lines" style={{ marginTop: 10 }}>

@@ -7,6 +7,7 @@ import { sectionsToBlocks } from '@/lib/blocks';
 import { md } from '@/lib/markdown';
 import { PageBuilder } from '@/components/dash/PageBuilder';
 import { getSecrets } from '@/lib/server/settings';
+import { TranslatePanel } from '@/components/dash/TranslatePanel';
 
 export const metadata: Metadata = { title: 'Page builder' };
 
@@ -32,6 +33,7 @@ export default async function EditPage({ searchParams }: { searchParams: Promise
     <>
       <div className="topbar"><div><p className="eyebrow">Page builder · {path}</p><h1>{home ? 'Homepage' : o.h1 || original.h1}</h1></div></div>
       <PageBuilder path={path} custom={!!custom} original={original} initial={{ ...rest, extra: '' }} blocks={blocks} hasOverride={!!Object.keys(o).length && !custom ? true : false} home={home} />
+      <TranslatePanel path={path} updated={o.at} />
     </>
   );
 }

@@ -5,7 +5,7 @@ export type Section =
   | { type: 'steps'; title: string; intro?: string; items: { title: string; text: string }[]; note?: string }
   | { type: 'cards'; title: string; intro?: string; items: { title: string; text: string; href: string }[] }
   | { type: 'faq'; title: string; items: { q: string; a: string }[] }
-  | { type: 'tool'; tool: 'calculator' | 'eligibility' | 'lead' | 'apply'; title?: string; intro?: string }
+  | { type: 'tool'; tool: 'calculator' | 'eligibility' | 'lead' | 'apply' | 'booking' | 'flight'; title?: string; intro?: string }
   /** Rendered from the safe Markdown renderer only (blog posts, admin page additions). */
   | { type: 'html'; title?: string; html: string };
 

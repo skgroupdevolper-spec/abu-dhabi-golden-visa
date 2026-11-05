@@ -263,6 +263,7 @@ export const OTHER_PAGES: Page[] = [
     intro: 'The order changes with your route and whether you are already in the UAE. Here is the full path.',
     cta: { label: 'Start With a Free Check', href: '/visa-check/' },
     sections: [
+      { type: 'tool', tool: 'flight', title: 'Your flight to a Golden Visa', intro: 'Scroll and follow the plane: each stop is a stage we handle for you.' },
       {
         type: 'steps',
         title: 'The 10 steps',
@@ -409,8 +410,8 @@ export const OTHER_PAGES: Page[] = [
     meta: 'Contact Abu Dhabi Golden Visa on WhatsApp, by email or at our office in Business Bay, Dubai.',
     eyebrow: 'Contact',
     h1: 'Talk to a Golden Visa advisor',
-    intro: 'Send us a message and an advisor replies in your language.',
-    sections: [{ type: 'tool', tool: 'lead' }],
+    intro: 'Send us a message and an advisor replies in your language, or book a time to meet.',
+    sections: [{ type: 'tool', tool: 'lead' }, { type: 'tool', tool: 'booking', title: 'Book a time that suits you' }],
   },
   {
     path: '/free-consultation/',
@@ -418,8 +419,8 @@ export const OTHER_PAGES: Page[] = [
     meta: 'Book a free Golden Visa consultation. We review your route and documents and give you a written plan.',
     eyebrow: 'Free consultation',
     h1: 'Book your free consultation',
-    intro: 'Tell us a little about you. We review your route and reply with a clear plan.',
-    sections: [{ type: 'tool', tool: 'lead' }],
+    intro: 'Pick a time for a free call, video meeting or office visit. We review your route and give you a clear plan.',
+    sections: [{ type: 'tool', tool: 'booking', title: 'Book your free consultation' }, { type: 'tool', tool: 'lead', title: 'Prefer to write?' }],
   },
 
   // ---------------- Legal ----------------

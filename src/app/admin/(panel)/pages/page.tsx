@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PAGES } from '@/content/pages';
 import { requireAdmin } from '@/lib/server/auth';
-import { getCustomPages, getOverrides } from '@/lib/server/content';
+import { getCustomPages, getOverrides, getTranslations } from '@/lib/server/content';
 import { Icon } from '@/components/Icon';
 import { NewPageForm } from '@/components/dash/NewPageForm';
 
@@ -19,7 +19,8 @@ function score(title: string, meta: string, img?: string) {
 export default async function Pages({ searchParams }: { searchParams: Promise<{ q?: string; t?: string }> }) {
   await requireAdmin();
   const { q = '', t = 'all' } = await searchParams;
-  const [over, customs] = await Promise.all([getOverrides(), getCustomPages()]);
+  const [over, customs, tr] = await Promise.all([getOverrides(), getCustomPages(), getTranslations()]);
+  const nTr = (path: string) => Object.values(tr).filter((l) => l[path]).length;
   const all = [
     { path: '/', h1: 'Homepage', group: 'Main', seoTitle: over['/']?.seoTitle || 'Abu Dhabi Golden Visa | 10-Year UAE Residency Consultants', meta: over['/']?.meta || 'home', image: '/images/skyline.webp', o: over['/'] ?? {}, custom: false },
     ...customs.map((c) => ({ path: c.path, h1: c.h1 || c.title, group: 'Custom page', seoTitle: c.seoTitle || c.title, meta: c.meta || '', image: c.image, o: c, custom: true })),
@@ -40,7 +41,7 @@ export default async function Pages({ searchParams }: { searchParams: Promise<{ 
         <form className="row" action="/admin/pages/"><input type="hidden" name="t" value={t} /><input name="q" defaultValue={q} placeholder="Search pages" style={{ width: 240 }} /><button className="btn btn-sm" type="submit">Search</button></form>
       </div>
       <p className="help" style={{ marginBottom: 12 }}>{rows.length} pages. Open any page to edit every section, add widgets, change the design, featured image and SEO. The homepage can hide, keep or add sections anywhere between its built-in parts. Blog articles are under Blog posts.</p>
-      <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Page</th><th>Type</th><th>SEO</th><th>Status</th><th></th></tr></thead><tbody>
+      <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Page</th><th>Type</th><th>SEO</th><th>Languages</th><th>Status</th><th></th></tr></thead><tbody>
         {rows.map((p) => {
           const sc = score(p.seoTitle, p.meta, p.image);
           return (
@@ -48,6 +49,7 @@ export default async function Pages({ searchParams }: { searchParams: Promise<{ 
               <td><Link href={`/admin/pages/edit/?path=${encodeURIComponent(p.path)}`}>{p.h1}</Link><div className="small muted">{p.path}</div></td>
               <td><span className="small">{p.group}</span></td>
               <td><span className={`score s${sc >= 80 ? 'g' : sc >= 50 ? 'm' : 'b'}`}>{sc}%</span>{p.o.noindex && <span className="pill closed" style={{ marginInlineStart: 6 }}>noindex</span>}</td>
+              <td><Link href={`/admin/pages/edit/?path=${encodeURIComponent(p.path)}#translations`} className={`pill ${nTr(p.path) >= 19 ? 'ok' : nTr(p.path) ? 'new' : ''}`}>{nTr(p.path)}/19</Link></td>
               <td>{p.o.hidden ? <span className="pill closed">Hidden</span> : p.o.blocks?.length ? <span className="pill ok">Built</span> : Object.keys(p.o).length ? <span className="pill new">Edited</span> : <span className="muted small">Original</span>}</td>
               <td className="num"><Link className="btn btn-sm" href={`/admin/pages/edit/?path=${encodeURIComponent(p.path)}`}><Icon name="pen" size={14} /> Edit</Link> <a className="btn btn-sm btn-ghost" href={p.path} target="_blank" rel="noopener" aria-label="View"><Icon name="ext" size={14} /></a></td>
             </tr>

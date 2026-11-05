@@ -1,3 +1,4 @@
+import type React from 'react';
 import type { Metadata } from 'next';
 import '../home.css';
 import { FEE_SCHEDULE as F, aed } from '@/lib/fees';
@@ -10,6 +11,8 @@ import { TranslationNotice } from '@/components/TranslationNotice';
 import { FaqList, HeroFinder, HomeEffects, HomeLeadForm, PhoneChat, ServicesGrid } from '@/components/HomeClient';
 import { getFaqs, getOverrides, getPartners, getTestimonials, getTranslations } from '@/lib/server/content';
 import { BlockView } from '@/components/BlockView';
+import { Booking } from '@/components/Booking';
+import { FlightPath } from '@/components/FlightPath';
 import type { Block } from '@/lib/blocks';
 import { getSecrets } from '@/lib/server/settings';
 
@@ -102,6 +105,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <div className="hero-art" id="heroArt">
             <div className="orb">
               <span className="ring" /><span className="ring r2" /><span className="ring r3" />
+              <div className="orbit" aria-hidden="true">
+                {['home', 'briefcase', 'plane', 'family', 'cap', 'shield'].map((ic, k) => (
+                  <span key={ic} className="ob" style={{ ['--k' as string]: k } as React.CSSProperties}><span className="ob-in"><Icon name={ic} size={20} /></span></span>
+                ))}
+              </div>
               <div className="lens" />
               <div className="coin-stage" id="coinStage" style={{ position: 'absolute', inset: '13%', width: 'auto', aspectRatio: 'auto', placeSelf: 'stretch' }}>
                 <div className="coin-shadow" />
@@ -111,8 +119,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                       <div className="edge-stack">
                         {Array.from({ length: 14 }, (_, i) => <div key={i} className="edge" style={{ transform: `translateZ(${(-12 + (i * 24) / 13).toFixed(2)}px)` }} />)}
                       </div>
-                      <div className="face front"><img src="/brand/coin.webp" alt="Abu Dhabi Golden Visa coin" width={420} height={420} fetchPriority="high" /></div>
-                      <div className="face back"><img src="/brand/coin.webp" alt="" width={420} height={420} /></div>
+                      <div className="face front"><img decoding="async" src="/brand/coin.webp" alt="Abu Dhabi Golden Visa coin" width={420} height={420} fetchPriority="high" /></div>
+                      <div className="face back"><img decoding="async" src="/brand/coin.webp" alt="" width={420} height={420} /></div>
                     </div>
                   </div>
                 </div>
@@ -141,7 +149,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <div>
             <div className="eyebrow" style={{ marginBottom: 22 }}>Why we exist</div>
             <p id="manifesto">{manifesto.split(' ').map((w, i) => <span key={i}><span className={`w${gold.has(w) ? ' gold goldtext' : ''}`}>{w}</span>{' '}</span>)}</p>
-            <div className="sig"><img src="/brand/coin.webp" alt="" width={52} height={52} />Brightlink Management Consultancy · Abu Dhabi Golden Visa</div>
+            <div className="sig"><img decoding="async" src="/brand/coin.webp" alt="" width={52} height={52} />Brightlink Management Consultancy · Abu Dhabi Golden Visa</div>
           </div>
           <div className="promos">
             <a className="promo p1" href="#contact-form" data-view=""><div className="im" /><div className="pb"><small>Free eligibility check</small><b>Know your route today</b><span>Send your details and get a written answer on your eligibility.</span><em>Start my free check →</em></div></a>
@@ -231,6 +239,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
       </>)}
       {at('journey')}
+
+      {show('flight') && (<section className="home-flight"><div className="wrap"><FlightPath /></div></section>)}
+      {at('flight')}
 
       {show('portal') && (<>
       {/* PORTAL */}
@@ -340,7 +351,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <section className="partners">
           <div className="wrap">
             <div className="eyebrow" style={{ textAlign: 'center' }}>Trusted partners</div>
-            <div className="plogos">{partners.map((p) => (p.link ? <a key={p.id} href={p.link} target="_blank" rel="noopener"><img src={p.logo} alt={p.name} loading="lazy" /></a> : <img key={p.id} src={p.logo} alt={p.name} loading="lazy" />))}</div>
+            <div className="plogos">{partners.map((p) => (p.link ? <a key={p.id} href={p.link} target="_blank" rel="noopener"><img decoding="async" src={p.logo} alt={p.name} loading="lazy" /></a> : <img decoding="async" key={p.id} src={p.logo} alt={p.name} loading="lazy" />))}</div>
           </div>
         </section>
       )}
@@ -453,6 +464,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
       </>)}
       {at('contact')}
+
+      {show('booking') && (<section className="home-booking" id="book"><div className="wrap"><Booking /></div></section>)}
+      {at('booking')}
 
       {show('finale') && (<>
       {/* FINALE */}

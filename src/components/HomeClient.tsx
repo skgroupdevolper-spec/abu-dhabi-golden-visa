@@ -137,17 +137,18 @@ export function ServicesGrid({ locale }: { locale: Locale }) {
 /* ---------------- phone chat that types like a person ---------------- */
 type Msg = { who: 'them' | 'me'; html: string; t: string; wait: number };
 const CHAT: Msg[] = [
-  { who: 'them', wait: 1300, t: '10:02', html: '<b>Quote ready</b>Golden Visa for 1 applicant + 2 family members.<span class="pay"><span>Government fees</span><span>AED 12,138.36</span></span>' },
-  { who: 'me', wait: 900, t: '10:06', html: 'Paid by card' },
-  { who: 'them', wait: 1500, t: '10:07', html: '<b>Payment received</b>Your receipt is attached. We have started your file.' },
-  { who: 'them', wait: 1700, t: 'Day 3', html: '<b>Valuation certificate issued</b>Next: application with the authority.' },
-  { who: 'them', wait: 1400, t: 'Next', html: '<b>Application submitted</b>We will message you when the status changes.' },
+  { who: 'them', wait: 1300, t: '10:02', html: '<b>✅ Quote ready · ADGV-0001</b>Golden Visa for 1 applicant + 2 family members.<span class="pay"><span>Government fees</span><span>AED 12,138.36</span></span><span class="btnl">💳 Pay securely</span>' },
+  { who: 'me', wait: 900, t: '10:06', html: 'Paid by card 🙏' },
+  { who: 'them', wait: 1500, t: '10:07', html: '<b>✅ Payment received, thank you!</b><span class="doc"><i>PDF</i><span><b>Receipt RCPT-2611-0042.pdf</b><small>PDF · 130 kB</small></span></span>We have started your file.' },
+  { who: 'them', wait: 1700, t: 'Day 3', html: '<b>🏠 Valuation certificate issued</b>Next: application with the authority.' },
+  { who: 'them', wait: 1400, t: 'Day 5', html: '<b>📨 Application submitted</b>We will message you when the status changes.' },
 ];
+const AV = '<span class="av" aria-hidden="true"><svg viewBox="0 0 40 40"><circle cx="20" cy="15" r="7"/><path d="M7 36c1.5-7 6.6-11 13-11s11.5 4 13 11"/></svg></span>';
 
 export function PhoneChat() {
   const box = useRef<HTMLDivElement>(null);
   const phone = useRef<HTMLDivElement>(null);
-  const [status, setStatus] = useState('Your advisor · online');
+  const [status, setStatus] = useState('online');
   const timers = useRef<number[]>([]);
 
   useEffect(() => {
@@ -159,7 +160,7 @@ export function PhoneChat() {
     const add = (m: Msg) => {
       const d = document.createElement('div');
       d.className = 'msg pop' + (m.who === 'me' ? ' me' : '');
-      d.innerHTML = m.html + `<span class="meta">${m.t}${m.who === 'me' ? '<span class="tick">✓✓</span>' : ''}</span>`;
+      d.innerHTML = (m.who === 'them' ? AV : '') + `<span class="tx">${m.html}</span>` + `<span class="meta">${m.t}${m.who === 'me' ? '<span class="tick">✓✓</span>' : ''}</span>`;
       el.appendChild(d);
       return d;
     };
@@ -174,13 +175,13 @@ export function PhoneChat() {
             const ty = document.createElement('div');
             ty.className = 'msg typing pop';
             ty.dataset.typing = '1';
-            ty.innerHTML = '<i></i><i></i><i></i>';
+            ty.innerHTML = AV + '<i></i><i></i><i></i>';
             el.appendChild(ty);
           }, at);
           at += m.wait;
           later(() => {
             el.querySelector('[data-typing]')?.remove();
-            setStatus('Your advisor · online');
+            setStatus('online');
             add(m);
             const p = phone.current?.getBoundingClientRect();
             if (p && window.__adgvDrop) window.__adgvDrop(p.left + p.width / 2, p.top + p.height * 0.7, 0.03, -0.35);
@@ -201,21 +202,25 @@ export function PhoneChat() {
   return (
     <div className="phone" id="phone" ref={phone}>
       <span className="sample">Sample</span>
-      <div className="screen">
+      <div className="screen wa">
+        <div className="wa-bar"><span>9:41</span><span className="wa-sig" aria-hidden="true"><i /><i /><i /><i /></span></div>
         <div className="head">
-          <small>Application ADGV-0001</small>
-          <b>Golden Visa · Real-estate investor</b>
-          <div className="st"><i /><span>{status}</span></div>
-          <div className="pbar"><i id="pbar" /></div>
+          <span className="wa-back" aria-hidden="true">‹</span>
+          <span className="wa-avatar" aria-hidden="true"><svg viewBox="0 0 40 40"><circle cx="20" cy="15" r="7" /><path d="M7 36c1.5-7 6.6-11 13-11s11.5 4 13 11" /></svg><i /></span>
+          <span className="wa-who"><b>Sara · Your advisor</b><small className={status === 'online' ? '' : 'typing'}>{status}</small></span>
+          <span className="wa-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6h13v12H3zM16 10l5-3v10l-5-3" /></svg><svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" /></svg></span>
         </div>
+        <div className="wa-day"><span>Application ADGV-0001 · Golden Visa</span></div>
         <div className="msgs" ref={box}>
           {CHAT.map((m) => (
             <div key={m.t + m.html.slice(0, 14)} className={`msg${m.who === 'me' ? ' me' : ''}`}>
-              <span dangerouslySetInnerHTML={{ __html: m.html }} />
+              {m.who === 'them' && <span className="av" aria-hidden="true"><svg viewBox="0 0 40 40"><circle cx="20" cy="15" r="7" /><path d="M7 36c1.5-7 6.6-11 13-11s11.5 4 13 11" /></svg></span>}
+              <span className="tx" dangerouslySetInnerHTML={{ __html: m.html }} />
               <span className="meta">{m.t}{m.who === 'me' && <span className="tick seen">✓✓</span>}</span>
             </div>
           ))}
         </div>
+        <div className="wa-input" aria-hidden="true"><span className="wa-field">☺ <em>Message</em> <i>📎</i></span><span className="wa-mic"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM6 11a6 6 0 0 0 12 0M12 17v4" /></svg></span></div>
       </div>
     </div>
   );

@@ -188,14 +188,19 @@ export async function saveTranslation(_: St, f: FormData): Promise<St> {
 }
 export async function retranslatePage(_: St, f: FormData): Promise<St> {
   await requireAdmin(EDIT);
-  if (!(await aiReady())) return { error: 'Add an AI key in Site settings first.' };
-  const { getPage } = await import('@/content/pages');
-  const { translatePage } = await import('@/lib/server/translate');
-  const p = getPage(s(f, 'path', 300));
-  if (!p) return { error: 'Unknown page.' };
-  try { await translatePage(p, s(f, 'lang', 10)); } catch (e) { return { error: (e as Error).message }; }
+  if (!(await aiReady('translate'))) return { error: 'Add the translation AI key first: Languages > AI provider & API key.' };
+  const { findPage, translatePage } = await import('@/lib/server/translate');
+  const p = await findPage(s(f, 'path', 300));
+  if (!p) return { error: 'Save or publish this page first.' };
+  const lang = s(f, 'lang', 10);
+  if (lang === 'all') {
+    const langs = LOCALES.filter((l) => l.code !== 'en').map((l) => l.code);
+    void (async () => { for (const l of langs) { try { await translatePage(p, l); } catch { /* next language */ } } revalidatePath('/', 'layout'); })();
+    return { ok: `Translating into ${langs.length} languages in the background. Refresh in a minute to see the ticks.` };
+  }
+  try { await translatePage(p, lang); } catch (e) { return { error: (e as Error).message }; }
   revalidatePath('/', 'layout');
-  return { ok: 'Translated again with AI.' };
+  return { ok: `Translated into ${LOCALES.find((l) => l.code === lang)?.name ?? lang}.` };
 }
 
 export async function suggestKeywordsNow(_: St, f: FormData): Promise<St> {

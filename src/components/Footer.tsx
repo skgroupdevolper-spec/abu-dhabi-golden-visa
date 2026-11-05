@@ -1,4 +1,5 @@
 import { NAV } from '@/content/nav';
+import { BrandLogo } from './BrandLogo';
 import type { Locale } from '@/lib/i18n';
 import { SITE, waLink } from '@/lib/site';
 import { L } from './L';
@@ -17,7 +18,7 @@ export function Footer({ locale }: { locale: Locale }) {
       <div className="wrap">
         <div className="fgrid">
           <div className="fbrand">
-            <img src="/brand/logo.webp" alt={SITE.name} width={200} height={50} />
+            <BrandLogo alt={SITE.name} size={50} />
             <p>
               {SITE.footerAbout || `${SITE.name} is an independent residency consultancy website managed by ${SITE.operator}, UAE. Trade Licence No. ${SITE.licence}.`}
             </p>

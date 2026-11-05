@@ -43,21 +43,21 @@ function Inner({ b, locale, i, reviews }: { b: Block; locale: Locale; i: number;
             {str(d.text) && <p className="lead">{str(d.text)}</p>}
             <Buttons b1={d.b1} b2={d.b2} locale={locale} />
           </div>
-          {layout === 'split' && str(d.image) && <div className="bk-hero-im"><img src={str(d.image)} alt={title} loading="lazy" /></div>}
+          {layout === 'split' && str(d.image) && <div className="bk-hero-im"><img decoding="async" src={str(d.image)} alt={title} loading="lazy" /></div>}
         </div>
       );
     }
     case 'text':
       return <>{H}<div className="prose prose-lite" dangerouslySetInnerHTML={{ __html: md(str(d.body)) }} /></>;
     case 'image': {
-      const img = str(d.src) ? <img src={str(d.src)} alt={str(d.alt)} loading="lazy" className="bk-img" /> : <div className="bk-ph"><Icon name="image" /> Add an image</div>;
+      const img = str(d.src) ? <img decoding="async" src={str(d.src)} alt={str(d.alt)} loading="lazy" className="bk-img" /> : <div className="bk-ph"><Icon name="image" /> Add an image</div>;
       return <figure className="bk-fig">{str(d.href) ? <L locale={locale} href={str(d.href)}>{img}</L> : img}{str(d.caption) && <figcaption>{str(d.caption)}</figcaption>}</figure>;
     }
     case 'imageText':
       return (
         <div className={`bk-it${str(d.side) === 'left' ? ' left' : ''}`}>
           <div>{H}<div className="prose prose-lite" dangerouslySetInnerHTML={{ __html: md(str(d.body)) }} /><Buttons b1={d.b1} locale={locale} /></div>
-          <div>{str(d.image) ? <img src={str(d.image)} alt={str(d.alt) || title} loading="lazy" className="bk-img" /> : <div className="bk-ph"><Icon name="image" /> Add an image</div>}</div>
+          <div>{str(d.image) ? <img decoding="async" src={str(d.image)} alt={str(d.alt) || title} loading="lazy" className="bk-img" /> : <div className="bk-ph"><Icon name="image" /> Add an image</div>}</div>
         </div>
       );
     case 'cards':
@@ -66,7 +66,7 @@ function Inner({ b, locale, i, reviews }: { b: Block; locale: Locale; i: number;
           {H}{str(d.intro) && <p className="intro">{str(d.intro)}</p>}
           <div className={`bk-cards c${str(d.cols) || '3'}`}>
             {arr(d.items).map((c, k) => {
-              const inner = (<>{c.image ? <img src={c.image} alt={c.title} loading="lazy" className="bk-card-img" /> : <span className="ico"><Icon name={c.icon || 'star'} /></span>}<h3>{c.title}</h3>{c.text && <p>{c.text}</p>}{c.href && <span className="go">Learn more →</span>}</>);
+              const inner = (<>{c.image ? <img decoding="async" src={c.image} alt={c.title} loading="lazy" className="bk-card-img" /> : <span className="ico"><Icon name={c.icon || 'star'} /></span>}<h3>{c.title}</h3>{c.text && <p>{c.text}</p>}{c.href && <span className="go">Learn more →</span>}</>);
               return c.href ? <L key={k} locale={locale} href={c.href} className="card glass bk-card">{inner}</L> : <div key={k} className="card glass bk-card">{inner}</div>;
             })}
           </div>
@@ -86,7 +86,7 @@ function Inner({ b, locale, i, reviews }: { b: Block; locale: Locale; i: number;
       return <>{H}<div className="bk-video">{yt ? <iframe src={yt} title={title || 'Video'} loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture" allowFullScreen /> : url ? <video src={url} controls preload="metadata" /> : <div className="bk-ph"><Icon name="video" /> Add a YouTube or MP4 link</div>}</div></>;
     }
     case 'gallery':
-      return <>{H}<div className="bk-gallery">{arr(d.images).filter((g) => g.src).map((g, k) => <img key={k} src={g.src} alt={g.alt || ''} loading="lazy" />)}</div></>;
+      return <>{H}<div className="bk-gallery">{arr(d.images).filter((g) => g.src).map((g, k) => <img decoding="async" key={k} src={g.src} alt={g.alt || ''} loading="lazy" />)}</div></>;
     case 'testimonials':
       return reviews.length ? (
         <>{H}<div className="bk-reviews">{reviews.slice(0, 6).map((r, k) => <figure key={k}><div className="stars">{'★'.repeat(r.rating)}</div><blockquote>{r.text}</blockquote><figcaption><b>{r.name}</b>{r.country && ` · ${r.country}`}</figcaption></figure>)}</div></>

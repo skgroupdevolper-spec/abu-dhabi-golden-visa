@@ -30,7 +30,7 @@ export default async function Home() {
             <p className="eyebrow">{t.myFiles}</p>
             <h1 style={{ marginTop: 8 }}>{t.hello} {me.name.split(' ')[0]}, <span className="gold">{t.yourFile}.</span></h1>
           </div>
-          <img className="coinb" src="/brand/coin.webp" alt="" width={120} height={120} />
+          <img decoding="async" className="coinb" src="/brand/coin.webp" alt="" width={120} height={120} />
         </section>
         <div className="cols" style={{ marginTop: 18 }}>
           <div className="stack">

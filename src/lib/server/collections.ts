@@ -42,7 +42,7 @@ export type Customer = { id: string; name: string; email: string; phone: string;
 export type Subscriber = { id: string; email: string; lang: string; at: string };
 
 /* ---------- notifications ---------- */
-export type Note = { id: string; at: string; kind: 'lead' | 'message' | 'upload' | 'quote' | 'customer' | 'request' | 'whatsapp' | 'chat'; text: string; href: string; read: boolean };
+export type Note = { id: string; at: string; kind: 'lead' | 'message' | 'upload' | 'quote' | 'customer' | 'request' | 'whatsapp' | 'chat' | 'booking'; text: string; href: string; read: boolean };
 export function notify(kind: Note['kind'], text: string, href: string) {
   return insert<Note>('notifications', { id: newId(6), at: now(), kind, text: text.slice(0, 200), href, read: false }, 500);
 }

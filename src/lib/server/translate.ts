@@ -28,7 +28,9 @@ function restore(orig: unknown, tr: unknown): unknown {
   return typeof orig === 'string' && typeof tr === 'string' && tr.trim() ? tr : orig;
 }
 
-async function allPages(): Promise<Page[]> {
+export async function findPage(path: string) { return (await allPages()).find((p) => p.path === path); }
+
+export async function allPages(): Promise<Page[]> {
   const over = await getOverrides();
   const customs = (await getCustomPages()).filter((c) => !c.hidden);
   const home: Page[] = over['/']?.blocks?.length ? [{ path: '/', seoTitle: over['/'].seoTitle || 'Abu Dhabi Golden Visa', meta: over['/'].meta || '', eyebrow: 'Home', h1: 'Home', intro: '', sections: [] }] : [];
