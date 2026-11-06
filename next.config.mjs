@@ -13,12 +13,21 @@ const nextConfig = {
   },
   // Familiar client addresses (as in Odoo-style portals): /web/login and /my open the customer dashboard.
   async redirects() {
+    const ph = process.env.PORTAL_HOST;
+    const main = ph ? { missing: [{ type: 'host', value: ph }] } : {};
+    const app = ph ? [
+      { source: '/web/login', destination: '/login/', permanent: false, has: [{ type: 'host', value: ph }] },
+      { source: '/web', destination: '/login/', permanent: false, has: [{ type: 'host', value: ph }] },
+      { source: '/my', destination: '/', permanent: false, has: [{ type: 'host', value: ph }] },
+      { source: '/my/:path*', destination: '/', permanent: false, has: [{ type: 'host', value: ph }] },
+    ] : [];
     return [
-      { source: '/web/login', destination: '/portal/login/', permanent: false },
-      { source: '/web', destination: '/portal/login/', permanent: false },
-      { source: '/my', destination: '/portal/', permanent: false },
-      { source: '/my/:path*', destination: '/portal/', permanent: false },
-      { source: '/login', destination: '/portal/login/', permanent: false },
+      ...app,
+      { source: '/web/login', destination: '/portal/login/', permanent: false, ...main },
+      { source: '/web', destination: '/portal/login/', permanent: false, ...main },
+      { source: '/my', destination: '/portal/', permanent: false, ...main },
+      { source: '/my/:path*', destination: '/portal/', permanent: false, ...main },
+      { source: '/login', destination: '/portal/login/', permanent: false, ...main },
     ];
   },
   async headers() {
