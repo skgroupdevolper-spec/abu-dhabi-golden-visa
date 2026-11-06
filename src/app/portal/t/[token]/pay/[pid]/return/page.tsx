@@ -13,7 +13,7 @@ export default async function PayReturn({ params, searchParams }: { params: Prom
   if (!hit) notFound();
   const { a, p } = hit;
   return (
-    <PayConfirm token={token} pid={pid} sid={sp.sid || sp.session_id || ''} ref={sp.ref || ''} failed={!!sp.failed}
+    <PayConfirm token={token} pid={pid} sid={sp.sid || sp.session_id || ''} gwRef={sp.ref || ''} failed={!!sp.failed}
       initial={p.status === 'paid' ? 'paid' : 'pending'} customer={a.client.name} amount={p.amount} label={p.label} appRef={a.ref}
       receipt={p.receiptNo} paidAt={p.paidAt} reference={p.gw?.ref || `${a.ref}-${p.id}`} />
   );

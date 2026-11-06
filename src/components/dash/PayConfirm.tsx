@@ -3,7 +3,7 @@
 // "Confirming your payment" → "Payment received": checks the provider every 2 seconds until confirmed.
 import { useEffect, useState } from 'react';
 
-type P = { token: string; pid: string; sid: string; ref: string; failed: boolean; initial: 'paid' | 'pending'; customer: string; amount: number; label: string; appRef: string; receipt?: string; paidAt?: string; reference: string };
+type P = { token: string; pid: string; sid: string; gwRef: string; failed: boolean; initial: 'paid' | 'pending'; customer: string; amount: number; label: string; appRef: string; receipt?: string; paidAt?: string; reference: string };
 const fmt = (iso?: string) => new Date(iso || Date.now()).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Dubai' });
 
 export function PayConfirm(p: P) {
@@ -16,7 +16,7 @@ export function PayConfirm(p: P) {
       if (stop) return;
       n++;
       try {
-        const r = await fetch(`/api/pay/status/?token=${encodeURIComponent(p.token)}&pid=${encodeURIComponent(p.pid)}&sid=${encodeURIComponent(p.sid)}&ref=${encodeURIComponent(p.ref)}`, { cache: 'no-store' });
+        const r = await fetch(`/api/pay/status/?token=${encodeURIComponent(p.token)}&pid=${encodeURIComponent(p.pid)}&sid=${encodeURIComponent(p.sid)}&ref=${encodeURIComponent(p.gwRef)}`, { cache: 'no-store' });
         const j = await r.json();
         if (j.state === 'paid') { setRc({ receipt: j.receipt, at: j.at }); setState('paid'); return; }
         if (j.state === 'failed') { setState('failed'); return; }
@@ -26,7 +26,7 @@ export function PayConfirm(p: P) {
     };
     void tick();
     return () => { stop = true; };
-  }, [state, p.token, p.pid, p.sid, p.ref]);
+  }, [state, p.token, p.pid, p.sid, p.gwRef]);
 
   const paid = state === 'paid';
   return (

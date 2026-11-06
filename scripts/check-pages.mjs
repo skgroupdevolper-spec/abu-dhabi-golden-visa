@@ -80,6 +80,8 @@ for (const vp of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
   await page.goto(base + `/portal/t/${T}/pay/p1/return/`);
   await page.waitForTimeout(1200);
   await page.screenshot({ path: `shots/pay-return-${vp.width}.jpg`, fullPage: true });
+  if (await page.locator('text=Application error').count()) throw new Error('Payment confirmation page failed');
+  if (!(await page.locator('text=Payment received').count())) throw new Error('Payment confirmation page did not show the paid state');
   { const r = await page.request.get(base + `/portal/t/${T}/receipt/p1/pdf/`); if (r.status() !== 200 || !(r.headers()['content-type'] || '').includes('pdf')) throw new Error('Receipt PDF failed ' + r.status()); }
   { const r = await page.request.get(base + `/api/portal/pulse/?token=${T}`); if (r.status() !== 200) throw new Error('Pulse failed'); }
   await page.goto(base + '/portal/login/');

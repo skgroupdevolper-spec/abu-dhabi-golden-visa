@@ -81,7 +81,7 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
         <div className="cols">
           <div className="stack">
             <section className="panel reveal odetails">
-              <h2>ⓘ {t.orderDetails}</h2>
+              <h2>{t.orderDetails}</h2>
               <dl className="ogrid">
                 <div><dt>{t.orderNo}</dt><dd>{a.ref}</dd></div><div><dt>{t.orderDate}</dt><dd>{fmtD(a.createdAt)}</dd></div>
                 <div><dt>{t.customer}</dt><dd>{a.client.name}</dd></div><div><dt>{t.status}</dt><dd className={`stc st-${stKey}`}>{st}</dd></div>
