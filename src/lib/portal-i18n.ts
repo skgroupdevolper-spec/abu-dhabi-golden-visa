@@ -25,6 +25,16 @@ export const EN = {
   wrongLogin: 'Email or password is not correct.', exists: 'An account with this email already exists. Please sign in.', weak: 'Use at least 8 characters.', invalid: 'Please check the details.',
   codeSent: 'If the account exists, we sent a code to its WhatsApp or email.', badCode: 'The code is not correct or has expired.', passwordChanged: 'Password changed. Please sign in.', tooMany: 'Too many attempts. Please try again later.',
   open: 'Open', received: 'Received', inProgress: 'In progress', back: 'Back',
+  orderLabel: 'Golden Visa file', stPreparing: 'Preparing quote', stQuotation: 'Quotation', stConfirmed: 'Confirmed', stCompleted: 'Completed',
+  totalAmount: 'Total amount', amountDue: 'Amount due', paidSoFar: 'Paid', downloadPdf: 'Download PDF', requestAnother: 'Request another service',
+  readyToProceed: 'Ready to proceed?', payIntro: 'Pay securely by card to confirm. Your receipt arrives on WhatsApp straight away.', payConfirm: 'Pay & confirm',
+  payCancelled: 'Payment cancelled. No money was taken.', payError: 'We could not open the payment page. Please try again or contact your advisor.',
+  orderDetails: 'Order details', orderNo: 'Order #', orderDate: 'Order date', customer: 'Customer', validUntil: 'Valid until', items: 'Order items',
+  description: 'Description', amount: 'Amount', subtotal: 'Subtotal', terms: 'Terms & conditions',
+  termsText: 'Government fees are passed on at cost and can change; we confirm any change before you pay. Our service fee covers advice, document checks, filing and follow-up. Approval and timelines are decided by the UAE authorities. Refunds of the service fee follow our refund policy.',
+  yourContact: 'Your contact', quickActions: 'Quick actions', allOrders: 'All orders', statement: 'Account statement', servicesInOrder: 'Services in this order',
+  trackProgress: 'Track every step of your file, live.', finalFiles: 'Final documents will be available here', unlockAfterPay: 'Pay your invoice to unlock the final documents for this file.',
+  live: 'Live', updatedAt: 'updated', communication: 'Communication', balance: 'Balance', date: 'Date', print: 'Print / Save as PDF', statementIntro: 'All quotes, payments and receipts across your files.',
   stages: ['Enquiry received', 'Eligibility confirmed', 'Quote accepted and paid', 'Documents and attestation', 'Nomination or valuation certificate', 'Application submitted', 'Entry permit or change of status', 'Medical and biometrics', 'Emirates ID and residence issued'],
 };
 

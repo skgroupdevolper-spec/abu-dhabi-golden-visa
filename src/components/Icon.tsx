@@ -22,6 +22,7 @@ const PATHS: Record<string, string> = {
   plane: 'M2.5 13.5l19-7.5-4.5 13-5.5-4.5-4 3v-5z',
   clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2',
   calendar: 'M4 6h16v15H4zM4 10h16M8 3v5M16 3v5',
+  card: 'M3 6h18v12H3zM3 10h18M7 15h4',
   mail: 'M3 6h18v12H3zM3 7l9 6 9-6',
   phone: 'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z',
   grid: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',

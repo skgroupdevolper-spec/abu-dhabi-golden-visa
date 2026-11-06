@@ -15,7 +15,7 @@ export type Lead = {
 };
 
 export type QuoteLine = { label: string; amount: number };
-export type Payment = { id: string; label: string; amount: number; status: 'due' | 'paid'; link: string; createdAt: string; paidAt?: string; method?: string; receiptNo?: string };
+export type Payment = { id: string; label: string; amount: number; status: 'due' | 'paid'; link: string; createdAt: string; paidAt?: string; method?: string; receiptNo?: string; txn?: string; gw?: { provider: string; id: string; at: string; ref: string }; tries?: number };
 export type Doc = { id: string; name: string; file: string; size: number; type: string; by: 'client' | 'team'; at: string; shared: boolean };
 export type Message = { id: string; by: 'client' | 'team'; text: string; at: string; read?: boolean };
 
@@ -26,6 +26,8 @@ export type Application = {
   stage: number; stageDates: Record<string, string>; nextStep: string; expected: string; notes: string;
   quote: { lines: QuoteLine[]; serviceFee: number; vat: number; insurance: string; sentAt?: string; acceptedAt?: string };
   payments: Payment[]; documents: Doc[]; requests: string[]; messages: Message[]; leadId?: string;
+  /** Advisor shown to the client, terms and quote validity. */
+  advisor?: { name: string; phone: string }; validUntil?: string; confirmedAt?: string;
 };
 
 export type Fees = typeof FEE_SCHEDULE;

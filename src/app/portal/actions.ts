@@ -155,6 +155,11 @@ export async function acceptQuote(f: FormData) {
     x.messages.push({ id: newId(6), by: 'client', at: now(), text: 'I accept the quote.' });
   });
   await notify('quote', `${a.client.name} accepted the quote (${a.ref})`, `/admin/applications/${a.id}/#quote`);
+  const total = a.quote.lines.reduce((s, l) => s + l.amount, 0) + a.quote.serviceFee + a.quote.vat;
+  const { sendWa } = await import('@/lib/server/whatsapp');
+  const { portalUrl } = await import('@/lib/site');
+  await sendWa(a.client.phone, 'confirmed', { name: a.client.name, ref: a.ref, route: a.route, total: `AED ${total.toFixed(2)}`, date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), link: portalUrl(a.token) }).catch(() => {});
+  await updateApplication(a.id, (x) => { x.confirmedAt = now(); });
   refresh(a.token);
 }
 

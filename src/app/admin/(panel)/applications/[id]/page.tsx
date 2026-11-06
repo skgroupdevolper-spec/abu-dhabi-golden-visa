@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import { ActionForm, CopyButton, Submit } from '@/components/dash/ActionForm';
 import { sizeLabel } from '@/lib/server/files';
 import { getApplication } from '@/lib/server/store';
+import { list, type TeamUser } from '@/lib/server/collections';
+import { setAdvisor } from '../../../settings-actions';
 import { portalUrl, waTo } from '@/lib/site';
 import { ROUTE_LABELS, STAGES, day, money, when } from '@/lib/stages';
 import {
@@ -22,6 +24,7 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
   const blanks = Math.max(3, 8 - a.quote.lines.length);
   const H = <input type="hidden" name="app" value={a.id} />;
   const first = a.client.name.split(' ')[0];
+  const team = await list<TeamUser>('team');
 
   return (
     <>
@@ -92,8 +95,17 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
           </section>
 
           {/* PAYMENTS */}
+          <section className="panel" id="advisor">
+            <div className="panel-h"><h2>Client order page</h2><a className="btn btn-sm" href={link} target="_blank" rel="noopener">View as client ↗</a></div>
+            <form action={setAdvisor} className="form">{H}
+              <div className="field"><label htmlFor="adv">Your contact (advisor shown to the client)</label><input id="adv" name="name" list="team-names" defaultValue={a.advisor?.name ?? ''} placeholder="e.g. Sara Ahmed" /><datalist id="team-names">{team.map((u) => <option key={u.id} value={u.name} />)}</datalist></div>
+              <div className="field"><label htmlFor="advp">Advisor phone / WhatsApp</label><input id="advp" name="phone" defaultValue={a.advisor?.phone ?? ''} placeholder="+971…" /></div>
+              <div className="field"><label htmlFor="vu">Quote valid until</label><input id="vu" name="validUntil" type="date" defaultValue={a.validUntil ?? ''} /></div>
+              <div className="field" style={{ alignSelf: 'end' }}><button className="btn btn-gold" type="submit">Save</button></div>
+            </form>
+          </section>
           <section className="panel" id="payments">
-            <div className="panel-h"><h2>Payments</h2></div>
+            <div className="panel-h"><h2>Payments</h2><Link className="btn btn-sm" href="/admin/payments/">Online payment settings</Link></div>
             {a.payments.length === 0 ? <p className="empty">No payment requests yet.</p> : (
               <div className="files">
                 {a.payments.map((p) => (
@@ -101,8 +113,10 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
                     <span className="fi">AED</span>
                     <span className="fn"><b>{p.label}</b><small>{money(p.amount)} · {p.status === 'paid' ? `Paid ${day(p.paidAt)} · ${p.method} · ${p.receiptNo}` : `Requested ${day(p.createdAt)}`}{p.link && p.status === 'due' ? ' · payment link set' : ''}</small></span>
                     <span className={`pill ${p.status}`}>{p.status}</span>
+                    {p.status === 'paid' && <a className="btn btn-sm" href={`${link}receipt/${p.id}/pdf/`} target="_blank" rel="noopener">Receipt PDF</a>}
                     {p.status === 'due' && (
                       <>
+                        <CopyButton text={`${link}pay/${p.id}/`} label="Copy pay link" />
                         <form action={markPaid} className="row">{H}<input type="hidden" name="pid" value={p.id} /><select name="method" style={{ width: 120, minHeight: 34 }}><option>Card</option><option>Bank transfer</option><option>Cash</option></select><button className="btn btn-sm btn-gold" type="submit">Mark paid</button></form>
                         <form action={removePayment}>{H}<input type="hidden" name="pid" value={p.id} /><button className="btn btn-sm btn-ghost btn-danger" type="submit" aria-label="Remove request">✕</button></form>
                       </>

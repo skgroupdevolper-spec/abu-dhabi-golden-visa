@@ -5,7 +5,7 @@ import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from 'pdf
 import { SITE } from '@/lib/site';
 
 export type QuotePdf = {
-  title?: string; name?: string; ref?: string; desc: string; lines: [string, string][]; total: string; converted?: string | null;
+  title?: string; label?: string; name?: string; ref?: string; desc: string; lines: [string, string][]; total: string; converted?: string | null;
   checklist?: string[]; timeline?: string[]; date: string; assumptions?: string[];
 };
 
@@ -41,7 +41,8 @@ export async function quotePdf(q: QuotePdf): Promise<Uint8Array> {
     const h = 40, w = (logo.width / logo.height) * h;
     page.drawImage(logo, { x: M, y: y - h, width: w, height: h });
   } catch {}
-  page.drawText('QUOTATION', { x: W - M - bold.widthOfTextAtSize('QUOTATION', 11), y: y - 14, size: 11, font: bold, color: GOLD });
+  const LBL = t(q.label ?? 'QUOTATION');
+  page.drawText(LBL, { x: W - M - bold.widthOfTextAtSize(LBL, 11), y: y - 14, size: 11, font: bold, color: GOLD });
   page.drawText(t(new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })), { x: W - M - 120, y: y - 30, size: 9, font: reg, color: SOFT });
   y -= 70;
 

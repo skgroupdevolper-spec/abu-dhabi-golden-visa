@@ -11,6 +11,7 @@ export const ADMIN_MENU: { title: string; items: Item[] }[] = [
     { href: '/admin/applications/', label: 'Applications', ic: 'folder', badge: 'unread' },
     { href: '/admin/customers/', label: 'Customers', ic: 'users' },
     { href: '/admin/bookings/', label: 'Appointments', ic: 'calendar' },
+    { href: '/admin/payments/', label: 'Online payments', ic: 'card' },
     { href: '/admin/whatsapp/', label: 'WhatsApp', ic: 'wa', roles: FULL },
     { href: '/admin/chatbot/', label: 'AI chatbot', ic: 'spark' },
   ] },

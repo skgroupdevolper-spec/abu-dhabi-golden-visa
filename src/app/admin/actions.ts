@@ -155,27 +155,22 @@ export async function saveQuote(_: FormState, f: FormData): Promise<FormState> {
 export async function addPayment(_: FormState, f: FormData): Promise<FormState> {
   const amount = n(f, 'amount');
   if (!s(f, 'label') || amount <= 0) return { error: 'Add a description and an amount.' };
+  const pid = newId(6);
   const app = await edit(f, (a) => {
-    a.payments.push({ id: newId(6), label: s(f, 'label', 140), amount, status: 'due', link: s(f, 'link', 600), createdAt: now() });
-    a.messages.push({ id: newId(6), by: 'team', at: now(), text: `Payment request: ${s(f, 'label', 140)} (AED ${amount.toFixed(2)}). You can pay from your portal.` });
+    a.payments.push({ id: pid, label: s(f, 'label', 140), amount, status: 'due', link: s(f, 'link', 600), createdAt: now() });
+    a.messages.push({ id: newId(6), by: 'team', at: now(), text: `💳 Payment request: ${s(f, 'label', 140)} (AED ${amount.toFixed(2)}). Press “Pay now” to pay securely by card.` });
   });
-  if (app) await sendWa(app.client.phone, 'payment', V(app, { item: s(f, 'label', 140), amount: money(amount), link: s(f, 'link', 600) || portalUrl(app.token) }));
+  const { getPayCfg, online } = await import('@/lib/server/payments');
+  const live = online(await getPayCfg());
+  if (app) await sendWa(app.client.phone, 'payment', V(app, { item: s(f, 'label', 140), amount: money(amount), link: live || s(f, 'link', 600) ? `${portalUrl(app.token)}pay/${pid}/` : portalUrl(app.token) }));
   return { ok: 'Payment request added.' };
 }
 
 export async function markPaid(f: FormData) {
-  const app = await edit(f, (a) => {
-    const p = a.payments.find((x) => x.id === s(f, 'pid', 40));
-    if (!p) return;
-    const count = a.payments.filter((x) => x.receiptNo).length + 1;
-    p.status = 'paid';
-    p.paidAt = now();
-    p.method = s(f, 'method', 40) || 'Card';
-    p.receiptNo = `${a.ref}-R${count}`;
-    a.messages.push({ id: newId(6), by: 'team', at: now(), text: `Payment received: ${p.label}. Your receipt ${p.receiptNo} is in your portal.` });
-  });
-  const p = app?.payments.find((x) => x.id === s(f, 'pid', 40));
-  if (app && p) await sendWa(app.client.phone, 'paid', V(app, { item: p.label, amount: money(p.amount), receipt: p.receiptNo }));
+  await requireAdmin();
+  const { settle } = await import('@/lib/server/payments');
+  await settle(s(f, 'app', 40), s(f, 'pid', 40), s(f, 'method', 40) || 'Card', s(f, 'txn', 80));
+  revalidatePath(`/admin/applications/${s(f, 'app', 40)}/`);
 }
 export async function removePayment(f: FormData) {
   await edit(f, (a) => { a.payments = a.payments.filter((x) => x.id !== s(f, 'pid', 40) || x.status === 'paid'); });

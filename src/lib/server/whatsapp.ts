@@ -50,3 +50,23 @@ export async function sendTeam(event: WaEvent, vars: Record<string, string | num
   const nums = w.teamNumbers.split(/[,\n]/).map((x) => x.trim()).filter(Boolean);
   return Promise.all(nums.map((n) => sendWa(n, event, vars)));
 }
+
+/** Sends a PDF (or other file) by link with a caption, e.g. the payment receipt. Cloud API only. */
+export async function sendWaDoc(to: string, link: string, filename: string, caption: string) {
+  const w = (await getSecrets()).whatsapp;
+  const number = digits(to);
+  if (!number || number.length < 8) return { ok: false, error: 'No valid number' };
+  if (w.mode !== 'cloud' || !w.phoneNumberId || !w.accessToken) return { ok: false, error: 'WhatsApp Cloud API is not connected (link mode)' };
+  let ok = false, error = '';
+  try {
+    const r = await fetch(`${GRAPH}/${encodeURIComponent(w.phoneNumberId)}/messages`, {
+      method: 'POST', headers: { Authorization: `Bearer ${w.accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messaging_product: 'whatsapp', to: number, type: 'document', document: { link, filename, caption: caption.slice(0, 1000) } }),
+      signal: AbortSignal.timeout(20000),
+    });
+    const j = await r.json().catch(() => ({}));
+    ok = r.ok; if (!r.ok) error = j?.error?.message || `HTTP ${r.status}`;
+  } catch (e) { error = (e as Error).message; }
+  await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: number, event: 'paid', text: `[PDF] ${filename} · ${caption}`.slice(0, 500), ok, error: error || undefined, dir: 'out' }, 2000);
+  return { ok, error };
+}

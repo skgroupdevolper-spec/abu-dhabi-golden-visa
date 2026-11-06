@@ -5,7 +5,7 @@ import { when } from '@/lib/stages';
 import { openNote, readAllNotes } from '../../settings-actions';
 
 export const metadata: Metadata = { title: 'Notifications' };
-const IC: Record<Note['kind'], string> = { lead: '✉', message: '✎', upload: '⇪', quote: '✓', customer: '☺', request: '◇', whatsapp: '✆', chat: '✦', booking: '◷' };
+const IC: Record<Note['kind'], string> = { lead: '✉', message: '✎', upload: '⇪', quote: '✓', customer: '☺', request: '◇', whatsapp: '✆', chat: '✦', booking: '◷', payment: '₳' };
 
 export default async function Notes() {
   await requireAdmin();

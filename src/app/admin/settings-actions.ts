@@ -288,3 +288,39 @@ export async function saveBookingCfg(_: St, f: FormData): Promise<St> {
   revalidatePath('/', 'layout');
   return { ok: 'Booking settings saved. The calendar on the website uses them now.' };
 }
+
+/* ---------- online payments ---------- */
+export async function savePayments(_: St, f: FormData): Promise<St> {
+  await requireAdmin(FULL);
+  const { getPayCfg, savePayCfg, PROVIDERS } = await import('@/lib/server/payments');
+  const cur = await getPayCfg();
+  const keep = (k: string, max = 400) => { const v = s(f, k, max); return v === '••••••••' ? undefined : v; };
+  const prov = s(f, 'provider', 20);
+  const next = { ...cur, provider: (PROVIDERS.some((p) => p.id === prov) ? prov : 'none') as typeof cur.provider, test: f.get('test') === 'on', currency: (s(f, 'currency', 3) || 'AED').toUpperCase(),
+    autoStage: f.get('autoStage') === 'on', receiptWa: f.get('receiptWa') === 'on', validDays: Math.max(1, Math.min(90, Number(s(f, 'validDays', 3)) || 7)), termsUrl: s(f, 'termsUrl', 300) || '/terms/',
+    totalpayHost: s(f, 'totalpayHost', 200) || cur.totalpayHost, ngeniusOutlet: s(f, 'ngeniusOutlet', 120), telrStore: s(f, 'telrStore', 40) };
+  for (const k of ['stripeSecret', 'stripeWebhook', 'ziinaToken', 'ngeniusKey', 'telrKey', 'totalpayKey', 'totalpayPass'] as const) { const v = keep(k, 600); if (v !== undefined) next[k] = v; }
+  await savePayCfg(next);
+  revalidatePath('/admin/payments/');
+  return { ok: 'Payment settings saved.' };
+}
+export async function testPayments(_: St): Promise<St> {
+  await requireAdmin(FULL);
+  const { getPayCfg, online, PROVIDERS } = await import('@/lib/server/payments');
+  const c = await getPayCfg();
+  if (!online(c)) return { error: 'Choose a provider and fill in its keys first.' };
+  try {
+    if (c.provider === 'stripe') { const r = await fetch('https://api.stripe.com/v1/balance', { headers: { Authorization: `Bearer ${c.stripeSecret}` } }); if (!r.ok) throw new Error(`Stripe answered ${r.status}`); }
+    else if (c.provider === 'ziina') { const r = await fetch('https://api-v2.ziina.com/api/account', { headers: { Authorization: `Bearer ${c.ziinaToken}` } }); if (r.status === 401) throw new Error('Ziina rejected the token'); }
+    else if (c.provider === 'ngenius') { const r = await fetch(`${c.test ? 'https://api-gateway.sandbox.ngenius-payments.com' : 'https://api-gateway.ngenius-payments.com'}/identity/auth/access-token`, { method: 'POST', headers: { Authorization: `Basic ${c.ngeniusKey}`, 'Content-Type': 'application/vnd.ni-identity.v1+json' } }); if (!r.ok) throw new Error(`N-Genius answered ${r.status}`); }
+    else return { ok: `${PROVIDERS.find((p) => p.id === c.provider)?.name} keys saved. Make a small test payment from a client file to confirm.` };
+    return { ok: 'Connected. Online payments are live.' };
+  } catch (e) { return { error: (e as Error).message }; }
+}
+export async function setAdvisor(f: FormData) {
+  await requireAdmin();
+  const { updateApplication } = await import('@/lib/server/store');
+  const name = s(f, 'name', 80), phone = s(f, 'phone', 30), valid = s(f, 'validUntil', 10);
+  await updateApplication(s(f, 'app', 40), (a) => { a.advisor = name ? { name, phone } : undefined; a.validUntil = /^\d{4}-\d{2}-\d{2}$/.test(valid) ? valid : undefined; });
+  revalidatePath(`/admin/applications/${s(f, 'app', 40)}/`);
+}

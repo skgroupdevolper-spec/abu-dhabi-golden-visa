@@ -66,7 +66,7 @@ for (const vp of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
   await page.screenshot({ path: `shots/admin-app-${vp.width}.jpg`, fullPage: true });
   await page.goto(base + '/admin/leads/');
   await page.screenshot({ path: `shots/admin-leads-${vp.width}.jpg`, fullPage: true });
-  for (const p of ['settings', 'whatsapp', 'users', 'chatbot', 'languages', 'autopublisher', 'posts', 'pages', 'services', 'media', 'notifications', 'design', 'seo', 'categories', 'posts/new', 'header', 'profile', 'languages/edit', 'fees', 'customers/?edit=new', 'bookings', 'bookings/?tab=settings', 'autopublisher/?tab=missions&edit=new', 'autopublisher/?tab=ai', 'autopublisher/?tab=quality', 'autopublisher/?tab=similarity', 'users/?edit=new', 'pages/edit/?path=%2F']) {
+  for (const p of ['settings', 'whatsapp', 'users', 'chatbot', 'languages', 'autopublisher', 'posts', 'pages', 'services', 'media', 'notifications', 'design', 'seo', 'categories', 'posts/new', 'header', 'profile', 'languages/edit', 'fees', 'customers/?edit=new', 'bookings', 'bookings/?tab=settings', 'autopublisher/?tab=missions&edit=new', 'autopublisher/?tab=ai', 'autopublisher/?tab=quality', 'autopublisher/?tab=similarity', 'users/?edit=new', 'pages/edit/?path=%2F', 'payments']) {
     await page.goto(base + `/admin/${p.includes('?') ? p : p + '/'}`);
     const bad = await page.locator('text=Application error').count();
     if (bad) throw new Error(`Admin page failed: ${p}`);
@@ -76,6 +76,12 @@ for (const vp of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
   await page.waitForTimeout(1200);
   await page.screenshot({ path: `shots/admin-builder-${vp.width}.jpg`, fullPage: true });
   if (vp.width > 1000) { await page.click('text=Add section at top'); await page.waitForTimeout(400); await page.screenshot({ path: 'shots/admin-builder-add.jpg' }); await page.keyboard.press('Escape'); }
+  // payment pages: confirmation (paid), receipt PDF and an open request
+  await page.goto(base + `/portal/t/${T}/pay/p1/return/`);
+  await page.waitForTimeout(1200);
+  await page.screenshot({ path: `shots/pay-return-${vp.width}.jpg`, fullPage: true });
+  { const r = await page.request.get(base + `/portal/t/${T}/receipt/p1/pdf/`); if (r.status() !== 200 || !(r.headers()['content-type'] || '').includes('pdf')) throw new Error('Receipt PDF failed ' + r.status()); }
+  { const r = await page.request.get(base + `/api/portal/pulse/?token=${T}`); if (r.status() !== 200) throw new Error('Pulse failed'); }
   await page.goto(base + '/portal/login/');
   await page.waitForTimeout(1500);
   await page.screenshot({ path: `shots/portal-login-${vp.width}.jpg`, fullPage: true });
