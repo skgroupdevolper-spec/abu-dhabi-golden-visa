@@ -726,3 +726,6 @@ body:has(.admin) { background: #f7f6f2; }
   .cale.k-paid { background: var(--ok); } .cale.k-due { background: #c2410c; }
   .fd-r b { display: none; }
 }
+.jrow > .si-chev { transform: rotate(-90deg); color: var(--gold-deep); flex: none; }
+[dir='rtl'] .jrow > .si-chev { transform: rotate(90deg); }
+.ftabs a, .stc-pill { text-transform: capitalize; }
