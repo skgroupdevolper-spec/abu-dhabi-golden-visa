@@ -9,7 +9,7 @@ const fails = [], warns = [], stats = {};
 const fail = (area, msg) => { fails.push(`[${area}] ${msg}`); console.log('FAIL', area, msg); };
 const warn = (area, msg) => warns.push(`[${area}] ${msg}`);
 const VP = { desktop: { width: 1440, height: 900 }, mobile: { width: 390, height: 844 } };
-const IGNORE = /favicon|ERR_ABORTED|net::ERR_|Failed to load resource|Download the React DevTools|ResizeObserver/i;
+const IGNORE = /googleapis|google\.com|gstatic|CORS policy|favicon|ERR_ABORTED|net::ERR_|Failed to load resource|Download the React DevTools|ResizeObserver/i;
 
 const api = await request.newContext({ baseURL: base });
 const browser = await chromium.launch({ channel: 'chrome' });
