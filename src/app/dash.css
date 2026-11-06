@@ -729,3 +729,5 @@ body:has(.admin) { background: #f7f6f2; }
 .jrow > .si-chev { transform: rotate(-90deg); color: var(--gold-deep); flex: none; }
 [dir='rtl'] .jrow > .si-chev { transform: rotate(90deg); }
 .ftabs a, .stc-pill { text-transform: capitalize; }
+/* long URLs and codes wrap on small screens */
+code.k { overflow-wrap: anywhere; word-break: break-all; }

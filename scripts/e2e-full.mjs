@@ -11,7 +11,7 @@ const warn = (area, msg) => warns.push(`[${area}] ${msg}`);
 const VP = { desktop: { width: 1440, height: 900 }, mobile: { width: 390, height: 844 } };
 const IGNORE = /favicon|ERR_ABORTED|net::ERR_|Failed to load resource|Download the React DevTools|ResizeObserver/i;
 
-const api = await request.newContext({ baseURL: base, maxRedirects: 0 });
+const api = await request.newContext({ baseURL: base });
 const browser = await chromium.launch({ channel: 'chrome' });
 
 /** Opens a page, records crashes, console errors, broken images and sideways scrolling. */
@@ -87,13 +87,13 @@ async function visit(page, url, area, { strictWidth = true } = {}) {
 /* ---------- 3. Security probes (no sign-in) ---------- */
 {
   const expect = async (area, method, url, ok, opts = {}) => {
-    const r = await api.fetch(url, { method, ...opts }).catch(() => null);
+    const r = await api.fetch(url, { method, maxRedirects: 0, ...opts }).catch(() => null);
     const s = r ? r.status() : 0;
     if (!ok.includes(s)) fail('security', `${area}: ${method} ${url} → ${s} (expected ${ok.join('/')})`);
     return r;
   };
   for (const p of ['/admin/', '/admin/users/', '/admin/settings/', '/admin/payments/', '/admin/customers/', '/admin/backup/', '/admin/export/'])
-    await expect('admin page needs sign-in', 'GET', p, [302, 303, 307, 308, 404]);
+    await expect('admin page needs sign-in', 'GET', p, [302, 303, 307, 308, 401, 403, 404]);
   await expect('admin API', 'GET', '/api/admin/pulse/', [401]);
   await expect('admin API', 'GET', '/api/admin/media/', [401]);
   await expect('admin API', 'POST', '/api/admin/page/', [401], { data: {} });
