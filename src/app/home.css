@@ -420,7 +420,7 @@
 .home .fb-photo figcaption{position:absolute;left:14px;bottom:14px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.9);font:700 13px var(--body);color:var(--ink)}
 [dir=rtl] .home .fb-photo figcaption{left:auto;right:14px}
 /* Dashboard preview: browser window whose screen scrolls by itself (GIF-like, but light) */
-.home .dashprev{margin:56px auto 0;max-width:980px;border-radius:22px;overflow:hidden;background:#0d0d0d;box-shadow:0 40px 90px -45px rgba(0,0,0,.55);border:1px solid rgba(212,175,55,.35)}
+.home .dashprev{position:relative;z-index:0;margin:110px auto 0;max-width:980px;border-radius:22px;overflow:hidden;background:#0d0d0d;box-shadow:0 40px 90px -45px rgba(0,0,0,.55);border:1px solid rgba(212,175,55,.35)}
 .home .dp-bar{display:flex;align-items:center;gap:7px;padding:11px 16px;background:#141414;color:#bfb6a0;font:600 12px var(--body)}
 .home .dp-bar i{width:10px;height:10px;border-radius:50%;background:#3a3a3a}
 .home .dp-bar i:first-child{background:#d4af37}
