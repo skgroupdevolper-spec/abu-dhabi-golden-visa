@@ -9,9 +9,10 @@ import { FaqTabs } from './FaqTabs';
 import { Icon } from './Icon';
 import { L } from './L';
 import { LeadForm } from './LeadForm';
+import { OfficeLive } from './OfficeLive';
 import { u } from '@/lib/ui';
 
-const mapSrc = () => `https://maps.google.com/maps?q=${encodeURIComponent(SITE.office || 'Business Bay, Dubai')}&z=15&output=embed`;
+const mapSrc = () => `https://maps.google.com/maps?q=${encodeURIComponent(/crystal tower/i.test(SITE.office) ? 'Crystal Tower Business Bay Dubai' : SITE.office || 'Business Bay, Dubai')}&z=16&output=embed`;
 const dirHref = () => SITE.mapsUrl || `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(SITE.office || 'Business Bay, Dubai')}`;
 
 const CONTACT_FAQ = [
@@ -24,7 +25,43 @@ const CONTACT_FAQ = [
   { cat: u('Visiting us'), q: u('Do I need an appointment to visit?'), a: u('Please book a time on this page so an advisor is free for you. Walk-ins are welcome during office hours when a team member is available.') },
   { cat: u('Visiting us'), q: u('What should I bring?'), a: u('Your passport, Emirates ID if you have one, and the documents for your route (for example title deed or salary certificate). Copies on your phone are fine for the first meeting.') },
   { cat: u('Visiting us'), q: u('How quickly do you reply on WhatsApp?'), a: u('Usually within minutes during office hours, and first thing the next working day outside them.') },
+  { cat: u('Visiting us'), q: u('Is there parking at the office?'), a: u('Yes. Crystal Tower has free visitor parking for our clients.') },
+  { cat: u('Visiting us'), q: u('Can someone visit on my behalf?'), a: u('Usually yes. Send us a WhatsApp message first so we can tell you what they need to bring for your service.') },
+  { cat: u('Visiting us'), q: u('Do I have to come to the office at all?'), a: u('No. A visit is optional; most clients finish everything by WhatsApp, phone or video call.') },
 ];
+
+const SOC: [keyof typeof SITE.social, string, string][] = [['facebook', 'facebook', 'Facebook'], ['instagram', 'instagram', 'Instagram'], ['linkedin', 'linkedin', 'LinkedIn'], ['youtube', 'youtube', 'YouTube'], ['tiktok', 'tiktok', 'TikTok'], ['x', 'x', 'X']];
+function Socials() {
+  const list = SOC.filter(([k]) => SITE.social?.[k]);
+  if (!list.length) return null;
+  return <div className="cp-soc">{list.map(([k, , l]) => <a key={k} href={SITE.social[k]} target="_blank" rel="noopener" aria-label={l}>{l}</a>)}</div>;
+}
+
+/** "Visit us" block with the live office status: used at the top of Contact and in About. */
+function VisitBlock({ locale, title }: { locale: Locale; title: string }) {
+  return (
+    <section className="block cp-visit" data-reveal>
+      <div className="cp-visit-l">
+        <p className="eyebrow">{u('Our office', locale)}</p>
+        <h2>{u(title, locale)}</h2>
+        <dl className="cp-dl">
+          <div><dt>{u('Address', locale)}</dt><dd>{SITE.office}</dd></div>
+          {SITE.poBox && <div><dt>{u('PO Box', locale)}</dt><dd>{SITE.poBox}</dd></div>}
+          <div><dt>{u('Opening hours', locale)}</dt><dd>{SITE.hours}</dd></div>
+          <div><dt>{u('Phone & WhatsApp', locale)}</dt><dd dir="ltr" style={{ unicodeBidi: 'plaintext' }}>{SITE.whatsappDisplay}</dd></div>
+          <div><dt>{u('Email', locale)}</dt><dd><a href={`mailto:${SITE.email}`}>{SITE.email}</a></dd></div>
+        </dl>
+        <div className="cta">
+          <a className="btn btn-gold" href={dirHref()} target="_blank" rel="noopener"><Icon name="pin" size={18} /> {u('Get directions', locale)}</a>
+          <a className="btn btn-glass" href={`tel:${SITE.phone}`}><Icon name="phone" size={18} /> {u('Call', locale)}</a>
+          <a className="btn btn-glass" href={waLink('Hello, I would like to visit your office.')} target="_blank" rel="noopener"><Icon name="wa" size={18} /> WhatsApp</a>
+        </div>
+        <Socials />
+      </div>
+      <OfficeLive locale={locale} />
+    </section>
+  );
+}
 
 function OfficeMap() {
   return (
@@ -43,6 +80,7 @@ export function ContactHub({ locale }: { locale: Locale }) {
   ];
   return (
     <>
+      <VisitBlock locale={locale} title={u('Visit us in Business Bay, Dubai')} />
       <section className="block cp-cards" data-reveal>
         <div className="bh"><h2>{u('More ways to reach us', locale)}</h2></div>
         <div className="cp-grid4">
@@ -96,9 +134,9 @@ export function ContactHub({ locale }: { locale: Locale }) {
             <div><dt>{u('Opening hours', locale)}</dt><dd>{SITE.hours}</dd></div>
           </dl>
           <ul className="cp-travel">
-            <li><Icon name="plane" size={18} /> <span><b>{u('By metro', locale)}</b> {u('Business Bay station, then a short taxi or walk.', locale)}</span></li>
-            <li><Icon name="home" size={18} /> <span><b>{u('By car', locale)}</b> {u('Visitor parking in and around the building.', locale)}</span></li>
-            <li><Icon name="pin" size={18} /> <span><b>{u('Taxi or ride-hailing', locale)}</b> {u('Drop-off at the building entrance.', locale)}</span></li>
+            <li><Icon name="plane" size={18} /> <span><b>{u('By metro', locale)}</b> {u('From Business Bay metro station take bus F14 towards Bay Square, get off near Empire Heights or Bay Square, then walk 2 to 3 minutes.', locale)}</span></li>
+            <li><Icon name="home" size={18} /> <span><b>{u('By car', locale)}</b> {u('Free visitor parking at Crystal Tower.', locale)}</span></li>
+            <li><Icon name="pin" size={18} /> <span><b>{u('Taxi, Uber or Careem', locale)}</b> {u('Set the destination to “Brightlink Management Consultancy, Crystal Tower”.', locale)}</span></li>
           </ul>
           <div className="cta"><a className="btn btn-gold" href={dirHref()} target="_blank" rel="noopener"><Icon name="pin" size={18} /> {u('Get directions', locale)}</a><a className="btn btn-glass" href="#book">{u('Book a visit', locale)}</a></div>
         </div>
@@ -153,6 +191,19 @@ export function AboutHub({ locale }: { locale: Locale }) {
         </div>
       </section>
 
+      {SITE.founder?.name && (
+        <section className="block cp-founder" data-reveal>
+          <div className="cp-f-badge" aria-hidden="true">{SITE.founder.name.split(' ').map((w) => w[0]).slice(0, 2).join('')}</div>
+          <div>
+            <p className="eyebrow">{u('Meet the founder', locale)}</p>
+            <h2>{SITE.founder.name}</h2>
+            <p className="muted" style={{ marginTop: 4 }}>{SITE.founder.title}</p>
+            {SITE.founder.quote && <blockquote>“{SITE.founder.quote}”</blockquote>}
+            {SITE.founder.linkedin && <a className="btn btn-glass" href={SITE.founder.linkedin} target="_blank" rel="noopener">LinkedIn</a>}
+          </div>
+        </section>
+      )}
+
       <section className="block cp-licence" data-reveal>
         <div>
           <p className="eyebrow">{u('Licensed operator', locale)}</p>
@@ -164,11 +215,26 @@ export function AboutHub({ locale }: { locale: Locale }) {
           <dl className="cp-dl">
             <div><dt>{u('Operator', locale)}</dt><dd>{SITE.operator}</dd></div>
             <div><dt>{u('Trade licence no.', locale)}</dt><dd>{SITE.licence}</dd></div>
+            {SITE.licenceIssuer && <div><dt>{u('Issued by', locale)}</dt><dd>{SITE.licenceIssuer}</dd></div>}
+            {SITE.registered && <div><dt>{u('Registered on', locale)}</dt><dd>{new Date(`${SITE.registered}T00:00:00Z`).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'UTC' })}</dd></div>}
+            {SITE.legalType && <div><dt>{u('Legal type', locale)}</dt><dd>{SITE.legalType}</dd></div>}
             <div><dt>{u('Office', locale)}</dt><dd>{SITE.office}</dd></div>
             <div><dt>{u('Brand', locale)}</dt><dd>{SITE.name}</dd></div>
           </dl>
+          {SITE.registered && <p className="cp-days"><b>{Math.max(0, Math.floor((Date.now() - Date.parse(`${SITE.registered}T00:00:00+04:00`)) / 864e5)).toLocaleString('en-US')}</b> {u('days licensed and active', locale)}</p>}
+          {SITE.activities && <><p className="small" style={{ margin: '10px 0 6px', fontWeight: 700 }}>{u('Approved activities', locale)}</p><ul className="ticks small">{SITE.activities.split('\n').filter(Boolean).map((a) => <li key={a}>{u(a.trim(), locale)}</li>)}</ul></>}
           <p className="small muted">{u('Visa issuance and eligibility are decided by the competent UAE authorities.', locale)}</p>
         </div>
+      </section>
+
+      <section className="block cp-zones" data-reveal>
+        <div className="bh"><h2>{u('Also from Brightlink: company setup', locale)}</h2><p>{u('Need a company for your residency? We also set up businesses in these free zones.', locale)}</p></div>
+        <div className="cp-zgrid">
+          {[['Abu Dhabi', ['KIZAD']], ['Dubai', ['Dubai CommerCity', 'DMCC', 'Dubai South', 'DWTC', 'DUQE', 'DWC', 'IFZA', 'Meydan']], ['Ras Al Khaimah', ['RAKEZ']], ['Sharjah', ['Hamriyah Free Zone']], ['Umm Al Quwain', ['UAQ Free Trade Zone']]].map(([em, zs]) => (
+            <div key={em as string} className="card cp-zone"><small>{u(em as string, locale)}</small>{(zs as string[]).map((z) => <b key={z}>{z}</b>)}</div>
+          ))}
+        </div>
+        <div className="cta" style={{ marginTop: 14 }}><a className="btn btn-glass" href={waLink('Hello, I would like to ask about company setup.')} target="_blank" rel="noopener"><Icon name="wa" size={18} /> {u('Ask about company setup', locale)}</a></div>
       </section>
 
       <section className="block" data-reveal>
@@ -176,20 +242,8 @@ export function AboutHub({ locale }: { locale: Locale }) {
         <div className="cp-langs">{LOCALES.map((l) => <span key={l.code} lang={l.htmlLang}>{l.native}</span>)}</div>
       </section>
 
-      <section className="block cp-here" data-reveal>
-        <div>
-          <p className="eyebrow">{u('Where to find us', locale)}</p>
-          <h2>{u('Our office', locale)}</h2>
-          <dl className="cp-dl">
-            <div><dt>{u('Address', locale)}</dt><dd>{SITE.office}</dd></div>
-            <div><dt>{u('Opening hours', locale)}</dt><dd>{SITE.hours}</dd></div>
-            <div><dt>{u('Phone & WhatsApp', locale)}</dt><dd>{SITE.whatsappDisplay}</dd></div>
-            <div><dt>{u('Email', locale)}</dt><dd>{SITE.email}</dd></div>
-          </dl>
-          <div className="cta"><a className="btn btn-gold" href={dirHref()} target="_blank" rel="noopener"><Icon name="pin" size={18} /> {u('Get directions', locale)}</a><L locale={locale} href="/contact/#book" className="btn btn-glass">{u('Book a visit', locale)}</L></div>
-        </div>
-        <OfficeMap />
-      </section>
+      <VisitBlock locale={locale} title={u('Our office in Business Bay')} />
+      <section className="block" data-reveal><OfficeMap /></section>
 
       <section className="block cp-enquiry" data-reveal>
         <div className="cp-enq-side">

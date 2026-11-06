@@ -731,3 +731,7 @@ body:has(.admin) { background: #f7f6f2; }
 .ftabs a, .stc-pill { text-transform: capitalize; }
 /* long URLs and codes wrap on small screens */
 code.k { overflow-wrap: anywhere; word-break: break-all; }
+.btn-danger { background: #fff; color: #b42318; border: 1px solid #f1c4bf; }
+.btn-danger:hover { background: #fff4f2; }
+.btn-danger.armed { background: #b42318; color: #fff; border-color: #b42318; }
+.row-del { display: inline-flex; }

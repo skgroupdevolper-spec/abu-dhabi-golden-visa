@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { DeleteButton } from '@/components/dash/DeleteButton';
+import { clearItems, deleteItems } from '@/app/admin/delete-actions';
 import { requireAdmin } from '@/lib/server/auth';
 import { list, type Subscriber } from '@/lib/server/collections';
 import { day } from '@/lib/stages';
@@ -13,8 +15,8 @@ export default async function Subs() {
       <div className="topbar"><div><p className="eyebrow">Subscribers</p><h1>Newsletter list <span className="gold">({subs.length})</span></h1></div>
         <a className="btn" href="/admin/export/?f=subscribers">Download CSV</a></div>
       {subs.length === 0 ? <p className="empty">No subscribers yet. The signup form is in the website footer.</p> : (
-        <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Email</th><th>Language</th><th>Joined</th></tr></thead><tbody>
-          {subs.map((s) => <tr key={s.id}><td>{s.email}</td><td>{s.lang}</td><td>{day(s.at)}</td></tr>)}
+        <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Email</th><th>Language</th><th>Joined</th><th /></tr></thead><tbody>
+          {subs.map((s) => <tr key={s.id}><td>{s.email}</td><td>{s.lang}</td><td>{day(s.at)}</td><td><form action={deleteItems}><input type="hidden" name="kind" value="subscribers" /><input type="hidden" name="id" value={s.id} /><DeleteButton label="✕" confirm="Delete?" /></form></td></tr>)}
         </tbody></table></div>
       )}
     </>

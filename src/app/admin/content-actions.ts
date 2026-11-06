@@ -52,6 +52,7 @@ export async function postAction(f: FormData) {
   else if (act === 'unpublish') await patch<Post>('posts', id, (p) => { p.status = 'draft'; });
   live();
   revalidatePath('/admin/posts/');
+  if (act === 'delete' && f.get('back')) (await import('next/navigation')).redirect('/admin/posts/');
 }
 
 /* ---------- pages ---------- */

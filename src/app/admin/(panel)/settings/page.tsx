@@ -31,6 +31,15 @@ export default async function Settings({ searchParams }: { searchParams: Promise
             <F name="office" label="Office address" value={site.office} />
             <F name="hours" label="Opening hours" value={site.hours} />
             <F name="mapsUrl" label="Google Maps link" value={site.mapsUrl} full />
+            <F name="poBox" label="PO Box" value={site.poBox ?? ''} />
+            <F name="registered" label="Licence registration date (YYYY-MM-DD)" value={site.registered ?? ''} />
+            <F name="licenceIssuer" label="Licence issued by" value={site.licenceIssuer ?? ''} />
+            <F name="legalType" label="Legal type" value={site.legalType ?? ''} />
+            <F name="activities" label="Approved activities (one per line)" value={site.activities ?? ''} full type="textarea" />
+            <F name="founderName" label="Founder name" value={site.founder?.name ?? ''} />
+            <F name="founderTitle" label="Founder title" value={site.founder?.title ?? ''} />
+            <F name="founderQuote" label="Founder quote" value={site.founder?.quote ?? ''} full />
+            <F name="founderLinkedin" label="Founder LinkedIn link" value={site.founder?.linkedin ?? ''} full />
             <F name="footerAbout" label="Footer text" value={site.footerAbout} type="textarea" full help="Leave empty to use the standard operator and licence sentence." />
             <F name="disclaimer" label="Legal disclaimer (shown on every page)" value={site.disclaimer} type="textarea" full />
             <div className="full"><Submit>Save</Submit></div>

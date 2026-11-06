@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { DeleteButton } from '@/components/dash/DeleteButton';
+import { clearItems, deleteItems } from '@/app/admin/delete-actions';
 import Link from 'next/link';
 import { listApplications } from '@/lib/server/store';
 import { STAGES, day, money } from '@/lib/stages';
@@ -24,7 +26,7 @@ export default async function Apps({ searchParams }: { searchParams: Promise<{ q
       </div>
       {apps.length === 0 ? <p className="empty">No applications here.</p> : (
         <div className="tbl-wrap"><table className="tbl">
-          <thead><tr><th>Ref</th><th>Client</th><th>Route</th><th>Progress</th><th className="num">Due</th><th>Messages</th><th>Updated</th></tr></thead>
+          <thead><tr><th>Ref</th><th>Client</th><th>Route</th><th>Progress</th><th className="num">Due</th><th>Messages</th><th>Updated</th><th /></tr></thead>
           <tbody>
             {apps.map((x) => {
               const due = x.payments.filter((p) => p.status === 'due').reduce((s, p) => s + p.amount, 0);
@@ -38,6 +40,7 @@ export default async function Apps({ searchParams }: { searchParams: Promise<{ q
                   <td className="num">{due ? <span className="pill due">{money(due)}</span> : '—'}</td>
                   <td>{unread ? <span className="pill new">{unread} new</span> : <span className="muted small">{x.messages.length}</span>}</td>
                   <td>{day(x.updatedAt)}</td>
+                  <td><form action={deleteItems}><input type="hidden" name="kind" value="applications" /><input type="hidden" name="id" value={x.id} /><DeleteButton label="Delete" confirm="Delete file + documents?" /></form></td>
                 </tr>
               );
             })}

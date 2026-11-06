@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { DeleteButton } from '@/components/dash/DeleteButton';
 import Link from 'next/link';
 import { BLOG } from '@/content/blog';
 import { requireAdmin } from '@/lib/server/auth';
@@ -35,7 +36,7 @@ export default async function Posts({ searchParams }: { searchParams: Promise<{ 
               <td><form action={postAction} className="row"><input type="hidden" name="id" value={p.id} />
                 {p.status !== 'published' ? <button className="btn btn-sm btn-gold" name="act" value="publish">Publish</button> : <a className="btn btn-sm" href={`/blog/${p.slug}/`} target="_blank" rel="noopener">View</a>}
                 {p.status === 'published' && <button className="btn btn-sm" name="act" value="unpublish">Unpublish</button>}
-                <button className="btn btn-sm btn-ghost btn-danger" name="act" value="delete">Delete</button></form></td>
+                <DeleteButton name="act" value="delete" /></form></td>
             </tr>
           ))}
         </tbody></table></div>

@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { DeleteButton } from '@/components/dash/DeleteButton';
+import { clearItems, deleteItems } from '@/app/admin/delete-actions';
 import Link from 'next/link';
 import { listLeads, type LeadStatus } from '@/lib/server/store';
 import { when } from '@/lib/stages';
@@ -22,6 +24,7 @@ export default async function Leads({ searchParams }: { searchParams: Promise<{ 
       </div>
       <div className="row" style={{ marginBottom: 14 }}>
         {TABS.map((t) => <Link key={t} href={`/admin/leads/?s=${t}`} className={`btn btn-sm${s === t ? ' btn-gold' : ''}`}>{t[0].toUpperCase() + t.slice(1)} ({t === 'all' ? all.length : all.filter((l) => l.status === t).length})</Link>)}
+        {s !== 'all' && leads.length > 0 && <form action={clearItems} style={{ marginInlineStart: 'auto' }}><input type="hidden" name="kind" value="leads" /><input type="hidden" name="scope" value={`status:${s}`} /><DeleteButton label={`Delete all ${s} (${leads.length})`} /></form>}
       </div>
       {leads.length === 0 ? <p className="empty">Nothing here yet.</p> : (
         <div className="stack">
@@ -33,6 +36,7 @@ export default async function Leads({ searchParams }: { searchParams: Promise<{ 
                   <a className="btn btn-sm btn-wa" href={waTo(l.phone, `Hello ${l.name}, thank you for your Golden Visa enquiry. `)} target="_blank" rel="noopener">WhatsApp</a>
                   {l.email && <a className="btn btn-sm" href={`mailto:${l.email}`}>Email</a>}
                   <form action={convertLead}><input type="hidden" name="id" value={l.id} /><button className="btn btn-sm btn-gold" type="submit">{l.applicationId ? 'Open application' : 'Create application'}</button></form>
+                  <form action={deleteItems}><input type="hidden" name="kind" value="leads" /><input type="hidden" name="id" value={l.id} /><DeleteButton /></form>
                 </div>
               </div>
               <div className="grid3 small">

@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { DeleteButton } from '@/components/dash/DeleteButton';
+import { clearItems, deleteItems } from '@/app/admin/delete-actions';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ActionForm, CopyButton, Submit } from '@/components/dash/ActionForm';
@@ -221,6 +223,7 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
             <div className="row" style={{ marginTop: 12 }}>
               <form action={newPortalLink}>{H}<button className="btn btn-sm" type="submit">Make a new link</button></form>
               <form action={archiveApplication}>{H}<button className="btn btn-sm btn-ghost" type="submit">{a.archived ? 'Restore application' : 'Archive application'}</button></form>
+              <form action={deleteItems}><input type="hidden" name="kind" value="applications" /><input type="hidden" name="id" value={a.id} /><input type="hidden" name="detail" value="1" /><DeleteButton label="Delete application" confirm="Delete for ever? Click again" /></form>
             </div>
           </section>
         </div>

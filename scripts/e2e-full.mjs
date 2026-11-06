@@ -152,6 +152,27 @@ for (const [name, vp] of Object.entries(VP)) {
   for (const s of SECTIONS) await visit(page, '/admin/' + s, `owner-${name}`, { strictWidth: false });
   await visit(page, '/admin/leads/', `owner-${name}`, { strictWidth: false });
   if (xss || (await page.evaluate(() => window.__xss))) fail('security', 'HTML in an enquiry name ran as code in the admin (XSS)');
+  if (name === 'desktop') {
+    // delete: a notification (two clicks) and the test enquiry
+    await page.goto(base + '/admin/notifications/');
+    const before = await page.locator('.files .row-del').count();
+    if (before) {
+      const b = page.locator('.files .row-del button').first();
+      await b.click(); await b.click(); await page.waitForTimeout(1200);
+      await page.goto(base + '/admin/notifications/');
+      if ((await page.locator('.files .row-del').count()) !== before - 1) fail('owner', 'deleting a notification did not work');
+    } else warn('owner', 'no notifications to test delete');
+    await page.goto(base + '/admin/leads/?s=all');
+    const leadsBefore = await page.locator('.stack > .panel').count();
+    const del = page.locator('.stack > .panel').first().locator('button.btn-danger');
+    if (await del.count()) { await del.click(); await del.click(); await page.waitForTimeout(1200); await page.goto(base + '/admin/leads/?s=all'); if ((await page.locator('.stack > .panel').count()) !== leadsBefore - 1) fail('owner', 'deleting an enquiry did not work'); }
+    else fail('owner', 'no delete button on enquiries');
+    await visit(page, '/contact/', 'contact'); await visit(page, '/about/', 'about');
+    if (!(await page.goto(base + '/contact/').then(() => page.waitForSelector('.olive .ol-pill', { timeout: 8000 })).catch(() => null))) fail('contact', 'live office status is missing');
+    const pill = await page.locator('.olive .ol-pill').innerText().catch(() => '');
+    if (!/Open now|Closed/.test(pill)) fail('contact', `office status text is wrong: ${pill}`);
+    await page.locator('.cp-visit').screenshot({ path: 'shots/e2e-office-live.jpg' }).catch(() => {});
+  }
   await ctx.close();
 }
 stats.adminSections = SECTIONS.length * 2;

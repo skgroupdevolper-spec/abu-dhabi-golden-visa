@@ -2,6 +2,9 @@
 export type PublicSite = {
   name: string; tagline: string; url: string; operator: string; licence: string;
   whatsapp: string; whatsappDisplay: string; phone: string; email: string; office: string; hours: string; mapsUrl: string;
+  /** PO Box, licence registration date (YYYY-MM-DD) and issuer, approved activities, founder: shown on About / Contact. */
+  poBox?: string; registered?: string; licenceIssuer?: string; legalType?: string; activities?: string;
+  founder?: { name: string; title: string; quote: string; linkedin: string };
   disclaimer: string; footerAbout: string;
   social: { facebook: string; instagram: string; linkedin: string; tiktok: string; youtube: string; x: string };
   /** Languages shown on the website (empty = all 20). English is always on. */
@@ -58,12 +61,15 @@ export const DEFAULT_SITE: PublicSite = {
   whatsappDisplay: '+971 56 655 6645',
   phone: '+971566556645',
   email: 'info@brightlinkconsulting.ae',
-  office: 'Business Bay, Dubai, UAE',
-  hours: 'Mon–Fri 9:00–18:00 · Sat 10:00–17:00',
-  mapsUrl: '',
+  office: 'Office M08-27, M1 Floor, Crystal Tower, Millennium Central, Al Asayel St, Business Bay, Dubai, UAE',
+  hours: 'Mon–Sat 9:00–18:00 · Sunday closed',
+  mapsUrl: 'https://maps.app.goo.gl/Wub4NZefiQ7LBMkd9',
+  poBox: '554552', registered: '2022-04-10', licenceIssuer: 'Government of Dubai, Department of Economy and Tourism (DET)', legalType: 'LLC, single owner',
+  activities: 'Management consultancies\nDocuments clearing services\nProject development consultant\nMarketing research consultancies',
+  founder: { name: 'Muhammad Bilal Saleem', title: 'Founder & CEO, Brightlink', quote: 'I built Brightlink with one purpose: to create a link between ambition and opportunity.', linkedin: '' },
   disclaimer: 'Not an official UAE government website. Visa issuance and eligibility are subject to the competent authorities.',
   footerAbout: '',
-  social: { facebook: '', instagram: '', linkedin: '', tiktok: '', youtube: '', x: '' },
+  social: { facebook: 'https://www.facebook.com/brightlinkconsulting.uae/', instagram: 'https://www.instagram.com/brightlink.consulting/', linkedin: 'https://www.linkedin.com/company/brightlink-management-consultancy/', tiktok: 'https://www.tiktok.com/@brightlink.consulting', youtube: 'https://www.youtube.com/@brightlinkconsulting', x: 'https://twitter.com/BRIGHTLINKCONS1' },
   features: { topBar: false, topBarText: '', floatingWhatsApp: true, mobileBar: true, dock: true, newsletter: true, clientLogin: true, chatbot: true, offer: false, preloader: false, languageSwitcher: true },
   offer: { title: 'Free eligibility check', text: 'Send us your details and get a written answer on your Golden Visa route.', button: 'Start my free check', link: '/visa-check/', delaySeconds: 12 },
   colors: { gold: '#d4af37', goldDeep: '#8a6a12', ink: '#0d0d0d', paper: '#f8f7f5' },

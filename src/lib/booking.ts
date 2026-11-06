@@ -20,10 +20,10 @@ export const BOOKING0: BookingCfg = {
   hours: [
     { open: false, from: '09:00', to: '18:00' },
     { open: true, from: '09:00', to: '18:00' }, { open: true, from: '09:00', to: '18:00' }, { open: true, from: '09:00', to: '18:00' },
-    { open: true, from: '09:00', to: '18:00' }, { open: true, from: '09:00', to: '18:00' }, { open: true, from: '10:00', to: '17:00' },
+    { open: true, from: '09:00', to: '18:00' }, { open: true, from: '09:00', to: '18:00' }, { open: true, from: '09:00', to: '18:00' },
   ],
   slot: 30, daysAhead: 21, notice: 2, perSlot: 1, closed: [], breakFrom: '13:00', breakTo: '14:00',
-  office: 'Business Bay, Dubai, UAE', videoNote: 'We send a Google Meet or Zoom link on WhatsApp.',
+  office: 'Crystal Tower, Business Bay, Dubai', videoNote: 'We send a Google Meet or Zoom link on WhatsApp.',
   title: 'Book a time that suits you', intro: 'Visit our office, or meet your advisor on a video or phone call. Pick a free time and we confirm it on WhatsApp.',
 };
 export type Booking = {

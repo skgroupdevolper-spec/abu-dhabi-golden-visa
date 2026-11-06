@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { DeleteButton } from '@/components/dash/DeleteButton';
 import Link from 'next/link';
 import { ActionForm, Submit } from '@/components/dash/ActionForm';
 import { F, Toggle } from '@/components/dash/Fields';
@@ -56,7 +57,7 @@ export default async function Customers({ searchParams }: { searchParams: Promis
                         <Link className="btn btn-sm" href={`/admin/customers/?edit=${c.id}`}>Edit</Link>
                         <form action={customerAction}><input type="hidden" name="id" value={c.id} /><input type="hidden" name="op" value="open" /><button className="btn btn-sm" title="Opens the client's dashboard as them">View as client</button></form>
                         <form action={customerAction}><input type="hidden" name="id" value={c.id} /><input type="hidden" name="op" value="toggle" /><button className="btn btn-sm">{c.active ? 'Disable' : 'Enable'}</button></form>
-                        <form action={customerAction}><input type="hidden" name="id" value={c.id} /><input type="hidden" name="op" value="delete" /><button className="btn btn-sm btn-ghost btn-danger">Delete</button></form>
+                        <form action={customerAction}><input type="hidden" name="id" value={c.id} /><input type="hidden" name="op" value="delete" /><DeleteButton /></form>
                       </div>
                     )}
                   </div>

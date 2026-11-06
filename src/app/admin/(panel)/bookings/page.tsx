@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { DeleteButton } from '@/components/dash/DeleteButton';
 import Link from 'next/link';
 import { ActionForm, Submit } from '@/components/dash/ActionForm';
 import { F, Tabs, Toggle } from '@/components/dash/Fields';
@@ -58,7 +59,7 @@ export default async function Bookings({ searchParams }: { searchParams: Promise
                           <form key={s} action={bookingAction}><input type="hidden" name="id" value={x.id} /><input type="hidden" name="op" value={s} /><button className={`btn btn-sm${s === 'confirmed' ? ' btn-gold' : ''}`}>{s === 'confirmed' ? 'Confirm' : LABEL[s]}</button></form>))}
                         <details className="bk-move"><summary className="btn btn-sm">Move</summary>
                           <form action={bookingAction} className="row"><input type="hidden" name="id" value={x.id} /><input type="hidden" name="op" value="move" /><input type="date" name="date" defaultValue={x.date} /><input type="time" name="time" defaultValue={x.time} step={300} /><button className="btn btn-sm">Save</button></form></details>
-                        {full && <form action={bookingAction}><input type="hidden" name="id" value={x.id} /><input type="hidden" name="op" value="delete" /><button className="btn btn-sm btn-ghost btn-danger">Delete</button></form>}
+                        {full && <form action={bookingAction}><input type="hidden" name="id" value={x.id} /><input type="hidden" name="op" value="delete" /><DeleteButton /></form>}
                       </div>
                     </div>
                   ))}

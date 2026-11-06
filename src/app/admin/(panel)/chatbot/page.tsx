@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { DeleteButton } from '@/components/dash/DeleteButton';
+import { clearItems, deleteItems } from '@/app/admin/delete-actions';
 import Link from 'next/link';
 import { ActionForm, Submit } from '@/components/dash/ActionForm';
 import { F, Tabs, Toggle } from '@/components/dash/Fields';
@@ -39,6 +41,10 @@ export default async function Chatbot({ searchParams }: { searchParams: Promise<
         <div className="cols">
           <div className="panel">
             <form className="row" action="/admin/chatbot/"><input type="hidden" name="tab" value="chats" /><input name="q" defaultValue={q} placeholder="Search text, name, phone" style={{ flex: 1 }} /><button className="btn" type="submit">Search</button></form>
+            {chats.length > 0 && <div className="row" style={{ marginTop: 8 }}>
+              {open && <form action={deleteItems}><input type="hidden" name="kind" value="chats" /><input type="hidden" name="id" value={open.id} /><input type="hidden" name="back" value="/admin/chatbot/?tab=chats" /><DeleteButton label="Delete this chat" /></form>}
+              <form action={clearItems}><input type="hidden" name="kind" value="chats" /><input type="hidden" name="scope" value="all" /><DeleteButton label={`Delete all chats (${chats.length})`} /></form>
+            </div>}
             {rows.length === 0 ? <p className="empty" style={{ marginTop: 12 }}>No conversations yet.</p> : (
               <div className="files" style={{ marginTop: 12 }}>{rows.slice(0, 200).map((c) => (
                 <Link key={c.id} href={`/admin/chatbot/?tab=chats&chat=${c.id}`} className="file" style={{ textDecoration: 'none', color: 'inherit', background: c.id === chat ? '#fffaf0' : '#fff' }}>

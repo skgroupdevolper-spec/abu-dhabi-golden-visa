@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation';
 import { PostForm } from '@/components/dash/PostForm';
 import { requireAdmin } from '@/lib/server/auth';
 import { getCategories, getPosts } from '@/lib/server/content';
-import { restoreRevision, savePost } from '../../../content-actions';
+import { postAction, restoreRevision, savePost } from '../../../content-actions';
+import { DeleteButton } from '@/components/dash/DeleteButton';
 import { when } from '@/lib/stages';
 import { TranslatePanel } from '@/components/dash/TranslatePanel';
 
@@ -19,7 +20,10 @@ export default async function EditPost({ params }: { params: Promise<{ id: strin
   return (
     <>
       <div className="topbar"><div><p className="eyebrow">Blog · {p ? (p.status === 'published' ? 'Published' : p.status === 'review' ? 'Needs review' : 'Draft') : 'New article'}</p><h1>{p ? p.title : 'New article'}</h1></div>
-        {p?.status === 'published' && <a className="btn" href={`/blog/${p.slug}/`} target="_blank" rel="noopener">View on website ↗</a>}</div>
+        <div className="row">
+          {p?.status === 'published' && <a className="btn" href={`/blog/${p.slug}/`} target="_blank" rel="noopener">View on website ↗</a>}
+          {p && <form action={postAction}><input type="hidden" name="id" value={p.id} /><input type="hidden" name="back" value="1" /><DeleteButton name="act" value="delete" label="Delete article" className="btn btn-danger" /></form>}
+        </div></div>
       <PostForm action={savePost} categories={cats.map((c) => ({ slug: c.slug, name: c.name }))} p={{
         id: p?.id, title: p?.title, slug: p?.slug, status: p?.status ?? 'draft', meta: p?.meta, summary: p?.summary, body: p?.body,
         faq: p?.faq.map((x) => `${x.q}\n${x.a}`).join('\n\n'), author: p?.author ?? 'Abu Dhabi Golden Visa editorial team', reviewer: p?.reviewer || me.name,

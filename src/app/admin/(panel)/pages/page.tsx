@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { DeleteButton } from '@/components/dash/DeleteButton';
+import { togglePageHidden } from '@/app/admin/delete-actions';
 import Link from 'next/link';
 import { PAGES } from '@/content/pages';
 import { requireAdmin } from '@/lib/server/auth';
@@ -67,7 +69,9 @@ export default async function Pages({ searchParams }: { searchParams: Promise<{ 
                 <Link className="btn btn-sm btn-gold" href={edit}><Icon name="pen" size={14} /> Edit</Link>
                 <a className="btn btn-sm btn-ghost" href={p.path} target="_blank" rel="noopener" aria-label="View" title="View"><Icon name="ext" size={15} /></a>
                 <form action={duplicatePage}><input type="hidden" name="path" value={p.path} /><button className="btn btn-sm btn-ghost" title="Duplicate" aria-label="Duplicate"><Icon name="copy" size={15} /></button></form>
-                {p.custom && <form action={deleteCustomPage}><input type="hidden" name="path" value={p.path} /><button className="btn btn-sm btn-ghost btn-danger" title="Delete" aria-label="Delete"><Icon name="trash" size={15} /></button></form>}
+                {p.custom
+                  ? <form action={deleteCustomPage}><input type="hidden" name="path" value={p.path} /><DeleteButton label="🗑" confirm="Delete?" title="Delete page" /></form>
+                  : p.path !== '/' && <form action={togglePageHidden}><input type="hidden" name="path" value={p.path} /><button className="btn btn-sm btn-ghost" title={p.o.hidden ? 'Show page again' : 'Hide page (built-in pages cannot be deleted)'} aria-label={p.o.hidden ? 'Show page' : 'Hide page'}>{p.o.hidden ? 'Show' : 'Hide'}</button></form>}
               </div>
             </div>
           );
