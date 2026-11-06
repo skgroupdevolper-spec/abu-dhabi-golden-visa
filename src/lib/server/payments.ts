@@ -273,7 +273,7 @@ export async function orderPayment(a: Application): Promise<string | null> {
     const bal = orderBalance(x);
     if (bal <= 0) return;
     const first = !x.payments.length;
-    x.payments.push({ id: pid, label: first ? `${x.route} · full payment` : `${x.route} · balance`, amount: bal, status: 'due', createdAt: now() });
+    x.payments.push({ id: pid, label: first ? `${x.route} · full payment` : `${x.route} · balance`, amount: bal, status: 'due', link: '', createdAt: now() });
   });
   const fresh = await getApplicationByToken(a.token);
   return fresh?.payments.find((p) => p.status === 'due')?.id ?? null;

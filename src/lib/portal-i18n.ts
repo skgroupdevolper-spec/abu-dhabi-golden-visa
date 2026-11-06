@@ -36,7 +36,7 @@ export const EN = {
   trackProgress: 'Track every step of your file, live.', finalFiles: 'Final documents will be available here', unlockAfterPay: 'Pay your invoice to unlock the final documents for this file.',
   qty: 'Qty', unitPrice: 'Unit price', payWhole: 'Pay the full amount to confirm your order. Secure card payment.',
   bankTitle: 'Pay by bank transfer', bankIntro: 'Transfer the amount to our company account, then upload the transfer slip here. We confirm it and send your receipt.',
-  bankName: 'Bank', accountName: 'Account name', iban: 'IBAN', accountNo: 'Account number', swift: 'SWIFT / BIC', reference: 'Reference', uploadSlip: 'Upload transfer slip', amountToPay: 'Amount to pay',
+  bankName: 'Bank', accountName: 'Account name', iban: 'IBAN', accountNo: 'Account number', swift: 'SWIFT / BIC', uploadSlip: 'Upload transfer slip', amountToPay: 'Amount to pay',
   live: 'Live', updatedAt: 'updated', communication: 'Communication', balance: 'Balance', date: 'Date', print: 'Print / Save as PDF', statementIntro: 'All quotes, payments and receipts across your files.',
   stages: ['Enquiry received', 'Eligibility confirmed', 'Quote accepted and paid', 'Documents and attestation', 'Nomination or valuation certificate', 'Application submitted', 'Entry permit or change of status', 'Medical and biometrics', 'Emirates ID and residence issued'],
 };
