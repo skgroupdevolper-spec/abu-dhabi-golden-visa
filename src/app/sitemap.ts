@@ -3,6 +3,7 @@ import { PAGES } from '@/content/pages';
 import { localizePath } from '@/lib/i18n';
 import { SITE, liveLocales } from '@/lib/site';
 import { getCategories, getCustomPages, getOverrides, getPublishedPosts, getServiceOverrides } from '@/lib/server/content';
+import { readiness } from '@/lib/server/translate';
 
 export const revalidate = 600;
 
@@ -22,13 +23,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...posts.filter((p) => !p.noindex).map((p) => ({ path: `/blog/${p.slug}/`, image: p.cover, at: p.updatedAt, pri: 0.7 })),
   ];
   const now = new Date();
+  const { ready, at } = await readiness();
   return entries.flatMap((e) => {
+    // Only translated language versions go to Google (untranslated ones are noindex until done).
+    const locs = liveLocales().filter((l) => ready(e.path, l.code));
     const languages: Record<string, string> = {};
-    for (const l of liveLocales()) languages[l.htmlLang] = SITE.url + localizePath(e.path, l.code);
+    for (const l of locs) languages[l.htmlLang] = SITE.url + localizePath(e.path, l.code);
     languages['x-default'] = SITE.url + e.path;
-    return liveLocales().map((l) => ({
+    return locs.map((l) => ({
       url: SITE.url + localizePath(e.path, l.code),
-      lastModified: e.at ? new Date(e.at) : now,
+      lastModified: at(e.path, l.code) ? new Date(at(e.path, l.code)!) : e.at ? new Date(e.at) : now,
       changeFrequency: e.path === '/' ? ('daily' as const) : ('weekly' as const),
       priority: e.pri,
       alternates: { languages },

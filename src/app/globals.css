@@ -1157,3 +1157,7 @@ li.sk.on { opacity: 1; transform: none; }
 .fp-step { background: rgba(255, 255, 255, .06); }
 /* Phone numbers, emails and times keep left-to-right order on Arabic and Urdu pages */
 [dir='rtl'] a[href^='tel:'], [dir='rtl'] a[href^='mailto:'], [dir='rtl'] .cp-card em, [dir='rtl'] .cp-hot b, [dir='rtl'] .cp-dl dd, [dir='rtl'] .bk-facts li, [dir='rtl'] .bc-live b, [dir='rtl'] .sp-box .btn { unicode-bidi: plaintext; }
+/* Dropdown arrow on language / currency chips: turns when open */
+.chip > button .dd { opacity: .75; transition: transform .25s; margin-inline-start: -2px; }
+.chip > button[aria-expanded='true'] .dd { transform: rotate(180deg); }
+.chip > button:hover .dd { opacity: 1; }

@@ -3,9 +3,9 @@ import { localizePath, type Locale } from './i18n';
 import { SITE, liveLocales } from './site';
 
 /** Title, description, canonical and hreflang alternates for a page in one language. */
-export function pageMetadata(path: string, locale: Locale, title: string, description: string, o: { image?: string; noindex?: boolean; canonical?: string; type?: 'website' | 'article'; published?: string } = {}): Metadata {
+export function pageMetadata(path: string, locale: Locale, title: string, description: string, o: { image?: string; noindex?: boolean; canonical?: string; type?: 'website' | 'article'; published?: string; langs?: string[] } = {}): Metadata {
   const languages: Record<string, string> = {};
-  for (const l of liveLocales()) languages[l.htmlLang] = SITE.url + localizePath(path, l.code);
+  for (const l of liveLocales()) if (!o.langs || o.langs.includes(l.code)) languages[l.htmlLang] = SITE.url + localizePath(path, l.code);
   languages['x-default'] = SITE.url + path;
   const url = SITE.url + localizePath(path, locale);
   const img = o.image ? (o.image.startsWith('http') ? o.image : SITE.url + o.image) : SITE.url + '/brand/coin.webp';

@@ -66,6 +66,7 @@ export async function runTranslation(langs: string[], auto = false) {
     const over = await getOverrides();
     // Missing translations, and pages edited after they were translated.
     for (const l of langs) for (const p of pages) { const t = tr[l]?.[p.path]; if (!t || (over[p.path]?.at && over[p.path].at! > t.at && !(t as { manual?: boolean }).manual)) todo.push([p, l]); }
+    const fresh = new Set<string>();
     let job: TranslateJob = { running: true, langs, total: todo.length, done: 0, errors: 0, startedAt: now(), auto };
     await saveBlock('translateJob', job);
     for (const [p, l] of todo) {
@@ -77,6 +78,7 @@ export async function runTranslation(langs: string[], auto = false) {
       try {
         await translatePage(p, l);
         job.done++;
+        fresh.add(p.path);
       } catch (e) {
         job.errors++;
         await insert<AiLog>('ai-log', { id: newId(6), at: now(), kind: 'translate', text: `${l} ${p.path}: ${(e as Error).message}`.slice(0, 300), ok: false }, 1000);
@@ -84,6 +86,7 @@ export async function runTranslation(langs: string[], auto = false) {
       }
     }
     await saveBlock('translateJob', { ...job, running: false, current: undefined, finishedAt: now() });
+    if (fresh.size) void import('./indexnow').then((m) => m.pingIndexNow([...fresh])).catch(() => {});
   } finally {
     globalThis.__adgvTranslating = false;
   }
@@ -142,4 +145,19 @@ export async function translateUi(langs: string[]) {
     }
   }
   return added;
+}
+
+/* ---------- Search engines: index a language only when the page is really translated ---------- */
+/**
+ * Which language versions of a page are ready for Google. English always; the home page always
+ * (its texts come from the interface translations); every page the translator handles only once
+ * it has a translation in that language. Untranslated versions get noindex + canonical to English,
+ * and are left out of the sitemap, hreflang and IndexNow until the translation is done.
+ */
+export async function readiness() {
+  const [pages, tr] = await Promise.all([allPages().catch(() => [] as Page[]), readJsonFile<Translations>('translations.json', {})]);
+  const translatable = new Set(pages.map((p) => p.path));
+  const ready = (path: string, loc: string) => loc === 'en' || path === '/' || !translatable.has(path) || !!tr[loc]?.[path];
+  const at = (path: string, loc: string) => (loc === 'en' ? undefined : (tr[loc]?.[path] as { at?: string } | undefined)?.at);
+  return { ready, at };
 }

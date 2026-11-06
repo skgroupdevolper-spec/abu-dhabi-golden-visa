@@ -98,7 +98,7 @@ export function Header({ locale }: { locale: Locale }) {
   const langChip = (cls = '') => F.languageSwitcher && (
     <div className={`chip ${cls}`}>
       <button type="button" aria-haspopup="true" aria-expanded={open === 'lang' + cls} aria-label={u('Choose language', locale)} onClick={() => toggle('lang' + cls)}>
-        <Icon name="globe" size={16} /> {localeInfo(locale).native}
+        <Icon name="globe" size={16} /> {localeInfo(locale).native} <Icon name="chev" size={13} className="dd" />
       </button>
       {open === 'lang' + cls && (
         <div className="drop langs" role="menu">
@@ -127,7 +127,7 @@ export function Header({ locale }: { locale: Locale }) {
             {langChip('u')}
             <div className="chip u">
               <button type="button" aria-haspopup="true" aria-expanded={open === 'cur'} aria-label={u('Choose currency', locale)} onClick={() => toggle('cur')}>
-                <Icon name="coins" size={16} /> {cur}
+                <Icon name="coins" size={16} /> {cur} <Icon name="chev" size={13} className="dd" />
               </button>
               {open === 'cur' && (
                 <div className="drop curs" role="menu">

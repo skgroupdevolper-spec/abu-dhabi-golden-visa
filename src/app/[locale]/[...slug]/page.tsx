@@ -7,7 +7,8 @@ import { md } from '@/lib/markdown';
 import { LOCALE_CODES, isLocale, type Locale } from '@/lib/i18n';
 import { pageMetadata } from '@/lib/seo';
 import type { Block } from '@/lib/blocks';
-import { SITE } from '@/lib/site';
+import { SITE, liveLocales } from '@/lib/site';
+import { readiness } from '@/lib/server/translate';
 import { getCategories, getCustomPages, getFaqs, getOverrides, getPublishedPosts, getServiceOverrides, getTestimonials, getTranslations, postToPage, type PageOverride, type Post } from '@/lib/server/content';
 import { PageView } from '@/components/PageView';
 import { BlogIndex } from '@/components/BlogIndex';
@@ -79,8 +80,13 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const { locale, slug } = await params;
   const r = await resolve(locale, slug);
   if (!r) return {};
+  // A language version is indexed only once the page is translated into it; until then it is noindex
+  // with its canonical on the English page, and it is left out of hreflang.
+  const { ready } = await readiness();
+  const langs = liveLocales().map((l) => l.code).filter((c) => ready(r.page.path, c));
+  const notYet = !ready(r.page.path, r.loc);
   return pageMetadata(r.page.path, r.loc, r.page.seoTitle, r.page.meta, {
-    image: r.o.ogImage || r.post?.ogImage || r.page.image, noindex: r.o.noindex || r.post?.noindex, canonical: r.o.canonical || r.post?.canonical,
+    langs, image: r.o.ogImage || r.post?.ogImage || r.page.image, noindex: notYet || r.o.noindex || r.post?.noindex, canonical: r.o.canonical || r.post?.canonical || (notYet ? SITE.url + r.page.path : undefined),
     type: r.post || r.page.article ? 'article' : 'website', published: r.post?.publishedAt,
   });
 }
