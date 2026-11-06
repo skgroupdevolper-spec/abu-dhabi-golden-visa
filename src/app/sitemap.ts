@@ -23,10 +23,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...posts.filter((p) => !p.noindex).map((p) => ({ path: `/blog/${p.slug}/`, image: p.cover, at: p.updatedAt, pri: 0.7 })),
   ];
   const now = new Date();
-  const { ready, at } = await readiness();
+  const { at } = await readiness();
   return entries.flatMap((e) => {
-    // Only translated language versions go to Google (untranslated ones are noindex until done).
-    const locs = liveLocales().filter((l) => ready(e.path, l.code));
+    // Every page in every language that is switched on (like /ar/, /ru/, /tr/ …).
+    const locs = liveLocales();
     const languages: Record<string, string> = {};
     for (const l of locs) languages[l.htmlLang] = SITE.url + localizePath(e.path, l.code);
     languages['x-default'] = SITE.url + e.path;

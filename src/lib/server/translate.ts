@@ -147,13 +147,7 @@ export async function translateUi(langs: string[]) {
   return added;
 }
 
-/* ---------- Search engines: index a language only when the page is really translated ---------- */
-/**
- * Which language versions of a page are ready for Google. English always; the home page always
- * (its texts come from the interface translations); every page the translator handles only once
- * it has a translation in that language. Untranslated versions get noindex + canonical to English,
- * and are left out of the sitemap, hreflang and IndexNow until the translation is done.
- */
+/* ---------- Translation status per page and language (sitemap dates) ---------- */
 export async function readiness() {
   const [pages, tr] = await Promise.all([allPages().catch(() => [] as Page[]), readJsonFile<Translations>('translations.json', {})]);
   const translatable = new Set(pages.map((p) => p.path));

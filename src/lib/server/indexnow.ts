@@ -18,10 +18,9 @@ export async function indexNowKey() {
 export async function pingIndexNow(paths: string[]) {
   if (!/^https:\/\//.test(SITE.url) || SITE.url.includes('localhost')) return { ok: false, count: 0 };
   const key = await indexNowKey();
-  const { ready } = await import('./translate').then((m) => m.readiness());
   const on = liveLocales().map((l) => l.code);
-  // Only language versions that are live and translated (the rest are noindex until translated).
-  const urlList = [...new Set(paths.flatMap((p) => LOCALES.filter((l) => on.includes(l.code) && ready(p, l.code)).map((l) => SITE.url + localizePath(p, l.code))))].slice(0, 10000);
+  // Every language that is switched on on the website.
+  const urlList = [...new Set(paths.flatMap((p) => LOCALES.filter((l) => on.includes(l.code)).map((l) => SITE.url + localizePath(p, l.code))))].slice(0, 10000);
   const host = new URL(SITE.url).host;
   const r = await fetch('https://api.indexnow.org/indexnow', {
     method: 'POST', headers: { 'Content-Type': 'application/json; charset=utf-8' },
