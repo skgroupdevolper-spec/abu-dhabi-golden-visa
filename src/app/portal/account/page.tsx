@@ -1,22 +1,18 @@
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
 import { ActionForm, Submit } from '@/components/dash/ActionForm';
-import { PortalTop } from '@/components/dash/PortalTop';
-import { currentCustomer, portalBase, T } from '@/lib/server/portal';
+import { ClientShell } from '@/components/dash/ClientShell';
+import { clientArea } from '@/lib/server/portal';
 import { saveProfile } from '../actions';
 
 export const metadata: Metadata = { title: 'My profile' };
 export const dynamic = 'force-dynamic';
 
 export default async function Account() {
-  const base = await portalBase();
-  const me = await currentCustomer();
-  if (!me) redirect(`${base}/login/`);
-  const { t, lang } = await T();
+  const area = await clientArea();
+  const { base, me, t } = area;
   return (
-    <>
-      <PortalTop t={t} lang={lang.code} base={base} back={`${base}/account/`} signedIn />
-      <main className="pwrap" style={{ maxWidth: 640 }}>
+    <ClientShell area={area} active="account" title={t.profile} back={`${base}/account/`}>
+      <div style={{ maxWidth: 640 }}>
         <div className="panel">
           <p className="eyebrow">{t.profile}</p>
           <h1 style={{ margin: '6px 0 4px' }}>{me.name}</h1>
@@ -28,9 +24,8 @@ export default async function Account() {
             <div className="field"><label htmlFor="next">{t.newPassword}</label><input id="next" name="next" type="password" autoComplete="new-password" /></div>
             <Submit>{t.save}</Submit>
           </ActionForm>
-          <p style={{ marginTop: 16 }}><a href={`${base}/`}>← {t.back}</a></p>
         </div>
-      </main>
-    </>
+      </div>
+    </ClientShell>
   );
 }

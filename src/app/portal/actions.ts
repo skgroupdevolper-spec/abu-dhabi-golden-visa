@@ -123,7 +123,7 @@ export async function requestService(_: State, f: FormData): Promise<State> {
   await addLead({ name: me.name, phone: me.phone, email: me.email, service, message: s(f, 'message', 2000), source: 'portal', details: JSON.stringify({ customer: me.id, language: me.lang }) });
   await notify('request', `${me.name} requested: ${service}`, `/admin/leads/?q=${encodeURIComponent(me.email)}`);
   void sendTeam('leadTeam', { name: me.name, phone: me.phone, service, message: s(f, 'message', 300) });
-  revalidatePath('/portal/');
+  revalidatePath('/portal/', 'layout');
   return { ok: d.requestSent };
 }
 

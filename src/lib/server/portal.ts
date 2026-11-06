@@ -26,3 +26,25 @@ export async function T() {
   const code = await portalLang();
   return { t: dict(code), lang: langInfo(code) };
 }
+
+/* ---------- signed-in client area (Wordcraft-style dashboard) ---------- */
+const dg9 = (p: string) => p.replace(/\D/g, '').slice(-9);
+/** Everything a signed-in client page needs; sends visitors who are not signed in to the login page. */
+export async function clientArea() {
+  const base = await portalBase();
+  const me = await currentCustomer();
+  if (!me) (await import('next/navigation')).redirect(`${base}/login/`);
+  const cust = me as Customer;
+  const { t, lang } = await T();
+  const { listApplications, listLeads } = await import('./store');
+  const { getPayCfg, online, orderBalance } = await import('./payments');
+  const [apps, leads, pay] = await Promise.all([listApplications(), listLeads(), getPayCfg()]);
+  const mine = apps.filter((a) => !a.archived && ((a.client.email && a.client.email.toLowerCase() === cust.email) || (dg9(a.client.phone) && dg9(a.client.phone) === dg9(cust.phone))))
+    .sort((x, y) => y.updatedAt.localeCompare(x.updatedAt));
+  const requests = leads.filter((l) => l.source === 'portal' && l.email === cust.email).sort((x, y) => y.at.localeCompare(x.at));
+  const live = online(pay);
+  /** Amount the client can pay right now on a sent quote (Pay & confirm). */
+  const quotePay = (a: (typeof mine)[number]) => (pay.payOnQuote && a.quote.sentAt && !a.payments.some((p) => p.status === 'due') && (live || pay.bankOn) ? Math.max(0, orderBalance(a)) : 0);
+  return { base, me: cust, t, lang, mine, requests, pay, live, quotePay };
+}
+export type ClientArea = Awaited<ReturnType<typeof clientArea>>;

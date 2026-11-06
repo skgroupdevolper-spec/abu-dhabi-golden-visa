@@ -8,7 +8,8 @@ import { getPayCfg, online, orderBalance } from '@/lib/server/payments';
 import { LiveRefresh } from '@/components/dash/LiveRefresh';
 import { STAGES, day, money, when } from '@/lib/stages';
 import { PortalTop } from '@/components/dash/PortalTop';
-import { currentCustomer, portalBase, T } from '@/lib/server/portal';
+import { ClientShell } from '@/components/dash/ClientShell';
+import { clientArea, currentCustomer, portalBase, T } from '@/lib/server/portal';
 import { acceptQuote, clientMessage, clientUpload } from '../../actions';
 
 export const metadata: Metadata = { title: 'My application' };
@@ -22,6 +23,7 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
   const { t, lang } = await T();
   const base = await portalBase();
   const signedIn = !!(await currentCustomer());
+  const area = signedIn ? await clientArea() : null;
   const first = a.client.name.split(' ')[0];
   const gov = a.quote.lines.reduce((s, l) => s + l.amount, 0);
   const total = gov + a.quote.serviceFee + a.quote.vat;
@@ -50,10 +52,10 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
   const f2 = (x: number) => x.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const fmtD = (d?: string) => (d ? new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—');
 
-  return (
+  const content = (
     <>
-      <PortalTop t={t} lang={lang.code} base={base} back={`${base}/t/${a.token}/`} signedIn={signedIn} right={<span className="small muted"><b style={{ color: 'var(--ink)' }}>{a.ref}</b></span>} />
-      <main className="pwrap">
+      {!area && <PortalTop t={t} lang={lang.code} base={base} back={`${base}/t/${a.token}/`} signedIn={signedIn} right={<span className="small muted"><b style={{ color: 'var(--ink)' }}>{a.ref}</b></span>} />}
+      <main className={area ? 'pwrap in-shell' : 'pwrap'}>
         <section className={`ohero st-${stKey}`}>
           <div className="oh-l">
             <p className="oh-k">{t.orderLabel}</p>
@@ -70,7 +72,7 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
         </section>
         <div className="oh-actions">
           {a.quote.sentAt && <a className="btn btn-glass" href="quote/"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14" /></svg> {t.downloadPdf}</a>}
-          <a className="btn btn-ghost" href={signedIn ? `${base}/#request` : waLink(`Hello, I would like another service (${a.ref}).`)}>⊕ {t.requestAnother}</a>
+          <a className="btn btn-ghost" href={signedIn ? `${base}/services/` : waLink(`Hello, I would like another service (${a.ref}).`)}>⊕ {t.requestAnother}</a>
           <LiveRefresh token={a.token} stamp={a.updatedAt} label={t.live} />
         </div>
         {sp.cancelled && <p className="notice">{t.payCancelled}</p>}
@@ -225,7 +227,7 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
               {a.quote.sentAt && <a className="btn btn-line" href="quote/">⬇ {t.downloadPdf}</a>}
               {signedIn && <a className="btn btn-line" href={`${base}/`}>← {t.allOrders}</a>}
               {signedIn && <a className="btn btn-line" href={`${base}/statement/`}>🧾 {t.statement}</a>}
-              <a className="btn btn-line" href={signedIn ? `${base}/#request` : waLink(`Hello, I would like another service (${a.ref}).`)}>⊕ {t.requestAnother}</a>
+              <a className="btn btn-line" href={signedIn ? `${base}/services/` : waLink(`Hello, I would like another service (${a.ref}).`)}>⊕ {t.requestAnother}</a>
             </section>
             <details className="panel reveal tnc"><summary><b>📄 {t.terms}</b></summary><p className="small">{t.termsText}</p>{pay.termsUrl && <a className="small" href={pay.termsUrl} target="_blank" rel="noopener">{t.terms} →</a>}</details>
             <section className="panel reveal" id="messages">
@@ -260,4 +262,5 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
       </a>
     </>
   );
+  return area ? <ClientShell area={area} active="orders" title={`${t.orderLabel} ${a.ref}`} back={`${base}/t/${a.token}/`}>{content}</ClientShell> : content;
 }

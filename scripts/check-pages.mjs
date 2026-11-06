@@ -103,6 +103,15 @@ for (const vp of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
   await Promise.all([cust.waitForURL('**/portal/'), cust.click('button[type=submit]')]);
   await cust.waitForTimeout(800);
   await cust.screenshot({ path: `shots/portal-home-ar-${vp.width}.jpg`, fullPage: true });
+  await cust.context().addCookies([{ name: 'adgv_lang', value: 'en', url: base }]);
+  for (const sp of ['', 'files/', 'invoices/', 'calendar/', 'services/', 'statement/', `t/${T}/`]) {
+    const r = await cust.goto(base + '/portal/' + sp);
+    if (!r || r.status() !== 200) throw new Error('Client page failed: /portal/' + sp + ' ' + (r && r.status()));
+    await cust.waitForTimeout(500);
+    const w = await cust.evaluate(() => document.documentElement.scrollWidth);
+    if (w > vp.width + 2) errors.push(`client /portal/${sp} wider than screen: ${w}`);
+    await cust.screenshot({ path: `shots/client-${(sp || 'home').replace(/[\/]+/g, '-').replace(/-$/, '').slice(0, 20)}-${vp.width}.jpg`, fullPage: true });
+  }
   await cust.close();
   report.push({ path: 'dashboards', vp: vp.width, errors, facts: await page.evaluate(() => ({ docW: document.documentElement.scrollWidth })) });
   await page.close();

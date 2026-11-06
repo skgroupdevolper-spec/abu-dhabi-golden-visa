@@ -1,96 +1,123 @@
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
-import { ActionForm, Submit } from '@/components/dash/ActionForm';
-import { PortalTop } from '@/components/dash/PortalTop';
-import { mergeCatalog } from '@/content/services-catalog';
-import { getServiceOverrides } from '@/lib/server/content';
-import { currentCustomer, portalBase, T } from '@/lib/server/portal';
-import { listApplications, listLeads } from '@/lib/server/store';
-import { getPayCfg, online, orderBalance } from '@/lib/server/payments';
+import { ClientShell } from '@/components/dash/ClientShell';
+import { Icon } from '@/components/Icon';
+import { clientArea } from '@/lib/server/portal';
+import { feed, filePct, fileStatus, freshCount } from '@/lib/client-status';
 import { SITE } from '@/lib/site';
 import { STAGES, day, money } from '@/lib/stages';
-import { requestService } from './actions';
 
-export const metadata: Metadata = { title: 'My applications' };
+export const metadata: Metadata = { title: 'My dashboard' };
 export const dynamic = 'force-dynamic';
-const dg = (p: string) => p.replace(/\D/g, '').slice(-9);
 
+/** Client dashboard home: KPIs, quick actions, live files with progress rings, recent updates, balance. */
 export default async function Home() {
-  const base = await portalBase();
-  const me = await currentCustomer();
-  if (!me) redirect(`${base}/login/`);
-  const { t, lang } = await T();
-  const [apps, leads, pay] = await Promise.all([listApplications(), listLeads(), getPayCfg()]);
-  const quotePay = (a: (typeof apps)[number]) => (pay.payOnQuote && a.quote.sentAt && !a.payments.some((p) => p.status === 'due') && (online(pay) || pay.bankOn) ? orderBalance(a) : 0);
-  const mine = apps.filter((a) => !a.archived && ((a.client.email && a.client.email.toLowerCase() === me.email) || (dg(a.client.phone) && dg(a.client.phone) === dg(me.phone))));
-  const dueAll = mine.flatMap((a) => a.payments).filter((p) => p.status === 'due').reduce((s, p) => s + p.amount, 0) + mine.reduce((s, a) => s + Math.max(0, quotePay(a)), 0);
+  const area = await clientArea();
+  const { base, me, t, mine, requests, live, quotePay } = area;
+  const items = feed(mine, t);
+  const dueAll = mine.flatMap((a) => a.payments).filter((p) => p.status === 'due').reduce((s, p) => s + p.amount, 0) + mine.reduce((s, a) => s + quotePay(a), 0);
   const paidAll = mine.flatMap((a) => a.payments).filter((p) => p.status === 'paid').reduce((s, p) => s + p.amount, 0);
-  const requests = leads.filter((l) => l.source === 'portal' && l.email === me.email && l.status !== 'converted');
+  const st = mine.map((a) => fileStatus(a, t).key);
+  const done = st.filter((k) => k === 'done').length;
+  const quotes = st.filter((k) => k === 'quote').length;
+  const docs = mine.reduce((n, a) => n + a.documents.filter((d) => d.by === 'team' && d.shared).length, 0);
+  const dueN = mine.reduce((n, a) => n + a.payments.filter((p) => p.status === 'due').length + (quotePay(a) > 0 ? 1 : 0), 0);
+  const firstPay = mine.find((a) => a.payments.some((p) => p.status === 'due') || quotePay(a) > 0);
+  const firstDue = firstPay?.payments.find((x) => x.status === 'due');
+  const payHref = firstPay ? `${base}/t/${firstPay.token}/${firstDue ? `pay/${firstDue.id}/` : live ? 'pay/order/' : '#bank'}` : `${base}/invoices/`;
+  const h = Number(new Intl.DateTimeFormat('en-GB', { hour: 'numeric', hour12: false, timeZone: 'Asia/Dubai' }).format(new Date()));
+  const greet = h < 12 ? t.goodMorning : h < 17 ? t.goodAfternoon : t.goodEvening;
+  const active = mine.filter((_, i) => st[i] !== 'done');
+  const KIND: Record<string, string> = { stage: 'check', paid: 'card', due: 'coins', quote: 'doc', msg: 'mail', doc: 'folder' };
+  const all = [
+    { href: '/services/', icon: 'plus', t: t.newRequest, d: t.dRequest },
+    { href: '/orders/', icon: 'briefcase', t: t.orders, d: t.dOrders },
+    { href: '/quotes/', icon: 'doc', t: t.quotations, d: t.dQuotes },
+    { href: '/invoices/', icon: 'card', t: t.invoices, d: t.dInvoices },
+    { href: '/statement/', icon: 'chart', t: t.statement, d: t.dStatement },
+    { href: '/requests/', icon: 'inbox', t: t.myRequests, d: t.dRequests },
+    { href: '/calendar/', icon: 'calendar', t: t.calendar, d: t.dCalendar },
+    { href: '/account/', icon: 'user', t: t.profile, d: t.dProfile },
+  ];
+
   return (
-    <>
-      <PortalTop t={t} lang={lang.code} base={base} back={`${base}/`} signedIn />
-      <main className="pwrap">
-        <section className="phero reveal">
-          <div>
-            <p className="eyebrow">{t.myFiles}</p>
-            <h1 style={{ marginTop: 8 }}>{t.hello} {me.name.split(' ')[0]}, <span className="gold">{t.yourFile}.</span></h1>
+    <ClientShell area={area} active="home" title={t.home} updates={freshCount(items)}>
+      <div className="dh">
+        <div className="dh-l">
+          <p className="muted" style={{ margin: 0 }}>{greet}</p>
+          <h2 className="dh-name">{me.name}</h2>
+          <div className="kt">
+            <a href={`${base}/files/`}><b>{active.length}</b><small>{t.inProgress}</small></a>
+            <a href={`${base}/files/`}><b>{done}</b><small>{t.completed}</small></a>
+            <a href={`${base}/invoices/`}><b>{dueN}</b><small>{t.openPayments}</small></a>
+            <a href={`${base}/files/`}><b><Icon name="folder" size={18} /> {mine.length}</b><small>{t.myFiles}</small>{active.length > 0 && <span className="pill ok">{t.live}</span>}</a>
+            <a href={`${base}/quotes/`}><b><Icon name="doc" size={18} /> {quotes}</b><small>{t.quotations}</small></a>
+            <a href={`${base}/files/`}><b><Icon name="download" size={18} /> {docs}</b><small>{t.docsShared}</small></a>
           </div>
-          <img decoding="async" className="coinb" src="/brand/coin.webp" alt="" width={120} height={120} />
-        </section>
-        <div className="grid4 pk" style={{ marginTop: 16 }}>
-          <div className="kpi"><small>{t.myFiles}</small><b>{mine.length}</b></div>
-          <div className="kpi"><small>{t.amountDue}</small><b>{money(dueAll)}</b></div>
-          <div className="kpi"><small>{t.paidSoFar}</small><b>{money(paidAll)}</b></div>
-          <a className="kpi goldbg" href={`${base}/statement/`} style={{ textDecoration: 'none', color: 'inherit' }}><small>{t.statement}</small><b style={{ fontSize: 18 }}>🧾 {t.open} →</b></a>
-        </div>
-        <div className="cols" style={{ marginTop: 18 }}>
-          <div className="stack">
-            {mine.length === 0 ? <p className="empty">{t.noFiles}</p> : mine.map((a) => {
-              const due = a.payments.filter((p) => p.status === 'due');
-              const total = a.quote.lines.reduce((s, l) => s + l.amount, 0) + a.quote.serviceFee + a.quote.vat;
-              const st = a.stage >= STAGES.length - 1 ? t.stCompleted : !a.quote.sentAt ? t.stPreparing : !a.quote.acceptedAt && !a.payments.some((p) => p.status === 'paid') ? t.stQuotation : due.length ? t.stConfirmed : t.inProgress;
-              return (
-                <div key={a.id} className="panel reveal ocard">
-                  <a href={`${base}/t/${a.token}/`} className="oc-top">
-                    <span><small>{t.orderLabel}</small><b>{a.ref}</b><em>● {st}</em></span>
-                    <span className="oc-amt"><small>{t.totalAmount}</small><b>{total ? money(total) : '—'}</b></span>
-                  </a>
-                  <p style={{ margin: '12px 0 8px', fontWeight: 700 }}>{a.route} · {t.step} {a.stage + 1} {t.of} {STAGES.length}: {t.stages[a.stage]}</p>
-                  <div className="bar"><i style={{ width: `${((a.stage + 1) / STAGES.length) * 100}%` }} /></div>
-                  {a.nextStep && <p className="small muted" style={{ margin: '10px 0 0' }}>{t.next}: {a.nextStep}</p>}
-                  <div className="row" style={{ marginTop: 12, flexWrap: 'wrap' }}>
-                    {due.map((p) => <a key={p.id} className="btn btn-gold btn-sm" href={`${base}/t/${a.token}/pay/${p.id}/`}>💳 {t.payNow} · {money(p.amount)}</a>)}
-                    {quotePay(a) > 0 && <a className="btn btn-gold btn-sm" href={`${base}/t/${a.token}/${online(pay) ? 'pay/order/' : '#bank'}`}>💳 {t.payConfirm} · {money(quotePay(a))}</a>}
-                    <a className="btn btn-sm" href={`${base}/t/${a.token}/`}>{t.open} →</a>
-                  </div>
-                </div>
-              );
-            })}
-            {requests.length > 0 && (
-              <div className="panel">
-                <h2>{t.myRequests}</h2>
-                <div className="files" style={{ marginTop: 12 }}>
-                  {requests.map((r) => <div className="file" key={r.id}><span className="fi">✉</span><span className="fn"><b>{r.service}</b><small>{day(r.at)}</small></span><span className="pill new">{r.status === 'new' ? t.received : t.inProgress}</span></div>)}
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="panel reveal" id="request">
-            <h2>{t.newRequest}</h2>
-            <ActionForm action={requestService} className="stack" reset>
-              <div className="field"><label htmlFor="service">{t.chooseService}</label>
-                <select id="service" name="service" required defaultValue="">
-                  <option value="" disabled>{t.chooseService}</option>
-                  {mergeCatalog(await getServiceOverrides()).filter((g) => g.key !== 'Quick access').map((g) => <optgroup key={g.title} label={g.title}>{g.items.map((i) => <option key={i.href}>{i.label}</option>)}</optgroup>)}
-                </select>
-              </div>
-              <div className="field"><label htmlFor="message">{t.details}</label><textarea id="message" name="message" /></div>
-              <Submit>{t.sendRequest}</Submit>
-            </ActionForm>
+          <div className="qt">
+            <a href={`${base}/services/`}><Icon name="plus" size={20} />{t.newRequest}</a>
+            <a href={payHref}><Icon name="card" size={20} />{t.payNow}</a>
+            <a href={`${base}/statement/`}><Icon name="chart" size={20} />{t.statement}</a>
+            <a href={`${base}/calendar/`}><Icon name="calendar" size={20} />{t.calendar}</a>
           </div>
         </div>
-        <p className="pfoot">{SITE.operator}</p>
-      </main>
-    </>
+        <div className="dh-r">
+          <div className="balc">
+            <small>{dueAll > 0 ? t.toPayNow : t.paidWithUs}</small>
+            <b>{money(dueAll > 0 ? dueAll : paidAll)}</b>
+            <span>{dueAll > 0 ? `${dueN} × ${t.openPayments}` : `✓ ${t.allPaid}`}</span>
+            <div className="row">
+              {dueAll > 0 && <a className="btn btn-gold btn-sm" href={payHref}>{t.payNow}</a>}
+              <a className="btn btn-sm balc-b" href={`${base}/statement/`}>{t.statement}</a>
+            </div>
+          </div>
+          <div className="panel">
+            <div className="panel-h"><h2>{t.myRequests}</h2><a className="small" href={`${base}/requests/`}>{t.allStatus} ›</a></div>
+            {requests.length === 0 ? <p className="small muted" style={{ margin: '8px 0 0' }}>{t.nothingYet}</p> : requests.slice(0, 3).map((r) => (
+              <div key={r.id} className="mini"><b>{r.service}</b><small>{day(r.at)} · {r.status === 'new' ? t.received : t.inProgress}</small></div>
+            ))}
+            <a className="btn btn-line btn-sm" style={{ marginTop: 10, width: '100%' }} href={`${base}/services/`}>+ {t.newRequest}</a>
+          </div>
+        </div>
+      </div>
+
+      <section className="dsec">
+        <div className="panel-h"><p className="eyebrow">{t.liveFiles}</p><a className="small" href={`${base}/files/`}>{t.allFiles} ›</a></div>
+        {active.length === 0 ? <p className="empty">{mine.length ? t.nothingYet : t.noFiles}</p> : active.slice(0, 5).map((a) => {
+          const s = fileStatus(a, t), pct = filePct(a), qp = quotePay(a), dueP = a.payments.find((p) => p.status === 'due');
+          return (
+            <a key={a.id} className="jrow" href={`${base}/t/${a.token}/`}>
+              <span className="ring" style={{ ['--p' as string]: pct }}><i>{pct}%</i></span>
+              <span className="jr-m"><b>{a.route}</b><small>{a.ref} · {t.step} {a.stage + 1} {t.of} {STAGES.length}: {t.stages[a.stage]}</small>
+                <span className="row" style={{ gap: 6, marginTop: 6 }}><em className={`stc-pill st-${s.key}`}>{s.label}</em>{a.expected && <em className="stc-pill">{t.expected} {a.expected}</em>}{(dueP || qp > 0) && <em className="stc-pill st-quote">{t.due}: {money(dueP ? dueP.amount : qp)}</em>}</span>
+              </span>
+              <Icon name="chev" size={18} />
+            </a>
+          );
+        })}
+      </section>
+
+      <section className="dsec" id="updates">
+        <p className="eyebrow">{t.recentUpdates}</p>
+        {items.length === 0 ? <p className="empty">{t.nothingYet}</p> : (
+          <div className="feed">
+            {items.slice(0, 12).map((x, i) => (
+              <a key={i} href={`${base}/t/${x.token}/`} className={`fd k-${x.kind}`}>
+                <span className="fd-ic"><Icon name={KIND[x.kind]} size={16} /></span>
+                <span className="fd-m"><b>{x.title}</b><small>{x.text}</small></span>
+                <span className="fd-r">{x.amount ? <b>{money(x.amount)}</b> : null}<small>{day(x.at)}</small></span>
+              </a>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="dsec">
+        <p className="eyebrow">{t.everything}</p>
+        <div className="allg">
+          {all.map((x) => <a key={x.href} href={`${base}${x.href}`}><span><Icon name={x.icon} size={20} /></span><b>{x.t}</b><small>{x.d}</small></a>)}
+        </div>
+      </section>
+      <p className="pfoot">{SITE.operator}</p>
+    </ClientShell>
   );
 }
