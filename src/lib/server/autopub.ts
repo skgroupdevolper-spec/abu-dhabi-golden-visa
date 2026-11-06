@@ -130,7 +130,10 @@ Return JSON: {"title" (max 65 chars),"seoTitle" (max 60),"slug","keyword","meta"
     await patch<Job>('ap-jobs', job.id, (j) => ({ ...j, status: gates.length ? 'held' : 'done', postId: post.id, title: post.title, note: gates.join(', ') || (publish ? 'Published' : 'Waiting for review') }));
     await log(`${publish ? 'Published' : gates.length ? `Held as draft (${gates.join(', ')})` : 'Drafted for review'}: ${post.title} (similarity ${Math.round(sim * 100)}%)${b.mission ? ` · mission ${b.mission.name}` : ''}`);
     await notify('request', `Auto Publisher: "${post.title}" ${publish ? 'published' : 'is waiting for your review'}`, `/admin/posts/${post.id}/`);
-    if (publish) void import('./translate').then((m) => m.autoTranslate([`/blog/${slug}/`])).catch(() => {});
+    if (publish) {
+      void import('./translate').then((m) => m.autoTranslate([`/blog/${slug}/`])).catch(() => {});
+      if (!post.noindex) void import('./indexnow').then((m) => m.pingIndexNow([`/blog/${slug}/`, '/blog/'])).catch(() => {});
+    }
     return { ok: true, message: publish ? 'Article published.' : gates.length ? `Article held as draft: ${gates.join(', ')}.` : 'Article drafted and waiting in the review queue.', id: post.id };
   } catch (e) {
     await patch<Job>('ap-jobs', job.id, (j) => ({ ...j, status: 'failed', note: (e as Error).message.slice(0, 200) }));
