@@ -14,7 +14,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ token: str
   const fees = await getFees();
   const gov = a.quote.lines.reduce((s, l) => s + l.amount, 0);
   const lines: [string, string][] = [
-    ...a.quote.lines.map((l): [string, string] => [l.label, l.amount.toFixed(2)]),
+    ...a.quote.lines.map((l): [string, string] => [(l.qty ?? 1) > 1 ? `${l.label} (${l.qty} × ${(l.unit ?? l.amount / (l.qty ?? 1)).toFixed(2)})` : l.label, l.amount.toFixed(2)]),
     ...(a.quote.serviceFee ? [['Service fee', a.quote.serviceFee.toFixed(2)] as [string, string], ['VAT 5% on service fee', a.quote.vat.toFixed(2)] as [string, string]] : []),
     ['Health insurance', a.quote.insurance],
   ];
