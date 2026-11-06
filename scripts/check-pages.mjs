@@ -84,6 +84,7 @@ for (const vp of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
   if (!(await page.locator('text=Payment received').count())) throw new Error('Payment confirmation page did not show the paid state');
   { const r = await page.request.get(base + `/portal/t/${T}/receipt/p1/pdf/`); if (r.status() !== 200 || !(r.headers()['content-type'] || '').includes('pdf')) throw new Error('Receipt PDF failed ' + r.status()); }
   { const r = await page.request.get(base + `/api/portal/pulse/?token=${T}`); if (r.status() !== 200) throw new Error('Pulse failed'); }
+  { const r = await page.request.get(base + '/web/login/', { maxRedirects: 0 }); if (![307, 308].includes(r.status()) || !(r.headers()['location'] || '').includes('/portal/login')) throw new Error('/web/login redirect missing ' + r.status()); }
   await page.goto(base + '/portal/login/');
   await page.waitForTimeout(1500);
   await page.screenshot({ path: `shots/portal-login-${vp.width}.jpg`, fullPage: true });

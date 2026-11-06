@@ -553,3 +553,25 @@ body:has(.admin) { background: #f7f6f2; }
 .ocard .oc-top small { display: block; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.65); }
 .ocard .oc-top b { font-size: 19px; } .ocard .oc-top em { display: block; font-style: normal; font-size: 12.5px; color: #f6dc8c; margin-top: 2px; }
 .ocard .oc-amt { text-align: end; } .ocard .oc-amt b { font-size: 22px; }
+.admin .svc-tbl input:not([type=checkbox]) { min-height: 38px; width: 100%; min-width: 150px; }
+.admin .svc-tbl tr.off td { opacity: .55; }
+.admin .savebar { position: sticky; bottom: 12px; z-index: 5; display: flex; gap: 12px; align-items: center; padding: 12px 16px; border-radius: 16px; background: rgba(255,255,255,.92); backdrop-filter: blur(8px); border: 1px solid #ece4d0; box-shadow: 0 18px 40px -24px rgba(0,0,0,.4); }
+/* Pages list with language badges */
+.admin .pg-list { display: grid; gap: 0; background: #fff; border: 1px solid #ece4d0; border-radius: 18px; overflow: hidden; }
+.admin .pg-row { display: grid; grid-template-columns: auto minmax(200px, 1fr) minmax(0, 2fr) auto; gap: 14px; align-items: center; padding: 14px 16px; border-bottom: 1px solid #f3eddd; }
+.admin .pg-row:last-child { border-bottom: 0; }
+.admin .pg-row:hover { background: #fffbf1; }
+.admin .pg-row.off { opacity: .6; }
+.admin .pg-ic { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: #f6efdc; color: #8a6a12; }
+.admin .pg-t { font-weight: 700; font-size: 16px; color: #1a1a1a; text-decoration: none; }
+.admin .pg-t:hover { color: #8a6a12; }
+.admin .pg-main small { display: block; color: #8b8273; font-size: 12.5px; margin-top: 2px; }
+.admin .pg-langs { display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; }
+.admin .lg { display: inline-flex; align-items: center; gap: 3px; padding: 3px 6px; border-radius: 7px; font: 700 11px var(--body); text-decoration: none; background: #f2efe8; color: #9b9384; border: 1px solid transparent; }
+.admin .lg i { font-style: normal; font-size: 8.5px; opacity: .7; }
+.admin .lg.ok { background: #fbf2d5; color: #6b5212; border-color: #f0dfa6; }
+.admin .lg.old { background: #fff1dc; color: #a35a00; border-color: #f5cf99; }
+.admin .lg:hover { border-color: #c8961e; }
+.admin .pg-act { display: flex; gap: 4px; align-items: center; }
+.admin .pg-act form { display: contents; }
+@media (max-width: 1100px) { .admin .pg-row { grid-template-columns: auto 1fr; } .admin .pg-langs, .admin .pg-act { grid-column: 1 / -1; justify-content: flex-start; } }

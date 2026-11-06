@@ -5,6 +5,10 @@ import { requireAdmin } from '@/lib/server/auth';
 import { getCustomPages, getOverrides, getTranslations } from '@/lib/server/content';
 import { Icon } from '@/components/Icon';
 import { NewPageForm } from '@/components/dash/NewPageForm';
+import { LOCALES } from '@/lib/i18n';
+import { deleteCustomPage, duplicatePage } from '../../content-actions';
+
+const FLAG: Record<string, string> = { en: 'GB', ar: 'AE', ru: 'RU', tr: 'TR', zh: 'CN', fr: 'FR', de: 'DE', it: 'IT', es: 'ES', ro: 'RO', pt: 'PT', at: 'AT', pl: 'PL', hu: 'HU', hr: 'HR', sk: 'SK', cs: 'CZ', hi: 'IN', id: 'ID', ur: 'PK' };
 
 export const metadata: Metadata = { title: 'Pages & builder' };
 
@@ -20,7 +24,7 @@ export default async function Pages({ searchParams }: { searchParams: Promise<{ 
   await requireAdmin();
   const { q = '', t = 'all' } = await searchParams;
   const [over, customs, tr] = await Promise.all([getOverrides(), getCustomPages(), getTranslations()]);
-  const nTr = (path: string) => Object.values(tr).filter((l) => l[path]).length;
+  const stOf = (code: string, path: string, at?: string) => { const x = tr[code]?.[path]; return !x ? 'no' : !x.manual && at && at > x.at ? 'old' : 'ok'; };
   const all = [
     { path: '/', h1: 'Homepage', group: 'Main', seoTitle: over['/']?.seoTitle || 'Abu Dhabi Golden Visa | 10-Year UAE Residency Consultants', meta: over['/']?.meta || 'home', image: '/images/skyline.webp', o: over['/'] ?? {}, custom: false },
     ...customs.map((c) => ({ path: c.path, h1: c.h1 || c.title, group: 'Custom page', seoTitle: c.seoTitle || c.title, meta: c.meta || '', image: c.image, o: c, custom: true })),
@@ -41,21 +45,34 @@ export default async function Pages({ searchParams }: { searchParams: Promise<{ 
         <form className="row" action="/admin/pages/"><input type="hidden" name="t" value={t} /><input name="q" defaultValue={q} placeholder="Search pages" style={{ width: 240 }} /><button className="btn btn-sm" type="submit">Search</button></form>
       </div>
       <p className="help" style={{ marginBottom: 12 }}>{rows.length} pages. Open any page to edit every section, add widgets, change the design, featured image and SEO. The homepage can hide, keep or add sections anywhere between its built-in parts. Blog articles are under Blog posts.</p>
-      <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Page</th><th>Type</th><th>SEO</th><th>Languages</th><th>Status</th><th></th></tr></thead><tbody>
+      <div className="pg-list">
         {rows.map((p) => {
           const sc = score(p.seoTitle, p.meta, p.image);
+          const secs = p.o.blocks?.length ?? PAGES.find((x) => x.path === p.path)?.sections.length ?? 0;
+          const edit = `/admin/pages/edit/?path=${encodeURIComponent(p.path)}`;
           return (
-            <tr key={p.path}>
-              <td><Link href={`/admin/pages/edit/?path=${encodeURIComponent(p.path)}`}>{p.h1}</Link><div className="small muted">{p.path}</div></td>
-              <td><span className="small">{p.group}</span></td>
-              <td><span className={`score s${sc >= 80 ? 'g' : sc >= 50 ? 'm' : 'b'}`}>{sc}%</span>{p.o.noindex && <span className="pill closed" style={{ marginInlineStart: 6 }}>noindex</span>}</td>
-              <td><Link href={`/admin/pages/edit/?path=${encodeURIComponent(p.path)}#translations`} className={`pill ${nTr(p.path) >= 19 ? 'ok' : nTr(p.path) ? 'new' : ''}`}>{nTr(p.path)}/19</Link></td>
-              <td>{p.o.hidden ? <span className="pill closed">Hidden</span> : p.o.blocks?.length ? <span className="pill ok">Built</span> : Object.keys(p.o).length ? <span className="pill new">Edited</span> : <span className="muted small">Original</span>}</td>
-              <td className="num"><Link className="btn btn-sm" href={`/admin/pages/edit/?path=${encodeURIComponent(p.path)}`}><Icon name="pen" size={14} /> Edit</Link> <a className="btn btn-sm btn-ghost" href={p.path} target="_blank" rel="noopener" aria-label="View"><Icon name="ext" size={14} /></a></td>
-            </tr>
+            <div key={p.path} className={`pg-row${p.o.hidden ? ' off' : ''}`}>
+              <span className="pg-ic"><Icon name={p.path === '/' ? 'home' : p.custom ? 'plus' : 'doc'} size={20} /></span>
+              <div className="pg-main">
+                <Link href={edit} className="pg-t">{p.h1}</Link>
+                <small>{p.path} · {secs} sections{p.o.at ? ` · updated ${new Date(p.o.at).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ' · original'} · <span className={`score s${sc >= 80 ? 'g' : sc >= 50 ? 'm' : 'b'}`}>SEO {sc}%</span>{p.o.hidden && <span className="pill closed" style={{ marginInlineStart: 6 }}>Hidden</span>}</small>
+              </div>
+              <div className="pg-langs" aria-label="Translations">
+                {LOCALES.map((l) => {
+                  const st = l.code === 'en' ? 'ok' : stOf(l.code, p.path, p.o.at);
+                  return <Link key={l.code} href={l.code === 'en' ? edit : `/admin/languages/edit/?path=${encodeURIComponent(p.path)}&lang=${l.code}`} className={`lg ${st}`} title={`${l.name}: ${st === 'ok' ? 'translated' : st === 'old' ? 'needs update' : 'not translated'}`}><i>{FLAG[l.code] ?? l.code.toUpperCase()}</i>{l.code.toUpperCase()}</Link>;
+                })}
+              </div>
+              <div className="pg-act">
+                <Link className="btn btn-sm btn-gold" href={edit}><Icon name="pen" size={14} /> Edit</Link>
+                <a className="btn btn-sm btn-ghost" href={p.path} target="_blank" rel="noopener" aria-label="View" title="View"><Icon name="ext" size={15} /></a>
+                <form action={duplicatePage}><input type="hidden" name="path" value={p.path} /><button className="btn btn-sm btn-ghost" title="Duplicate" aria-label="Duplicate"><Icon name="copy" size={15} /></button></form>
+                {p.custom && <form action={deleteCustomPage}><input type="hidden" name="path" value={p.path} /><button className="btn btn-sm btn-ghost btn-danger" title="Delete" aria-label="Delete"><Icon name="trash" size={15} /></button></form>}
+              </div>
+            </div>
           );
         })}
-      </tbody></table></div>
+      </div>
     </>
   );
 }

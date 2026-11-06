@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { ActionForm, Submit } from '@/components/dash/ActionForm';
 import { PortalTop } from '@/components/dash/PortalTop';
-import { SERVICE_CATALOG } from '@/content/services-catalog';
+import { mergeCatalog } from '@/content/services-catalog';
+import { getServiceOverrides } from '@/lib/server/content';
 import { currentCustomer, portalBase, T } from '@/lib/server/portal';
 import { listApplications, listLeads } from '@/lib/server/store';
 import { SITE } from '@/lib/site';
@@ -77,7 +78,7 @@ export default async function Home() {
               <div className="field"><label htmlFor="service">{t.chooseService}</label>
                 <select id="service" name="service" required defaultValue="">
                   <option value="" disabled>{t.chooseService}</option>
-                  {SERVICE_CATALOG.filter((g) => g.title !== 'Quick access').map((g) => <optgroup key={g.title} label={g.title}>{g.items.map((i) => <option key={i.href}>{i.label}</option>)}</optgroup>)}
+                  {mergeCatalog(await getServiceOverrides()).filter((g) => g.key !== 'Quick access').map((g) => <optgroup key={g.title} label={g.title}>{g.items.map((i) => <option key={i.href}>{i.label}</option>)}</optgroup>)}
                 </select>
               </div>
               <div className="field"><label htmlFor="message">{t.details}</label><textarea id="message" name="message" /></div>

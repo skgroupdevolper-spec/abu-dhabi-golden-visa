@@ -1,7 +1,7 @@
 // One list of every service, grouped as in the Services Menu guide and the developer specification.
 // Used by the service-page side menu, the "Our Services" mega menu and the services hub.
-export type CatalogItem = { label: string; href: string; note?: string };
-export type CatalogGroup = { title: string; icon: string; items: CatalogItem[] };
+export type CatalogItem = { label: string; href: string; note?: string; price?: string; added?: boolean };
+export type CatalogGroup = { title: string; icon: string; items: CatalogItem[]; key?: string };
 
 export const SERVICE_CATALOG: CatalogGroup[] = [
   {
@@ -101,4 +101,32 @@ const ALL = new Set(SERVICE_CATALOG.flatMap((g) => g.items.map((i) => i.href)));
 /** Pages that show the service side menu. */
 export function isServicePage(path: string) {
   return path === '/services/' || path.startsWith('/services/') || path.startsWith('/document-services/') || (ALL.has(path) && path !== '/golden-visa/');
+}
+
+/* ---------- Editable catalog (Admin > Services & prices) ---------- */
+export type AddedService = { id: string; group: string; label: string; href: string; note?: string };
+export type ServiceData = { hidden: string[]; prices: Record<string, string>; notes: Record<string, string>; labels?: Record<string, string>; added?: AddedService[]; groupNames?: Record<string, string> };
+
+/** Base catalog plus admin edits: names, descriptions, prices, hidden items and added services. */
+export function mergeCatalog(d?: Partial<ServiceData> | null, keepHidden = false): CatalogGroup[] {
+  const groups: CatalogGroup[] = SERVICE_CATALOG.map((g) => ({
+    ...g, key: g.title, title: d?.groupNames?.[g.title] || g.title,
+    items: g.items.map((i) => ({ ...i, label: d?.labels?.[i.href] || i.label, note: d?.notes?.[i.href] || i.note, price: d?.prices?.[i.href] })),
+  }));
+  for (const a of d?.added ?? []) {
+    const g = groups.find((x) => x.key === a.group) ?? groups[groups.length - 1];
+    g.items.push({ label: d?.labels?.[a.href] || a.label, href: a.href, note: d?.notes?.[a.href] || a.note, price: d?.prices?.[a.href], added: true });
+  }
+  return keepHidden ? groups : groups.map((g) => ({ ...g, items: g.items.filter((i) => !d?.hidden?.includes(i.href)) }));
+}
+
+declare global {
+  // eslint-disable-next-line no-var
+  var __ADGV_SVC: CatalogGroup[] | undefined;
+  interface Window { __ADGV_SVC?: CatalogGroup[] }
+}
+/** The live catalog (set by the website layout); falls back to the base list. */
+export function catalog(): CatalogGroup[] {
+  if (typeof window !== 'undefined') return window.__ADGV_SVC ?? SERVICE_CATALOG;
+  return globalThis.__ADGV_SVC ?? SERVICE_CATALOG;
 }

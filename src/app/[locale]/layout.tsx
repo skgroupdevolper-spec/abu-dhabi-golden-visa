@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from 'next';
+import { mergeCatalog } from '@/content/services-catalog';
+import { getServiceOverrides } from '@/lib/server/content';
 import type { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 import { Instrument_Serif, Manrope, Noto_Naskh_Arabic } from 'next/font/google';
@@ -45,6 +47,8 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   if (!isLocale(locale)) notFound();
   const info = localeInfo(locale);
   const site = applyRuntimeSync();
+  const svcCat = mergeCatalog(await getServiceOverrides());
+  globalThis.__ADGV_SVC = svcCat;
   const seo = (await getSecrets()).seo;
   const c = site.colors;
   const design = cleanDesign(await getBlock<Partial<Design>>('design', DEFAULT_DESIGN));
@@ -53,7 +57,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   return (
     <html lang={info.htmlLang} dir={info.dir} className={`${display.variable} ${body.variable} ${arabic.variable}`}>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: `window.__ADGV_SITE=${JSON.stringify(site).replace(/</g, '\\u003c')}` }} />
+        <script dangerouslySetInnerHTML={{ __html: `window.__ADGV_SITE=${JSON.stringify(site).replace(/</g, '\\u003c')};window.__ADGV_SVC=${JSON.stringify(svcCat).replace(/</g, '\\u003c')}` }} />
         <style dangerouslySetInnerHTML={{ __html: `:root{--gold:${c.gold};--gold-deep:${c.goldDeep};--navy:${c.ink};--paper:${c.paper}}`.replace(/[<>]/g, '') }} />
         {fonts && <><link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" /><link rel="stylesheet" href={fonts} /></>}
         {dcss.trim() && <style id="site-design" dangerouslySetInnerHTML={{ __html: dcss }} />}

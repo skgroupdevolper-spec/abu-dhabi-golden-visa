@@ -29,7 +29,7 @@ export type Faq = { id: string; q: string; a: string; order: number };
 export type Testimonial = { id: string; name: string; country: string; text: string; rating: number; approved: boolean; consent: boolean; at: string };
 export type Partner = { id: string; name: string; logo: string; link: string };
 export type MediaItem = { id: string; file: string; name: string; type: string; size: number; alt: string; at: string };
-export type ServiceOverrides = { hidden: string[]; prices: Record<string, string>; notes: Record<string, string> };
+export type ServiceOverrides = import('@/content/services-catalog').ServiceData;
 export type PageTranslation = { seoTitle?: string; meta?: string; eyebrow?: string; h1?: string; intro?: string; sections?: Section[]; blocks?: Block[]; at: string; manual?: boolean };
 export type Translations = Record<string, Record<string, PageTranslation>>;
 

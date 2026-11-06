@@ -1,6 +1,6 @@
 import 'server-only';
 import { FAQS } from '@/content/faqs';
-import { SERVICE_CATALOG } from '@/content/services-catalog';
+import { mergeCatalog } from '@/content/services-catalog';
 import { LOCALES } from '@/lib/i18n';
 import { SITE } from '@/lib/site';
 import { getFaqs, getServiceOverrides } from './content';
@@ -24,7 +24,7 @@ function handoverWhen(cfg: ChatbotCfg) {
 export async function chatSystemPrompt(lang: string) {
   const cfg = await getBlock<ChatbotCfg>('chatbot', CB0);
   const [fees, faqs, svc] = await Promise.all([getFees(), getFaqs(), getServiceOverrides()]);
-  const services = SERVICE_CATALOG.map((g) => `${g.title}: ${g.items.filter((i) => !svc.hidden.includes(i.href)).map((i) => `${i.label} (${i.href}${svc.prices[i.href] ? `, ${svc.prices[i.href]}` : ''})`).join('; ')}`).join('\n');
+  const services = mergeCatalog(svc).map((g) => `${g.title}: ${g.items.map((i) => `${i.label} (${i.href}${svc.prices[i.href] ? `, ${svc.prices[i.href]}` : ''})`).join('; ')}`).join('\n');
   const qa = (faqs.length ? faqs : FAQS).map((f) => `Q: ${f.q}\nA: ${f.a}`).join('\n');
   const language = LOCALES.find((l) => l.code === lang)?.name ?? 'the visitor’s language';
   return `You are "${cfg.name}", the website assistant of ${SITE.name}, a private consultancy operated by ${SITE.operator} (Trade Licence ${SITE.licence}).

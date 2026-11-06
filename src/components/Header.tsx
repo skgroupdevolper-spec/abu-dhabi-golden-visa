@@ -1,5 +1,6 @@
 'use client';
 
+import { catalog } from '@/content/services-catalog';
 import { BrandLogo } from './BrandLogo';
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
@@ -35,7 +36,8 @@ function iconFor(label: string, group: string) {
   return 'star';
 }
 
-const MENU = () => (SITE.nav.menu?.length ? SITE.nav.menu : NAV);
+// The Our Services menu always follows the live service list (Admin > Services & prices).
+const MENU = () => (SITE.nav.menu?.length ? SITE.nav.menu : NAV.map((i) => (i.href === '/services/' && i.groups ? { ...i, groups: catalog().map((g) => ({ title: g.title, links: g.items.map((x) => ({ label: x.label, href: x.href })) })) } : i)));
 
 export function Header({ locale }: { locale: Locale }) {
   const pathname = usePathname() || '/';

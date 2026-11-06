@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { mergeCatalog } from '@/content/services-catalog';
 import { notFound } from 'next/navigation';
 import { PAGES, getPage } from '@/content/pages';
 import type { Page, Section } from '@/content/types';
@@ -52,8 +53,10 @@ async function resolve(locale: string, slug: string[]): Promise<Resolved | null>
     const faqs = await getFaqs();
     if (faqs.length) sections = [{ type: 'faq', title: 'Frequently asked questions', items: faqs.map((f) => ({ q: f.q, a: f.a })) }];
   }
-  if (path === '/services/' && svc.hidden.length) {
-    sections = sections.map((s) => (s.type === 'cards' ? { ...s, items: s.items.filter((i) => !svc.hidden.includes(i.href)) } : s));
+  if (path === '/services/') {
+    // Service hub cards follow the live list: renamed, added, hidden and priced services.
+    const live = mergeCatalog(svc);
+    sections = [...sections.filter((s) => s.type !== 'cards'), ...live.filter((g) => g.items.length).map((g): Section => ({ type: 'cards', title: g.title, items: g.items.map((i) => ({ title: i.label, text: [i.note, i.price].filter(Boolean).join(' · ') || 'See what we handle, the documents and the steps.', href: i.href })) }))];
   }
   if (o.extra) sections = [...sections.slice(0, -1), { type: 'html', html: md(o.extra) }, ...sections.slice(-1)];
 

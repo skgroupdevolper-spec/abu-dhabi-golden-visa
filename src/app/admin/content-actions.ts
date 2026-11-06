@@ -6,9 +6,9 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { EDIT, FULL, requireAdmin } from '@/lib/server/auth';
 import { insert, list, patch, remove } from '@/lib/server/collections';
-import type { Category, Faq, MediaItem, PageOverride, Partner, Post, ServiceOverrides, Testimonial } from '@/lib/server/content';
+import { getCustomPages, type Category, type CustomPage, type Faq, type MediaItem, type PageOverride, type Partner, type Post, type ServiceOverrides, type Testimonial } from '@/lib/server/content';
 import { getSite, saveSite } from '@/lib/server/settings';
-import { DATA_DIR, newId, now, updateJsonFile } from '@/lib/server/store';
+import { DATA_DIR, newId, now, readJsonFile, updateJsonFile } from '@/lib/server/store';
 import { slugify } from '@/lib/markdown';
 
 type St = { ok?: string; error?: string } | undefined;
@@ -79,18 +79,57 @@ export async function saveFaqs(_: St, f: FormData): Promise<St> {
 }
 
 /* ---------- services & prices ---------- */
+const SVC0: ServiceOverrides = { hidden: [], prices: {}, notes: {}, labels: {}, added: [], groupNames: {} };
 export async function saveServices(_: St, f: FormData): Promise<St> {
   await requireAdmin(FULL);
   const hrefs = f.getAll('href').map(String);
-  const o: ServiceOverrides = { hidden: [], prices: {}, notes: {} };
-  for (const h of hrefs) {
-    if (f.get(`hide_${h}`) === 'on') o.hidden.push(h);
-    const p = s(f, `price_${h}`, 120);
-    if (p) o.prices[h] = p;
-  }
-  await updateJsonFile<ServiceOverrides>('services.json', { hidden: [], prices: {}, notes: {} }, () => o);
+  await updateJsonFile<ServiceOverrides>('services.json', SVC0, (cur) => {
+    const o: ServiceOverrides = { ...SVC0, ...cur, hidden: [], prices: {}, notes: {}, labels: {}, groupNames: {} };
+    for (const h of hrefs) {
+      if (f.get(`hide_${h}`) === 'on') o.hidden.push(h);
+      const p = s(f, `price_${h}`, 120); if (p) o.prices[h] = p;
+      const n = s(f, `note_${h}`, 200); if (n) o.notes[h] = n;
+      const l = s(f, `label_${h}`, 100); if (l) o.labels![h] = l;
+    }
+    for (const g of f.getAll('group').map(String)) { const v = s(f, `gname_${g}`, 80); if (v && v !== g) o.groupNames![g] = v; }
+    return o;
+  });
   live();
-  return { ok: 'Services saved.' };
+  return { ok: 'Services saved. The menu, service pages and prices are updated.' };
+}
+export async function addService(_: St, f: FormData): Promise<St> {
+  await requireAdmin(FULL);
+  const label = s(f, 'label', 100);
+  if (!label) return { error: 'Give the service a name.' };
+  const slug = slugify(s(f, 'slug', 80) || label);
+  const href = `/services/${slug}/`;
+  const note = s(f, 'note', 200), price = s(f, 'price', 120), group = s(f, 'group', 80);
+  const [{ SERVICE_CATALOG }, { getPage }] = await Promise.all([import('@/content/services-catalog'), import('@/content/pages')]);
+  const cur = await readJsonFile<ServiceOverrides>('services.json', SVC0);
+  if (SERVICE_CATALOG.some((g) => g.items.some((i) => i.href === href)) || (cur.added ?? []).some((a) => a.href === href)) return { error: 'A service with this address already exists.' };
+  await updateJsonFile<ServiceOverrides>('services.json', SVC0, (o) => ({ ...SVC0, ...o, added: [...(o.added ?? []), { id: newId(6), group, label, href, note }], prices: price ? { ...o.prices, [href]: price } : o.prices }));
+  // Its own page, ready to edit in the page builder.
+  if (f.get('page') === 'on' && !getPage(href) && !(await getCustomPages()).some((c) => c.path === href)) {
+    const { uid } = await import('@/lib/blocks');
+    await insert<CustomPage>('custom-pages', {
+      id: newId(8), path: href, title: label, createdAt: now(), at: now(), h1: label, eyebrow: group || 'Our services', seoTitle: `${label} in Abu Dhabi | Abu Dhabi Golden Visa`.slice(0, 70),
+      meta: (note || `${label}: what we handle, the documents and the steps. Free first consultation.`).slice(0, 160), intro: note || `${label}, handled for you from the first document to the final approval.`,
+      facts: price ? [{ label: 'Price', value: price }, { label: 'Consultation', value: 'Free, no obligation' }] : undefined,
+      blocks: [
+        { id: uid(), type: 'text', style: {}, data: { title: `About ${label}`, body: `${note || label}\n\nTell us your situation and we confirm the documents, the steps and the cost in writing before you pay.` } },
+        { id: uid(), type: 'cta', style: { bg: 'dark' }, data: { title: 'Get a free quote', text: price ? `${label}: ${price}` : 'We reply in your language on WhatsApp.', b1: [{ label: 'Apply now', href: '/apply/' }], b2: [{ label: 'WhatsApp', href: 'wa' }] } },
+        { id: uid(), type: 'lead', style: {}, data: { title: 'Send your details' } },
+      ],
+    });
+  }
+  live();
+  return { ok: `“${label}” added to the Our Services menu${f.get('page') === 'on' ? ' with its own page (edit it under Pages)' : ''}.` };
+}
+export async function deleteService(f: FormData) {
+  await requireAdmin(FULL);
+  const href = s(f, 'href', 200);
+  await updateJsonFile<ServiceOverrides>('services.json', SVC0, (o) => ({ ...SVC0, ...o, added: (o.added ?? []).filter((a) => a.href !== href) }));
+  live();
 }
 
 /* ---------- testimonials ---------- */
@@ -211,4 +250,31 @@ export async function restoreRevision(f: FormData) {
   });
   live();
   redirect(`/admin/posts/${id}/?restored=1`);
+}
+
+/* ---------- pages: duplicate and delete ---------- */
+export async function duplicatePage(f: FormData) {
+  await requireAdmin(EDIT);
+  const from = s(f, 'path', 300);
+  const [{ getPage }, { sectionsToBlocks }, { getOverrides }] = await Promise.all([import('@/content/pages'), import('@/lib/blocks'), import('@/lib/server/content')]);
+  const customs = await getCustomPages();
+  const c = customs.find((x) => x.path === from);
+  const base = getPage(from);
+  const o = (await getOverrides())[from] ?? {};
+  const src: PageOverride = c ?? { ...o, h1: o.h1 || base?.h1, intro: o.intro || base?.intro, eyebrow: o.eyebrow || base?.eyebrow, seoTitle: o.seoTitle || base?.seoTitle, meta: o.meta || base?.meta, image: o.image || base?.image };
+  let path = `${from === '/' ? '/home' : from.replace(/\/$/, '')}-copy/`;
+  for (let i = 2; customs.some((x) => x.path === path) || getPage(path); i++) path = `${from === '/' ? '/home' : from.replace(/\/$/, '')}-copy-${i}/`;
+  const blocks = src.blocks?.length ? src.blocks : base ? sectionsToBlocks(base.sections) : [];
+  const title = `${src.h1 || c?.title || 'Page'} (copy)`;
+  const { id: _id, path: _p, createdAt: _c, ...rest } = (c ?? {}) as CustomPage;
+  await insert<CustomPage>('custom-pages', { ...src, ...rest, id: newId(8), path, title, h1: title, blocks, hidden: true, noindex: true, createdAt: now(), at: now() });
+  live();
+  redirect(`/admin/pages/edit/?path=${encodeURIComponent(path)}`);
+}
+export async function deleteCustomPage(f: FormData) {
+  await requireAdmin(FULL);
+  const path = s(f, 'path', 300);
+  const c = (await getCustomPages()).find((x) => x.path === path);
+  if (c) await remove<CustomPage>('custom-pages', c.id);
+  live();
 }

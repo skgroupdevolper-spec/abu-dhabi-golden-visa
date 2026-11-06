@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { SERVICE_CATALOG } from '@/content/services-catalog';
+import { catalog } from '@/content/services-catalog';
 import { localizePath, type Locale } from '@/lib/i18n';
 import { Icon } from './Icon';
 
@@ -11,10 +11,10 @@ export function ServiceSidebar({ current, locale, hidden = [] }: { current: stri
   const [open, setOpen] = useState(false);
   const groups = useMemo(() => {
     const n = q.trim().toLowerCase();
-    return SERVICE_CATALOG.map((g) => ({ ...g, items: g.items.filter((i) => !hidden.includes(i.href) && (!n || `${i.label} ${i.note ?? ''} ${g.title}`.toLowerCase().includes(n))) })).filter((g) => g.items.length);
+    return catalog().map((g) => ({ ...g, items: g.items.filter((i) => !hidden.includes(i.href) && (!n || `${i.label} ${i.note ?? ''} ${g.title}`.toLowerCase().includes(n))) })).filter((g) => g.items.length);
   }, [q, hidden]);
   const count = groups.reduce((s, g) => s + g.items.length, 0);
-  const here = SERVICE_CATALOG.flatMap((g) => g.items).find((i) => i.href === current);
+  const here = catalog().flatMap((g) => g.items).find((i) => i.href === current);
 
   return (
     <aside className={`svc-side${open ? ' open' : ''}`} aria-label="All services">
