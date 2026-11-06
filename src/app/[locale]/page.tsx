@@ -40,14 +40,14 @@ const CAP: Record<string, string> = {
 };
 
 const ROUTES = [
-  { tag: 'Property', title: 'Real-estate investors', text: 'Own property in Abu Dhabi worth AED 2 million or more. Ready, off-plan and mortgaged homes can count, as long as your own share is at least AED 2 million.', more: 'See my cost →', calc: 0, icon: 'home', href: '/golden-visa/property-investment/' },
-  { tag: 'Investment', title: 'Investors', text: 'Keep AED 2 million in a deposit or invest it in a UAE company, or show AED 250,000 or more in tax paid each year for the last two years.', more: 'See my cost →', calc: 1, icon: 'bag', href: '/golden-visa/business-investors/' },
+  { tag: 'Property', title: 'Real-estate investors', text: 'Own property in Abu Dhabi worth AED 2 million or more. Ready, off-plan and mortgaged homes can count, as long as your own share is at least AED 2 million.', more: 'See my cost →', calc: 0, icon: 'home', href: '/golden-visa/property-investment/', img: '/images/property.webp' },
+  { tag: 'Investment', title: 'Investors', text: 'Keep AED 2 million in a deposit or invest it in a UAE company, or show AED 250,000 or more in tax paid each year for the last two years.', more: 'See my cost →', calc: 1, icon: 'bag', href: '/golden-visa/business-investors/', img: '/images/investor.webp' },
   { tag: 'Business', title: 'Entrepreneurs', text: 'Your idea is approved by a UAE incubator or authority, your company earns AED 1 million a year, or you have sold a business worth AED 7 million or more.', more: 'See my cost →', calc: 2, icon: 'rocket', href: '/golden-visa/entrepreneurs/', gold: true },
-  { tag: 'Study', title: 'University graduates', text: "GPA 3.5 or higher from a top UAE university (3.8 for B-class), or 3.5 from one of the world's top 100. Graduated in the last two years.", more: 'See my cost →', calc: 4, icon: 'cap', href: '/golden-visa/students-graduates/' },
+  { tag: 'Study', title: 'University graduates', text: "GPA 3.5 or higher from a top UAE university (3.8 for B-class), or 3.5 from one of the world's top 100. Graduated in the last two years.", more: 'See my cost →', calc: 4, icon: 'cap', href: '/golden-visa/students-graduates/', img: '/images/skyline-2.webp' },
   { tag: 'Career', title: 'Skilled professionals', text: "A bachelor's degree, a valid UAE work permit and a monthly salary of AED 30,000 or more. Doctors and scientists have their own tracks.", more: 'See my cost →', calc: 3, icon: 'user', href: '/golden-visa/skilled-professionals/', gold: true },
   { tag: 'Talent', title: 'Creatives & talents', text: 'Artists, writers, musicians, athletes and inventors with recognised work. The Ministry of Culture recommendation for creatives is free.', more: 'Check my case →', icon: 'music', href: '/golden-visa/exceptional-talents/' },
   { tag: 'Humanitarian', title: 'Humanitarian pioneers', text: 'Five years or more with a humanitarian or non-profit organisation, or AED 2 million given to humanitarian work. A university degree is required.', more: 'Check my case →', icon: 'heart', href: '/golden-visa/humanitarian-other/', gold: true },
-  { tag: 'Family', title: 'Bring your family', text: 'Sponsor your spouse and children of any age, and your parents with health insurance. Their residency stays valid even if the sponsor passes away.', more: 'Add family to my cost →', calc: 5, icon: 'fam', href: '/family-golden-visa/' },
+  { tag: 'Family', title: 'Bring your family', text: 'Sponsor your spouse and children of any age, and your parents with health insurance. Their residency stays valid even if the sponsor passes away.', more: 'Add family to my cost →', calc: 5, icon: 'fam', href: '/family-golden-visa/', img: '/images/family.webp' },
 ];
 
 const FAQ = [
@@ -171,7 +171,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <div className="track" id="track">
             {ROUTES.map((r) => (
               <article key={r.title} className={`rcard${r.gold ? ' gold-card' : ''}`} data-view="">
-                <div className="cap"><svg viewBox="0 0 24 24" aria-hidden="true" dangerouslySetInnerHTML={{ __html: CAP[r.icon] }} /></div>
+                {'img' in r && r.img
+                  ? <div className="ph" style={{ backgroundImage: `url(${r.img})` }} role="img" aria-label={r.title} />
+                  : <div className="cap"><svg viewBox="0 0 24 24" aria-hidden="true" dangerouslySetInnerHTML={{ __html: CAP[r.icon] }} /></div>}
                 <div className="spot" /><span className="tag">{r.tag}</span>
                 <div className="body">
                   <h3><a href={lp(r.href)} style={{ color: 'inherit', textDecoration: 'none' }}>{r.title}</a></h3>
@@ -261,6 +263,13 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
           <PhoneChat />
         </div>
+        <div className="wrap">
+          <figure className="dashprev" data-view="">
+            <div className="dp-bar"><i /><i /><i /><span>app.abudhabigoldenvisa.com</span><em>Sample</em></div>
+            <div className="dp-screen"><img decoding="async" loading="lazy" src="/images/dashboard-preview.webp" alt="Client dashboard: files, payments, receipts and live progress (sample data)" width={1100} height={1478} /></div>
+            <figcaption>Your dashboard: live progress, quotes, Pay now, receipts, statement and calendar.</figcaption>
+          </figure>
+        </div>
       </section>
       </>)}
       {at('portal')}
@@ -316,6 +325,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 <button className="btn btn-glass mag" type="button" data-open-calc="" data-route="5">Add family to my cost</button>
               </div>
             </div>
+            <div className="fb-r">
+            <figure className="fb-photo"><img decoding="async" loading="lazy" src="/images/family-2.webp" alt="Family together in Abu Dhabi" width={900} height={864} /><figcaption>One sponsor file for the whole family</figcaption></figure>
             <ul>
               <li>Spouse and children of any age, including sons over 25 and married daughters</li>
               <li>Parents with health insurance and proof of relationship</li>
@@ -323,6 +334,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <li>One sponsor file for the whole family</li>
               <li>Family residency stays valid for its term if the holder passes away</li>
             </ul>
+            </div>
           </div>
         </div>
       </section>

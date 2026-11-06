@@ -412,3 +412,23 @@
 @keyframes hm-orbit{to{transform:rotate(360deg)}}
 @keyframes hm-bob{50%{translate:0 -6px}}
 @media (max-width:900px){.home .ob{width:36px;height:36px;margin:-18px 0 0 -18px}.home .ob .si{width:16px;height:16px}}
+/* Family band photo */
+.home .famband .fb-r{display:flex;flex-direction:column;gap:14px;min-width:0}
+.home .fb-photo{position:relative;margin:0;border-radius:28px;overflow:hidden;aspect-ratio:16/9;box-shadow:0 30px 60px -35px rgba(122,82,0,.6)}
+.home .fb-photo img{width:100%;height:100%;object-fit:cover;object-position:center 30%;transition:transform 1.2s cubic-bezier(.2,.8,.2,1)}
+.home .fb-photo:hover img{transform:scale(1.05)}
+.home .fb-photo figcaption{position:absolute;left:14px;bottom:14px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.9);font:700 13px var(--body);color:var(--ink)}
+[dir=rtl] .home .fb-photo figcaption{left:auto;right:14px}
+/* Dashboard preview: browser window whose screen scrolls by itself (GIF-like, but light) */
+.home .dashprev{margin:56px auto 0;max-width:980px;border-radius:22px;overflow:hidden;background:#0d0d0d;box-shadow:0 40px 90px -45px rgba(0,0,0,.55);border:1px solid rgba(212,175,55,.35)}
+.home .dp-bar{display:flex;align-items:center;gap:7px;padding:11px 16px;background:#141414;color:#bfb6a0;font:600 12px var(--body)}
+.home .dp-bar i{width:10px;height:10px;border-radius:50%;background:#3a3a3a}
+.home .dp-bar i:first-child{background:#d4af37}
+.home .dp-bar span{margin-inline-start:12px;padding:4px 14px;border-radius:999px;background:#222;direction:ltr}
+.home .dp-bar em{margin-inline-start:auto;font-style:normal;color:#0d0d0d;background:var(--gold-light,#f2d27a);padding:3px 10px;border-radius:999px;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.home .dp-screen{height:clamp(260px,42vw,460px);overflow:hidden;background:#f8f7f5}
+.home .dp-screen img{display:block;width:100%;height:auto;animation:dp-scroll 22s ease-in-out infinite alternate}
+.home .dashprev:hover .dp-screen img{animation-play-state:paused}
+@keyframes dp-scroll{0%,8%{transform:translateY(0)}92%,100%{transform:translateY(calc(-100% + clamp(260px,42vw,460px)))}}
+.home .dashprev figcaption{padding:12px 16px;color:#d9d2bf;font:500 13.5px var(--body);text-align:center;background:#111}
+@media (prefers-reduced-motion:reduce){.home .dp-screen img{animation:none}}
