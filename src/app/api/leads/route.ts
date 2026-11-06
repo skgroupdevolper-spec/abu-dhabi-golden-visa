@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { clientIp } from '@/lib/server/ratelimit';
 import { addLead } from '@/lib/server/store';
 import { notify } from '@/lib/server/collections';
 import { sendTeam } from '@/lib/server/whatsapp';
@@ -21,7 +22,7 @@ const clean = (v: unknown, max = 300) => (typeof v === 'string' ? v.trim().slice
 
 /** Stores a website enquiry; it appears in the admin dashboard under Enquiries. */
 export async function POST(req: NextRequest) {
-  const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'local';
+  const ip = clientIp(req.headers);
   if (limited(ip)) return NextResponse.json({ ok: false, error: 'Too many requests. Please message us on WhatsApp.' }, { status: 429 });
 
   let body: Record<string, unknown>;

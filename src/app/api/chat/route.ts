@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { clientIp } from '@/lib/server/ratelimit';
 import { aiReady, complete } from '@/lib/server/ai';
 import { CB0, chatSystemPrompt, type ChatbotCfg } from '@/lib/server/chatbot';
 import { notify } from '@/lib/server/collections';
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const site = applyRuntimeSync();
   if (!site.features.chatbot || !(await aiReady())) return NextResponse.json({ error: 'Chat is not available.' }, { status: 503 });
-  const ip = (req.headers.get('x-forwarded-for') || 'local').split(',')[0].trim();
+  const ip = clientIp(req.headers);
   const t = Date.now(), recent = (hits.get(ip) || []).filter((x) => t - x < 10 * 60_000);
   if (recent.length >= 30) return NextResponse.json({ error: 'Please wait a moment, or message us on WhatsApp.' }, { status: 429 });
   hits.set(ip, [...recent, t]);

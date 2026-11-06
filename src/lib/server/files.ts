@@ -25,3 +25,7 @@ export async function readUpload(appId: string, doc: Doc) {
 }
 
 export const sizeLabel = (n: number) => (n > 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
+
+// File type from the extension, never from what the uploader's browser said.
+const TYPES: Record<string, string> = { pdf: 'application/pdf', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif', heic: 'image/heic', heif: 'image/heif', doc: 'application/msword', docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', xls: 'application/vnd.ms-excel', xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', txt: 'text/plain; charset=utf-8' };
+export const typeOf = (file: string) => TYPES[file.split('.').pop()?.toLowerCase() ?? ''] || 'application/octet-stream';

@@ -1,5 +1,6 @@
 'use server';
 
+import { clientIp } from '@/lib/server/ratelimit';
 import { randomInt } from 'node:crypto';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -19,7 +20,7 @@ const t = async () => dict(await portalLang());
 
 const hits = new Map<string, number[]>();
 async function limited(key: string, max = 10) {
-  const ip = ((await headers()).get('x-forwarded-for') || 'local').split(',')[0];
+  const ip = clientIp(await headers());
   const k = `${key}:${ip}`, n = Date.now();
   const recent = (hits.get(k) || []).filter((x) => n - x < 15 * 60_000);
   hits.set(k, [...recent, n]);

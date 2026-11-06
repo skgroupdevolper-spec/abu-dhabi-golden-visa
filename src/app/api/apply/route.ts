@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { clientIp } from '@/lib/server/ratelimit';
 import { addLead, createApplication, updateApplication, updateLead, type Doc } from '@/lib/server/store';
 import { saveUpload } from '@/lib/server/files';
 import { notify } from '@/lib/server/collections';
@@ -23,7 +24,7 @@ const s = (f: FormData, k: string, max = 300) => String(f.get(k) ?? '').trim().s
 
 /** Online application from /apply/: creates an enquiry and a client file with the uploaded documents. */
 export async function POST(req: NextRequest) {
-  const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'local';
+  const ip = clientIp(req.headers);
   if (limited(ip)) return NextResponse.json({ ok: false, error: 'Too many applications from this connection. Please message us on WhatsApp.' }, { status: 429 });
   let f: FormData;
   try { f = await req.formData(); } catch { return NextResponse.json({ ok: false, error: 'Invalid request.' }, { status: 400 }); }

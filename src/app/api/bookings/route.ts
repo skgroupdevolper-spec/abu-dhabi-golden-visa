@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { clientIp } from '@/lib/server/ratelimit';
 import { BOOKING0, TYPE_LABEL, cleanCfg, freeSlots, type Booking, type BookingCfg, type MeetType } from '@/lib/booking';
 import { insert, list, notify } from '@/lib/server/collections';
 import { getBlock } from '@/lib/server/settings';
@@ -22,7 +23,7 @@ export async function GET() {
 
 /** Books a slot (checked again on the server so two visitors cannot take the same time). */
 export async function POST(req: NextRequest) {
-  const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'local';
+  const ip = clientIp(req.headers);
   const recent = (hits.get(ip) || []).filter((t) => Date.now() - t < 10 * 60_000);
   recent.push(Date.now()); hits.set(ip, recent);
   if (recent.length > 6) return NextResponse.json({ ok: false, error: 'Too many requests. Please message us on WhatsApp.' }, { status: 429 });
