@@ -1155,3 +1155,5 @@ li.sk.on { opacity: 1; transform: none; }
 .fp-from { left: 2%; top: 0; bottom: auto; }
 .flight .fp-head .lead, .home .flight .lead { color: rgba(245, 239, 224, .78); }
 .fp-step { background: rgba(255, 255, 255, .06); }
+/* Phone numbers, emails and times keep left-to-right order on Arabic and Urdu pages */
+[dir='rtl'] a[href^='tel:'], [dir='rtl'] a[href^='mailto:'], [dir='rtl'] .cp-card em, [dir='rtl'] .cp-hot b, [dir='rtl'] .cp-dl dd, [dir='rtl'] .bk-facts li, [dir='rtl'] .bc-live b, [dir='rtl'] .sp-box .btn { unicode-bidi: plaintext; }

@@ -77,17 +77,19 @@ export function Motion({ level = 'full', textFx = 'words', cursor = true, smooth
         });
 
         // Heading text effects (page title on load, section titles on scroll)
-        if (textFx !== 'none') {
+        // Right-to-left pages use the fade effect: splitting words would reorder mixed Arabic/Latin text.
+        const fx = document.documentElement.dir === 'rtl' && textFx !== 'none' ? 'fade' : textFx;
+        if (fx !== 'none') {
           const heads = gsap.utils.toArray<HTMLElement>('.phero h1, .bk-hero-h, .bh h2, .block > .bh h2, .cta-band h2, .bk-cta h2');
           heads.forEach((h, n) => {
             const first = n === 0 && h.matches('.phero h1, .bk-hero-h');
-            if (textFx === 'fade') {
+            if (fx === 'fade') {
               gsap.from(h, { opacity: 0, filter: 'blur(8px)', y: 14, duration: 1, ease: 'power3.out', scrollTrigger: first ? undefined : { trigger: h, start: 'top 90%' } });
               return;
             }
-            const parts = split(h, textFx);
+            const parts = split(h, fx as 'words' | 'letters');
             if (!parts.length) return;
-            gsap.from(parts, { yPercent: 110, opacity: 0, rotate: textFx === 'letters' ? 6 : 2, duration: textFx === 'letters' ? 0.7 : 0.9, ease: 'expo.out', stagger: textFx === 'letters' ? 0.018 : 0.06, scrollTrigger: first ? undefined : { trigger: h, start: 'top 90%' } });
+            gsap.from(parts, { yPercent: 110, opacity: 0, rotate: fx === 'letters' ? 6 : 2, duration: fx === 'letters' ? 0.7 : 0.9, ease: 'expo.out', stagger: fx === 'letters' ? 0.018 : 0.06, scrollTrigger: first ? undefined : { trigger: h, start: 'top 90%' } });
           });
         } else gsap.from('.phero h1', { y: 30, duration: 1, ease: 'expo.out' });
 
