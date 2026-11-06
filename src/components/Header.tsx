@@ -37,7 +37,7 @@ function iconFor(label: string, group: string) {
 }
 
 // The Our Services menu always follows the live service list (Admin > Services & prices).
-const MENU = () => (SITE.nav.menu?.length ? SITE.nav.menu : NAV.map((i) => (i.href === '/services/' && i.groups ? { ...i, groups: catalog().map((g) => ({ title: g.title, links: g.items.map((x) => ({ label: x.label, href: x.href })) })) } : i)));
+const MENU = () => (SITE.nav.menu?.length ? SITE.nav.menu : NAV.map((i) => (i.href === '/services/' && i.groups ? { ...i, groups: catalog().map((g) => ({ title: g.title, links: g.items.map((x) => ({ label: x.label, href: x.href, note: x.note })) })) } : i)));
 
 export function Header({ locale }: { locale: Locale }) {
   const pathname = usePathname() || '/';
