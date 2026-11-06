@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import { ActionForm, CopyButton, Submit } from '@/components/dash/ActionForm';
 import { sizeLabel } from '@/lib/server/files';
 import { getApplication } from '@/lib/server/store';
+import { mergeCatalog } from '@/content/services-catalog';
+import { getServiceOverrides } from '@/lib/server/content';
 import { list, type TeamUser } from '@/lib/server/collections';
 import { setAdvisor } from '../../../settings-actions';
 import { portalUrl, waTo } from '@/lib/site';
@@ -25,6 +27,7 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
   const H = <input type="hidden" name="app" value={a.id} />;
   const first = a.client.name.split(' ')[0];
   const team = await list<TeamUser>('team');
+  const svc = mergeCatalog(await getServiceOverrides()).flatMap((g) => g.items);
 
   return (
     <>
@@ -77,10 +80,12 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
             </form>
             <ActionForm action={saveQuote}>
               {H}
-              <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Item</th><th className="num">AED</th></tr></thead><tbody>
-                {a.quote.lines.map((l, i) => <tr key={i}><td><input name="label" defaultValue={l.label} /></td><td style={{ width: 150 }}><input name="amount" defaultValue={l.amount.toFixed(2)} inputMode="decimal" /></td></tr>)}
-                {Array.from({ length: blanks }, (_, i) => <tr key={`b${i}`}><td><input name="label" placeholder="Add an item" /></td><td style={{ width: 150 }}><input name="amount" inputMode="decimal" placeholder="0.00" /></td></tr>)}
+              <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Item</th><th className="num">Qty</th><th className="num">Unit price (AED)</th><th className="num">Amount</th></tr></thead><tbody>
+                {a.quote.lines.map((l, i) => { const q = l.qty || 1, un = l.unit ?? l.amount / q; return <tr key={i}><td><input name="label" defaultValue={l.label} /></td><td style={{ width: 70 }}><input name="qty" defaultValue={q} inputMode="numeric" /></td><td style={{ width: 140 }}><input name="amount" defaultValue={un.toFixed(2)} inputMode="decimal" /></td><td className="num" style={{ width: 110 }}>{l.amount.toFixed(2)}</td></tr>; })}
+                {Array.from({ length: blanks }, (_, i) => <tr key={`b${i}`}><td><input name="label" placeholder="Add an item" list="svc-items" /></td><td style={{ width: 70 }}><input name="qty" inputMode="numeric" placeholder="1" /></td><td style={{ width: 140 }}><input name="amount" inputMode="decimal" placeholder="0.00" /></td><td /></tr>)}
               </tbody></table></div>
+              <datalist id="svc-items">{svc.map((x) => <option key={x.href} value={x.label} label={x.price ? `${x.label} · ${x.price}` : x.label} />)}</datalist>
+              <p className="small muted" style={{ marginTop: 6 }}>Pick a service or type your own item. Amount = Qty × Unit price. Prices of services are set in Services &amp; prices.</p>
               <div className="form" style={{ marginTop: 12 }}>
                 <div className="field"><label htmlFor="serviceFee">Our service fee (AED, before VAT)</label><input id="serviceFee" name="serviceFee" inputMode="decimal" defaultValue={a.quote.serviceFee ? a.quote.serviceFee.toFixed(2) : ''} /></div>
                 <div className="field"><label htmlFor="insurance">Health insurance</label><input id="insurance" name="insurance" defaultValue={a.quote.insurance} /></div>

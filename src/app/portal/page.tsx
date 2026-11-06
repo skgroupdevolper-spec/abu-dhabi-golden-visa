@@ -6,6 +6,7 @@ import { mergeCatalog } from '@/content/services-catalog';
 import { getServiceOverrides } from '@/lib/server/content';
 import { currentCustomer, portalBase, T } from '@/lib/server/portal';
 import { listApplications, listLeads } from '@/lib/server/store';
+import { getPayCfg, online, orderBalance } from '@/lib/server/payments';
 import { SITE } from '@/lib/site';
 import { STAGES, day, money } from '@/lib/stages';
 import { requestService } from './actions';
@@ -19,9 +20,10 @@ export default async function Home() {
   const me = await currentCustomer();
   if (!me) redirect(`${base}/login/`);
   const { t, lang } = await T();
-  const [apps, leads] = await Promise.all([listApplications(), listLeads()]);
+  const [apps, leads, pay] = await Promise.all([listApplications(), listLeads(), getPayCfg()]);
+  const quotePay = (a: (typeof apps)[number]) => (pay.payOnQuote && a.quote.sentAt && !a.payments.some((p) => p.status === 'due') && (online(pay) || pay.bankOn) ? orderBalance(a) : 0);
   const mine = apps.filter((a) => !a.archived && ((a.client.email && a.client.email.toLowerCase() === me.email) || (dg(a.client.phone) && dg(a.client.phone) === dg(me.phone))));
-  const dueAll = mine.flatMap((a) => a.payments).filter((p) => p.status === 'due').reduce((s, p) => s + p.amount, 0);
+  const dueAll = mine.flatMap((a) => a.payments).filter((p) => p.status === 'due').reduce((s, p) => s + p.amount, 0) + mine.reduce((s, a) => s + Math.max(0, quotePay(a)), 0);
   const paidAll = mine.flatMap((a) => a.payments).filter((p) => p.status === 'paid').reduce((s, p) => s + p.amount, 0);
   const requests = leads.filter((l) => l.source === 'portal' && l.email === me.email && l.status !== 'converted');
   return (
@@ -58,6 +60,7 @@ export default async function Home() {
                   {a.nextStep && <p className="small muted" style={{ margin: '10px 0 0' }}>{t.next}: {a.nextStep}</p>}
                   <div className="row" style={{ marginTop: 12, flexWrap: 'wrap' }}>
                     {due.map((p) => <a key={p.id} className="btn btn-gold btn-sm" href={`${base}/t/${a.token}/pay/${p.id}/`}>💳 {t.payNow} · {money(p.amount)}</a>)}
+                    {quotePay(a) > 0 && <a className="btn btn-gold btn-sm" href={`${base}/t/${a.token}/${online(pay) ? 'pay/order/' : '#bank'}`}>💳 {t.payConfirm} · {money(quotePay(a))}</a>}
                     <a className="btn btn-sm" href={`${base}/t/${a.token}/`}>{t.open} →</a>
                   </div>
                 </div>
@@ -86,7 +89,7 @@ export default async function Home() {
             </ActionForm>
           </div>
         </div>
-        <p className="pfoot">{SITE.operator} · {SITE.disclaimer}</p>
+        <p className="pfoot">{SITE.operator}</p>
       </main>
     </>
   );

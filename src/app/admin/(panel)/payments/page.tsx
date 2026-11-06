@@ -54,6 +54,12 @@ export default async function Payments() {
             <F name="termsUrl" label="Terms & conditions page" value={c.termsUrl} full />
             <div className="full"><Toggle name="autoStage" label="Move the file to “Quote accepted and paid” when everything is paid" on={c.autoStage} /></div>
             <div className="full"><Toggle name="receiptWa" label="Send the receipt PDF on WhatsApp automatically" help="Needs the WhatsApp Cloud API (Settings › WhatsApp)." on={c.receiptWa} /></div>
+            <div className="full"><Toggle name="payOnQuote" label="Client can “Pay & confirm” the whole quote straight away" help="When you send a quote, the client sees Pay & confirm on the order page. Paying confirms the order. No payment request needed." on={c.payOnQuote} /></div>
+            <fieldset className="full pay-keys"><legend>Bank transfer (second way to pay)</legend>
+              <div className="full"><Toggle name="bankOn" label="Show your bank details on the order page" help="The client transfers and uploads the slip. You get a bell alert, check your bank, then press “Mark paid” (Bank transfer)." on={c.bankOn} /></div>
+              <F name="bankName" label="Bank name" value={c.bankName} /><F name="bankHolder" label="Account name" value={c.bankHolder} />
+              <F name="bankIban" label="IBAN" value={c.bankIban} /><F name="bankAccount" label="Account number" value={c.bankAccount} />
+              <F name="bankSwift" label="SWIFT / BIC" value={c.bankSwift} /><F name="bankNote" label="Note for the client" value={c.bankNote} help="e.g. Please use your file number as the reference." /></fieldset>
             <div className="full row"><Submit>Save</Submit></div>
           </ActionForm>
           <ActionForm action={testPayments}><Submit className="btn">Test connection</Submit></ActionForm>
@@ -69,10 +75,11 @@ export default async function Payments() {
           <div className="panel">
             <h2>How clients pay</h2>
             <ol className="small" style={{ paddingInlineStart: 18, lineHeight: 1.7 }}>
-              <li>Add a payment request in a client file (Applications › file › Payments).</li>
-              <li>The client gets it on WhatsApp with their secure link and presses <b>Pay now</b>.</li>
-              <li>They pay on the secure card page, then see <b>Confirming your payment → Payment received</b>.</li>
-              <li>The receipt PDF is created and sent; the bell rings here.</li>
+              <li><b>Your merchant account:</b> open an account with Stripe, TotalPay, Ziina, N-Genius or Telr in your company’s name, linked to your company bank account. Paste its keys here. All card money goes from the client to <b>your</b> bank account; the website never holds money.</li>
+              <li>In a client file, write the quote (items, qty, price, service fee + VAT) and press <b>Save and send to client</b>. The client gets WhatsApp + email with the order link.</li>
+              <li>The client opens the order page (status <b>Quotation</b>) and presses <b>Pay &amp; confirm</b>, or pays by bank transfer and uploads the slip.</li>
+              <li>Secure card page → <b>Confirming your payment → Payment received</b>. Status becomes <b>Confirmed</b> and the client gets “Order confirmed” on WhatsApp.</li>
+              <li>The receipt PDF is created and sent on WhatsApp and email; the bell rings here. Extra amounts later: Payments › Request a payment.</li>
             </ol>
           </div>
         </div>

@@ -1,13 +1,25 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { byToken, fileUrl, getPayCfg, online, startCheckout } from '@/lib/server/payments';
-import { updateApplication } from '@/lib/server/store';
+import { byToken, fileUrl, getPayCfg, online, orderPayment, startCheckout } from '@/lib/server/payments';
+import { getApplicationByToken, updateApplication } from '@/lib/server/store';
 import { waLink } from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
 
 /** "Pay now": opens the card payment page of the active provider (or the manual payment link). */
 export async function GET(req: NextRequest, { params }: { params: Promise<{ token: string; pid: string }> }) {
-  const { token, pid } = await params;
+  const { token, pid: raw } = await params;
+  let pid = raw;
+  // "Pay & confirm" on a quotation: pay the whole open amount without waiting for a payment request.
+  if (raw === 'order') {
+    const app = await getApplicationByToken(token);
+    const cfg = await getPayCfg();
+    const file0 = fileUrl(req.headers, token);
+    if (!app || !cfg.payOnQuote) return NextResponse.redirect(file0, 303);
+    if (!online(cfg) && cfg.bankOn) return NextResponse.redirect(`${file0}#bank`, 303);
+    const id = await orderPayment(app);
+    if (!id) return NextResponse.redirect(file0, 303);
+    pid = id;
+  }
   const hit = await byToken(token, pid);
   const file = fileUrl(req.headers, token);
   if (!hit) return NextResponse.redirect(file, 303);

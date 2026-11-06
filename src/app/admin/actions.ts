@@ -140,9 +140,13 @@ export async function fillQuote(f: FormData) {
 }
 
 export async function saveQuote(_: FormState, f: FormData): Promise<FormState> {
-  const labels = f.getAll('label').map(String), amounts = f.getAll('amount').map((x) => Number(String(x).replace(/[^\d.-]/g, '')));
+  const num = (x: FormDataEntryValue) => Number(String(x).replace(/[^\d.-]/g, ''));
+  const labels = f.getAll('label').map(String), units = f.getAll('amount').map(num), qtys = f.getAll('qty').map(num);
   const app = await edit(f, (a) => {
-    a.quote.lines = labels.map((label, i) => ({ label: label.trim().slice(0, 140), amount: Math.round((amounts[i] || 0) * 100) / 100 })).filter((l) => l.label && l.amount);
+    a.quote.lines = labels.map((label, i) => {
+      const qty = Math.max(1, Math.round(qtys[i] || 1)), unit = Math.round((units[i] || 0) * 100) / 100;
+      return { label: label.trim().slice(0, 140), qty, unit, amount: Math.round(qty * unit * 100) / 100 };
+    }).filter((l) => l.label && l.amount);
     a.quote.serviceFee = n(f, 'serviceFee');
     a.quote.vat = Math.round(a.quote.serviceFee * FEE_SCHEDULE.vatRate * 100) / 100;
     a.quote.insurance = s(f, 'insurance', 140) || 'Quoted separately';

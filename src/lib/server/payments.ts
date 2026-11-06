@@ -16,12 +16,17 @@ export type PayCfg = {
   telrStore: string; telrKey: string;
   totalpayKey: string; totalpayPass: string; totalpayHost: string;
   termsUrl: string; validDays: number; autoStage: boolean; receiptWa: boolean;
+  /** Client can pay the whole quote straight away ("Pay & confirm"), like Wordcraft / Odoo. */
+  payOnQuote: boolean;
+  /** Bank transfer shown on the order page as a second way to pay (client uploads the transfer slip). */
+  bankOn: boolean; bankName: string; bankHolder: string; bankIban: string; bankAccount: string; bankSwift: string; bankNote: string;
 };
 export const PAY0: PayCfg = {
   provider: 'none', test: true, currency: 'AED',
   stripeSecret: '', stripeWebhook: '', ziinaToken: '', ngeniusKey: '', ngeniusOutlet: '', telrStore: '', telrKey: '',
   totalpayKey: '', totalpayPass: '', totalpayHost: 'https://checkout.totalpay.global',
   termsUrl: '/terms/', validDays: 7, autoStage: true, receiptWa: true,
+  payOnQuote: true, bankOn: false, bankName: '', bankHolder: '', bankIban: '', bankAccount: '', bankSwift: '', bankNote: '',
 };
 export const PROVIDERS: { id: Provider; name: string; note: string }[] = [
   { id: 'none', name: 'Manual (payment links)', note: 'Paste a payment link on each request and press “Mark paid” yourself.' },
@@ -169,27 +174,34 @@ export async function checkStatus(gw: Gw, hint: Record<string, string> = {}): Pr
 /** Marks one payment as paid exactly once and runs everything that follows. */
 export async function settle(appId: string, pid: string, method: string, txn: string): Promise<boolean> {
   const c = await getPayCfg();
-  let changed = false;
+  let changed = false, confirmed = false;
   const app = await updateApplication(appId, (a) => {
     const p = a.payments.find((x) => x.id === pid);
     if (!p || p.status === 'paid') return;
     const count = a.payments.filter((x) => x.receiptNo).length + 1;
     p.status = 'paid'; p.paidAt = now(); p.method = method; p.txn = txn; p.receiptNo = `${a.ref}-R${count}`;
     a.messages.push({ id: newId(6), by: 'team', at: now(), text: `✅ Payment received, thank you! ${p.label}: AED ${p.amount.toFixed(2)}. Receipt ${p.receiptNo} is ready to download.` });
+    // Paying a quotation confirms the order (no separate "accept" needed).
+    if (a.quote.sentAt && !a.quote.acceptedAt) { a.quote.acceptedAt = now(); confirmed = true; }
+    if (!a.confirmedAt && a.quote.sentAt) { a.confirmedAt = now(); confirmed = true; }
     if (c.autoStage && a.stage < 2 && a.payments.every((x) => x.status === 'paid')) { a.stage = 2; a.stageDates['2'] = now(); }
     a.updatedAt = now();
     changed = true;
   });
   if (!changed || !app) return false;
   const p = app.payments.find((x) => x.id === pid)!;
-  void afterPaid(app, p).catch((e) => console.error('After-payment steps failed', e));
+  void afterPaid(app, p, confirmed).catch((e) => console.error('After-payment steps failed', e));
   return true;
 }
 
-async function afterPaid(a: Application, p: Payment) {
+async function afterPaid(a: Application, p: Payment, confirmed = false) {
   const [{ notify }, { sendWa, sendWaDoc }, { money }, { portalUrl }, { sendMail }] = await Promise.all([import('./collections'), import('./whatsapp'), import('@/lib/stages'), import('@/lib/site'), import('./mail')]);
-  await notify('payment', `Payment received online: ${a.client.name}, AED ${p.amount.toFixed(2)} (${a.ref})`, `/admin/applications/${a.id}/#payments`);
+  await notify('payment', `Payment received: ${a.client.name}, AED ${p.amount.toFixed(2)} (${a.ref})`, `/admin/applications/${a.id}/#payments`);
   const link = portalUrl(a.token);
+  if (confirmed) {
+    const total = orderTotal(a);
+    await sendWa(a.client.phone, 'confirmed', { name: a.client.name, ref: a.ref, route: a.route, total: `AED ${total.toFixed(2)}`, date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), link }).catch(() => {});
+  }
   await sendWa(a.client.phone, 'paid', { name: a.client.name.split(' ')[0], ref: a.ref, item: p.label, amount: money(p.amount), receipt: p.receiptNo, link });
   if ((await getPayCfg()).receiptWa) await sendWaDoc(a.client.phone, `${link}receipt/${p.id}/pdf/`, `Payment Receipt - ${p.receiptNo}.pdf`, `✅ Payment Received, thank you! 🙏\nAmount: AED ${p.amount.toFixed(2)}\nRef: ${a.ref} | ${p.receiptNo}\nYour official receipt is attached.`);
   if (a.client.email) await sendMail(a.client.email, `Payment received · ${p.receiptNo}`, `Hello ${a.client.name},\n\nWe received your payment of AED ${p.amount.toFixed(2)} for ${p.label} (${a.ref}).\nReceipt: ${p.receiptNo}\n\nDownload your receipt and follow your application here:\n${link}\n\nThank you,\nAbu Dhabi Golden Visa`).catch(() => {});
@@ -243,4 +255,26 @@ export function fileUrl(headers: Headers, token: string) {
   const host = headers.get('x-forwarded-host') || headers.get('host') || 'localhost:3000';
   const proto = headers.get('x-forwarded-proto') || (host.startsWith('localhost') ? 'http' : 'https');
   return host === process.env.PORTAL_HOST ? `${proto}://${host}/t/${token}/` : `${proto}://${host}/portal/t/${token}/`;
+}
+
+/** Quote total: government fees + service fee + VAT. */
+export const orderTotal = (a: Application) => a.quote.lines.reduce((s, l) => s + l.amount, 0) + a.quote.serviceFee + a.quote.vat;
+/** What is still open on the quote after paid and requested payments. */
+export const orderBalance = (a: Application) => Math.round((orderTotal(a) - a.payments.reduce((s, p) => s + p.amount, 0)) * 100) / 100;
+
+/** "Pay & confirm" on a quotation: reuses an open payment or creates one for the remaining balance. */
+export async function orderPayment(a: Application): Promise<string | null> {
+  const open = a.payments.find((p) => p.status === 'due');
+  if (open) return open.id;
+  if (!a.quote.sentAt || orderBalance(a) <= 0) return null;
+  const pid = newId(6);
+  await updateApplication(a.id, (x) => {
+    if (x.payments.some((p) => p.status === 'due')) return;
+    const bal = orderBalance(x);
+    if (bal <= 0) return;
+    const first = !x.payments.length;
+    x.payments.push({ id: pid, label: first ? `${x.route} · full payment` : `${x.route} · balance`, amount: bal, status: 'due', createdAt: now() });
+  });
+  const fresh = await getApplicationByToken(a.token);
+  return fresh?.payments.find((p) => p.status === 'due')?.id ?? null;
 }

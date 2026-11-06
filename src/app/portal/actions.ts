@@ -186,7 +186,8 @@ export async function clientUpload(_: State, f: FormData): Promise<State> {
       x.documents.push(doc);
       x.messages.push({ id: newId(6), by: 'client', at: now(), text: `Uploaded: ${doc.name}` });
     });
-    await notify('upload', `${a.client.name} uploaded ${doc.name} (${a.ref})`, `/admin/applications/${a.id}/#documents`);
+    if (f.get('proof')) await notify('payment', `${a.client.name} sent a bank transfer slip (${a.ref}). Check it and press “Mark paid”.`, `/admin/applications/${a.id}/#payments`);
+    else await notify('upload', `${a.client.name} uploaded ${doc.name} (${a.ref})`, `/admin/applications/${a.id}/#documents`);
     refresh(a.token);
     return { ok: `✓ ${doc.name}` };
   } catch (e) {

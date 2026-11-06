@@ -4,7 +4,7 @@ import { ActionForm, Submit } from '@/components/dash/ActionForm';
 import { sizeLabel } from '@/lib/server/files';
 import { getApplicationByToken } from '@/lib/server/store';
 import { SITE, waLink, waTo } from '@/lib/site';
-import { getPayCfg, online } from '@/lib/server/payments';
+import { getPayCfg, online, orderBalance } from '@/lib/server/payments';
 import { LiveRefresh } from '@/components/dash/LiveRefresh';
 import { STAGES, day, money, when } from '@/lib/stages';
 import { PortalTop } from '@/components/dash/PortalTop';
@@ -33,6 +33,13 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
   const TK = <input type="hidden" name="token" value={a.token} />;
   const ask = waLink(`Hello, this is ${a.client.name} (${a.ref}). `);
   const pay = await getPayCfg();
+  const live = online(pay);
+  const balance = orderBalance(a);
+  // Wordcraft-style: a sent quote can be paid in full straight away ("Pay & confirm").
+  const canOrderPay = pay.payOnQuote && !!a.quote.sentAt && !due.length && balance > 0 && (live || pay.bankOn);
+  const payHref = due[0] ? `pay/${due[0].id}/` : canOrderPay ? (live ? 'pay/order/' : '#bank') : '';
+  const toPay = due.length ? due.reduce((s2, p) => s2 + p.amount, 0) : canOrderPay ? balance : 0;
+  const showBank = pay.bankOn && toPay > 0 && !!(pay.bankIban || pay.bankAccount);
   const last = STAGES.length - 1;
   const st = a.stage >= last ? t.stCompleted : !a.quote.sentAt ? t.stPreparing : !a.quote.acceptedAt && !paid.length ? t.stQuotation : due.length ? t.stConfirmed : t.inProgress;
   const stKey = a.stage >= last ? 'done' : !a.quote.sentAt ? 'prep' : !a.quote.acceptedAt && !paid.length ? 'quote' : due.length ? 'conf' : 'prog';
@@ -40,6 +47,7 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
   const valid = a.validUntil || (a.quote.sentAt ? new Date(new Date(a.quote.sentAt).getTime() + pay.validDays * 864e5).toISOString().slice(0, 10) : '');
   const adv = a.advisor ?? { name: t.yourAdvisor, phone: SITE.whatsappDisplay };
   const advWa = waTo(adv.phone || SITE.whatsapp, `Hello ${adv.name.split(' ')[0]}, this is ${a.client.name} (${a.ref}). `);
+  const f2 = (x: number) => x.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const fmtD = (d?: string) => (d ? new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—');
 
   return (
@@ -70,7 +78,13 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
         {due.length > 0 && (
           <section className="paybox">
             <div><b>💳 {t.readyToProceed}</b><p>{t.payIntro}</p></div>
-            <div className="paybox-r">{due.map((p) => <a key={p.id} className="btn btn-gold" href={`pay/${p.id}/`}>{t.payConfirm} · {money(p.amount)}</a>)}</div>
+            <div className="paybox-r">{due.map((p) => <a key={p.id} className="btn btn-gold" href={live || p.link ? `pay/${p.id}/` : showBank ? '#bank' : waLink(`Hello, I would like to pay ${p.label} for ${a.ref}.`)}>{t.payConfirm} · {money(p.amount)}</a>)}</div>
+          </section>
+        )}
+        {canOrderPay && (
+          <section className="paybox">
+            <div><b>💳 {t.readyToProceed}</b><p>{t.payWhole}</p></div>
+            <div className="paybox-r"><a className="btn btn-gold" href={payHref}>{t.payConfirm} · {money(balance)}</a></div>
           </section>
         )}
 
@@ -92,7 +106,7 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
               <div className="so-h"><span>🔗</span><div><h2>{t.servicesInOrder} <em>1</em></h2><p>{t.trackProgress}</p></div></div>
               <div className="so-item"><span className="so-ic">🚀</span><span><b>{a.route}</b><small>{t.stages[a.stage]}{a.expected ? ` · ${t.expected} ${a.expected}` : ''}</small></span><span className={`pill ${a.stage >= last ? 'ok' : 'new'}`}>{a.stage >= last ? t.stCompleted : t.inProgress}</span></div>
             </section>
-            {due.length > 0 && fromTeam.length === 0 && (
+            {toPay > 0 && fromTeam.length === 0 && (
               <div className="lockbox">🔒 <span><b>{t.finalFiles}</b><br />{t.unlockAfterPay}</span></div>
             )}
             <section className="panel reveal" id="status">
@@ -108,15 +122,21 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
               <div className="panel-h"><h2>{t.yourQuote}</h2>{a.quote.acceptedAt && <span className="pill ok">{t.accepted} {day(a.quote.acceptedAt)}</span>}</div>
               {!a.quote.sentAt ? <p className="empty">{t.quotePreparing}</p> : (
                 <>
+                  <div className="tbl-wrap oitems"><table className="tbl">
+                    <thead><tr><th>{t.description}</th><th className="num">{t.qty}</th><th className="num">{t.unitPrice}</th><th className="num">{t.amount}</th></tr></thead>
+                    <tbody>
+                      {a.quote.lines.map((l, i) => { const q = l.qty || 1; return <tr key={i}><td><b>{l.label}</b>{q > 1 && <small className="muted" style={{ display: 'block' }}>{q} × {f2(l.unit ?? l.amount / q)} AED</small>}</td><td className="num">{q}</td><td className="num">{f2(l.unit ?? l.amount / q)}</td><td className="num"><b>{f2(l.amount)} AED</b></td></tr>; })}
+                      {a.quote.serviceFee > 0 && <tr><td><b>{t.serviceFee}</b></td><td className="num">1</td><td className="num">{f2(a.quote.serviceFee)}</td><td className="num"><b>{f2(a.quote.serviceFee)} AED</b></td></tr>}
+                    </tbody>
+                  </table></div>
                   <div className="lines">
-                    {a.quote.lines.map((l, i) => <div key={i}><span>{l.label}</span><b>{l.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</b></div>)}
-                    {a.quote.serviceFee > 0 && <div><span>{t.serviceFee}</span><b>{a.quote.serviceFee.toLocaleString('en-US', { minimumFractionDigits: 2 })}</b></div>}
-                    {a.quote.vat > 0 && <div><span>{t.vat}</span><b>{a.quote.vat.toLocaleString('en-US', { minimumFractionDigits: 2 })}</b></div>}
+                    <div><span>{t.subtotal}</span><b>{f2(total - a.quote.vat)} AED</b></div>
+                    <div><span>{t.vat}</span><b>{f2(a.quote.vat)} AED</b></div>
                     <div><span>{t.insurance}</span><b>{a.quote.insurance}</b></div>
                   </div>
                   <div className="total"><span>{t.total}</span><b>{money(total)}</b></div>
                   <p className="small muted" style={{ marginTop: 10 }}>{t.feesNote}</p>
-                  <div className="row" style={{ marginTop: 12 }}>{!a.quote.acceptedAt && <form action={acceptQuote}>{TK}<button className="btn btn-gold" type="submit">{t.accept}</button></form>}<a className="btn" href="quote/">{t.downloadQuote}</a></div>
+                  <div className="row" style={{ marginTop: 12 }}>{!a.quote.acceptedAt && (payHref ? <a className="btn btn-gold" href={payHref}>💳 {t.payConfirm}</a> : <form action={acceptQuote}>{TK}<button className="btn btn-gold" type="submit">{t.accept}</button></form>)}<a className="btn" href="quote/">{t.downloadQuote}</a></div>
                 </>
               )}
             </section>
@@ -142,6 +162,28 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
                 </div>
               )}
             </section>
+
+            {showBank && (
+              <section className="panel reveal bankbox" id="bank">
+                <h2>🏦 {t.bankTitle}</h2>
+                <p className="small muted">{t.bankIntro}</p>
+                <div className="lines" style={{ marginTop: 10 }}>
+                  <div><span>{t.amountToPay}</span><b>{money(toPay)}</b></div>
+                  {pay.bankName && <div><span>{t.bankName}</span><b>{pay.bankName}</b></div>}
+                  {pay.bankHolder && <div><span>{t.accountName}</span><b>{pay.bankHolder}</b></div>}
+                  {pay.bankIban && <div><span>{t.iban}</span><b dir="ltr" className="mono">{pay.bankIban}</b></div>}
+                  {pay.bankAccount && <div><span>{t.accountNo}</span><b dir="ltr" className="mono">{pay.bankAccount}</b></div>}
+                  {pay.bankSwift && <div><span>{t.swift}</span><b dir="ltr">{pay.bankSwift}</b></div>}
+                  <div><span>{t.reference}</span><b dir="ltr">{a.ref}</b></div>
+                </div>
+                {pay.bankNote && <p className="small" style={{ marginTop: 8 }}>{pay.bankNote}</p>}
+                <ActionForm action={clientUpload} className="form" reset>
+                  {TK}<input type="hidden" name="proof" value="1" /><input type="hidden" name="label" value={`Bank transfer slip ${a.ref}`} />
+                  <div className="field full"><label htmlFor="slip">{t.uploadSlip}</label><input id="slip" name="file" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.heic" required /></div>
+                  <div className="full"><Submit>{t.upload}</Submit></div>
+                </ActionForm>
+              </section>
+            )}
 
             <section className="panel reveal" id="documents">
               <h2>{t.documents}</h2>
@@ -179,7 +221,7 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
             </section>
             <section className="panel reveal qa">
               <h2>⚡ {t.quickActions}</h2>
-              {due[0] && <a className="btn btn-gold" href={`pay/${due[0].id}/`}>💳 {t.payNow}</a>}
+              {payHref && <a className="btn btn-gold" href={payHref}>💳 {due.length ? t.payNow : t.payConfirm}</a>}
               {a.quote.sentAt && <a className="btn btn-line" href="quote/">⬇ {t.downloadPdf}</a>}
               {signedIn && <a className="btn btn-line" href={`${base}/`}>← {t.allOrders}</a>}
               {signedIn && <a className="btn btn-line" href={`${base}/statement/`}>🧾 {t.statement}</a>}
@@ -211,7 +253,7 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
             </section>
           </div>
         </div>
-        <p className="pfoot">{SITE.operator} · Trade Licence {SITE.licence} · {SITE.disclaimer}</p>
+        <p className="pfoot">{SITE.operator} · Trade Licence {SITE.licence}</p>
       </main>
       <a className="fab" href={ask} target="_blank" rel="noopener" aria-label="WhatsApp your advisor">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M4 20l1.3-3.8A8 8 0 1 1 8 19z" /><path d="M9 9.5c.3 2 2.5 4.2 4.5 4.6l1.2-1.1 1.8.8c-.2 1.3-1.2 2-2.5 1.8-3-.5-5.4-2.9-5.9-5.9-.2-1.3.5-2.3 1.8-2.5l.8 1.8z" /></svg>

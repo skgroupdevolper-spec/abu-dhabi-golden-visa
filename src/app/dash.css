@@ -576,3 +576,10 @@ body:has(.admin) { background: #f7f6f2; }
 .admin .pg-act form { display: contents; }
 @media (max-width: 1100px) { .admin .pg-row { grid-template-columns: auto 1fr; } .admin .pg-langs, .admin .pg-act { grid-column: 1 / -1; justify-content: flex-start; } }
 .admin .lang-on { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px 14px; }
+
+/* Order items (Wordcraft-style) and bank transfer box */
+.oitems { margin-top: 12px; }
+.oitems td small { font-weight: 400; margin-top: 2px; }
+.oitems th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.bankbox { border: 1px solid color-mix(in srgb, var(--gold, #d4af37) 45%, transparent); }
+.bankbox .lines b { word-break: break-all; }

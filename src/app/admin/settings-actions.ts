@@ -298,7 +298,9 @@ export async function savePayments(_: St, f: FormData): Promise<St> {
   const prov = s(f, 'provider', 20);
   const next = { ...cur, provider: (PROVIDERS.some((p) => p.id === prov) ? prov : 'none') as typeof cur.provider, test: f.get('test') === 'on', currency: (s(f, 'currency', 3) || 'AED').toUpperCase(),
     autoStage: f.get('autoStage') === 'on', receiptWa: f.get('receiptWa') === 'on', validDays: Math.max(1, Math.min(90, Number(s(f, 'validDays', 3)) || 7)), termsUrl: s(f, 'termsUrl', 300) || '/terms/',
-    totalpayHost: s(f, 'totalpayHost', 200) || cur.totalpayHost, ngeniusOutlet: s(f, 'ngeniusOutlet', 120), telrStore: s(f, 'telrStore', 40) };
+    totalpayHost: s(f, 'totalpayHost', 200) || cur.totalpayHost, ngeniusOutlet: s(f, 'ngeniusOutlet', 120), telrStore: s(f, 'telrStore', 40),
+    payOnQuote: f.get('payOnQuote') === 'on', bankOn: f.get('bankOn') === 'on', bankName: s(f, 'bankName', 120), bankHolder: s(f, 'bankHolder', 160),
+    bankIban: s(f, 'bankIban', 40).replace(/\s+/g, ' ').toUpperCase(), bankAccount: s(f, 'bankAccount', 40), bankSwift: s(f, 'bankSwift', 20).toUpperCase(), bankNote: s(f, 'bankNote', 300) };
   for (const k of ['stripeSecret', 'stripeWebhook', 'ziinaToken', 'ngeniusKey', 'telrKey', 'totalpayKey', 'totalpayPass'] as const) { const v = keep(k, 600); if (v !== undefined) next[k] = v; }
   await savePayCfg(next);
   revalidatePath('/admin/payments/');
