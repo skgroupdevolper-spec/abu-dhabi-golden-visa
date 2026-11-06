@@ -1,3 +1,4 @@
+import { LOCALES } from './i18n';
 // Brand, operator and contact details. Defaults come from the Developer Specification (sections 1 and 13);
 // the main admin can change them at any time (Settings), and the change applies to the live site.
 import { DEFAULT_SITE, type PublicSite } from './settings-schema';
@@ -31,4 +32,10 @@ export function portalUrl(token: string): string {
 /** WhatsApp link to a client's own number. */
 export function waTo(phone: string, message: string): string {
   return `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+}
+
+/** Languages switched on in Admin > Languages (English always). */
+export function liveLocales() {
+  const on = SITE.languages;
+  return LOCALES.filter((l) => l.code === 'en' || !on?.length || on.includes(l.code));
 }

@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
+import { u } from '@/lib/ui';
 import { preload } from 'react-dom';
 import { Booking } from './Booking';
 import { AboutHub, ContactHub } from './CompanyPages';
@@ -109,7 +110,7 @@ export function SectionView({ s, locale, i }: { s: Section; locale: Locale; i: n
                 <span className="ico"><Icon name={CARD_ICONS[(k + i) % CARD_ICONS.length]} /></span>
                 <h3>{c.title}</h3>
                 <p>{c.text}</p>
-                <span className="go">Learn more →</span>
+                <span className="go">{u('Learn more →', locale)}</span>
               </L>
             ))}
           </div>
@@ -141,7 +142,7 @@ export function SectionView({ s, locale, i }: { s: Section; locale: Locale; i: n
         <section className={`block${s.tool === 'flight' ? ' block-flight' : ''}`} id={s.tool === 'apply' ? 'apply' : s.tool === 'booking' ? 'book' : sid(s.title)} data-reveal={s.tool === 'apply' || s.tool === 'flight' ? undefined : ''}>
           {s.title && s.tool !== 'booking' && s.tool !== 'flight' && <Head title={s.title} k={i} icon={s.tool === 'calculator' ? 'calc' : s.tool === 'eligibility' ? 'check' : 'wa'} />}
           {s.intro && s.tool !== 'booking' && s.tool !== 'flight' && <p className="intro">{s.intro}</p>}
-          {s.tool === 'calculator' ? <Calculator /> : s.tool === 'eligibility' ? <Eligibility /> : s.tool === 'apply' ? <ApplyWizard /> : s.tool === 'booking' ? <Booking title={s.title} intro={s.intro} /> : s.tool === 'flight' ? <FlightPath title={s.title} intro={s.intro} /> : <LeadForm source="page" />}
+          {s.tool === 'calculator' ? <Calculator /> : s.tool === 'eligibility' ? <Eligibility /> : s.tool === 'apply' ? <ApplyWizard /> : s.tool === 'booking' ? <Booking title={s.title} intro={s.intro} locale={locale} /> : s.tool === 'flight' ? <FlightPath title={s.title} intro={s.intro} locale={locale} /> : <LeadForm source="page" />}
         </section>
       );
   }
@@ -167,8 +168,8 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
     <>
       <header className={`phero${isApply ? ' phero-apply' : ''}${o.heroStyle === 'minimal' ? ' phero-min' : ''}${o.heroStyle === 'image' && heroImg ? ' phero-cover' : ''}`} style={o.heroStyle === 'image' && heroImg ? ({ ['--hero-img' as string]: `url("${heroImg}")` } as CSSProperties) : undefined}>
         <div className="wrap">
-          <nav className="crumbs" aria-label="Breadcrumb">
-            <L locale={locale} href="/">Home</L>
+          <nav className="crumbs" aria-label={u('Breadcrumb', locale)}>
+            <L locale={locale} href="/">{u('Home', locale)}</L>
             {crumbs.map((c) => getPage(c) && (<span key={c}>/ <L locale={locale} href={c}>{getPage(c)!.eyebrow}</L></span>))}
             <span aria-current="page">/ {page.eyebrow}</span>
           </nav>
@@ -179,20 +180,20 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
               <p className="lead">{page.intro}</p>
               {!isApply && !page.article && !o.hideCta && (
                 <div className="cta">
-                  <L locale={locale} href={applyHref} className="btn btn-gold">Apply Now <Icon name="arrow" size={18} className="arrow" /></L>
+                  <L locale={locale} href={applyHref} className="btn btn-gold">{u('Apply Now', locale)} <Icon name="arrow" size={18} className="arrow" /></L>
                   {page.cta && page.cta.href !== '/free-consultation/' ? (
                     <L locale={locale} href={page.cta.href} className="btn btn-red">{page.cta.label}</L>
                   ) : (
-                    <L locale={locale} href="/golden-visa-cost/" className="btn btn-red" data-open-calc="">Calculate Visa Cost</L>
+                    <L locale={locale} href="/golden-visa-cost/" className="btn btn-red" data-open-calc="">{u('Calculate Visa Cost', locale)}</L>
                   )}
-                  <a className="btn btn-glass" href={wa} target="_blank" rel="noopener"><Icon name="wa" size={18} /> WhatsApp</a>
+                  <a className="btn btn-glass" href={wa} target="_blank" rel="noopener"><Icon name="wa" size={18} /> {u('WhatsApp', locale)}</a>
                 </div>
               )}
               {!isApply && !page.article && (
                 <ul className="trust-row">
-                  <li><Icon name="check" size={16} /> Free first review</li>
-                  <li><Icon name="coins" size={16} /> Fees itemised before you pay</li>
-                  <li><Icon name="globe" size={16} /> Inside or outside the UAE</li>
+                  <li><Icon name="check" size={16} /> {u('Free first review', locale)}</li>
+                  <li><Icon name="coins" size={16} /> {u('Fees itemised before you pay', locale)}</li>
+                  <li><Icon name="globe" size={16} /> {u('Inside or outside the UAE', locale)}</li>
                 </ul>
               )}
               {!translated && <TranslationNotice locale={locale} />}
@@ -205,14 +206,14 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
             )}
             {!isApply && !page.article && factsOn && facts.length > 0 && !heroImg && (
               <div className="phero-side">
-              <aside className="facts" aria-label="Quick facts">
-                <p className="eyebrow">Quick facts</p>
+              <aside className="facts" aria-label={u('Quick facts', locale)}>
+                <p className="eyebrow">{u('Quick facts', locale)}</p>
                 <dl>
                   {facts.map((f) => <div key={f.label}><dt>{f.label}</dt><dd>{f.value}</dd></div>)}
                 </dl>
-                <L locale={locale} href={applyHref} className="btn btn-gold" style={{ width: '100%' }}>Start my application</L>
-                <L locale={locale} href="/free-consultation/" className="btn btn-glass" style={{ width: '100%' }}>Free consultation</L>
-                <p className="fnote">Estimated figures. Final fees are confirmed in writing. Approval rests with the authorities.</p>
+                <L locale={locale} href={applyHref} className="btn btn-gold" style={{ width: '100%' }}>{u('Start my application', locale)}</L>
+                <L locale={locale} href="/free-consultation/" className="btn btn-glass" style={{ width: '100%' }}>{u('Free consultation', locale)}</L>
+                <p className="fnote">{u('Estimated figures. Final fees are confirmed in writing. Approval rests with the authorities.', locale)}</p>
               </aside>
               </div>
             )}
@@ -220,25 +221,25 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
         </div>
       </header>
       {!isApply && !page.article && factsOn && facts.length > 0 && heroImg && (
-        <section className="facts-strip" aria-label="Quick facts">
+        <section className="facts-strip" aria-label={u('Quick facts', locale)}>
           <div className="wrap">
             <div className="fs-in">
               <dl className="fs-tiles">
                 {facts.slice(0, 5).map((f) => <div key={f.label} className="fs-tile"><dt>{f.label}</dt><dd>{f.value}</dd></div>)}
               </dl>
               <div className="fs-cta">
-                <L locale={locale} href={applyHref} className="btn btn-gold">Start my application <Icon name="arrow" size={18} /></L>
-                <L locale={locale} href="/free-consultation/" className="btn btn-glass">Free consultation</L>
+                <L locale={locale} href={applyHref} className="btn btn-gold">{u('Start my application', locale)} <Icon name="arrow" size={18} /></L>
+                <L locale={locale} href="/free-consultation/" className="btn btn-glass">{u('Free consultation', locale)}</L>
               </div>
             </div>
-            <p className="fnote">Estimated figures. Final fees are confirmed in writing. Approval rests with the authorities.</p>
+            <p className="fnote">{u('Estimated figures. Final fees are confirmed in writing. Approval rests with the authorities.', locale)}</p>
           </div>
         </section>
       )}
       {!isApply && jump.length > 2 && (
-        <nav className="onpage" aria-label="On this page">
+        <nav className="onpage" aria-label={u('On this page', locale)}>
           <div className="wrap"><div className="onpage-in">
-            <span>On this page</span>
+            <span>{u('On this page', locale)}</span>
             {jump.map((j) => <a key={j.title} href={`#${sid(j.title)}`}>{j.title}</a>)}
           </div></div>
         </nav>
@@ -252,7 +253,7 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
         )}
         {page.article && (
           <p className="byline block" style={{ marginBottom: 0 }}>
-            By <b>{page.article.author}</b> · Reviewed by <b>{page.article.reviewer}</b> · Last reviewed {page.article.reviewed} · {page.article.minutes} min read
+            {u('By', locale)} <b>{page.article.author}</b> {u('· Reviewed by', locale)} <b>{page.article.reviewer}</b> · Last reviewed {page.article.reviewed} · {page.article.minutes} min read
           </p>
         )}
         {before}
@@ -265,7 +266,7 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
                 <L key={r} locale={locale} href={r} className="card glass">
                   <p className="eyebrow">{getPage(r)!.eyebrow}</p>
                   <h3>{getPage(r)!.h1}</h3>
-                  <span className="go">Read more →</span>
+                  <span className="go">{u('Read more →', locale)}</span>
                 </L>
               ))}
             </div>
@@ -273,42 +274,42 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
         )}
         </div>
         {postSide && (
-          <aside className="side-post" aria-label="Contact and related">
+          <aside className="side-post" aria-label={u('Contact and related', locale)}>
             <div className="side-apply sp-box">
-              <p className="eyebrow">Talk to an advisor</p>
-              <h3>Questions about your visa?</h3>
-              <p>Free first review of your case. We reply on WhatsApp within working hours.</p>
+              <p className="eyebrow">{u('Talk to an advisor', locale)}</p>
+              <h3>{u('Questions about your visa?', locale)}</h3>
+              <p>{u('Free first review of your case. We reply on WhatsApp within working hours.', locale)}</p>
               <a className="btn btn-gold" href={wa} target="_blank" rel="noopener"><Icon name="wa" size={18} /> WhatsApp {SITE.whatsappDisplay}</a>
-              <a className="btn btn-glass" style={{ border: '1px solid var(--line)' }} href={`tel:${SITE.phone}`}><Icon name="phone" size={18} /> Call us</a>
+              <a className="btn btn-glass" style={{ border: '1px solid var(--line)' }} href={`tel:${SITE.phone}`}><Icon name="phone" size={18} /> {u('Call us', locale)}</a>
               <a className="btn btn-glass" style={{ border: '1px solid var(--line)' }} href={`mailto:${SITE.email}`}><Icon name="mail" size={18} /> {SITE.email}</a>
-              <L locale={locale} href="/apply/" className="btn btn-red">Apply online <Icon name="arrow" size={18} /></L>
+              <L locale={locale} href="/apply/" className="btn btn-red">{u('Apply online', locale)} <Icon name="arrow" size={18} /></L>
               {SITE.hours && <p className="fnote">{SITE.hours}</p>}
             </div>
             {more.length > 0 && (
               <div className="side-apply sp-more">
-                <p className="eyebrow">More articles</p>
+                <p className="eyebrow">{u('More articles', locale)}</p>
                 {more.slice(0, 5).map((m) => (
                   <L key={m.href} locale={locale} href={m.href} className="sp-item">
                     {m.image && <img decoding="async" src={m.image} alt="" loading="lazy" />}
                     <span>{m.label && <small>{m.label}</small>}<b>{m.title}</b></span>
                   </L>
                 ))}
-                <L locale={locale} href="/blog/" className="go small">All articles →</L>
+                <L locale={locale} href="/blog/" className="go small">{u('All articles →', locale)}</L>
               </div>
             )}
           </aside>
         )}
         {showAside && (
-          <aside className="side-apply" aria-label="Apply">
-            <p className="eyebrow">Apply online</p>
+          <aside className="side-apply" aria-label={u('Apply', locale)}>
+            <p className="eyebrow">{u('Apply online', locale)}</p>
             <h3>{page.eyebrow}</h3>
-            <p>Start in a few minutes. We check your file and confirm the quote before you pay.</p>
+            <p>{u('Start in a few minutes. We check your file and confirm the quote before you pay.', locale)}</p>
             <ul>
               {(page.facts ?? []).slice(0, 3).map((f) => <li key={f.label}><Icon name="check" size={15} /> {f.label}: {f.value}</li>)}
             </ul>
-            <L locale={locale} href={applyHref} className="btn btn-gold">Apply Now <Icon name="arrow" size={18} /></L>
-            <L locale={locale} href="/golden-visa-cost/" className="btn btn-red" data-open-calc="">Calculate cost</L>
-            <a className="btn btn-glass" style={{ border: '1px solid var(--line)' }} href={wa} target="_blank" rel="noopener"><Icon name="wa" size={18} /> WhatsApp</a>
+            <L locale={locale} href={applyHref} className="btn btn-gold">{u('Apply Now', locale)} <Icon name="arrow" size={18} /></L>
+            <L locale={locale} href="/golden-visa-cost/" className="btn btn-red" data-open-calc="">{u('Calculate cost', locale)}</L>
+            <a className="btn btn-glass" style={{ border: '1px solid var(--line)' }} href={wa} target="_blank" rel="noopener"><Icon name="wa" size={18} /> {u('WhatsApp', locale)}</a>
           </aside>
         )}
         </div>
@@ -318,12 +319,12 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
           <div className="wrap">
             <div className="cta-band-in">
               <div>
-                <p className="eyebrow">Ready when you are</p>
-                <h2>Start your application online in a few minutes</h2>
-                <p className="lead">Choose the service, add your family and upload what you have. Your advisor checks everything and confirms the quote before you pay.</p>
+                <p className="eyebrow">{u('Ready when you are', locale)}</p>
+                <h2>{u('Start your application online in a few minutes', locale)}</h2>
+                <p className="lead">{u('Choose the service, add your family and upload what you have. Your advisor checks everything and confirms the quote before you pay.', locale)}</p>
               </div>
               <div className="cta">
-                <L locale={locale} href={applyHref} className="btn btn-gold">Apply Now <Icon name="arrow" size={18} /></L>
+                <L locale={locale} href={applyHref} className="btn btn-gold">{u('Apply Now', locale)} <Icon name="arrow" size={18} /></L>
                 <a className="btn btn-glass" href={wa} target="_blank" rel="noopener"><Icon name="wa" size={18} /> {SITE.whatsappDisplay}</a>
               </div>
             </div>

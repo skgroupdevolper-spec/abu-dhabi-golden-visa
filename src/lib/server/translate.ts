@@ -9,6 +9,7 @@ import type { Block } from '@/lib/blocks';
 import { aiReady } from './ai';
 import { getBlock, saveBlock } from './settings';
 import { newId, now, readJsonFile, updateJsonFile } from './store';
+import UI_STRINGS from '@/lib/ui-strings.json';
 
 export type TranslateJob = { running: boolean; langs: string[]; total: number; done: number; errors: number; startedAt?: string; finishedAt?: string; current?: string; message?: string; auto: boolean };
 export const JOB0: TranslateJob = { running: false, langs: [], total: 0, done: 0, errors: 0, auto: false };
@@ -58,6 +59,7 @@ export async function runTranslation(langs: string[], auto = false) {
   if (globalThis.__adgvTranslating) return;
   globalThis.__adgvTranslating = true;
   try {
+    await translateUi(langs).catch(() => 0);
     const pages = await allPages();
     const tr = await readJsonFile<Translations>('translations.json', {});
     const todo: [Page, string][] = [];
@@ -101,5 +103,43 @@ export async function autoTranslate(paths: string[]) {
     for (const l of Object.keys(all)) for (const p of paths) if (!(all[l][p] as { manual?: boolean } | undefined)?.manual) delete all[l][p];
     return all;
   });
-  void runTranslation(LOCALES.filter((l) => l.code !== 'en').map((l) => l.code), true).catch(() => {});
+  const on = (await import('./settings').then((m) => m.getSite())).languages;
+  void runTranslation(LOCALES.filter((l) => l.code !== 'en' && (!on?.length || on.includes(l.code))).map((l) => l.code), true).catch(() => {});
+}
+
+/* ---------- Website interface texts (menus, buttons, widgets) ---------- */
+
+export async function uiProgress() {
+  const all = await readJsonFile<Record<string, Record<string, string>>>('ui-translations.json', {});
+  return { total: UI_STRINGS.length, per: Object.fromEntries(LOCALES.filter((l) => l.code !== 'en').map((l) => [l.code, UI_STRINGS.filter((s) => all[l.code]?.[s]).length])) as Record<string, number> };
+}
+
+/** Translates the interface texts still missing in the given languages (batches of 60). Returns how many were added. */
+export async function translateUi(langs: string[]) {
+  let added = 0;
+  for (const lang of langs) {
+    if (lang === 'en') continue;
+    const name = LOCALES.find((l) => l.code === lang)?.name ?? lang;
+    const have = (await readJsonFile<Record<string, Record<string, string>>>('ui-translations.json', {}))[lang] ?? {};
+    const missing = UI_STRINGS.filter((s) => !have[s]);
+    for (let i = 0; i < missing.length; i += 60) {
+      if (!(await underDailyLimit('auto'))) return added;
+      const batch = missing.slice(i, i + 60);
+      const system = `Translate short website interface texts (menu items, buttons, labels, headings) of a UAE Golden Visa consultancy into ${name}${lang === 'at' ? ' (Austrian German)' : ''}. Keep them short and natural for buttons and menus. Keep AED, numbers, brand names (WhatsApp, Emirates ID, Golden Visa may be translated naturally), arrows and symbols. Return JSON: {"t": [translations in the same order]}.`;
+      try {
+        const out = await complete(system, [{ role: 'user', content: JSON.stringify(batch) }], { json: true, maxTokens: 6000, kind: 'auto', use: 'translate' });
+        const tr = parseJson<{ t: string[] }>(out).t ?? [];
+        if (tr.length !== batch.length) continue;
+        await updateJsonFile<Record<string, Record<string, string>>>('ui-translations.json', {}, (all) => {
+          all[lang] = all[lang] ?? {};
+          batch.forEach((s, k) => { const v = String(tr[k] ?? '').trim(); if (v) all[lang][s] = v.slice(0, 600); });
+          return all;
+        });
+        added += batch.length;
+      } catch (e) {
+        await insert<AiLog>('ai-log', { id: newId(6), at: now(), kind: 'translate', text: `Interface texts (${lang}): ${(e as Error).message}`.slice(0, 300), ok: false }, 1000);
+      }
+    }
+  }
+  return added;
 }

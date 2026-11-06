@@ -33,7 +33,7 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(url, 308);
   }
 
-  if (isLocale(first)) return NextResponse.next();
+  if (isLocale(first)) { const h = new Headers(req.headers); h.set('x-path', pathname); return NextResponse.next({ request: { headers: h } }); }
 
   url.pathname = `/${DEFAULT_LOCALE}${pathname}`;
   return NextResponse.rewrite(url);

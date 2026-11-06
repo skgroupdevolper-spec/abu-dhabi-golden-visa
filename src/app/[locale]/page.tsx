@@ -240,7 +240,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </>)}
       {at('journey')}
 
-      {show('flight') && (<section className="home-flight"><div className="wrap"><FlightPath /></div></section>)}
+      {show('flight') && (<section className="home-flight"><div className="wrap"><FlightPath locale={locale} /></div></section>)}
       {at('flight')}
 
       {show('portal') && (<>
@@ -465,7 +465,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </>)}
       {at('contact')}
 
-      {show('booking') && (<section className="home-booking" id="book"><div className="wrap"><Booking /></div></section>)}
+      {show('booking') && (<section className="home-booking" id="book"><div className="wrap"><Booking locale={locale} /></div></section>)}
       {at('booking')}
 
       {show('finale') && (<>

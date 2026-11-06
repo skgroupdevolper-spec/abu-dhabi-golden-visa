@@ -5,18 +5,19 @@
 // the plane passes, and the step cards follow. Loop mode flies on its own (for heroes and banners).
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from './Icon';
+import { u } from '@/lib/ui';
 
 const D = 'M60 330 C 220 330, 250 120, 420 150 S 640 330, 780 250 S 980 60, 1140 110';
 const FROM = ['Mumbai', 'London', 'Moscow', 'Karachi', 'Manila', 'Cairo', 'Beijing', 'Lagos', 'Istanbul', 'Berlin', 'New York', 'Almaty'];
 export const FLIGHT_STEPS = [
-  { t: 'Free eligibility check', s: 'We confirm your route and costs in writing.', at: 0.08 },
-  { t: 'Documents & attestation', s: 'Checked, translated and attested where needed.', at: 0.3 },
-  { t: 'Nomination & entry permit', s: 'Filed with the Abu Dhabi authorities.', at: 0.52 },
-  { t: 'Medical & Emirates ID', s: 'Booked for you, VIP where offered.', at: 0.74 },
-  { t: 'Golden Visa issued', s: 'Ten years, renewable, family included.', at: 0.97 },
+  { t: u('Free eligibility check'), s: u('We confirm your route and costs in writing.'), at: 0.08 },
+  { t: u('Documents & attestation'), s: u('Checked, translated and attested where needed.'), at: 0.3 },
+  { t: u('Nomination & entry permit'), s: u('Filed with the Abu Dhabi authorities.'), at: 0.52 },
+  { t: u('Medical & Emirates ID'), s: u('Booked for you, VIP where offered.'), at: 0.74 },
+  { t: u('Golden Visa issued'), s: u('Ten years, renewable, family included.'), at: 0.97 },
 ];
 
-export function FlightPath({ title = 'Your journey to Abu Dhabi', intro = 'Scroll and follow your flight: every stop is a step we handle for you.', mode = 'scroll', steps = FLIGHT_STEPS }: { title?: string; intro?: string; mode?: 'scroll' | 'loop'; steps?: { t: string; s: string; at?: number }[] }) {
+export function FlightPath({ title = u('Your journey to Abu Dhabi'), intro = u('Scroll and follow your flight: every stop is a step we handle for you.'), mode = 'scroll', steps = FLIGHT_STEPS, locale = 'en' }: { title?: string; intro?: string; mode?: 'scroll' | 'loop'; steps?: { t: string; s: string; at?: number }[]; locale?: string }) {
   const root = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(-1);
   const [from, setFrom] = useState(0);
@@ -70,14 +71,14 @@ export function FlightPath({ title = 'Your journey to Abu Dhabi', intro = 'Scrol
   return (
     <div className={`flight ${mode}`} ref={root}>
       <div className="fp-head">
-        <p className="eyebrow"><Icon name="plane" size={14} /> Flight plan</p>
-        <h2>{title}</h2>
-        {intro && <p className="lead">{intro}</p>}
+        <p className="eyebrow"><Icon name="plane" size={14} /> {u('Flight plan', locale)}</p>
+        <h2>{u(title, locale)}</h2>
+        {intro && <p className="lead">{u(intro, locale)}</p>}
       </div>
       <div className="fp-sky">
         <span className="fp-cloud c1" aria-hidden="true" /><span className="fp-cloud c2" aria-hidden="true" /><span className="fp-cloud c3" aria-hidden="true" />
-        <div className="fp-from"><small>Departing</small><b key={from}>{FROM[from]}</b></div>
-        <div className="fp-to"><small>Arriving</small><b>Abu Dhabi</b></div>
+        <div className="fp-from"><small>{u('Departing', locale)}</small><b key={from}>{FROM[from]}</b></div>
+        <div className="fp-to"><small>{u('Arriving', locale)}</small><b>{u('Abu Dhabi', locale)}</b></div>
         <svg viewBox="0 0 1200 400" className="fp-svg" role="img" aria-label={`Flight route with ${pts.length} steps to an Abu Dhabi Golden Visa`}>
           <defs>
             <linearGradient id="fpg" x1="0" x2="1"><stop offset="0" stopColor="#7a5200" /><stop offset=".5" stopColor="#d4af37" /><stop offset="1" stopColor="#f2d27a" /></linearGradient>
@@ -106,7 +107,7 @@ export function FlightPath({ title = 'Your journey to Abu Dhabi', intro = 'Scrol
         {pts.map((s, i) => (
           <li key={i} className={`fp-step${active >= i ? ' on' : ''}${active === i ? ' now' : ''}`}>
             <span className="fp-n">{active > i ? <Icon name="check" size={16} /> : i + 1}</span>
-            <b>{s.t}</b><small>{s.s}</small>
+            <b>{u(s.t, locale)}</b><small>{u(s.s, locale)}</small>
           </li>
         ))}
       </ol>

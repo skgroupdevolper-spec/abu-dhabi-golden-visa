@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { PAGES } from '@/content/pages';
-import { LOCALES, localizePath } from '@/lib/i18n';
-import { SITE } from '@/lib/site';
+import { localizePath } from '@/lib/i18n';
+import { SITE, liveLocales } from '@/lib/site';
 import { getCategories, getCustomPages, getOverrides, getPublishedPosts, getServiceOverrides } from '@/lib/server/content';
 
 export const revalidate = 600;
@@ -24,9 +24,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   return entries.flatMap((e) => {
     const languages: Record<string, string> = {};
-    for (const l of LOCALES) languages[l.htmlLang] = SITE.url + localizePath(e.path, l.code);
+    for (const l of liveLocales()) languages[l.htmlLang] = SITE.url + localizePath(e.path, l.code);
     languages['x-default'] = SITE.url + e.path;
-    return LOCALES.map((l) => ({
+    return liveLocales().map((l) => ({
       url: SITE.url + localizePath(e.path, l.code),
       lastModified: e.at ? new Date(e.at) : now,
       changeFrequency: e.path === '/' ? ('daily' as const) : ('weekly' as const),

@@ -5,6 +5,7 @@
   "description": "Abu Dhabi Golden Visa website and customer dashboard (Brightlink Management Consultancy LLC)",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/extract-ui.mjs",
     "build": "next build",
     "start": "next start -p ${PORT:-3000}",
     "typecheck": "tsc --noEmit"

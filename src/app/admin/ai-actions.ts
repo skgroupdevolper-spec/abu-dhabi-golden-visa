@@ -227,3 +227,24 @@ export async function toggleChatbot(f: FormData) {
   await saveSite({ features: { ...site.features, chatbot: f.get('on') === '1' } });
   revalidatePath('/', 'layout');
 }
+
+/** Which languages appear on the website (switcher, sitemap, hreflang, auto-translation). */
+export async function saveSiteLanguages(_: St, f: FormData): Promise<St> {
+  await requireAdmin(FULL);
+  const on = f.getAll('lang').map(String).filter((c) => LOCALES.some((l) => l.code === c && c !== 'en'));
+  const site = await getSite();
+  await saveSite({ ...site, languages: on.length === LOCALES.length - 1 ? [] : on, features: { ...site.features, languageSwitcher: f.get('switcher') === 'on' } });
+  revalidatePath('/', 'layout');
+  return { ok: `${on.length + 1} languages on the website.` };
+}
+
+/** Translates the website interface (menus, buttons, booking, flight path, contact/about) into the website languages. */
+export async function translateInterface(_: St): Promise<St> {
+  await requireAdmin(FULL);
+  if (!(await aiReady('translate'))) return { error: 'Add the translation AI key first (below on this page).' };
+  const { translateUi } = await import('@/lib/server/translate');
+  const on = (await getSite()).languages;
+  const langs = LOCALES.filter((l) => l.code !== 'en' && (!on?.length || on.includes(l.code))).map((l) => l.code);
+  void translateUi(langs).then(() => revalidatePath('/', 'layout')).catch(() => {});
+  return { ok: `Translating menus, buttons and widgets into ${langs.length} languages in the background. Refresh in a few minutes.` };
+}

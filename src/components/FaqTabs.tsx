@@ -3,11 +3,11 @@
 // FAQ accordion with category filter tabs.
 import { useState } from 'react';
 
-export function FaqTabs({ items }: { items: { cat: string; q: string; a: string }[] }) {
-  const cats = ['All', ...Array.from(new Set(items.map((i) => i.cat)))];
-  const [cat, setCat] = useState('All');
+export function FaqTabs({ items, all = 'All' }: { items: { cat: string; q: string; a: string }[]; all?: string }) {
+  const cats = [all, ...Array.from(new Set(items.map((i) => i.cat)))];
+  const [cat, setCat] = useState(all);
   const [open, setOpen] = useState(0);
-  const list = items.filter((i) => cat === 'All' || i.cat === cat);
+  const list = items.filter((i) => cat === all || i.cat === cat);
   return (
     <div className="faqt">
       <div className="faqt-tabs" role="tablist">

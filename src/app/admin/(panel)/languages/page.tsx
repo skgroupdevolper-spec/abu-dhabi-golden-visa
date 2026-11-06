@@ -9,7 +9,9 @@ import { JOB0, translationProgress, type AiLog, type TranslateJob } from '@/lib/
 import { LOCALES } from '@/lib/i18n';
 import { when } from '@/lib/stages';
 import { AiPanel } from '@/components/dash/AiPanel';
-import { clearTranslations, saveLangCfg, startTranslation, stopTranslation } from '../../ai-actions';
+import { clearTranslations, saveLangCfg, saveSiteLanguages, startTranslation, stopTranslation, translateInterface } from '../../ai-actions';
+import { uiProgress } from '@/lib/server/translate';
+import { getSite } from '@/lib/server/settings';
 
 export const metadata: Metadata = { title: 'Languages' };
 export const dynamic = 'force-dynamic';
@@ -18,6 +20,8 @@ export default async function Languages() {
   await requireAdmin(FULL);
   const [prog, job, ready, logs, langcfg] = await Promise.all([translationProgress(), getBlock<TranslateJob>('translateJob', JOB0), aiReady('translate'), list<AiLog>('ai-log'), getBlock<{ onSave: boolean }>('langcfg', { onSave: true })]);
   const langs = LOCALES.filter((l) => l.code !== 'en');
+  const site = await getSite();
+  const uip = await uiProgress();
   return (
     <>
       <div className="topbar"><div><p className="eyebrow">Languages & translation</p><h1>Languages &amp; translation</h1></div>
@@ -41,6 +45,22 @@ export default async function Languages() {
               );
             })}
           </div>
+        </div>
+        <div className="panel">
+          <h2>Menus, buttons &amp; widgets</h2>
+          <p className="help">{uip.total} interface texts: header menu, footer, buttons, booking calendar, flight path, contact and about sections. Translated with AI; new texts are added every night automatically.</p>
+          <div className="lang-on" style={{ margin: '10px 0' }}>{langs.map((l) => <span key={l.code} className="small"><b>{l.code.toUpperCase()}</b> {uip.per[l.code] ?? 0}/{uip.total}</span>)}</div>
+          <ActionForm action={translateInterface}><Submit>Translate menus, buttons &amp; widgets now</Submit></ActionForm>
+        </div>
+        <div className="panel">
+          <h2>Languages on the website</h2>
+          <p className="help">Switch a language off to hide it from the language menu, the sitemap and Google, stop translating into it, and send its visitors to English.</p>
+          <ActionForm action={saveSiteLanguages} className="form">
+            <div className="full lang-on">{LOCALES.map((l) => (
+              <label key={l.code} className="row small"><input type="checkbox" name="lang" value={l.code} defaultChecked={l.code === 'en' || !site.languages?.length || site.languages.includes(l.code)} disabled={l.code === 'en'} /> {l.native} <span className="muted">({l.name})</span></label>))}</div>
+            <div className="full"><Toggle name="switcher" label="Show the language menu in the header" on={site.features.languageSwitcher} /></div>
+            <div className="full"><Submit className="btn btn-sm">Save languages</Submit></div>
+          </ActionForm>
         </div>
         <div className="panel">
           <h2>Translate automatically</h2>

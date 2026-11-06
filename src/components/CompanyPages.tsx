@@ -9,20 +9,21 @@ import { FaqTabs } from './FaqTabs';
 import { Icon } from './Icon';
 import { L } from './L';
 import { LeadForm } from './LeadForm';
+import { u } from '@/lib/ui';
 
 const mapSrc = () => `https://maps.google.com/maps?q=${encodeURIComponent(SITE.office || 'Business Bay, Dubai')}&z=15&output=embed`;
 const dirHref = () => SITE.mapsUrl || `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(SITE.office || 'Business Bay, Dubai')}`;
 
 const CONTACT_FAQ = [
-  { cat: 'General', q: 'Is the first consultation free?', a: 'Yes. Your first review of route, documents and costs is free and without obligation. You receive a written, itemised quote before you pay anything.' },
-  { cat: 'General', q: 'Can I speak to an advisor before I apply?', a: 'Of course. Message us on WhatsApp, call, or book a time on this page. One advisor follows your file from start to finish.' },
-  { cat: 'General', q: 'Which languages do you speak?', a: 'The website and your updates are available in 20 languages. Tell us your preferred language and we reply in it where possible.' },
-  { cat: 'Online & documents', q: 'Can everything be done online?', a: 'Most steps can. You share documents on WhatsApp or upload them in your customer dashboard. You only attend in person for the medical test and biometrics.' },
-  { cat: 'Online & documents', q: 'How do I send my documents safely?', a: 'Upload them in your private customer dashboard or send them on WhatsApp. We only use them for your application.' },
-  { cat: 'Online & documents', q: 'Do you collect original documents?', a: 'Where originals are needed, we can arrange collection and return in the UAE. Ask your advisor for the options in your area.' },
-  { cat: 'Visiting us', q: 'Do I need an appointment to visit?', a: 'Please book a time on this page so an advisor is free for you. Walk-ins are welcome during office hours when a team member is available.' },
-  { cat: 'Visiting us', q: 'What should I bring?', a: 'Your passport, Emirates ID if you have one, and the documents for your route (for example title deed or salary certificate). Copies on your phone are fine for the first meeting.' },
-  { cat: 'Visiting us', q: 'How quickly do you reply on WhatsApp?', a: 'Usually within minutes during office hours, and first thing the next working day outside them.' },
+  { cat: u('General'), q: u('Is the first consultation free?'), a: u('Yes. Your first review of route, documents and costs is free and without obligation. You receive a written, itemised quote before you pay anything.') },
+  { cat: u('General'), q: u('Can I speak to an advisor before I apply?'), a: u('Of course. Message us on WhatsApp, call, or book a time on this page. One advisor follows your file from start to finish.') },
+  { cat: u('General'), q: u('Which languages do you speak?'), a: u('The website and your updates are available in 20 languages. Tell us your preferred language and we reply in it where possible.') },
+  { cat: u('Online & documents'), q: u('Can everything be done online?'), a: u('Most steps can. You share documents on WhatsApp or upload them in your customer dashboard. You only attend in person for the medical test and biometrics.') },
+  { cat: u('Online & documents'), q: u('How do I send my documents safely?'), a: u('Upload them in your private customer dashboard or send them on WhatsApp. We only use them for your application.') },
+  { cat: u('Online & documents'), q: u('Do you collect original documents?'), a: u('Where originals are needed, we can arrange collection and return in the UAE. Ask your advisor for the options in your area.') },
+  { cat: u('Visiting us'), q: u('Do I need an appointment to visit?'), a: u('Please book a time on this page so an advisor is free for you. Walk-ins are welcome during office hours when a team member is available.') },
+  { cat: u('Visiting us'), q: u('What should I bring?'), a: u('Your passport, Emirates ID if you have one, and the documents for your route (for example title deed or salary certificate). Copies on your phone are fine for the first meeting.') },
+  { cat: u('Visiting us'), q: u('How quickly do you reply on WhatsApp?'), a: u('Usually within minutes during office hours, and first thing the next working day outside them.') },
 ];
 
 function OfficeMap() {
@@ -35,81 +36,81 @@ function OfficeMap() {
 
 export function ContactHub({ locale }: { locale: Locale }) {
   const cards = [
-    { ic: 'wa', t: 'WhatsApp', s: 'Fastest reply, usually within minutes in office hours.', v: SITE.whatsappDisplay, href: waLink('Hello, I would like help with the Abu Dhabi Golden Visa.'), b: 'Chat now', ext: true },
-    { ic: 'phone', t: 'Call us', s: 'Speak to a Golden Visa specialist.', v: SITE.whatsappDisplay, href: `tel:${SITE.phone}`, b: 'Call now' },
-    { ic: 'mail', t: 'Email', s: 'For documents and detailed questions.', v: SITE.email, href: `mailto:${SITE.email}`, b: 'Send email' },
-    { ic: 'pin', t: 'Visit the office', s: SITE.hours, v: SITE.office, href: dirHref(), b: 'Get directions', ext: true },
+    { ic: 'wa', t: u('WhatsApp'), s: u('Fastest reply, usually within minutes in office hours.'), v: SITE.whatsappDisplay, href: waLink('Hello, I would like help with the Abu Dhabi Golden Visa.'), b: u('Chat now'), ext: true },
+    { ic: 'phone', t: u('Call us'), s: u('Speak to a Golden Visa specialist.'), v: SITE.whatsappDisplay, href: `tel:${SITE.phone}`, b: u('Call now') },
+    { ic: 'mail', t: u('Email'), s: u('For documents and detailed questions.'), v: SITE.email, href: `mailto:${SITE.email}`, b: u('Send email') },
+    { ic: 'pin', t: u('Visit the office'), s: SITE.hours, v: SITE.office, href: dirHref(), b: u('Get directions'), ext: true },
   ];
   return (
     <>
       <section className="block cp-cards" data-reveal>
-        <div className="bh"><h2>More ways to reach us</h2></div>
+        <div className="bh"><h2>{u('More ways to reach us', locale)}</h2></div>
         <div className="cp-grid4">
           {cards.map((c) => (
             <a key={c.t} className="cp-card card" href={c.href} {...(c.ext ? { target: '_blank', rel: 'noopener' } : {})}>
               <span className="cp-ic"><Icon name={c.ic} size={22} /></span>
-              <b>{c.t}</b><small>{c.s}</small><em>{c.v}</em>
-              <span className="go">{c.b} →</span>
+              <b>{u(c.t, locale)}</b><small>{c.s === SITE.hours ? c.s : u(c.s, locale)}</small><em>{c.v}</em>
+              <span className="go">{u(c.b, locale)} →</span>
             </a>
           ))}
         </div>
-        <p className="cp-note"><Icon name="doc" size={16} /> You can share documents on WhatsApp or in your customer dashboard. Where originals are needed, we can arrange collection.</p>
+        <p className="cp-note"><Icon name="doc" size={16} /> {u('You can share documents on WhatsApp or in your customer dashboard. Where originals are needed, we can arrange collection.', locale)}</p>
       </section>
 
       <section className="block cp-enquiry" data-reveal>
         <div className="cp-enq-side">
-          <p className="eyebrow">Leave your details</p>
-          <h2>We reply within one working day</h2>
+          <p className="eyebrow">{u('Leave your details', locale)}</p>
+          <h2>{u('We reply within one working day', locale)}</h2>
           <ul className="ticks">
-            <li>Free first consultation about your route</li>
-            <li>Itemised quote in writing, no hidden fees</li>
-            <li>One advisor for your whole file</li>
-            <li>Updates in your language on WhatsApp</li>
+            <li>{u('Free first consultation about your route', locale)}</li>
+            <li>{u('Itemised quote in writing, no hidden fees', locale)}</li>
+            <li>{u('One advisor for your whole file', locale)}</li>
+            <li>{u('Updates in your language on WhatsApp', locale)}</li>
           </ul>
           <div className="cp-hot">
-            <a href={`tel:${SITE.phone}`}><Icon name="phone" size={18} /> <span><small>Hotline</small><b>{SITE.whatsappDisplay}</b></span></a>
-            <a href={dirHref()} target="_blank" rel="noopener"><Icon name="pin" size={18} /> <span><small>Office</small><b>{SITE.office}</b></span></a>
+            <a href={`tel:${SITE.phone}`}><Icon name="phone" size={18} /> <span><small>{u('Hotline', locale)}</small><b>{SITE.whatsappDisplay}</b></span></a>
+            <a href={dirHref()} target="_blank" rel="noopener"><Icon name="pin" size={18} /> <span><small>{u('Office', locale)}</small><b>{SITE.office}</b></span></a>
           </div>
         </div>
         <div className="cp-enq-form"><LeadForm source="contact" /></div>
       </section>
 
-      <section className="block" id="book" data-reveal><Booking /></section>
+      <section className="block" id="book" data-reveal><Booking locale={locale} /></section>
 
       <section className="block cp-remote" data-reveal>
-        <div className="bh"><h2>No office visit needed</h2></div>
+        <div className="bh"><h2>{u('No office visit needed', locale)}</h2></div>
         <ol className="cp-steps">
-          {[['globe', 'Handled online', 'Share documents on WhatsApp or upload them in your dashboard. We check, translate and file them.'], ['folder', 'Originals collected', 'If an original is needed, we arrange collection in the UAE.'], ['check', 'Returned to you', 'Your documents, visa and Emirates ID come back to you, with an update at every step.']].map(([ic, t, s], i) => (
-            <li key={t}><span className="cp-n">{i + 1}</span><Icon name={ic} size={26} /><b>{t}</b><small>{s}</small></li>
+          {[['globe', u('Handled online'), u('Share documents on WhatsApp or upload them in your dashboard. We check, translate and file them.')], ['folder', u('Originals collected'), u('If an original is needed, we arrange collection in the UAE.')], ['check', u('Returned to you'), u('Your documents, visa and Emirates ID come back to you, with an update at every step.')]].map(([ic, t, s], i) => (
+            <li key={t}><span className="cp-n">{i + 1}</span><Icon name={ic} size={26} /><b>{u(t, locale)}</b><small>{u(s, locale)}</small></li>
           ))}
         </ol>
       </section>
 
       <section className="block cp-here" data-reveal>
         <div>
-          <p className="eyebrow">Getting here</p>
-          <h2>Visit our office</h2>
+          <p className="eyebrow">{u('Getting here', locale)}</p>
+          <h2>{u('Visit our office', locale)}</h2>
           <dl className="cp-dl">
-            <div><dt>Address</dt><dd>{SITE.office}</dd></div>
-            <div><dt>Operator</dt><dd>{SITE.operator}</dd></div>
-            <div><dt>Opening hours</dt><dd>{SITE.hours}</dd></div>
+            <div><dt>{u('Address', locale)}</dt><dd>{SITE.office}</dd></div>
+            <div><dt>{u('Operator', locale)}</dt><dd>{SITE.operator}</dd></div>
+            <div><dt>{u('Opening hours', locale)}</dt><dd>{SITE.hours}</dd></div>
           </dl>
           <ul className="cp-travel">
-            <li><Icon name="plane" size={18} /> <span><b>By metro</b> Business Bay station, then a short taxi or walk.</span></li>
-            <li><Icon name="home" size={18} /> <span><b>By car</b> Visitor parking in and around the building.</span></li>
-            <li><Icon name="pin" size={18} /> <span><b>Taxi or ride-hailing</b> Drop-off at the building entrance.</span></li>
+            <li><Icon name="plane" size={18} /> <span><b>{u('By metro', locale)}</b> {u('Business Bay station, then a short taxi or walk.', locale)}</span></li>
+            <li><Icon name="home" size={18} /> <span><b>{u('By car', locale)}</b> {u('Visitor parking in and around the building.', locale)}</span></li>
+            <li><Icon name="pin" size={18} /> <span><b>{u('Taxi or ride-hailing', locale)}</b> {u('Drop-off at the building entrance.', locale)}</span></li>
           </ul>
-          <div className="cta"><a className="btn btn-gold" href={dirHref()} target="_blank" rel="noopener"><Icon name="pin" size={18} /> Get directions</a><a className="btn btn-glass" href="#book">Book a visit</a></div>
+          <div className="cta"><a className="btn btn-gold" href={dirHref()} target="_blank" rel="noopener"><Icon name="pin" size={18} /> {u('Get directions', locale)}</a><a className="btn btn-glass" href="#book">{u('Book a visit', locale)}</a></div>
         </div>
         <OfficeMap />
       </section>
 
       <section className="block" data-reveal>
-        <div className="bh"><h2>Questions about contacting us</h2></div>
-        <FaqTabs items={CONTACT_FAQ} />
-        <div className="cp-still"><b>Still have a question?</b>
-          <a className="btn btn-gold" href={waLink('Hello, I have a question.')} target="_blank" rel="noopener"><Icon name="wa" size={18} /> WhatsApp us</a>
-          <L locale={locale} href="/apply/" className="btn btn-glass">Apply online</L></div>
+        <div className="bh"><h2>{u('Questions about contacting us', locale)}</h2></div>
+        <FaqTabs items={CONTACT_FAQ.map((f) => ({ cat: u(f.cat, locale), q: u(f.q, locale), a: u(f.a, locale) }))} all={u('All', locale)} />
+        <div className="cp-still"><b>{u('Still have a question?', locale)}</b>
+          <a className="btn btn-gold" href={waLink('Hello, I have a question.')} target="_blank" rel="noopener"><Icon name="wa" size={18} /> {u('WhatsApp us', locale)}</a>
+          <L locale={locale} href="/apply/" className="btn btn-glass">{u('Apply online', locale)}</L></div>
       </section>
     </>
   );
@@ -120,82 +121,82 @@ export function AboutHub({ locale }: { locale: Locale }) {
     <>
       <section className="block cp-story" data-reveal>
         <div>
-          <p className="eyebrow">Welcome</p>
-          <h2>A long stay in the UAE starts with a clear plan</h2>
-          <p className="lead">We help investors, professionals and families secure long-term UAE residency through the Abu Dhabi Golden Visa, and we stay with them for family visas, Emirates ID, renewals and documents.</p>
+          <p className="eyebrow">{u('Welcome', locale)}</p>
+          <h2>{u('A long stay in the UAE starts with a clear plan', locale)}</h2>
+          <p className="lead">{u('We help investors, professionals and families secure long-term UAE residency through the Abu Dhabi Golden Visa, and we stay with them for family visas, Emirates ID, renewals and documents.', locale)}</p>
           <ul className="ticks">
-            <li>One named advisor for your whole file</li>
-            <li>Fees agreed in writing before we start</li>
-            <li>WhatsApp updates at every government step</li>
-            <li>Most of the work done remotely, in your language</li>
+            <li>{u('One named advisor for your whole file', locale)}</li>
+            <li>{u('Fees agreed in writing before we start', locale)}</li>
+            <li>{u('WhatsApp updates at every government step', locale)}</li>
+            <li>{u('Most of the work done remotely, in your language', locale)}</li>
           </ul>
-          <div className="cta"><L locale={locale} href="/free-consultation/" className="btn btn-gold">Free consultation <Icon name="arrow" size={18} /></L><a className="btn btn-glass" href={waLink('Hello, I would like to talk to an advisor.')} target="_blank" rel="noopener"><Icon name="wa" size={18} /> WhatsApp</a></div>
+          <div className="cta"><L locale={locale} href="/free-consultation/" className="btn btn-gold">{u('Free consultation', locale)} <Icon name="arrow" size={18} /></L><a className="btn btn-glass" href={waLink('Hello, I would like to talk to an advisor.')} target="_blank" rel="noopener"><Icon name="wa" size={18} /> {u('WhatsApp', locale)}</a></div>
         </div>
-        <figure className="cp-photo"><img decoding="async" loading="lazy" src="/images/family.webp" alt="Family planning their move to Abu Dhabi" width={900} height={700} /><figcaption><b>20</b> languages for your updates</figcaption></figure>
+        <figure className="cp-photo"><img decoding="async" loading="lazy" src="/images/family.webp" alt="Family planning their move to Abu Dhabi" width={900} height={700} /><figcaption><b>20</b> {u('languages for your updates', locale)}</figcaption></figure>
       </section>
 
       <section className="block cp-values" data-reveal>
-        <div className="bh"><h2>What guides our work</h2></div>
+        <div className="bh"><h2>{u('What guides our work', locale)}</h2></div>
         <div className="cp-grid3">
-          {[['shield', 'Our promise', 'Honest advice about your route, a written quote with every fee itemised, and no promise we cannot keep. Approval always rests with the authorities.'], ['star', 'Our mission', 'Make long-term residency in Abu Dhabi simple, transparent and calm for every family, wherever they come from.'], ['globe', 'Our vision', 'To be the advisor people trust and recommend for their life in the UAE, from the first visa to every renewal.']].map(([ic, t, s]) => (
-            <div key={t} className="card glass cp-val"><span className="ico"><Icon name={ic} /></span><h3>{t}</h3><p>{s}</p></div>
+          {[['shield', u('Our promise'), u('Honest advice about your route, a written quote with every fee itemised, and no promise we cannot keep. Approval always rests with the authorities.')], ['star', u('Our mission'), u('Make long-term residency in Abu Dhabi simple, transparent and calm for every family, wherever they come from.')], ['globe', u('Our vision'), u('To be the advisor people trust and recommend for their life in the UAE, from the first visa to every renewal.')]].map(([ic, t, s]) => (
+            <div key={t} className="card glass cp-val"><span className="ico"><Icon name={ic} /></span><h3>{u(t, locale)}</h3><p>{u(s, locale)}</p></div>
           ))}
         </div>
       </section>
 
       <section className="block cp-handle" data-reveal>
-        <div className="bh"><h2>What we handle for you</h2></div>
+        <div className="bh"><h2>{u('What we handle for you', locale)}</h2></div>
         <div className="cp-chips">
-          {[['Golden Visa applications', '/golden-visa/'], ['Property investor visas', '/golden-visa/property-investment/'], ['Family & parents', '/family-golden-visa/'], ['Renewals', '/services/golden-visa-renewal/'], ['Emirates ID', '/services/emirates-id/'], ['Medical & biometrics', '/services/medical-biometrics/'], ['Attestation & translation', '/document-services/mofa-attestation/'], ['Valuation certificate', '/document-services/valuation-certificate/'], ['Entry permits & status change', '/services/entry-permit-status-change/'], ['Retirement & remote work', '/retirement-visa/']].map(([t, h]) => (
-            <L key={h} locale={locale} href={h} className="cp-chip"><Icon name="check" size={15} /> {t}</L>
+          {[[u('Golden Visa applications'), '/golden-visa/'], [u('Property investor visas'), '/golden-visa/property-investment/'], [u('Family & parents'), '/family-golden-visa/'], [u('Renewals'), '/services/golden-visa-renewal/'], [u('Emirates ID'), '/services/emirates-id/'], [u('Medical & biometrics'), '/services/medical-biometrics/'], [u('Attestation & translation'), '/document-services/mofa-attestation/'], [u('Valuation certificate'), '/document-services/valuation-certificate/'], [u('Entry permits & status change'), '/services/entry-permit-status-change/'], [u('Retirement & remote work'), '/retirement-visa/']].map(([t, h]) => (
+            <L key={h} locale={locale} href={h} className="cp-chip"><Icon name="check" size={15} /> {u(t, locale)}</L>
           ))}
         </div>
       </section>
 
       <section className="block cp-licence" data-reveal>
         <div>
-          <p className="eyebrow">Licensed operator</p>
-          <h2>A registered UAE company</h2>
+          <p className="eyebrow">{u('Licensed operator', locale)}</p>
+          <h2>{u('A registered UAE company', locale)}</h2>
           <p className="lead">{SITE.name} is an independent residency consultancy website managed by {SITE.operator}. We are a private company, not a government authority.</p>
         </div>
         <div className="cp-lic">
-          <div className="cp-lic-h"><b>Company details</b><span className="pill ok">Active</span></div>
+          <div className="cp-lic-h"><b>{u('Company details', locale)}</b><span className="pill ok">{u('Active', locale)}</span></div>
           <dl className="cp-dl">
-            <div><dt>Operator</dt><dd>{SITE.operator}</dd></div>
-            <div><dt>Trade licence no.</dt><dd>{SITE.licence}</dd></div>
-            <div><dt>Office</dt><dd>{SITE.office}</dd></div>
-            <div><dt>Brand</dt><dd>{SITE.name}</dd></div>
+            <div><dt>{u('Operator', locale)}</dt><dd>{SITE.operator}</dd></div>
+            <div><dt>{u('Trade licence no.', locale)}</dt><dd>{SITE.licence}</dd></div>
+            <div><dt>{u('Office', locale)}</dt><dd>{SITE.office}</dd></div>
+            <div><dt>{u('Brand', locale)}</dt><dd>{SITE.name}</dd></div>
           </dl>
-          <p className="small muted">Visa issuance and eligibility are decided by the competent UAE authorities.</p>
+          <p className="small muted">{u('Visa issuance and eligibility are decided by the competent UAE authorities.', locale)}</p>
         </div>
       </section>
 
       <section className="block" data-reveal>
-        <div className="bh"><h2>We speak your language</h2></div>
+        <div className="bh"><h2>{u('We speak your language', locale)}</h2></div>
         <div className="cp-langs">{LOCALES.map((l) => <span key={l.code} lang={l.htmlLang}>{l.native}</span>)}</div>
       </section>
 
       <section className="block cp-here" data-reveal>
         <div>
-          <p className="eyebrow">Where to find us</p>
-          <h2>Our office</h2>
+          <p className="eyebrow">{u('Where to find us', locale)}</p>
+          <h2>{u('Our office', locale)}</h2>
           <dl className="cp-dl">
-            <div><dt>Address</dt><dd>{SITE.office}</dd></div>
-            <div><dt>Opening hours</dt><dd>{SITE.hours}</dd></div>
-            <div><dt>Phone & WhatsApp</dt><dd>{SITE.whatsappDisplay}</dd></div>
-            <div><dt>Email</dt><dd>{SITE.email}</dd></div>
+            <div><dt>{u('Address', locale)}</dt><dd>{SITE.office}</dd></div>
+            <div><dt>{u('Opening hours', locale)}</dt><dd>{SITE.hours}</dd></div>
+            <div><dt>{u('Phone & WhatsApp', locale)}</dt><dd>{SITE.whatsappDisplay}</dd></div>
+            <div><dt>{u('Email', locale)}</dt><dd>{SITE.email}</dd></div>
           </dl>
-          <div className="cta"><a className="btn btn-gold" href={dirHref()} target="_blank" rel="noopener"><Icon name="pin" size={18} /> Get directions</a><L locale={locale} href="/contact/#book" className="btn btn-glass">Book a visit</L></div>
+          <div className="cta"><a className="btn btn-gold" href={dirHref()} target="_blank" rel="noopener"><Icon name="pin" size={18} /> {u('Get directions', locale)}</a><L locale={locale} href="/contact/#book" className="btn btn-glass">{u('Book a visit', locale)}</L></div>
         </div>
         <OfficeMap />
       </section>
 
       <section className="block cp-enquiry" data-reveal>
         <div className="cp-enq-side">
-          <p className="eyebrow">Start your UAE journey</p>
-          <h2>Ask for a call back</h2>
-          <ul className="ticks"><li>Free first consultation</li><li>Written eligibility view</li><li>Reply within one working day</li></ul>
-          <div className="cp-hot"><a href={`tel:${SITE.phone}`}><Icon name="phone" size={18} /> <span><small>Call</small><b>{SITE.whatsappDisplay}</b></span></a></div>
+          <p className="eyebrow">{u('Start your UAE journey', locale)}</p>
+          <h2>{u('Ask for a call back', locale)}</h2>
+          <ul className="ticks"><li>{u('Free first consultation', locale)}</li><li>{u('Written eligibility view', locale)}</li><li>{u('Reply within one working day', locale)}</li></ul>
+          <div className="cp-hot"><a href={`tel:${SITE.phone}`}><Icon name="phone" size={18} /> <span><small>{u('Call', locale)}</small><b>{SITE.whatsappDisplay}</b></span></a></div>
         </div>
         <div className="cp-enq-form"><LeadForm source="about" /></div>
       </section>

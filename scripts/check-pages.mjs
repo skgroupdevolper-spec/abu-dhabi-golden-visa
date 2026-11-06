@@ -34,8 +34,8 @@ for (const path of pages) {
   }
 }
 // full pages after scrolling through (booking calendar, flight path, ticks)
-for (const path of ['/contact/', '/how-to-apply/', '/about/', '/']) {
-  const pg = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+for (const [path, w] of [['/contact/', 1440], ['/how-to-apply/', 1440], ['/about/', 1440], ['/', 1440], ['/contact/', 390], ['/ar/contact/', 390]]) {
+  const pg = await browser.newPage({ viewport: { width: w, height: 900 } });
   const errs = [];
   pg.on('pageerror', (e) => errs.push('pageerror: ' + e.message));
   await pg.goto(base + path, { waitUntil: 'networkidle' });
@@ -43,8 +43,8 @@ for (const path of ['/contact/', '/how-to-apply/', '/about/', '/']) {
   await pg.waitForTimeout(800);
   await pg.evaluate(() => window.scrollTo(0, 0));
   await pg.waitForTimeout(300);
-  await pg.screenshot({ path: `shots/full${(path.replace(/\//g, '_') || 'home')}.jpg`, fullPage: true, quality: 60 });
-  report.push({ path: 'full ' + path, vp: 1440, errors: errs, facts: {} });
+  await pg.screenshot({ path: `shots/full${(path.replace(/\//g, '_') || 'home')}${w === 390 ? '-m' : ''}.jpg`, fullPage: true, quality: 60 });
+  report.push({ path: 'full ' + path, vp: w, errors: errs, facts: {} });
   await pg.close();
 }
 // automatic cover

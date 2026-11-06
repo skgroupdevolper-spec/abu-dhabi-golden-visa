@@ -4,6 +4,8 @@ export type PublicSite = {
   whatsapp: string; whatsappDisplay: string; phone: string; email: string; office: string; hours: string; mapsUrl: string;
   disclaimer: string; footerAbout: string;
   social: { facebook: string; instagram: string; linkedin: string; tiktok: string; youtube: string; x: string };
+  /** Languages shown on the website (empty = all 20). English is always on. */
+  languages?: string[];
   features: { topBar: boolean; topBarText: string; floatingWhatsApp: boolean; mobileBar: boolean; dock: boolean; newsletter: boolean; clientLogin: boolean; chatbot: boolean; offer: boolean; preloader: boolean; languageSwitcher: boolean };
   offer: { title: string; text: string; button: string; link: string; delaySeconds: number };
   colors: { gold: string; goldDeep: string; ink: string; paper: string };
