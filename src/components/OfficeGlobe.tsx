@@ -13,6 +13,7 @@ type V = [number, number, number];
 const vec = (lat: number, lng: number): V => { const a = lat * D2R, b = lng * D2R; return [Math.cos(a) * Math.sin(b), Math.sin(a), Math.cos(a) * Math.cos(b)]; };
 /** Point on the great circle between a and b at t (0..1). */
 function slerp(a: V, b: V, t: number): V {
+  if (!a || !b) return a || b || [0, 0, 1];
   const d = Math.acos(Math.min(1, Math.max(-1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2])));
   if (d < 1e-6) return a;
   const s = Math.sin(d), k1 = Math.sin((1 - t) * d) / s, k2 = Math.sin(t * d) / s;
@@ -31,7 +32,7 @@ export function OfficeGlobe({ offices, locale = 'en' }: { offices: Office[]; loc
     const ctx = c.getContext('2d');
     if (!ctx) return;
     let dots: [number, number][] = [];
-    let raf = 0, visible = true, last = performance.now();
+    let raf = 0, visible = true, last = performance.now(), running = false;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     import('@/lib/land-dots').then(({ LAND }) => {
       const n = LAND.split(',').map(Number);
@@ -52,11 +53,12 @@ export function OfficeGlobe({ offices, locale = 'en' }: { offices: Office[]; loc
     let W = size();
     const ro = new ResizeObserver(() => { W = size(); });
     ro.observe(c);
-    const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) { last = performance.now(); raf = requestAnimationFrame(frame); } }, { threshold: 0.05 });
+    const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible && !running) { last = performance.now(); running = true; raf = requestAnimationFrame(frame); } }, { threshold: 0.05 });
     io.observe(c);
 
     /** Rotate a unit vector into view space; returns screen x, y and depth z (z > 0 faces us). */
     const proj = (v: V, lift = 1) => {
+      if (!v) return { x: -99, y: -99, z: -1 };
       const L = rotLng * D2R, T = tilt * D2R;
       const x1 = v[0] * Math.cos(L) + v[2] * Math.sin(L), z1 = -v[0] * Math.sin(L) + v[2] * Math.cos(L);
       const y2 = v[1] * Math.cos(T) - z1 * Math.sin(T), z2 = v[1] * Math.sin(T) + z1 * Math.cos(T);
@@ -65,10 +67,13 @@ export function OfficeGlobe({ offices, locale = 'en' }: { offices: Office[]; loc
     };
 
     function frame(now: number) {
+      running = false;
       if (!visible) return;
+      if (!Number.isFinite(now)) now = performance.now();
       const dt = Math.min(0.05, (now - last) / 1000); last = now;
-      if (!reduce) t += dt / legDur;
-      const k = Math.floor(t) % offices.length, f = t - Math.floor(t);
+      if (!reduce && Number.isFinite(dt)) t += dt / legDur;
+      if (!Number.isFinite(t)) t = 0;
+      const k = ((Math.floor(t) % offices.length) + offices.length) % offices.length, f = t - Math.floor(t);
       const ease = f < 0.5 ? 2 * f * f : 1 - Math.pow(-2 * f + 2, 2) / 2;
       const a = V3[k], b = V3[(k + 1) % offices.length];
       const pv = slerp(a, b, ease);
@@ -80,8 +85,8 @@ export function OfficeGlobe({ offices, locale = 'en' }: { offices: Office[]; loc
         rotLng += d * Math.min(1, dt * 1.6);
         tilt += (Math.max(-30, Math.min(40, target.lat * 0.55)) - tilt) * Math.min(1, dt * 1.2);
       }
-      draw(k, ease, pv, now);
-      if (!reduce) raf = requestAnimationFrame(frame);
+      try { draw(k, ease, pv, now); } catch { /* never break the page */ }
+      if (!reduce && !running) { running = true; raf = requestAnimationFrame(frame); }
     }
 
     function draw(k: number, ease: number, pv: V, now: number) {
@@ -158,7 +163,7 @@ export function OfficeGlobe({ offices, locale = 'en' }: { offices: Office[]; loc
     const move = (e: PointerEvent) => { if (!drag) return; rotLng = drag.l + (e.clientX - drag.x) * 0.4; tilt = Math.max(-60, Math.min(60, drag.t + (e.clientY - drag.y) * 0.3)); if (reduce) draw(0, 0, V3[0], performance.now()); };
     const up = () => { drag = null; idleUntil = performance.now() + 2500; };
     c.addEventListener('pointerdown', down); c.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
-    raf = requestAnimationFrame(frame);
+    running = true; raf = requestAnimationFrame(frame);
     if (reduce) setTimeout(() => draw(0, 0, V3[0], performance.now()), 300);
     return () => { cancelAnimationFrame(raf); ro.disconnect(); io.disconnect(); c.removeEventListener('pointerdown', down); c.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
   }, [offices]);
