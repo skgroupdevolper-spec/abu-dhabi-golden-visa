@@ -208,14 +208,14 @@ for (const [name, vp] of Object.entries(VP)) {
     }
     // FAQs: add a new question, save, it shows on /faqs/; delete it, save, it is gone
     await page.goto(base + '/admin/faqs/');
-    const before = await page.locator('.faq-ed').count();
+    const faqBefore = await page.locator('.faq-ed').count();
     await page.locator('button:has-text("+ Add new FAQ")').first().click();
     await page.locator('.faq-ed').first().locator('input').fill('CI test question: can I pay in INR?');
     await page.locator('.faq-ed').first().locator('textarea').fill('CI test answer.');
     await page.locator('button:has-text("Save FAQs")').click(); await page.waitForTimeout(1500);
     if (!(await (await api.get('/faqs/')).text()).includes('CI test question')) fail('owner', 'new FAQ does not show on the FAQs page');
     await page.goto(base + '/admin/faqs/');
-    if ((await page.locator('.faq-ed').count()) !== before + 1) fail('owner', 'new FAQ was not saved');
+    if ((await page.locator('.faq-ed').count()) !== faqBefore + 1) fail('owner', 'new FAQ was not saved');
     const fdel = page.locator('.faq-ed', { has: page.locator('input[value*="CI test question"]') }).locator('button.btn-danger');
     await fdel.click(); await fdel.click();
     await page.locator('button:has-text("Save FAQs")').click(); await page.waitForTimeout(1500);
