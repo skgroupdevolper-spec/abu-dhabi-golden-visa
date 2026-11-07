@@ -209,7 +209,7 @@ export function AboutHub({ locale }: { locale: Locale }) {
         <div>
           <p className="eyebrow">{u('Licensed operator', locale)}</p>
           <h2>{u('A registered UAE company', locale)}</h2>
-          <p className="lead">{SITE.name} is an independent residency consultancy website managed by {SITE.operator}. We are a private company, not a government authority.</p>
+          <p className="lead">{SITE.name} is an independent residency consultancy website managed by {SITE.operator}.</p>
         </div>
         <div className="cp-lic">
           <div className="cp-lic-h"><b>{u('Company details', locale)}</b><span className="pill ok">{u('Active', locale)}</span></div>

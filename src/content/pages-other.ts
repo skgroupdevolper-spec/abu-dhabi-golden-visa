@@ -378,7 +378,7 @@ export const OTHER_PAGES: Page[] = [
     eyebrow: 'About us',
     h1: 'Independent Golden Visa advisors',
     intro:
-      'Abu Dhabi Golden Visa is an independent residency consultancy website managed by Brightlink Management Consultancy LLC, UAE (Trade Licence No. 1053387). We are not a government body; the authorities decide every application.',
+      'Abu Dhabi Golden Visa is an independent residency consultancy website managed by Brightlink Management Consultancy LLC, UAE (Trade Licence No. 1053387).',
     cta: CONTACT_CTA,
     sections: [{ type: 'tool', tool: 'about-hub' }],
   },
