@@ -350,6 +350,11 @@ export function HomeEffects() {
         gsap.from('.home .fglass', { y: 90, scale: 0.92, opacity: 0.4, duration: 1.3, ease: 'expo.out', scrollTrigger: { trigger: '.home .fbox', start: 'top 75%' } });
       });
 
+      if (!fine) {
+        // phones: no mouse, so the coin sways by itself and the promo cards float gently
+        gsap.to('#coinTilt', { rotationY: 22, rotationX: -10, duration: 3.2, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+        if (!desk) gsap.utils.toArray<HTMLElement>('.home .promo').forEach((p, i) => gsap.to(p, { y: -10, duration: 2.6 + i * 0.4, ease: 'sine.inOut', yoyo: true, repeat: -1 }));
+      }
       if (fine) {
         const tX = gsap.quickTo('#coinTilt', 'rotationY', { duration: 1, ease: 'power3' });
         const tY = gsap.quickTo('#coinTilt', 'rotationX', { duration: 1, ease: 'power3' });

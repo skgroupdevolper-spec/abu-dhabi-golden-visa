@@ -75,7 +75,7 @@ export function Water() {
       }
       return { p: pr, u };
     };
-    const simP = LITE ? null : program(SIM);
+    const simP = program(SIM); // phones too (smaller grid, 30 fps)
     const drawP = program(DRAW);
     if (!drawP) return;
     const buf = gl.createBuffer();
@@ -122,12 +122,14 @@ export function Water() {
       H = Math.max(2, Math.round(window.innerHeight * dpr * scale));
       canvas.width = W;
       canvas.height = H;
-      SW = Math.min(300, Math.round(window.innerWidth / 4));
+      SW = LITE ? Math.min(140, Math.round(window.innerWidth / 3)) : Math.min(300, Math.round(window.innerWidth / 4));
       SH = Math.max(2, Math.round((SW * window.innerHeight) / window.innerWidth));
       targets();
     };
     resize();
-    window.addEventListener('resize', resize);
+    let lastW = window.innerWidth;
+    const onResize = () => { if (LITE && window.innerWidth === lastW && canvas.width > 2) return; lastW = window.innerWidth; resize(); };
+    window.addEventListener('resize', onResize);
 
     const pending: Drop[] = [];
     const ptr = { x: -1, y: -1, px: -1, py: -1, moved: false };
@@ -155,6 +157,12 @@ export function Water() {
     };
     window.addEventListener('pointermove', onMove, { passive: true });
     window.addEventListener('pointerdown', onDown, { passive: true });
+    // touch: a finger sliding over the page leaves a trail of ripples (pointermove stops once scrolling starts)
+    const onTouch = (e: TouchEvent) => { const t = e.touches[0]; if (!t) return; ptr.x = t.clientX; ptr.y = t.clientY; if (ptr.px < 0) { ptr.px = t.clientX; ptr.py = t.clientY; } ptr.moved = true; };
+    const onTouchEnd = () => { ptr.px = -1; ptr.py = -1; };
+    window.addEventListener('touchstart', onTouch, { passive: true });
+    window.addEventListener('touchmove', onTouch, { passive: true });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
 
@@ -184,7 +192,7 @@ export function Water() {
           const d = pending.shift()!;
           drops.push([d[0] / window.innerWidth, 1 - d[1] / window.innerHeight, d[2], d[3]]);
         }
-        if (Math.random() < 0.025 && drops.length < 8) drops.push([Math.random(), Math.random(), 0.012 + Math.random() * 0.02, -(0.15 + Math.random() * 0.25)]);
+        if (Math.random() < (LITE ? 0.06 : 0.025) && drops.length < 8) drops.push([Math.random(), Math.random(), 0.012 + Math.random() * 0.02, -(0.15 + Math.random() * 0.25)]);
         if (Math.abs(velocity) > 0.4) {
           const ey = velocity > 0 ? 0.02 : 0.98, str = -Math.min(Math.abs(velocity) * 0.006, 0.35);
           for (let q = 0; q < 3 && drops.length < 8; q++) drops.push([Math.random(), ey, 0.035 + Math.random() * 0.03, str * (0.6 + Math.random() * 0.4)]);
@@ -232,9 +240,12 @@ export function Water() {
     return () => {
       cancelAnimationFrame(raf);
       window.clearInterval(coinDrops);
-      window.removeEventListener('resize', resize);
+      window.removeEventListener('resize', onResize);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerdown', onDown);
+      window.removeEventListener('touchstart', onTouch);
+      window.removeEventListener('touchmove', onTouch);
+      window.removeEventListener('touchend', onTouchEnd);
       window.removeEventListener('scroll', onScroll);
       delete window.__adgvDrop;
     };

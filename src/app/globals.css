@@ -1289,18 +1289,21 @@ footer.site.has-scene .legal { position: relative; z-index: 2; }
 .fs-walk { position: absolute; left: 0; right: 0; bottom: 22px; height: 110px; overflow: hidden; }
 .fs-camel { position: absolute; bottom: 0; left: 0; width: 130px; height: auto; animation: cm-walk 46s linear infinite; }
 @keyframes cm-walk { 0% { transform: translateX(-170px); } 88% { transform: translateX(calc(100vw + 30px)); } 100% { transform: translateX(calc(100vw + 30px)); } }
-.cm-body { animation: cm-bob 1s ease-in-out infinite; }
+.cm-body { animation: cm-bob .6s ease-in-out infinite; }
 @keyframes cm-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
-.cm-leg { animation: cm-step 1s ease-in-out infinite; }
-.cm-leg.l2, .cm-leg.l3 { animation-delay: -.5s; }
-@keyframes cm-step { 0%, 100% { transform: rotate(14deg); } 50% { transform: rotate(-14deg); } }
+.cm-up { animation: cm-step 1.2s ease-in-out infinite; }
+@keyframes cm-step { 0%, 100% { transform: rotate(13deg); } 50% { transform: rotate(-13deg); } }
+.cm-low { animation: cm-knee 1.2s ease-in-out infinite; }
+@keyframes cm-knee { 0% { transform: rotate(0); } 25% { transform: rotate(30deg); } 50%, 100% { transform: rotate(0); } }
+.cm-scarf { transform-origin: 101px -6px; animation: cm-scarf 1.8s ease-in-out infinite; }
+@keyframes cm-scarf { 50% { transform: rotate(-5deg); } }
 .cm-neck { animation: cm-nod 1s ease-in-out infinite; }
 @keyframes cm-nod { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-3deg); } }
-.cm-rider { animation: cm-sway 1s ease-in-out infinite; }
+.cm-rider { animation: cm-sway 1.2s ease-in-out infinite; }
 @keyframes cm-sway { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
 [dir='rtl'] .fs-walk { direction: ltr; }
 @media (max-width: 640px) { .fs-camel { width: 84px; animation-duration: 30s; } .fs-walk { bottom: 14px; height: 80px; } }
-@media (prefers-reduced-motion: reduce) { .fs-camel { animation: none; transform: translateX(40vw); } .cm-body, .cm-leg, .cm-neck, .cm-rider { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .fs-camel { animation: none; transform: translateX(40vw); } .cm-body, .cm-up, .cm-low, .cm-scarf, .cm-rider { animation: none; } }
 /* palms stay at the outer edges, never over the footer text */
 @media (max-width: 1760px) {
   .fs-palm { width: clamp(150px, 13vw, 230px); }
@@ -1332,3 +1335,30 @@ footer.site .legal > span { max-width: 640px; }
 .cp-trust li { display: flex; gap: 10px; align-items: flex-start; color: rgba(245, 239, 224, .88); }
 .cp-trust .si { color: #f2d27a; flex: none; margin-top: 3px; }
 @media (max-width: 1000px) { .cp-licence > div:first-child { position: static; } }
+
+/* ===== Phone fixes (Nov 2026) ===== */
+/* Apply page: one column below 980px (the 360px side column above was squeezing the form) */
+@media (max-width: 980px) {
+  .apply-body { grid-template-columns: minmax(0, 1fr) !important; }
+  .apply-side, .apply-side.panel { position: static !important; top: auto !important; order: 2; }
+  .apply-main { order: 1; min-width: 0; }
+}
+@media (max-width: 640px) {
+  .aw-grid { grid-template-columns: minmax(0, 1fr); }
+  .aw-card { width: 100%; }
+  .aw-tx { min-width: 0; overflow-wrap: anywhere; }
+  .apply-steps { display: flex; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; }
+  .apply-steps::-webkit-scrollbar { display: none; }
+  .apply-steps > li { flex: 0 0 auto; scroll-snap-align: start; }
+  .aw-cats { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .aw-cats::-webkit-scrollbar { display: none; }
+  .aw-cats > * { flex: 0 0 auto; }
+}
+/* Header on tablets/phones: no Apply button (it is in the menu) */
+@media (max-width: 1240px) { .tools .btn-gold.btn-s { display: none !important; } }
+/* Language and currency menus on phones: a sheet that always fits the screen */
+@media (max-width: 760px) {
+  .drop.langs, .drop.curs { position: fixed; top: auto; bottom: 12px; left: 12px; right: 12px; inset-inline: 12px; width: auto; max-height: 72dvh; overflow: auto; z-index: 400; box-shadow: 0 -20px 60px -10px rgba(0,0,0,.35), 0 0 0 1px rgba(0,0,0,.06); }
+  .drop.langs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mainbar { backdrop-filter: none; -webkit-backdrop-filter: none; background: #fff; }
+}
