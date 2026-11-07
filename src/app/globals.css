@@ -1319,3 +1319,6 @@ footer.site.has-scene .legal { padding-inline: clamp(0px, 4vw, 70px); }
   .logo img { height: 38px; }
 }
 @media (max-width: 360px) { .tools .btn-gold.btn-s { display: none; } }
+/* footer copyright line centred, clear of the palms */
+footer.site .legal { display: flex; justify-content: center; text-align: center; }
+footer.site .legal > span { max-width: 640px; }
