@@ -18,6 +18,8 @@ import { SITE } from '@/lib/site';
 import { applyRuntimeSync, getBlock, getSecrets } from '@/lib/server/settings';
 import { DEFAULT_DESIGN, cleanDesign, designCss, fontHref, type Design } from '@/lib/design';
 import { TrackingCode } from '@/components/SiteRuntime';
+import { PriceFx } from '@/components/PriceFx';
+import { siteRates } from '@/lib/server/fx';
 import '../globals.css';
 
 const display = Instrument_Serif({ weight: '400', style: ['normal', 'italic'], subsets: ['latin'], variable: '--font-display', display: 'swap' });
@@ -57,6 +59,8 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   const uiAll = await readJsonFile<Record<string, Record<string, string>>>('ui-translations.json', {});
   globalThis.__ADGV_UI = uiAll;
   const svcCat = mergeCatalog(await getServiceOverrides());
+  const fx = await siteRates();
+  (globalThis as { __ADGV_FX?: typeof fx }).__ADGV_FX = fx;
   globalThis.__ADGV_SVC = svcCat;
   const seo = (await getSecrets()).seo;
   const c = site.colors;
@@ -66,7 +70,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   return (
     <html lang={info.htmlLang} dir={info.dir} className={`${display.variable} ${body.variable} ${arabic.variable}`}>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: `window.__ADGV_SITE=${JSON.stringify(site).replace(/</g, '\\u003c')};window.__ADGV_SVC=${JSON.stringify(svcCat).replace(/</g, '\\u003c')};window.__ADGV_UI=${JSON.stringify({ [locale]: uiAll[locale] ?? {} }).replace(/</g, '\\u003c')}` }} />
+        <script dangerouslySetInnerHTML={{ __html: `window.__ADGV_SITE=${JSON.stringify(site).replace(/</g, '\\u003c')};window.__ADGV_SVC=${JSON.stringify(svcCat).replace(/</g, '\\u003c')};window.__ADGV_FX=${JSON.stringify(fx).replace(/</g, '\\u003c')};window.__ADGV_UI=${JSON.stringify({ [locale]: uiAll[locale] ?? {} }).replace(/</g, '\\u003c')}` }} />
         <style dangerouslySetInnerHTML={{ __html: `:root{--gold:${c.gold};--gold-deep:${c.goldDeep};--navy:${c.ink};--paper:${c.paper}}`.replace(/[<>]/g, '') }} />
         {fonts && <><link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" /><link rel="stylesheet" href={fonts} /></>}
         {dcss.trim() && <style id="site-design" dangerouslySetInnerHTML={{ __html: dcss }} />}
@@ -78,6 +82,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
         <Header locale={locale} />
         <main id="main" className="page">{children}</main>
         <Footer locale={locale} />
+        <PriceFx />
         <Motion level={design.motion} textFx={design.textFx} cursor={design.cursor} smooth={design.smooth} />
         <CalcModal />
         <OfferPopup />

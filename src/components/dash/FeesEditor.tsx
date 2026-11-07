@@ -178,7 +178,12 @@ export function FeesEditor({ initial, action }: { initial: Fees; action: (s: St,
 
           {tab === 'currency' && (
             <div className="stack">
-              <p className="help">1 AED = rate. Used for the approximate total in the visitor’s chosen currency.</p>
+              <p className="help">Prices are set in AED. When a visitor picks another currency in the header, every AED price on the website is shown in that currency (marked ≈, approximate).</p>
+              <label className="check" style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <input type="checkbox" checked={!f.fxManual} onChange={(e) => set((x) => { x.fxManual = !e.target.checked; return x; })} />
+                <span><b>Use live exchange rates (updated every day automatically)</b><br /><small className="muted">On: today’s market rate for each currency below (for example 1 AED ≈ 25.6 INR). Off: the fixed rates you type in the table.</small></span>
+              </label>
+              <p className="help">Table: 1 AED = rate. The currencies listed here appear in the website’s currency menu.</p>
               <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Code</th><th>Name</th><th>Symbol</th><th>Rate</th><th /></tr></thead><tbody>
                 {Object.entries(rates).map(([c, r]) => (
                   <tr key={c}><td><b>{c}</b></td>

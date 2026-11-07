@@ -64,6 +64,8 @@ export const FEE_SCHEDULE = {
   /** Custom wording for headings and buttons (empty = default text). */
   texts: {} as Record<string, string>,
   options: { where: true, family: true, medical: true, package: true, pdf: true, whatsapp: true, copy: true, checklist: true, convert: true, maxPeople: 10, vatOnGov: false } as CalcOptions,
+  /** true = always use the rates typed below; otherwise live rates (updated daily) are used. */
+  fxManual?: boolean;
   /** Exchange rates for the approximate total (empty = built-in rates). */
   rates: RATES0,
 };
@@ -86,8 +88,11 @@ export function aed(n: number): string {
   return 'AED ' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-export function convert(n: number, code: string, rates?: Record<string, { rate: number; symbol: string; name: string }>): string | null {
-  const r = (rates && Object.keys(rates).length ? rates : RATES)[code];
+type Rates = Record<string, { rate: number; symbol: string; name: string }>;
+/** Rates used across the website: live (updated daily) or the admin's own, injected by the layout. */
+export const siteFx = (): Rates | undefined => (globalThis as { __ADGV_FX?: Rates }).__ADGV_FX;
+export function convert(n: number, code: string, rates?: Rates): string | null {
+  const r = (siteFx() ?? (rates && Object.keys(rates).length ? rates : RATES))[code];
   if (!r || code === 'AED') return null;
   return `≈ ${r.symbol}${Math.round(n * r.rate).toLocaleString('en-US')} ${code}`;
 }

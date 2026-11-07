@@ -182,6 +182,17 @@ for (const [name, vp] of Object.entries(VP)) {
     if ((await page.locator('table tbody tr').count()) && !(await page.locator('button.btn-danger').count())) fail('owner', 'articles list has no delete button');
     await page.goto(base + '/');
     if (await page.locator('.dashprev').count()) fail('home', 'sample dashboard preview is still on the homepage');
+    // currency: pick INR, AED prices on the cost page change to ₹ and back
+    await page.goto(base + '/golden-visa-cost/'); await page.waitForTimeout(800);
+    const hasAed = await page.locator('body').innerText().then((x) => /AED\s?\d/.test(x));
+    await page.evaluate(() => { localStorage.setItem('adgv-currency', 'INR'); window.dispatchEvent(new CustomEvent('adgv:currency', { detail: 'INR' })); });
+    await page.waitForTimeout(600);
+    const txt = await page.locator('main').innerText();
+    if (hasAed && !/≈ ₹[\d,]+/.test(txt)) fail('currency', 'prices did not change to INR on the cost page');
+    await page.screenshot({ path: 'shots/e2e-currency-inr.jpg' });
+    await page.goto(base + '/about/'); await page.waitForTimeout(800);
+    if (/AED\s?\d/.test(await page.locator('main').innerText().catch(() => '')) ) fail('currency', 'INR choice was not kept on the next page');
+    await page.evaluate(() => { localStorage.setItem('adgv-currency', 'AED'); window.dispatchEvent(new CustomEvent('adgv:currency', { detail: 'AED' })); });
   }
   await ctx.close();
 }

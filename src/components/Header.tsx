@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { NAV } from '@/content/nav';
 import { LOCALES, localeInfo, localizePath, splitLocale, type Locale } from '@/lib/i18n';
-import { RATES } from '@/lib/fees';
+import { RATES, siteFx } from '@/lib/fees';
 import { liveLocales, SITE, waLink } from '@/lib/site';
 import { Icon } from './Icon';
 import { L } from './L';
@@ -17,7 +17,7 @@ export const CURRENCY_EVENT = 'adgv:currency';
 export function getCurrency(): string {
   try {
     const c = localStorage.getItem('adgv-currency');
-    return c && RATES[c] ? c : 'AED';
+    return c && (siteFx() ?? RATES)[c] ? c : 'AED';
   } catch {
     return 'AED';
   }
@@ -131,7 +131,7 @@ export function Header({ locale }: { locale: Locale }) {
               </button>
               {open === 'cur' && (
                 <div className="drop curs" role="menu">
-                  {Object.entries(RATES).map(([code, r]) => (
+                  {Object.entries(siteFx() ?? RATES).map(([code, r]) => (
                     <button key={code} type="button" role="menuitemradio" aria-checked={code === cur} onClick={() => pickCurrency(code)}>
                       <b>{code}</b>
                       <span style={{ flex: 1 }}>{r.name}</span>

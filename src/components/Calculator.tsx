@@ -298,7 +298,7 @@ export function Calculator({ initialRoute = null, bare = false }: { initialRoute
   }
 
   return (
-    <div className={bare ? 'calc-bare' : 'panel glass'} aria-live="polite">
+    <div className={bare ? 'calc-bare' : 'panel glass'} aria-live="polite" data-nofx="">
       <div className="bar-steps" aria-hidden="true">{steps.slice(0, -1).map((k, i) => <i key={k} className={i <= idx ? 'on' : ''} />)}</div>
       {hist.length > 0 && current !== 'result' && (
         <button type="button" className="btn btn-glass" style={{ minHeight: 40, padding: '0 14px', marginBottom: 12 }} onClick={back}>‹ Back</button>

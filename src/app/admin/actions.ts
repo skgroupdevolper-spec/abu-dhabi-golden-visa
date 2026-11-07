@@ -287,6 +287,7 @@ export async function saveFeesJson(_: FormState, f: FormData): Promise<FormState
     extraFees: (Array.isArray(x.extraFees) ? x.extraFees : []).slice(0, 30).map((a: any, i: number) => ({ id: t(a?.id, 20, `e${i}`), label: t(a?.label, 120, 'Fee'), aed: m(a?.aed, 0), per: PER.includes(a?.per) ? a.per : 'person', routes: Array.isArray(a?.routes) ? a.routes.map((r: unknown) => t(r, 40)).filter(Boolean) : [] })),
     texts: Object.fromEntries(Object.entries(x.texts && typeof x.texts === 'object' ? x.texts : {}).filter(([k]) => /^[a-zA-Z]{2,12}$/.test(k)).map(([k, v]) => [k, t(v, 400)]).filter(([, v]) => v)),
     options: Object.fromEntries(Object.keys(d.options).map((k) => [k, k === 'maxPeople' ? Math.max(1, Math.min(30, Number(x.options?.maxPeople) || 10)) : x.options?.[k] === undefined ? (d.options as Record<string, unknown>)[k] : !!x.options[k]])) as typeof d.options,
+    fxManual: !!x.fxManual,
     rates: Object.fromEntries(Object.entries(x.rates && typeof x.rates === 'object' ? x.rates : {}).filter(([k]) => /^[A-Z]{3}$/.test(k)).slice(0, 40).map(([k, v]: [string, any]) => [k, { rate: Number(v?.rate) > 0 ? Number(v.rate) : 1, symbol: t(v?.symbol, 6, k + ' '), name: t(v?.name, 40, k) }])),
   };
   await saveFees(fees as Fees);
