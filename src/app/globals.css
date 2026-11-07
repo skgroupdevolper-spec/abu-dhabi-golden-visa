@@ -1201,3 +1201,20 @@ li.sk.on { opacity: 1; transform: none; }
 .cp-zone small { color: var(--gold-deep, #8a6a12); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; font-size: 11px; margin-bottom: 4px; }
 @media (max-width: 860px) { .cp-visit { grid-template-columns: 1fr; } .cp-founder { grid-template-columns: 1fr; text-align: start; } .cp-f-badge { width: 96px; height: 96px; font-size: 30px; } }
 @media (max-width: 420px) { .ol-n b { font-size: 22px; } .ol-time b { font-size: 21px; } }
+
+/* ===== About: 3D office globe ===== */
+.oglobe { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr); gap: 26px; align-items: center; padding: clamp(16px, 3vw, 30px); border-radius: 30px; background: radial-gradient(120% 100% at 30% 20%, #241b06 0, #0d0d0d 55%); border: 1px solid rgba(212, 175, 55, .3); overflow: hidden; }
+.og-stage { position: relative; max-width: 560px; width: 100%; margin: 0 auto; }
+.og-cv { display: block; width: 100%; aspect-ratio: 1; cursor: grab; touch-action: pan-y; }
+.og-cv:active { cursor: grabbing; }
+.og-now { position: absolute; left: 50%; bottom: 2%; transform: translateX(-50%); margin: 0; padding: 6px 14px; border-radius: 999px; background: rgba(13, 13, 13, .8); border: 1px solid rgba(242, 210, 122, .45); color: #f2d27a; font: 700 13px var(--body); white-space: nowrap; }
+.og-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.og-list button { width: 100%; display: flex; gap: 12px; align-items: flex-start; text-align: start; padding: 14px 16px; border-radius: 18px; background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .1); color: #fff; cursor: pointer; font: inherit; transition: background .25s, border-color .25s, transform .25s; }
+.og-list button:hover { background: rgba(212, 175, 55, .12); transform: translateX(3px); }
+.og-list li.on button { border-color: rgba(242, 210, 122, .6); background: rgba(212, 175, 55, .14); }
+.og-list b { display: block; font-size: 16px; }
+.og-list small { display: block; color: #d9d2bf; font-size: 13px; margin-top: 2px; }
+.og-list .og-note { color: #bfb6a0; }
+.og-pin { flex: none; width: 12px; height: 12px; margin-top: 5px; border-radius: 50%; background: #f2d27a; box-shadow: 0 0 0 4px rgba(242, 210, 122, .2); }
+.cp-globe .bh p:not(.eyebrow) { max-width: 640px; }
+@media (max-width: 860px) { .oglobe { grid-template-columns: 1fr; } }

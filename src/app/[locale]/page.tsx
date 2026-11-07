@@ -263,13 +263,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
           <PhoneChat />
         </div>
-        <div className="wrap">
-          <figure className="dashprev" data-view="">
-            <div className="dp-bar"><i /><i /><i /><span>app.abudhabigoldenvisa.com</span></div>
-            <div className="dp-screen"><img decoding="async" src="/images/dashboard-preview.webp" alt="Client dashboard: files, payments, receipts and live progress" width={1100} height={1478} /></div>
-            <figcaption>Your dashboard: live progress, quotes, Pay now, receipts, statement and calendar.</figcaption>
-          </figure>
-        </div>
       </section>
       </>)}
       {at('portal')}

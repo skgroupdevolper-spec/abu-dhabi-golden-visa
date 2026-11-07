@@ -36,6 +36,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
             <F name="licenceIssuer" label="Licence issued by" value={site.licenceIssuer ?? ''} />
             <F name="legalType" label="Legal type" value={site.legalType ?? ''} />
             <F name="activities" label="Approved activities (one per line)" value={site.activities ?? ''} full type="textarea" />
+            <F name="offices" label="Offices on the About globe (one per line: Country | City | latitude | longitude | note)" value={(site.offices ?? []).map((o) => [o.country, o.city, o.lat, o.lng, o.note ?? ''].join(' | ')).join('\n')} full type="textarea" help="Example: Pakistan | Lahore | 31.52 | 74.36 | Branch office. Find latitude and longitude by right-clicking the place in Google Maps." />
             <F name="founderName" label="Founder name" value={site.founder?.name ?? ''} />
             <F name="founderTitle" label="Founder title" value={site.founder?.title ?? ''} />
             <F name="founderQuote" label="Founder quote" value={site.founder?.quote ?? ''} full />

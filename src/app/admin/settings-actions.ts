@@ -23,6 +23,8 @@ export async function saveGeneral(_: St, f: FormData): Promise<St> {
     name: s(f, 'name', 120), tagline: s(f, 'tagline', 160), operator: s(f, 'operator', 160), licence: s(f, 'licence', 60),
     whatsapp: wa, whatsappDisplay: s(f, 'whatsappDisplay', 40), phone: s(f, 'phone', 40), email: s(f, 'email', 160),
     office: s(f, 'office', 240), hours: s(f, 'hours', 200), mapsUrl: s(f, 'mapsUrl', 600), poBox: s(f, 'poBox', 40), registered: /^\d{4}-\d{2}-\d{2}$/.test(s(f, 'registered', 10)) ? s(f, 'registered', 10) : '', licenceIssuer: s(f, 'licenceIssuer', 160), legalType: s(f, 'legalType', 80), activities: String(f.get('activities') ?? '').slice(0, 1200),
+    offices: String(f.get('offices') ?? '').split('\n').map((l) => l.split('|').map((x) => x.trim())).filter((x) => x[0] && !Number.isNaN(Number(x[2])) && !Number.isNaN(Number(x[3])) && x[2] !== '' && x[3] !== '').slice(0, 12)
+      .map(([country, city, lat, lng, note]) => ({ country: country.slice(0, 60), city: (city || '').slice(0, 60), lat: Math.max(-85, Math.min(85, Number(lat))), lng: Math.max(-180, Math.min(180, Number(lng))), note: (note || '').slice(0, 120) })),
     founder: { name: s(f, 'founderName', 120), title: s(f, 'founderTitle', 120), quote: s(f, 'founderQuote', 400), linkedin: s(f, 'founderLinkedin', 300) }, disclaimer: s(f, 'disclaimer', 400), footerAbout: s(f, 'footerAbout', 800),
   });
   return done();

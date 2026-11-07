@@ -10,6 +10,7 @@ import { Icon } from './Icon';
 import { L } from './L';
 import { LeadForm } from './LeadForm';
 import { OfficeLive } from './OfficeLive';
+import { OfficeGlobe } from './OfficeGlobe';
 import { u } from '@/lib/ui';
 
 const mapSrc = () => `https://maps.google.com/maps?q=${encodeURIComponent(/crystal tower/i.test(SITE.office) ? 'Crystal Tower Business Bay Dubai' : SITE.office || 'Business Bay, Dubai')}&z=16&output=embed`;
@@ -226,6 +227,13 @@ export function AboutHub({ locale }: { locale: Locale }) {
           <p className="small muted">{u('Visa issuance and eligibility are decided by the competent UAE authorities.', locale)}</p>
         </div>
       </section>
+
+      {(SITE.offices?.length ?? 0) > 1 && (
+        <section className="block cp-globe" data-reveal>
+          <div className="bh"><p className="eyebrow">{u('Where we are', locale)}</p><h2>{u('Our offices', locale)}</h2><p>{u('From the UAE to Pakistan and the United Kingdom: one team, one file, wherever you start.', locale)}</p></div>
+          <OfficeGlobe offices={SITE.offices!} locale={locale} />
+        </section>
+      )}
 
       <section className="block cp-zones" data-reveal>
         <div className="bh"><h2>{u('Also from Brightlink: company setup', locale)}</h2><p>{u('Need a company for your residency? We also set up businesses in these free zones.', locale)}</p></div>

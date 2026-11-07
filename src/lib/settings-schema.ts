@@ -5,6 +5,8 @@ export type PublicSite = {
   /** PO Box, licence registration date (YYYY-MM-DD) and issuer, approved activities, founder: shown on About / Contact. */
   poBox?: string; registered?: string; licenceIssuer?: string; legalType?: string; activities?: string;
   founder?: { name: string; title: string; quote: string; linkedin: string };
+  /** Offices on the About page globe (country, city, latitude, longitude, note). */
+  offices?: { country: string; city: string; lat: number; lng: number; note?: string }[];
   disclaimer: string; footerAbout: string;
   social: { facebook: string; instagram: string; linkedin: string; tiktok: string; youtube: string; x: string };
   /** Languages shown on the website (empty = all 20). English is always on. */
@@ -66,6 +68,11 @@ export const DEFAULT_SITE: PublicSite = {
   mapsUrl: 'https://maps.app.goo.gl/Wub4NZefiQ7LBMkd9',
   poBox: '554552', registered: '2022-04-10', licenceIssuer: 'Government of Dubai, Department of Economy and Tourism (DET)', legalType: 'LLC, single owner',
   activities: 'Management consultancies\nDocuments clearing services\nProject development consultant\nMarketing research consultancies',
+  offices: [
+    { country: 'United Arab Emirates', city: 'Dubai', lat: 25.186, lng: 55.272, note: 'Head office · Crystal Tower, Business Bay' },
+    { country: 'Pakistan', city: '', lat: 31.52, lng: 74.36, note: '' },
+    { country: 'United Kingdom', city: '', lat: 51.507, lng: -0.128, note: '' },
+  ],
   founder: { name: 'Muhammad Bilal Saleem', title: 'Founder & CEO, Brightlink', quote: 'I built Brightlink with one purpose: to create a link between ambition and opportunity.', linkedin: '' },
   disclaimer: 'Not an official UAE government website. Visa issuance and eligibility are subject to the competent authorities.',
   footerAbout: '',

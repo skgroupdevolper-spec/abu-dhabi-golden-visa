@@ -172,6 +172,16 @@ for (const [name, vp] of Object.entries(VP)) {
     const pill = await page.locator('.olive .ol-pill').innerText().catch(() => '');
     if (!/Open now|Closed/.test(pill)) fail('contact', `office status text is wrong: ${pill}`);
     await page.locator('.cp-visit').screenshot({ path: 'shots/e2e-office-live.jpg' }).catch(() => {});
+    await page.goto(base + '/about/');
+    const g = page.locator('.oglobe');
+    if (!(await g.count())) fail('about', 'office globe is missing');
+    else { await g.scrollIntoViewIfNeeded(); await page.waitForTimeout(2500); await g.screenshot({ path: 'shots/e2e-globe.jpg' }); }
+    await page.goto(base + '/admin/pages/');
+    if (!(await page.locator('button:has-text("Hide"), button:has-text("Show")').count())) fail('owner', 'pages list has no Hide/Show buttons');
+    await page.goto(base + '/admin/posts/');
+    if ((await page.locator('table tbody tr').count()) && !(await page.locator('button.btn-danger').count())) fail('owner', 'articles list has no delete button');
+    await page.goto(base + '/');
+    if (await page.locator('.dashprev').count()) fail('home', 'sample dashboard preview is still on the homepage');
   }
   await ctx.close();
 }
