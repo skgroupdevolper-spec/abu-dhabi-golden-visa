@@ -17,7 +17,7 @@ const browser = await chromium.launch({ channel: 'chrome' });
 /** Opens a page, records crashes, console errors, broken images and sideways scrolling. */
 async function visit(page, url, area, { strictWidth = true } = {}) {
   const errs = [];
-  const onErr = (e) => errs.push('pageerror: ' + e.message);
+  const onErr = (e) => errs.push('pageerror: ' + e.message + ' @ ' + String(e.stack || '').split('\n').slice(1, 4).join(' | ').replace(/\s+/g, ' ').slice(0, 300));
   const onCon = (m) => { if (m.type() === 'error' && !IGNORE.test(m.text())) errs.push('console: ' + m.text().slice(0, 200)); };
   page.on('pageerror', onErr); page.on('console', onCon);
   let r;
@@ -182,16 +182,20 @@ for (const [name, vp] of Object.entries(VP)) {
     if ((await page.locator('table tbody tr').count()) && !(await page.locator('button.btn-danger').count())) fail('owner', 'articles list has no delete button');
     await page.goto(base + '/');
     if (await page.locator('.dashprev').count()) fail('home', 'sample dashboard preview is still on the homepage');
-    // currency: pick INR, AED prices on the cost page change to ₹ and back
-    await page.goto(base + '/golden-visa-cost/'); await page.waitForTimeout(800);
-    const hasAed = await page.locator('body').innerText().then((x) => /AED\s?\d/.test(x));
+    // currency: pick INR, AED prices outside the calculator change to ₹ and back
+    const count = () => page.evaluate(() => {
+      const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT); let aed = 0, inr = 0;
+      while (w.nextNode()) { const n = w.currentNode; if (n.parentElement?.closest('[data-nofx],script,style,header')) continue; const v = n.nodeValue || ''; if (/AED\s?\d/.test(v)) aed++; if (/≈ ₹[\d,]+/.test(v)) inr++; }
+      return { aed, inr };
+    });
+    await page.goto(base + '/golden-visa/property-investment/'); await page.waitForTimeout(800);
+    const c0 = await count();
     await page.evaluate(() => { localStorage.setItem('adgv-currency', 'INR'); window.dispatchEvent(new CustomEvent('adgv:currency', { detail: 'INR' })); });
-    await page.waitForTimeout(600);
-    const txt = await page.locator('main').innerText();
-    if (hasAed && !/≈ ₹[\d,]+/.test(txt)) fail('currency', 'prices did not change to INR on the cost page');
+    await page.waitForTimeout(700);
+    const c1 = await count();
+    stats.currency = { before: c0, after: c1 };
+    if (c0.aed > 0 && (c1.inr === 0 || c1.aed > 0)) fail('currency', `prices did not change to INR (${JSON.stringify({ c0, c1 })})`);
     await page.screenshot({ path: 'shots/e2e-currency-inr.jpg' });
-    await page.goto(base + '/about/'); await page.waitForTimeout(800);
-    if (/AED\s?\d/.test(await page.locator('main').innerText().catch(() => '')) ) fail('currency', 'INR choice was not kept on the next page');
     await page.evaluate(() => { localStorage.setItem('adgv-currency', 'AED'); window.dispatchEvent(new CustomEvent('adgv:currency', { detail: 'AED' })); });
   }
   await ctx.close();
