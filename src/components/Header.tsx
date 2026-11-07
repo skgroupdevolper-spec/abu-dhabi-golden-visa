@@ -1,5 +1,6 @@
 'use client';
 
+import { OfficeStatus } from './OfficeStatus';
 import { u } from '@/lib/ui';
 import { catalog } from '@/content/services-catalog';
 import { BrandLogo } from './BrandLogo';
@@ -121,7 +122,7 @@ export function Header({ locale }: { locale: Locale }) {
           <div className="wrap utility-in">
             <a href={waHello} target="_blank" rel="noopener"><Icon name="wa" size={15} /> {SITE.whatsappDisplay}</a>
             <a href={`mailto:${SITE.email}`} className="hide-md"><Icon name="mail" size={15} /> {SITE.email}</a>
-            <span className="hide-md"><Icon name="clock" size={15} /> {SITE.hours}</span>
+            <span className="hide-md"><OfficeStatus locale={locale} fallback={SITE.hours} /></span>
             <span className="u-sp" />
             {F.clientLogin && <a href={portal}><Icon name="user" size={15} /> {u('Login', locale)}</a>}
             {langChip('u')}

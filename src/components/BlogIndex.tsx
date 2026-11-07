@@ -8,7 +8,8 @@ import { coverUrl } from '@/lib/cover';
 
 type Item = { href: string; title: string; summary: string; image?: string; cat?: string; minutes: number; date?: string; featured?: boolean };
 
-export function BlogIndex({ locale, posts, categories, current, gone = [] }: { locale: Locale; posts: Post[]; categories: Category[]; current?: string; gone?: string[] }) {
+export function BlogIndex({ locale, posts, categories, current, gone = [], views = {} }: { locale: Locale; posts: Post[]; categories: Category[]; current?: string; gone?: string[]; views?: Record<string, number> }) {
+  const V = (h: string) => (views[h] ? <> · <Icon name="eye" size={14} /> {views[h].toLocaleString('en-US')}</> : null);
   const name = (slug?: string) => categories.find((c) => c.slug === slug)?.name;
   const items: Item[] = [
     ...posts.map((p) => ({ href: `/blog/${p.slug}/`, title: p.title, summary: p.summary, image: p.cover, cat: p.category, minutes: Math.max(2, Math.round(p.body.split(/\s+/).length / 220)), date: p.publishedAt, featured: p.featured })),
@@ -32,7 +33,7 @@ export function BlogIndex({ locale, posts, categories, current, gone = [] }: { l
             {name(top.cat) && <span className="bi-cat">{name(top.cat)}</span>}
             <h2>{top.title}</h2>
             <p>{top.summary}</p>
-            <span className="bi-meta"><Icon name="clock" size={15} /> {top.minutes} min read</span>
+            <span className="bi-meta"><Icon name="clock" size={15} /> {top.minutes} min read{V(top.href)}</span>
           </div>
         </L>
       )}
@@ -44,7 +45,7 @@ export function BlogIndex({ locale, posts, categories, current, gone = [] }: { l
               {name(it.cat) && <span className="bi-cat">{name(it.cat)}</span>}
               <h3>{it.title}</h3>
               <p>{it.summary}</p>
-              <span className="bi-meta"><Icon name="clock" size={14} /> {it.minutes} min read</span>
+              <span className="bi-meta"><Icon name="clock" size={14} /> {it.minutes} min read{V(it.href)}</span>
             </div>
           </L>
         ))}

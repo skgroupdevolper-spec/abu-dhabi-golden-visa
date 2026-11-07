@@ -10,6 +10,7 @@ import type { Block } from '@/lib/blocks';
 import { SITE } from '@/lib/site';
 import { getCategories, getCustomPages, getFaqs, getOverrides, getPublishedPosts, getServiceOverrides, getTestimonials, getTranslations, postToPage, type PageOverride, type Post } from '@/lib/server/content';
 import { PageView } from '@/components/PageView';
+import { readJsonFile } from '@/lib/server/store';
 import { BlogIndex } from '@/components/BlogIndex';
 import { BLOG } from '@/content/blog';
 
@@ -91,7 +92,7 @@ export default async function ContentPage({ params }: { params: Params }) {
   if (!r) notFound();
   const reviews = r.blocks?.some((b) => b.type === 'testimonials') ? await getTestimonials() : [];
   const gone = Object.entries(await getOverrides()).filter(([, o]) => o?.hidden).map(([k]) => k);
-  const blogData = r.blog ? { posts: await getPublishedPosts(), categories: await getCategories(), current: r.blog.category, gone } : undefined;
+  const blogData = r.blog ? { posts: await getPublishedPosts(), categories: await getCategories(), current: r.blog.category, gone, views: await readJsonFile<Record<string, number>>('views.json', {}) } : undefined;
   const isArticle = !!(r.post || r.page.article);
   const more = isArticle ? [...(await getPublishedPosts()).map(postToPage), ...BLOG].filter((p) => p.path !== r.page.path && !gone.includes(p.path)).sort((a, b) => Number(b.category === r.page.category) - Number(a.category === r.page.category)).slice(0, 5).map((p) => ({ href: p.path, title: p.h1, image: p.image, label: p.eyebrow })) : [];
   return (

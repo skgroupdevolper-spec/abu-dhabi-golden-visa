@@ -1,4 +1,5 @@
 import { NAV } from '@/content/nav';
+import { FooterScene } from './FooterScene';
 import { u } from '@/lib/ui';
 import { BrandLogo } from './BrandLogo';
 import type { Locale } from '@/lib/i18n';
@@ -15,7 +16,8 @@ export function Footer({ locale }: { locale: Locale }) {
     { title: 'Resources', links: pick('Resources') },
   ];
   return (
-    <footer className="site">
+    <footer className="site has-scene">
+      <FooterScene />
       <div className="wrap">
         <div className="fgrid">
           <div className="fbrand">

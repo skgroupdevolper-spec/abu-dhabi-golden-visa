@@ -145,6 +145,33 @@ export function Motion({ level = 'full', textFx = 'words', cursor = true, smooth
       });
       cleanup.push(() => ctx.revert());
 
+      // Safety net: text must never stay hidden. When the page grows after load (images, forms, booking
+      // calendar, translations) the scroll positions go stale, so we refresh them; and anything that is
+      // already on screen but has not played its "appear" animation is played (or switched on) right away.
+      const shown = () => {
+        const vh = window.innerHeight;
+        for (const st of ScrollTrigger.getAll()) {
+          const el = st.trigger as Element | undefined;
+          if (!el || !(el instanceof Element)) continue;
+          const top = el.getBoundingClientRect().top;
+          if (top > vh * 0.96) continue;
+          const anim = st.animation;
+          if (anim && !st.vars.scrub && anim.progress() < 1 && !anim.isActive()) anim.play();
+          else if (!anim && typeof st.vars.onEnter === 'function' && el.classList.contains('sk') && !el.classList.contains('on')) el.classList.add('on');
+        }
+      };
+      let rt: ReturnType<typeof setTimeout> | null = null;
+      const refresh = () => { if (rt) clearTimeout(rt); rt = setTimeout(() => { ScrollTrigger.refresh(); shown(); }, 250); };
+      const ro = new ResizeObserver(refresh);
+      ro.observe(document.body);
+      let st0 = 0;
+      const onScroll = () => { const t = performance.now(); if (t - st0 > 200) { st0 = t; shown(); } };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('load', refresh);
+      document.fonts?.ready.then(refresh).catch(() => {});
+      const timers = [600, 1500, 3000, 6000].map((ms) => setTimeout(shown, ms));
+      cleanup.push(() => { ro.disconnect(); window.removeEventListener('scroll', onScroll); window.removeEventListener('load', refresh); timers.forEach(clearTimeout); if (rt) clearTimeout(rt); });
+
       if (fine && full) {
         // Gold cursor
         const dot = document.querySelector<HTMLElement>('.cur-dot');

@@ -71,7 +71,14 @@ async function visit(page, url, area, { strictWidth = true } = {}) {
     ...pick(/^\/(?![a-z]{2}\/)/, 14), ...pick(/^\/(ar|ur|ru|tr|hi|zh|fr|de)\//, 14)])];
   for (const [name, vp] of Object.entries(VP)) {
     const page = await browser.newPage({ viewport: vp });
-    for (const u of sample) await visit(page, u, `visitor-${name}`);
+    for (const u of sample) {
+      await visit(page, u, `visitor-${name}`);
+      if (name !== 'desktop') continue;
+      // scroll through the page like a visitor, then no heading or list may still be hidden
+      await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 500) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 120)); } window.scrollTo(0, document.body.scrollHeight); await new Promise((r) => setTimeout(r, 1500)); });
+      const hidden = await page.evaluate(() => [...document.querySelectorAll('main h2, main .tx-i, main .card, main .step, main li.sk')].filter((e) => { const r = e.getBoundingClientRect(); if (!r.width) return false; const cs = getComputedStyle(e); return Number(cs.opacity) < 0.35 && e.getBoundingClientRect().top < window.innerHeight; }).map((e) => (e.textContent || '').trim().slice(0, 40)).slice(0, 5));
+      if (hidden.length) fail('visitor-desktop', `${u} has text still hidden after scrolling: ${hidden.join(' | ')}`);
+    }
     // phone menu opens
     if (name === 'mobile') {
       await page.goto(base + '/');

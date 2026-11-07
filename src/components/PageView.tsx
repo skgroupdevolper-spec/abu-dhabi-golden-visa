@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
+import { ViewCount } from './ViewCount';
 import { u } from '@/lib/ui';
 import { preload } from 'react-dom';
 import { Booking } from './Booking';
@@ -253,7 +254,7 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
         )}
         {page.article && (
           <p className="byline block" style={{ marginBottom: 0 }}>
-            {u('By', locale)} <b>{page.article.author}</b> {u('· Reviewed by', locale)} <b>{page.article.reviewer}</b> · Last reviewed {page.article.reviewed} · {page.article.minutes} min read
+            {u('By', locale)} <b>{page.article.author}</b> {u('· Reviewed by', locale)} <b>{page.article.reviewer}</b> · Last reviewed {page.article.reviewed} · {page.article.minutes} min read{page.path.startsWith('/blog/') && <> · <ViewCount path={page.path} locale={locale} /></>}
           </p>
         )}
         {before}
