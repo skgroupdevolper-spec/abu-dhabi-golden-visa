@@ -1070,7 +1070,7 @@ a:hover .si-check, button:hover .si-check, .card:hover .si-check { animation: ic
 /* Scroll ticks: items light up one by one (Motion.tsx adds .sk, then .on) */
 .ticks li.sk::before { background: #ece5d2; color: transparent; transform: scale(.82); transition: background .35s, color .35s, transform .45s cubic-bezier(.34,1.56,.64,1), box-shadow .35s; }
 .ticks li.sk.on::before { background: linear-gradient(135deg, var(--gold-light), var(--gold)); color: #fff; transform: scale(1); box-shadow: 0 0 0 6px rgba(242, 210, 122, .25); }
-li.sk { transition: background .4s, border-color .4s, transform .4s, opacity .4s, box-shadow .4s; opacity: .55; transform: translateX(-6px); }
+li.sk { transition: background .4s, border-color .4s, transform .4s, opacity .4s, box-shadow .4s; opacity: .7; transform: translateX(-6px); }
 [dir='rtl'] li.sk { transform: translateX(6px); }
 li.sk.on { opacity: 1; transform: none; }
 .ticks li.sk.on { background: #fff; box-shadow: 0 14px 30px -26px rgba(122, 82, 0, .7); }
@@ -1252,13 +1252,13 @@ li.sk.on { opacity: 1; transform: none; }
 footer.site.has-scene { overflow: hidden; padding-bottom: 150px; }
 footer.site.has-scene > .wrap { position: relative; z-index: 2; }
 .fscene { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
-.fs-palm { position: absolute; bottom: 52px; width: clamp(150px, 15vw, 230px); height: auto; opacity: .95; }
+.fs-palm { position: absolute; bottom: 40px; width: clamp(170px, 17vw, 270px); height: auto; opacity: .97; filter: drop-shadow(0 10px 14px rgba(90, 60, 10, .18)); }
 .fs-palm.l { left: max(-30px, calc(50% - 860px)); }
 .fs-palm.r { right: max(-30px, calc(50% - 860px)); transform: scaleX(-1); }
-.fs-palm .fs-tree { transform-origin: 140px 418px; animation: fs-lean 9s ease-in-out infinite; }
+.fs-palm .fs-tree { transform-origin: 162px 458px; animation: fs-lean 9s ease-in-out infinite; }
 .fs-palm.r .fs-tree { animation-delay: -4s; }
 .fs-fr { transform: rotate(var(--a)); transform-origin: 0 0; animation: fs-sway 4.6s ease-in-out infinite; animation-delay: var(--d); }
-@keyframes fs-sway { 0%, 100% { transform: rotate(var(--a)); } 50% { transform: rotate(calc(var(--a) + 6deg)) scaleX(.97); } }
+@keyframes fs-sway { 0%, 100% { transform: rotate(var(--a)); } 35% { transform: rotate(calc(var(--a) + 4deg)) scaleX(.98); } 70% { transform: rotate(calc(var(--a) - 2deg)); } }
 @keyframes fs-lean { 0%, 100% { transform: rotate(-.8deg); } 50% { transform: rotate(1.2deg); } }
 .fs-dunes { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 150px; }
 .fs-dunes .d1 { animation: fs-drift 26s ease-in-out infinite alternate; transform-origin: center; }
@@ -1284,3 +1284,20 @@ footer.site.has-scene .legal { position: relative; z-index: 2; }
 .bar { min-width: 0; }
 .bar > .tools { min-width: 0; flex-wrap: nowrap; }
 @media (min-width: 1241px) and (max-width: 1340px) { .bar .tools .btn.btn-s { padding: 0 11px; font-size: 13.5px; } .logo img { height: 40px; } }
+
+/* camel with rider walking across the desert, again and again */
+.fs-walk { position: absolute; left: 0; right: 0; bottom: 22px; height: 110px; overflow: hidden; }
+.fs-camel { position: absolute; bottom: 0; left: 0; width: 130px; height: auto; animation: cm-walk 46s linear infinite; }
+@keyframes cm-walk { 0% { transform: translateX(-170px); } 88% { transform: translateX(calc(100vw + 30px)); } 100% { transform: translateX(calc(100vw + 30px)); } }
+.cm-body { animation: cm-bob 1s ease-in-out infinite; }
+@keyframes cm-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+.cm-leg { animation: cm-step 1s ease-in-out infinite; }
+.cm-leg.l2, .cm-leg.l3 { animation-delay: -.5s; }
+@keyframes cm-step { 0%, 100% { transform: rotate(14deg); } 50% { transform: rotate(-14deg); } }
+.cm-neck { animation: cm-nod 1s ease-in-out infinite; }
+@keyframes cm-nod { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-3deg); } }
+.cm-rider { animation: cm-sway 1s ease-in-out infinite; }
+@keyframes cm-sway { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
+[dir='rtl'] .fs-walk { direction: ltr; }
+@media (max-width: 640px) { .fs-camel { width: 84px; animation-duration: 30s; } .fs-walk { bottom: 14px; height: 80px; } }
+@media (prefers-reduced-motion: reduce) { .fs-camel { animation: none; transform: translateX(40vw); } .cm-body, .cm-leg, .cm-neck, .cm-rider { animation: none; } }

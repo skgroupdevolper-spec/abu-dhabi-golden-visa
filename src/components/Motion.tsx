@@ -120,7 +120,7 @@ export function Motion({ level = 'full', textFx = 'words', cursor = true, smooth
         });
 
         // Cards and list rows rise in groups
-        gsap.utils.toArray<HTMLElement>('.grid, .bk-cards, .doc-grid, .bk-stats, .bi-grid').forEach((g) => {
+        gsap.utils.toArray<HTMLElement>('.grid, .bk-cards, .bk-stats, .bi-grid').forEach((g) => {
           const kids = Array.from(g.children) as HTMLElement[];
           if (kids.length > 1) gsap.from(kids, { y: 28, opacity: 0, duration: 0.8, ease: 'expo.out', stagger: 0.07, scrollTrigger: { trigger: g, start: 'top 88%' } });
         });
