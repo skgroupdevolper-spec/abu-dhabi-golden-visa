@@ -237,7 +237,7 @@ export const RICH: Record<string, Rich> = {
     apply: 'maid-visa',
     facts: [
       { label: 'Sponsor salary', value: 'AED 25,000 a month (22,000 with housing)' },
-      { label: 'Cost from', value: 'AED 8,500 (Tadbeer) · 17,925 direct' },
+      { label: 'Cost from', value: 'AED 8,500 (Tadbeer) · AED 17,925 direct' },
       { label: 'Processing', value: '5–7 working days to stamping' },
       { label: 'Validity', value: '2 years' },
     ],

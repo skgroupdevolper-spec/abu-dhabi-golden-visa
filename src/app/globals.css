@@ -1301,3 +1301,11 @@ footer.site.has-scene .legal { position: relative; z-index: 2; }
 [dir='rtl'] .fs-walk { direction: ltr; }
 @media (max-width: 640px) { .fs-camel { width: 84px; animation-duration: 30s; } .fs-walk { bottom: 14px; height: 80px; } }
 @media (prefers-reduced-motion: reduce) { .fs-camel { animation: none; transform: translateX(40vw); } .cm-body, .cm-leg, .cm-neck, .cm-rider { animation: none; } }
+/* palms stay at the outer edges, never over the footer text */
+@media (max-width: 1760px) {
+  .fs-palm { width: clamp(150px, 13vw, 230px); }
+  .fs-palm.l { left: -78px; }
+  .fs-palm.r { right: -78px; }
+}
+@media (min-width: 641px) and (max-width: 1100px) { .fs-palm.l { left: -60px; } .fs-palm.r { right: -60px; } }
+footer.site.has-scene .legal { padding-inline: clamp(0px, 4vw, 70px); }
