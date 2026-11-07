@@ -55,6 +55,10 @@ export function Motion({ level = 'full', textFx = 'words', cursor = true, smooth
     let cancelled = false;
 
     (async () => {
+      // Wait until the page has fully loaded (all streamed parts hydrated) before touching headings:
+      // splitting text inside a part React has not hydrated yet causes a hydration error on slow phones.
+      if (document.readyState !== 'complete') await new Promise((r) => window.addEventListener('load', r, { once: true }));
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       const [{ gsap }, { ScrollTrigger }] = await Promise.all([import('gsap'), import('gsap/ScrollTrigger')]);
       if (cancelled) return;
       gsap.registerPlugin(ScrollTrigger);
