@@ -84,6 +84,13 @@ async function visit(page, url, area, { strictWidth = true } = {}) {
       await page.goto(base + '/');
       const burger = page.locator('header button[aria-label*="enu" i], header .burger, header .menu-btn').first();
       if (await burger.count()) { await burger.click().catch(() => {}); await page.waitForTimeout(500); await page.screenshot({ path: 'shots/e2e-mobile-menu.jpg' }); }
+      // phone footer and header, as a visitor sees them (screen-sized, not full-page)
+      await page.goto(base + '/about/'); await page.waitForTimeout(800);
+      await page.screenshot({ path: 'shots/e2e-mobile-header.jpg' });
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); await page.waitForTimeout(1500);
+      await page.screenshot({ path: 'shots/e2e-mobile-footer.jpg' });
+      const hdr = await page.evaluate(() => { const h = document.querySelector('header.top .bar'); return h ? { w: h.scrollWidth, cw: h.clientWidth } : null; });
+      if (hdr && hdr.w > hdr.cw + 1) fail('visitor-mobile', `header is wider than the phone screen (${hdr.w} > ${hdr.cw})`);
       else warn('visitor-mobile', 'no menu button found in the header');
     }
     await page.close();

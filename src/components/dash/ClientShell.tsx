@@ -20,7 +20,7 @@ export function ClientShell({ area, active, title, children, back, updates = 0 }
   );
   return (
     <div className="cs">
-      <input type="checkbox" id="cs-nav" className="cs-tg" aria-hidden="true" tabIndex={-1} />
+      <input type="checkbox" id="cs-nav" className="cs-tg" aria-hidden="true" tabIndex={-1} autoComplete="off" suppressHydrationWarning />
       <aside className="cs-side" aria-label={t.menu}>
         <a className="cs-logo" href={`${base}/`}><img src="/brand/logo.webp" alt="Abu Dhabi Golden Visa" /></a>
         <a className="btn btn-dark cs-new" href={`${base}/services/`}><Icon name="plus" size={16} /> {t.newRequest}</a>
