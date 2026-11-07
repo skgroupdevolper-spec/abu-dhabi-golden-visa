@@ -251,6 +251,26 @@ for (const [name, vp] of Object.entries(VP)) {
     await fdel.click(); await fdel.click();
     await page.locator('button:has-text("Save FAQs")').click(); await page.waitForTimeout(1500);
     if ((await (await api.get('/faqs/')).text()).includes('CI test question')) fail('owner', 'deleted FAQ is still on the FAQs page');
+    // appointments: book on the website, then Confirm / Done / Move / Delete in admin must really change it
+    const slots = await (await api.get('/api/bookings/')).json().catch(() => ({}));
+    const day = (slots.days || []).find((d) => d.times?.length);
+    if (!day) warn('owner', 'no free booking slot to test appointments');
+    else {
+      const bk = await api.post('/api/bookings/', { data: { date: day.date, time: day.times[0], name: 'CI Booker', phone: '+971500000000', email: 'ci@example.com', type: 'office' } });
+      if (!bk.ok()) fail('owner', `booking on the website failed (${bk.status()})`);
+      const row = () => page.locator('.file', { hasText: 'CI Booker' }).first();
+      const status = async () => (await row().locator('.pill').textContent().catch(() => ''))?.trim();
+      await page.goto(base + '/admin/bookings/?tab=all');
+      await row().locator('button:has-text("Confirm")').click(); await page.waitForTimeout(1500); await page.reload();
+      if ((await status()) !== 'Confirmed') fail('owner', `appointment Confirm did not work (status ${await status()})`);
+      await row().locator('button:has-text("Done")').click(); await page.waitForTimeout(1500); await page.reload();
+      if ((await status()) !== 'Done') fail('owner', `appointment Done did not work (status ${await status()})`);
+      await row().locator('summary:has-text("Move")').click();
+      await row().locator('input[type=time]').fill('10:30'); await row().locator('button:has-text("Save")').click(); await page.waitForTimeout(1500); await page.reload();
+      if (!(await row().textContent())?.includes('10:30')) fail('owner', 'appointment Move did not change the time');
+      const bdel = row().locator('button:has-text("Delete")'); await bdel.click(); await bdel.click(); await page.waitForTimeout(1500); await page.reload();
+      if (await page.locator('.file', { hasText: 'CI Booker' }).count()) fail('owner', 'appointment Delete did not work');
+    }
     await page.goto(base + '/');
     if (await page.locator('.dashprev').count()) fail('home', 'sample dashboard preview is still on the homepage');
     // currency: pick INR, AED prices outside the calculator change to ₹ and back

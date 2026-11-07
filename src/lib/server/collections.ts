@@ -21,7 +21,8 @@ export function insert<T extends { id: string }>(name: string, item: T, max = 50
   return updateJsonFile<T[]>(`${name}.json`, [], (a) => [item, ...a].slice(0, max));
 }
 export function patch<T extends { id: string }>(name: string, id: string, fn: (x: T) => T | void) {
-  return updateJsonFile<T[]>(`${name}.json`, [], (a) => a.map((x) => (x.id === id ? ((fn({ ...x }) ?? x) as T) : x)));
+  // fn may change the copy in place (returns nothing) or return a new object; both are saved
+  return updateJsonFile<T[]>(`${name}.json`, [], (a) => a.map((x) => { if (x.id !== id) return x; const c = { ...x }; return (fn(c) ?? c) as T; }));
 }
 export function remove<T extends { id: string }>(name: string, id: string) {
   return updateJsonFile<T[]>(`${name}.json`, [], (a) => a.filter((x) => x.id !== id));
