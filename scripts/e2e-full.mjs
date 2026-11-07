@@ -91,7 +91,24 @@ async function visit(page, url, area, { strictWidth = true } = {}) {
       await page.screenshot({ path: 'shots/e2e-mobile-footer.jpg' });
       const hdr = await page.evaluate(() => { const h = document.querySelector('header.top .bar'); return h ? { w: h.scrollWidth, cw: h.clientWidth } : null; });
       if (hdr && hdr.w > hdr.cw + 1) fail('visitor-mobile', `header is wider than the phone screen (${hdr.w} > ${hdr.cw})`);
-      else warn('visitor-mobile', 'no menu button found in the header');
+      // the Apply page on a phone: one column, nothing wider than the screen
+      await page.goto(base + '/apply/'); await page.waitForTimeout(1200);
+      await page.screenshot({ path: 'shots/e2e-mobile-apply.jpg' });
+      const wide = await page.evaluate(() => [...document.querySelectorAll('.apply-body > *, .aw-card')].filter((e) => e.getBoundingClientRect().right > window.innerWidth + 1).length);
+      if (wide) fail('visitor-mobile', `apply page: ${wide} boxes wider than the phone screen`);
+      if (await page.locator('header .tools .btn-gold').isVisible().catch(() => false)) fail('visitor-mobile', 'Apply button still shown in the phone header');
+      // language menu must stay inside the screen
+      const lb = page.locator('header .chip > button').first();
+      if (await lb.count()) {
+        await lb.click().catch(() => {}); await page.waitForTimeout(500);
+        await page.screenshot({ path: 'shots/e2e-mobile-langs.jpg' });
+        const box = await page.evaluate(() => { const d = document.querySelector('.drop.langs, .drop.curs'); if (!d) return null; const r = d.getBoundingClientRect(); return { l: r.left, r: r.right, w: window.innerWidth }; });
+        if (box && (box.l < 0 || box.r > box.w + 1)) fail('visitor-mobile', `language menu leaves the screen (${Math.round(box.l)}..${Math.round(box.r)} of ${box.w})`);
+      }
+    }
+    if (name === 'desktop') {
+      await page.goto(base + '/about/'); await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); await page.waitForTimeout(6000);
+      await page.locator('footer .fscene').screenshot({ path: 'shots/e2e-footer-scene.jpg' }).catch(() => {});
     }
     await page.close();
   }
