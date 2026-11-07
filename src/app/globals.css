@@ -1322,3 +1322,13 @@ footer.site.has-scene .legal { padding-inline: clamp(0px, 4vw, 70px); }
 /* footer copyright line centred, clear of the palms */
 footer.site .legal { display: flex; justify-content: center; text-align: center; }
 footer.site .legal > span { max-width: 640px; }
+.cp-licence { align-items: start; }
+.cp-licence > div:first-child { position: sticky; top: 120px; }
+.cp-bigstat { display: flex; align-items: center; gap: 14px; margin: 18px 0 14px; padding: 16px 18px; border-radius: 18px; background: rgba(212, 175, 55, .1); border: 1px solid rgba(242, 210, 122, .3); }
+.cp-bigstat b { font: 400 clamp(40px, 5vw, 58px)/1 var(--display, serif); color: #f2d27a; }
+.cp-bigstat span { font-weight: 700; color: #fff; }
+.cp-bigstat small { display: block; font-weight: 500; color: rgba(245, 239, 224, .7); margin-top: 2px; }
+.cp-trust { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.cp-trust li { display: flex; gap: 10px; align-items: flex-start; color: rgba(245, 239, 224, .88); }
+.cp-trust .si { color: #f2d27a; flex: none; margin-top: 3px; }
+@media (max-width: 1000px) { .cp-licence > div:first-child { position: static; } }

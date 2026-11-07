@@ -210,6 +210,17 @@ export function AboutHub({ locale }: { locale: Locale }) {
           <p className="eyebrow">{u('Licensed operator', locale)}</p>
           <h2>{u('A registered UAE company', locale)}</h2>
           <p className="lead">{SITE.name} is an independent residency consultancy website managed by {SITE.operator}.</p>
+          {SITE.registered && (
+            <div className="cp-bigstat">
+              <b>{Math.max(0, Math.floor((Date.now() - Date.parse(`${SITE.registered}T00:00:00+04:00`)) / 864e5)).toLocaleString('en-US')}</b>
+              <span>{u('days licensed and active', locale)}<small>{u('since', locale)} {new Date(`${SITE.registered}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}</small></span>
+            </div>
+          )}
+          <ul className="cp-trust">
+            <li><Icon name="check" size={16} /> {u('Trade licence issued by the Dubai Department of Economy and Tourism', locale)}</li>
+            <li><Icon name="check" size={16} /> {u('Office you can visit in Business Bay, Dubai', locale)}</li>
+            <li><Icon name="check" size={16} /> {u('Fees confirmed in writing before you pay', locale)}</li>
+          </ul>
         </div>
         <div className="cp-lic">
           <div className="cp-lic-h"><b>{u('Company details', locale)}</b><span className="pill ok">{u('Active', locale)}</span></div>
@@ -222,7 +233,6 @@ export function AboutHub({ locale }: { locale: Locale }) {
             <div><dt>{u('Office', locale)}</dt><dd>{SITE.office}</dd></div>
             <div><dt>{u('Brand', locale)}</dt><dd>{SITE.name}</dd></div>
           </dl>
-          {SITE.registered && <p className="cp-days"><b>{Math.max(0, Math.floor((Date.now() - Date.parse(`${SITE.registered}T00:00:00+04:00`)) / 864e5)).toLocaleString('en-US')}</b> {u('days licensed and active', locale)}</p>}
           {SITE.activities && <><p className="small" style={{ margin: '10px 0 6px', fontWeight: 700 }}>{u('Approved activities', locale)}</p><ul className="ticks small">{SITE.activities.split('\n').filter(Boolean).map((a) => <li key={a}>{u(a.trim(), locale)}</li>)}</ul></>}
           <p className="small muted">{u('Visa issuance and eligibility are decided by the competent UAE authorities.', locale)}</p>
         </div>
