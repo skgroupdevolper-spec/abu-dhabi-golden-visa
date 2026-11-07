@@ -65,7 +65,7 @@ export const FEE_SCHEDULE = {
   texts: {} as Record<string, string>,
   options: { where: true, family: true, medical: true, package: true, pdf: true, whatsapp: true, copy: true, checklist: true, convert: true, maxPeople: 10, vatOnGov: false } as CalcOptions,
   /** true = always use the rates typed below; otherwise live rates (updated daily) are used. */
-  fxManual?: boolean;
+  fxManual: false as boolean,
   /** Exchange rates for the approximate total (empty = built-in rates). */
   rates: RATES0,
 };
