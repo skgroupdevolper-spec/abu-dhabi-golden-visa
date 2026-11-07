@@ -226,9 +226,6 @@ export function Header({ locale }: { locale: Locale }) {
             </nav>
             <div className="tools">
               {langChip('m')}
-              <a className="icon-btn" href={waHello} target="_blank" rel="noopener" aria-label={u('WhatsApp us', locale)}>
-                <Icon name="wa" size={19} />
-              </a>
               <L locale={locale} href={SITE.nav.ctaLink || '/visa-check/'} className="btn btn-red btn-s hide-sm">
                 {SITE.nav.ctaLabel || 'Check Eligibility'}
               </L>

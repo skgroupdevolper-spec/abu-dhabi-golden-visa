@@ -1279,3 +1279,8 @@ footer.site.has-scene .legal { position: relative; z-index: 2; }
 @media (prefers-reduced-motion: reduce) { .fs-palm .fs-tree, .fs-fr, .fs-dunes .d1, .fs-dunes .d2, .fs-ghaf, .fs-sand { animation: none; } }
 .vcount { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
 .fs-palm { overflow: visible; }
+/* header never wider than the screen */
+.top, .mainbar, .bar { max-width: 100vw; }
+.bar { min-width: 0; }
+.bar > .tools { min-width: 0; flex-wrap: nowrap; }
+@media (min-width: 1241px) and (max-width: 1340px) { .bar .tools .btn.btn-s { padding: 0 11px; font-size: 13.5px; } .logo img { height: 40px; } }
