@@ -50,12 +50,16 @@ export async function clearItems(f: FormData) {
   await drop(kind, (x) => !(scope === 'all' || (scope === 'read' && x.read) || (st && x.status === st) || (scope === 'archived' && x.archived)));
 }
 
-/** Hide or show a built-in page (hidden pages answer 404 and leave the sitemap). */
-export async function togglePageHidden(f: FormData) {
+/** Delete (on=1) or restore (on=0) a built-in page or guide. Built-in pages are part of the code, so
+ * "delete" takes them off the website (404, out of the sitemap, menus and blog list) and Restore brings them back. */
+export async function setPageDeleted(f: FormData) {
   await requireAdmin(FULL);
   const p = String(f.get('path') || '');
-  if (!p.startsWith('/')) return;
+  if (!p.startsWith('/') || p === '/') return;
+  const on = f.get('on') === '1';
   const { now } = await import('@/lib/server/store');
-  await updateJsonFile<Record<string, { hidden?: boolean; at?: string }>>('content.json', {}, (all) => { all[p] = { ...(all[p] ?? {}), hidden: !all[p]?.hidden, at: now() }; return all; });
+  await updateJsonFile<Record<string, { hidden?: boolean; at?: string }>>('content.json', {}, (all) => { all[p] = { ...(all[p] ?? {}), hidden: on, at: now() }; return all; });
   revalidatePath('/', 'layout');
 }
+/** @deprecated kept for old forms */
+export const togglePageHidden = setPageDeleted;

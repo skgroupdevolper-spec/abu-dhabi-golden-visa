@@ -8,11 +8,11 @@ import { coverUrl } from '@/lib/cover';
 
 type Item = { href: string; title: string; summary: string; image?: string; cat?: string; minutes: number; date?: string; featured?: boolean };
 
-export function BlogIndex({ locale, posts, categories, current }: { locale: Locale; posts: Post[]; categories: Category[]; current?: string }) {
+export function BlogIndex({ locale, posts, categories, current, gone = [] }: { locale: Locale; posts: Post[]; categories: Category[]; current?: string; gone?: string[] }) {
   const name = (slug?: string) => categories.find((c) => c.slug === slug)?.name;
   const items: Item[] = [
     ...posts.map((p) => ({ href: `/blog/${p.slug}/`, title: p.title, summary: p.summary, image: p.cover, cat: p.category, minutes: Math.max(2, Math.round(p.body.split(/\s+/).length / 220)), date: p.publishedAt, featured: p.featured })),
-    ...BLOG.map((b) => ({ href: b.path, title: b.h1, summary: b.intro, image: b.image, cat: b.category, minutes: b.article?.minutes ?? 5 })),
+    ...BLOG.filter((b) => !gone.includes(b.path)).map((b) => ({ href: b.path, title: b.h1, summary: b.intro, image: b.image, cat: b.category, minutes: b.article?.minutes ?? 5 })),
   ].filter((x) => !current || x.cat === current);
   const top = items.find((x) => x.featured) ?? items[0];
   const rest = items.filter((x) => x !== top);

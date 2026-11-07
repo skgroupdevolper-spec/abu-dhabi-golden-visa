@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { DeleteButton } from '@/components/dash/DeleteButton';
+import { setPageDeleted } from '@/app/admin/delete-actions';
+import { getOverrides } from '@/lib/server/content';
 import Link from 'next/link';
 import { BLOG } from '@/content/blog';
 import { requireAdmin } from '@/lib/server/auth';
@@ -13,7 +15,7 @@ export const metadata: Metadata = { title: 'Blog posts' };
 export default async function Posts({ searchParams }: { searchParams: Promise<{ s?: string }> }) {
   await requireAdmin();
   const { s = 'all' } = await searchParams;
-  const [posts, cats, tr] = await Promise.all([getPosts(), getCategories(), getTranslations()]);
+  const [posts, cats, tr, over] = await Promise.all([getPosts(), getCategories(), getTranslations(), getOverrides()]);
   const nTr = (path: string) => Object.values(tr).filter((l) => l[path]).length;
   const rows = posts.filter((p) => s === 'all' || p.status === s);
   const n = (k: string) => posts.filter((p) => p.status === k).length;
@@ -43,8 +45,20 @@ export default async function Posts({ searchParams }: { searchParams: Promise<{ 
       )}
       <div className="panel" style={{ marginTop: 16 }}>
         <h2>Built-in guides ({BLOG.length})</h2>
-        <p className="help">These 20 guides from the specification are part of the website. Edit their titles, text and SEO under Pages.</p>
-        <div className="row" style={{ marginTop: 10 }}>{BLOG.slice(0, 20).map((b) => <Link key={b.path} className="btn btn-sm" href={`/admin/pages/edit/?path=${encodeURIComponent(b.path)}`}>{b.h1.slice(0, 40)}</Link>)}</div>
+        <p className="help">Guides that come with the website. Edit their text and SEO, or delete one to take it off the blog (you can restore it here).</p>
+        <div className="tbl-wrap" style={{ marginTop: 10 }}><table className="tbl"><thead><tr><th>Guide</th><th>Status</th><th /></tr></thead><tbody>
+          {BLOG.map((b) => { const del = !!over[b.path]?.hidden; return (
+            <tr key={b.path} style={del ? { opacity: 0.6 } : undefined}>
+              <td><Link href={`/admin/pages/edit/?path=${encodeURIComponent(b.path)}`}>{over[b.path]?.h1 || b.h1}</Link><div className="small muted">{b.path}</div></td>
+              <td><span className={`pill ${del ? 'closed' : 'ok'}`}>{del ? 'deleted' : 'published'}</span></td>
+              <td><div className="row" style={{ flexWrap: 'nowrap' }}>
+                <Link className="btn btn-sm btn-gold" href={`/admin/pages/edit/?path=${encodeURIComponent(b.path)}`}>Edit</Link>
+                {!del && <a className="btn btn-sm" href={b.path} target="_blank" rel="noopener">View</a>}
+                <form action={setPageDeleted}><input type="hidden" name="path" value={b.path} /><input type="hidden" name="on" value={del ? '0' : '1'} />{del ? <button className="btn btn-sm">Restore</button> : <DeleteButton />}</form>
+              </div></td>
+            </tr>
+          ); })}
+        </tbody></table></div>
       </div>
     </>
   );

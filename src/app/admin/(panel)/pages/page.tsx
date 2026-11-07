@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { DeleteButton } from '@/components/dash/DeleteButton';
-import { togglePageHidden } from '@/app/admin/delete-actions';
+import { setPageDeleted } from '@/app/admin/delete-actions';
 import Link from 'next/link';
 import { PAGES } from '@/content/pages';
 import { requireAdmin } from '@/lib/server/auth';
@@ -37,13 +37,14 @@ export default async function Pages({ searchParams }: { searchParams: Promise<{ 
     }),
   ];
   const n = q.toLowerCase();
-  const rows = all.filter((p) => (t === 'all' || p.group === t) && (!n || `${p.h1} ${p.path}`.toLowerCase().includes(n)));
-  const groups = ['all', 'Main', 'Golden Visa', 'Family', 'Service', 'Custom page'];
+  const rows = all.filter((p) => (t === 'deleted' ? p.o.hidden : t === 'all' ? !p.o.hidden : p.group === t && !p.o.hidden) && (!n || `${p.h1} ${p.path}`.toLowerCase().includes(n)));
+  const nDel = all.filter((p) => p.o.hidden).length;
+  const groups = ['all', 'Main', 'Golden Visa', 'Family', 'Service', 'Custom page', ...(nDel ? ['deleted'] : [])];
   return (
     <>
       <div className="topbar"><div><p className="eyebrow">Content</p><h1>Pages &amp; builder</h1></div><NewPageForm /></div>
       <div className="row" style={{ marginBottom: 14, justifyContent: 'space-between' }}>
-        <nav className="tabs">{groups.map((g) => <a key={g} href={`/admin/pages/?t=${encodeURIComponent(g)}${q ? `&q=${encodeURIComponent(q)}` : ''}`} className={t === g ? 'on' : ''}>{g === 'all' ? 'All pages' : g}</a>)}</nav>
+        <nav className="tabs">{groups.map((g) => <a key={g} href={`/admin/pages/?t=${encodeURIComponent(g)}${q ? `&q=${encodeURIComponent(q)}` : ''}`} className={t === g ? 'on' : ''}>{g === 'all' ? 'All pages' : g === 'deleted' ? `Deleted (${nDel})` : g}</a>)}</nav>
         <form className="row" action="/admin/pages/"><input type="hidden" name="t" value={t} /><input name="q" defaultValue={q} placeholder="Search pages" style={{ width: 240 }} /><button className="btn btn-sm" type="submit">Search</button></form>
       </div>
       <p className="help" style={{ marginBottom: 12 }}>{rows.length} pages. Open any page to edit every section, add widgets, change the design, featured image and SEO. The homepage can hide, keep or add sections anywhere between its built-in parts. Blog articles are under Blog posts.</p>
@@ -57,7 +58,7 @@ export default async function Pages({ searchParams }: { searchParams: Promise<{ 
               <span className="pg-ic"><Icon name={p.path === '/' ? 'home' : p.custom ? 'plus' : 'doc'} size={20} /></span>
               <div className="pg-main">
                 <Link href={edit} className="pg-t">{p.h1}</Link>
-                <small>{p.path} · {secs} sections{p.o.at ? ` · updated ${new Date(p.o.at).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ' · original'} · <span className={`score s${sc >= 80 ? 'g' : sc >= 50 ? 'm' : 'b'}`}>SEO {sc}%</span>{p.o.hidden && <span className="pill closed" style={{ marginInlineStart: 6 }}>Hidden</span>}</small>
+                <small>{p.path} · {secs} sections{p.o.at ? ` · updated ${new Date(p.o.at).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ' · original'} · <span className={`score s${sc >= 80 ? 'g' : sc >= 50 ? 'm' : 'b'}`}>SEO {sc}%</span>{p.o.hidden && <span className="pill closed" style={{ marginInlineStart: 6 }}>Deleted</span>}</small>
               </div>
               <div className="pg-langs" aria-label="Translations">
                 {LOCALES.map((l) => {
@@ -70,8 +71,10 @@ export default async function Pages({ searchParams }: { searchParams: Promise<{ 
                 <a className="btn btn-sm btn-ghost" href={p.path} target="_blank" rel="noopener" aria-label="View" title="View"><Icon name="ext" size={15} /></a>
                 <form action={duplicatePage}><input type="hidden" name="path" value={p.path} /><button className="btn btn-sm btn-ghost" title="Duplicate" aria-label="Duplicate"><Icon name="copy" size={15} /></button></form>
                 {p.custom
-                  ? <form action={deleteCustomPage}><input type="hidden" name="path" value={p.path} /><DeleteButton label="🗑" confirm="Delete?" title="Delete page" /></form>
-                  : p.path !== '/' && <form action={togglePageHidden}><input type="hidden" name="path" value={p.path} /><button className="btn btn-sm btn-ghost" title={p.o.hidden ? 'Show page again' : 'Hide page (built-in pages cannot be deleted)'} aria-label={p.o.hidden ? 'Show page' : 'Hide page'}>{p.o.hidden ? 'Show' : 'Hide'}</button></form>}
+                  ? <form action={deleteCustomPage}><input type="hidden" name="path" value={p.path} /><DeleteButton label="Delete" confirm="Delete for ever?" title="Delete page" /></form>
+                  : p.path !== '/' && (p.o.hidden
+                    ? <form action={setPageDeleted}><input type="hidden" name="path" value={p.path} /><input type="hidden" name="on" value="0" /><button className="btn btn-sm" title="Put the page back on the website">Restore</button></form>
+                    : <form action={setPageDeleted}><input type="hidden" name="path" value={p.path} /><input type="hidden" name="on" value="1" /><DeleteButton label="Delete" confirm="Delete page?" title="Delete page (you can restore it under Deleted)" /></form>)}
               </div>
             </div>
           );

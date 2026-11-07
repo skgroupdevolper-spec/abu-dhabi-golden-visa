@@ -90,9 +90,10 @@ export default async function ContentPage({ params }: { params: Params }) {
   const r = await resolve(locale, slug);
   if (!r) notFound();
   const reviews = r.blocks?.some((b) => b.type === 'testimonials') ? await getTestimonials() : [];
-  const blogData = r.blog ? { posts: await getPublishedPosts(), categories: await getCategories(), current: r.blog.category } : undefined;
+  const gone = Object.entries(await getOverrides()).filter(([, o]) => o?.hidden).map(([k]) => k);
+  const blogData = r.blog ? { posts: await getPublishedPosts(), categories: await getCategories(), current: r.blog.category, gone } : undefined;
   const isArticle = !!(r.post || r.page.article);
-  const more = isArticle ? [...(await getPublishedPosts()).map(postToPage), ...BLOG].filter((p) => p.path !== r.page.path).sort((a, b) => Number(b.category === r.page.category) - Number(a.category === r.page.category)).slice(0, 5).map((p) => ({ href: p.path, title: p.h1, image: p.image, label: p.eyebrow })) : [];
+  const more = isArticle ? [...(await getPublishedPosts()).map(postToPage), ...BLOG].filter((p) => p.path !== r.page.path && !gone.includes(p.path)).sort((a, b) => Number(b.category === r.page.category) - Number(a.category === r.page.category)).slice(0, 5).map((p) => ({ href: p.path, title: p.h1, image: p.image, label: p.eyebrow })) : [];
   return (
     <>
       <PageView page={r.page} locale={r.loc} translated={r.translated} price={r.price} hidden={r.hidden} blocks={r.blocks} o={r.o} reviews={reviews} more={more}

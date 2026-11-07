@@ -176,10 +176,50 @@ for (const [name, vp] of Object.entries(VP)) {
     const g = page.locator('.oglobe');
     if (!(await g.count())) fail('about', 'office globe is missing');
     else { await g.scrollIntoViewIfNeeded(); await page.waitForTimeout(2500); await g.screenshot({ path: 'shots/e2e-globe.jpg' }); }
-    await page.goto(base + '/admin/pages/');
-    if (!(await page.locator('button:has-text("Hide"), button:has-text("Show")').count())) fail('owner', 'pages list has no Hide/Show buttons');
+    // pages: delete a built-in page (two clicks) → 404 on the site → restore → back
+    const testPath = '/visa-check/';
+    await page.goto(base + '/admin/pages/?q=visa-check');
+    const row = page.locator('.pg-row', { hasText: testPath }).first();
+    const delBtn = row.locator('button.btn-danger');
+    if (!(await delBtn.count())) fail('owner', 'pages list has no Delete button');
+    else {
+      await delBtn.click(); await delBtn.click(); await page.waitForTimeout(1200);
+      const gone = await api.get(testPath).catch(() => null);
+      if (!gone || gone.status() !== 404) fail('owner', `deleted page still opens (${gone && gone.status()})`);
+      await page.goto(base + '/admin/pages/?t=deleted');
+      const rest = page.locator('.pg-row', { hasText: testPath }).locator('button:has-text("Restore")');
+      if (!(await rest.count())) fail('owner', 'deleted page is not listed under Deleted with Restore');
+      else { await rest.click(); await page.waitForTimeout(1200); const back = await api.get(testPath); if (back.status() !== 200) fail('owner', `restored page does not open (${back.status()})`); }
+    }
+    // blog: built-in guide delete → gone from /blog/ list → restore
     await page.goto(base + '/admin/posts/');
-    if ((await page.locator('table tbody tr').count()) && !(await page.locator('button.btn-danger').count())) fail('owner', 'articles list has no delete button');
+    const gRow = page.locator('table tbody tr', { has: page.locator('.small.muted', { hasText: '/blog/' }) }).last();
+    const gPath = (await gRow.locator('.small.muted').innerText().catch(() => '')).trim();
+    const gDel = gRow.locator('button.btn-danger');
+    if (!gPath || !(await gDel.count())) fail('owner', 'built-in blog guides have no Delete button');
+    else {
+      await gDel.click(); await gDel.click(); await page.waitForTimeout(1200);
+      const blog = await (await api.get('/blog/')).text();
+      if (blog.includes(`href="${gPath}"`)) fail('owner', `deleted guide ${gPath} is still in the blog list`);
+      if ((await api.get(gPath)).status() !== 404) fail('owner', `deleted guide ${gPath} still opens`);
+      await page.goto(base + '/admin/posts/');
+      await page.locator('table tbody tr', { hasText: gPath }).locator('button:has-text("Restore")').click(); await page.waitForTimeout(1200);
+      if ((await api.get(gPath)).status() !== 200) fail('owner', 'restored guide does not open');
+    }
+    // FAQs: add a new question, save, it shows on /faqs/; delete it, save, it is gone
+    await page.goto(base + '/admin/faqs/');
+    const before = await page.locator('.faq-ed').count();
+    await page.locator('button:has-text("+ Add new FAQ")').first().click();
+    await page.locator('.faq-ed').first().locator('input').fill('CI test question: can I pay in INR?');
+    await page.locator('.faq-ed').first().locator('textarea').fill('CI test answer.');
+    await page.locator('button:has-text("Save FAQs")').click(); await page.waitForTimeout(1500);
+    if (!(await (await api.get('/faqs/')).text()).includes('CI test question')) fail('owner', 'new FAQ does not show on the FAQs page');
+    await page.goto(base + '/admin/faqs/');
+    if ((await page.locator('.faq-ed').count()) !== before + 1) fail('owner', 'new FAQ was not saved');
+    const fdel = page.locator('.faq-ed', { has: page.locator('input[value*="CI test question"]') }).locator('button.btn-danger');
+    await fdel.click(); await fdel.click();
+    await page.locator('button:has-text("Save FAQs")').click(); await page.waitForTimeout(1500);
+    if ((await (await api.get('/faqs/')).text()).includes('CI test question')) fail('owner', 'deleted FAQ is still on the FAQs page');
     await page.goto(base + '/');
     if (await page.locator('.dashprev').count()) fail('home', 'sample dashboard preview is still on the homepage');
     // currency: pick INR, AED prices outside the calculator change to ₹ and back
