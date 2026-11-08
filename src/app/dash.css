@@ -735,3 +735,50 @@ code.k { overflow-wrap: anywhere; word-break: break-all; }
 .btn-danger:hover { background: #fff4f2; }
 .btn-danger.armed { background: #b42318; color: #fff; border-color: #b42318; }
 .row-del { display: inline-flex; }
+
+/* ================= Admin look (Nov 2026): soft glass, warm glow, sliding menu pill ================= */
+/* Same white + gold palette; layout and feel inspired by the owner's reference video. */
+.admin { position: relative; isolation: isolate; background: #f6f3ec; }
+.admin::before, .admin::after { content: ''; position: fixed; z-index: -1; pointer-events: none; border-radius: 50%; filter: blur(70px); opacity: .55; }
+.admin::before { width: 46vw; height: 46vw; top: -18vw; inset-inline-end: -10vw; background: radial-gradient(circle, #f2d27a 0%, rgba(242, 210, 122, 0) 68%); animation: adm-drift 26s ease-in-out infinite alternate; }
+.admin::after { width: 40vw; height: 40vw; bottom: -16vw; inset-inline-start: 8vw; background: radial-gradient(circle, #f6c9a8 0%, rgba(246, 201, 168, 0) 66%); animation: adm-drift 32s ease-in-out infinite alternate-reverse; }
+@keyframes adm-drift { to { transform: translate(-6vw, 5vw) scale(1.12); } }
+
+/* glass surfaces */
+.admin .side { background: rgba(255, 255, 255, .62); backdrop-filter: blur(22px) saturate(1.3); -webkit-backdrop-filter: blur(22px) saturate(1.3); border-inline-end: 1px solid rgba(255, 255, 255, .9); box-shadow: 1px 0 0 rgba(201, 150, 26, .12); }
+.appbar { background: rgba(255, 255, 255, .6); backdrop-filter: blur(22px) saturate(1.3); -webkit-backdrop-filter: blur(22px) saturate(1.3); border-bottom: 1px solid rgba(255, 255, 255, .9); box-shadow: 0 1px 0 rgba(201, 150, 26, .12); }
+.admin .panel, .admin .kpi { background: rgba(255, 255, 255, .84); border: 1px solid rgba(255, 255, 255, .95); border-radius: 18px; box-shadow: 0 1px 0 rgba(255, 255, 255, .9) inset, 0 18px 40px -28px rgba(122, 82, 0, .35); }
+.admin .kpi { transition: transform .35s cubic-bezier(.33, 1, .68, 1), box-shadow .35s; }
+.admin .kpi:hover { transform: translateY(-3px); box-shadow: 0 1px 0 #fff inset, 0 26px 50px -30px rgba(122, 82, 0, .5); }
+.admin .kpi.goldbg { background: linear-gradient(140deg, rgba(255, 250, 240, .9), rgba(242, 210, 122, .75)); }
+.admin .tbl-wrap { background: rgba(255, 255, 255, .7); }
+.ab-search { background: rgba(255, 255, 255, .7); border: 1px solid rgba(201, 150, 26, .16); transition: box-shadow .25s, background .25s; }
+.ab-search:focus-within { background: #fff; box-shadow: 0 0 0 3px rgba(201, 150, 26, .18); }
+.ab-btn { background: rgba(255, 255, 255, .75); }
+
+/* menu: one gold pill slides between items (see AdminNav) */
+.admin .side nav.anav { position: relative; }
+.anav-pill { position: absolute; inset-inline: 0; top: 0; bottom: 100%; z-index: 0; opacity: 0; border-radius: 12px; background: linear-gradient(120deg, #fff6dc, #f2d27a 70%, #e6c15a); box-shadow: 0 8px 22px -12px rgba(122, 82, 0, .55), inset 0 1px 0 rgba(255, 255, 255, .8); pointer-events: none; }
+.admin .side nav.anav a { z-index: 1; transition: color .25s, background .25s; }
+.admin .side nav.anav a.on { background: transparent; }
+.admin .side nav.anav a.on::before { display: none; }
+.admin .side nav.anav a:not(.on):hover { background: rgba(242, 210, 122, .18); }
+.admin .side nav.anav a .ai { transition: transform .3s cubic-bezier(.33, 1, .68, 1); }
+.admin .side nav.anav a:hover .ai { transform: scale(1.12); }
+
+/* click feel */
+.admin .btn, .admin .ab-btn, .admin .side nav.anav a { -webkit-tap-highlight-color: transparent; }
+.admin .btn { transition: transform .18s, box-shadow .25s, background-position .6s; }
+.admin .btn:hover { box-shadow: 0 8px 18px -12px rgba(122, 82, 0, .55); }
+.admin .btn:active, .admin .ab-btn:active { transform: scale(.96); }
+
+/* each page slides in softly */
+.admin .main > * { animation: adm-in .5s cubic-bezier(.33, 1, .68, 1) both; }
+.admin .main > *:nth-child(2) { animation-delay: .05s; }
+.admin .main > *:nth-child(3) { animation-delay: .1s; }
+@keyframes adm-in { from { opacity: 0; transform: translateY(10px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .admin::before, .admin::after, .admin .main > * { animation: none; }
+  .anav-pill { transition: none !important; }
+}

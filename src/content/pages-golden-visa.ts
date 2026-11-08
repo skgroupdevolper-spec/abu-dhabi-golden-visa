@@ -351,6 +351,8 @@ export const GOLDEN_VISA_PAGES: Page[] = [
         items: [
           'Scientists and researchers recommended by the UAE scientists council',
           'Specialists in health, education, industry and priority technology fields',
+          'Elite specialists in priority Fourth Industrial Revolution fields: usually a PhD, at least five years of experience and a monthly salary of AED 50,000 or more (Invest Abu Dhabi)',
+          'Health professionals approved by the Ministry of Health and Prevention, and education specialists recommended by the Ministry of Education',
           'Senior scholars recommended by the relevant authority',
         ],
       },

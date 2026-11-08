@@ -281,6 +281,18 @@ export const OTHER_PAGES: Page[] = [
         ],
         note: 'The sequence varies by visa route and by whether you are already inside the UAE.',
       },
+      {
+        type: 'table',
+        title: 'Where the nomination is filed',
+        head: ['You are', 'Official channel'],
+        rows: [
+          ['Living in the UAE', 'Nomination request through the Abu Dhabi Residents Office on TAMM. Entrepreneur requests are passed on to a UAE business incubator for nomination.'],
+          ['Living outside the UAE', 'Nomination through the Abu Dhabi Investment Office (ADIO), which passes it to the relevant authority. After approval you get an entry permit, valid for six months and renewable once, to come in and finish the process.'],
+          ['Creatives', 'A free recommendation letter from the Ministry of Culture first, then the residency application.'],
+          ['Graduates', 'Through the Abu Dhabi Residents Office on TAMM, or directly with ICP.'],
+        ],
+        note: 'Sources: ADDED, ICP, Invest Abu Dhabi (ADIO) and Ministry of Culture pages, checked 8 November 2026. We prepare and file through the right channel for you; the final decision always rests with the authorities.',
+      },
     ],
   },
   {

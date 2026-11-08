@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Icon } from '@/components/Icon';
 
 import { ADMIN_MENU, allowed, type Item, type Role } from './menu';
@@ -14,6 +14,23 @@ export function AdminNav({ counts, role, mobile, perms }: { counts: { leads: num
   const on = (h: string) => (h === '/admin/' ? path === '/admin' || path === '/admin/' : path.startsWith(h.slice(0, -1)));
   const n = (b?: Item['badge']) => (b === 'leads' ? counts.leads : b === 'unread' ? counts.unread : b === 'notes' ? counts.notes ?? 0 : 0);
   const groups = ADMIN_MENU.map((g) => ({ ...g, items: g.items.filter((i) => allowed(i, role, perms)) })).filter((g) => g.items.length);
+
+  // Sliding highlight ("pill"): on a click it stretches like a drop, the leading edge first, then the
+  // trailing edge catches up. Pure CSS transitions on top/bottom; still for people who prefer less motion.
+  const navRef = useRef<HTMLElement>(null), pillRef = useRef<HTMLSpanElement>(null), last = useRef<{ t: number; b: number } | null>(null);
+  const glide = (a: Element | null) => {
+    const nav = navRef.current, pill = pillRef.current;
+    if (!nav || !pill || !a) return;
+    const nr = nav.getBoundingClientRect(), r = a.getBoundingClientRect();
+    const t = r.top - nr.top + nav.scrollTop, b = nr.height - (r.bottom - nr.top) - nav.scrollTop;
+    const prev = last.current, down = prev ? t > prev.t : true, slow = '0.46s cubic-bezier(.65,0,.35,1)', fast = '0.3s cubic-bezier(.33,1,.68,1)';
+    pill.style.transition = prev ? (down ? `bottom ${fast}, top ${slow} 0.06s, opacity .2s` : `top ${fast}, bottom ${slow} 0.06s, opacity .2s`) : 'none';
+    pill.style.top = `${t}px`; pill.style.bottom = `${b}px`; pill.style.opacity = '1';
+    last.current = { t, b };
+  };
+  const place = () => { if (!mobile) glide(navRef.current?.querySelector('a.on') ?? null); };
+  useLayoutEffect(place, [path]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { const ro = new ResizeObserver(() => { const p = pillRef.current; if (p) p.style.transition = 'none'; last.current = null; place(); }); if (navRef.current) ro.observe(navRef.current); return () => ro.disconnect(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (mobile)
     return (
@@ -31,7 +48,8 @@ export function AdminNav({ counts, role, mobile, perms }: { counts: { leads: num
       </div>
     );
   return (
-    <nav aria-label="Admin" className="anav">
+    <nav aria-label="Admin" className="anav" ref={navRef} onClickCapture={(e) => { const a = (e.target as HTMLElement).closest('a'); if (a && a.getAttribute('target') !== '_blank') glide(a); }}>
+      <span className="anav-pill" ref={pillRef} aria-hidden="true" />
       {groups.map((g) => (
         <div key={g.title}>
           <p className="anav-h">{g.title}</p>
