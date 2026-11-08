@@ -20,7 +20,7 @@ function safeEq(a: string, b: string) {
 /** Owner accounts from the server environment: ADMIN_EMAIL / ADMIN_PASSWORD (or ADMIN_USERS="a@x.com:pass,b@y.com:pass"). */
 function envUsers(): [string, string][] {
   const out: [string, string][] = [];
-  if (process.env.ADMIN_EMAIL && !isPlaceholder(process.env.ADMIN_PASSWORD)) out.push([process.env.ADMIN_EMAIL.toLowerCase(), process.env.ADMIN_PASSWORD]);
+  if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD && !isPlaceholder(process.env.ADMIN_PASSWORD)) out.push([process.env.ADMIN_EMAIL.toLowerCase(), process.env.ADMIN_PASSWORD]);
   for (const pair of (process.env.ADMIN_USERS || '').split(',')) {
     const i = pair.indexOf(':');
     if (i > 0 && !isPlaceholder(pair.slice(i + 1).trim())) out.push([pair.slice(0, i).trim().toLowerCase(), pair.slice(i + 1).trim()]);
