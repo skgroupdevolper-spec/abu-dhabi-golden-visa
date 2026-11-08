@@ -4,16 +4,13 @@ import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { list, patch, verifyPassword, type Role, type TeamUser } from './collections';
 import { now } from './store';
+import { isPlaceholder, sessionSecret } from './secrets';
 
 const COOKIE = 'adgv_admin';
 const CLIENT_COOKIE = 'adgv_client';
 const DAY = 24 * 60 * 60 * 1000;
 
-function secret() {
-  const s = process.env.SESSION_SECRET;
-  if (s && s.length >= 16) return s;
-  return 'dev-only-secret-change-me-' + (process.env.ADMIN_PASSWORD || '');
-}
+const secret = () => sessionSecret();
 const sign = (v: string) => createHmac('sha256', secret()).update(v).digest('base64url');
 function safeEq(a: string, b: string) {
   const x = Buffer.from(a), y = Buffer.from(b);
@@ -23,10 +20,10 @@ function safeEq(a: string, b: string) {
 /** Owner accounts from the server environment: ADMIN_EMAIL / ADMIN_PASSWORD (or ADMIN_USERS="a@x.com:pass,b@y.com:pass"). */
 function envUsers(): [string, string][] {
   const out: [string, string][] = [];
-  if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) out.push([process.env.ADMIN_EMAIL.toLowerCase(), process.env.ADMIN_PASSWORD]);
+  if (process.env.ADMIN_EMAIL && !isPlaceholder(process.env.ADMIN_PASSWORD)) out.push([process.env.ADMIN_EMAIL.toLowerCase(), process.env.ADMIN_PASSWORD]);
   for (const pair of (process.env.ADMIN_USERS || '').split(',')) {
     const i = pair.indexOf(':');
-    if (i > 0) out.push([pair.slice(0, i).trim().toLowerCase(), pair.slice(i + 1).trim()]);
+    if (i > 0 && !isPlaceholder(pair.slice(i + 1).trim())) out.push([pair.slice(0, i).trim().toLowerCase(), pair.slice(i + 1).trim()]);
   }
   return out;
 }

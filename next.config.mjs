@@ -5,10 +5,12 @@ const nextConfig = {
   images: { formats: ['image/avif', 'image/webp'] },
   // Client and team document uploads go through server actions.
   experimental: {
+    // On the shared hosting server use one build worker, so the other sites stay fast while it builds.
+    ...(process.env.CI ? {} : { cpus: 1 }),
     serverActions: {
       bodySizeLimit: '16mb',
       // Forms post through proxies (Codespaces preview, xCloud, the app. subdomain): allow these origins.
-      allowedOrigins: ['localhost:3000', '*.app.github.dev', '*.github.dev', 'abudhabigoldenvisa.com', '*.abudhabigoldenvisa.com'],
+      allowedOrigins: ['localhost:3000', '*.app.github.dev', '*.github.dev', 'abudhabigoldenvisa.com', '*.abudhabigoldenvisa.com', '*.1wp.site'],
     },
   },
   // Familiar client addresses (as in Odoo-style portals): /web/login and /my open the customer dashboard.

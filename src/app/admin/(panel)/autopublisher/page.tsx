@@ -219,8 +219,8 @@ export default async function AutoPublisher({ searchParams }: { searchParams: Pr
       {tab === 'schedule' && (
         <div className="panel" style={{ maxWidth: 900 }}>
           <h2>Daily schedule</h2>
-          <p className="help">The publisher runs once a day. In xCloud, add a daily cron job that opens this address (set CRON_SECRET on the server first). Each run writes for every mission that is behind its weekly number, then resumes automatic translation.</p>
-          <code className="k" style={{ display: 'block', padding: 10, overflowWrap: 'anywhere', marginTop: 10 }}>curl -s &quot;{SITE.url}/api/cron/daily?key=YOUR_CRON_SECRET&quot;</code>
+          <p className="help">The publisher runs once a day. In xCloud, add a daily cron job that runs <code>npm run cron</code> in the site folder (it uses the site&apos;s own secret key, nothing to copy). Each run writes for every mission that is behind its weekly number, then resumes automatic translation.</p>
+          <code className="k" style={{ display: 'block', padding: 10, overflowWrap: 'anywhere', marginTop: 10 }}>cd /path/to/site &amp;&amp; npm run cron</code>
           <p className="help" style={{ marginTop: 10 }}>Tip: run it two or three times a day (for example 06:00, 13:00, 20:00) to spread articles out; missions never write more than their weekly number.</p>
         </div>
       )}

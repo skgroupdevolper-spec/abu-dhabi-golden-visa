@@ -8,7 +8,8 @@
     "prebuild": "node scripts/extract-ui.mjs",
     "build": "next build",
     "start": "next start -p ${PORT:-3000}",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "cron": "node --env-file-if-exists=.env scripts/cron.mjs"
   },
   "dependencies": {
     "gsap": "3.12.5",

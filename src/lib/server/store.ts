@@ -2,10 +2,13 @@ import 'server-only';
 import { randomBytes } from 'node:crypto';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import os from 'node:os';
 import { FEE_SCHEDULE } from '@/lib/fees';
 
 /** Folder for all saved data. Keep it outside the release folder on the server so it survives deploys. */
-export const DATA_DIR = path.resolve(process.env.DATA_DIR || process.env.LEADS_DIR || './data');
+// "~/adgv-data" means a folder in the site user's home: it survives every redeploy.
+const rawDir = process.env.DATA_DIR || process.env.LEADS_DIR || './data';
+export const DATA_DIR = path.resolve(rawDir.startsWith('~/') ? path.join(os.homedir(), rawDir.slice(2)) : rawDir);
 export const UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
 
 export type LeadStatus = 'new' | 'contacted' | 'converted' | 'closed';

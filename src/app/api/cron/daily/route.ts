@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 /** Daily job (call from xCloud cron): https://www.abudhabigoldenvisa.com/api/cron/daily?key=CRON_SECRET */
 export async function GET(req: NextRequest) {
-  const key = process.env.CRON_SECRET;
+  const key = (await import('@/lib/server/secrets')).cronSecret();
   if (!key || req.nextUrl.searchParams.get('key') !== key) return NextResponse.json({ ok: false }, { status: 403 });
   const fx = await import('@/lib/server/fx').then((m) => m.refreshRates()).then((x) => !!x).catch(() => false);
   const payments = await import('@/lib/server/payments').then((m) => m.recheckPending()).catch(() => 0);
