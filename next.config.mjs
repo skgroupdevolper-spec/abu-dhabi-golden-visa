@@ -2,6 +2,8 @@
 const nextConfig = {
   trailingSlash: true,
   poweredByHeader: false,
+  // Pages are rebuilt in the background; never let a cache keep an old copy for long.
+  expireTime: 600,
   images: { formats: ['image/avif', 'image/webp'] },
   // Client and team document uploads go through server actions.
   experimental: {

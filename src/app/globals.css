@@ -1379,3 +1379,8 @@ footer.site .legal > span { max-width: 640px; }
 /* Space between every section on inner pages, so coloured panels never touch each other. */
 .block + .block, .block + [data-block], [data-block] + .block { margin-top: clamp(18px, 2.6vw, 34px); }
 .block + .block-flight { margin-top: 10px; }
+
+/* Keep page content clear of the floating side bar (calculator, WhatsApp, check, free, login). */
+@media (min-width: 761px) {
+  body:has(.dock) main .wrap { padding-inline-end: max(40px, calc(108px - (100vw - 1320px) / 2)); }
+}
