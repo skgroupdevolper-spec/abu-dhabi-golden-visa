@@ -7,10 +7,11 @@ import { useEffect, useRef, useState } from 'react';
 import { Icon } from './Icon';
 import { u } from '@/lib/ui';
 
-const D = 'M60 330 C 220 330, 250 120, 420 150 S 640 330, 780 250 S 980 60, 1140 110';
+// Kept inside a short 1200x300 box so every stop, including step 1, is on screen together.
+const D = 'M70 235 C 210 235, 260 100, 420 120 S 640 255, 790 195 S 990 55, 1140 90';
 const FROM = ['Mumbai', 'London', 'Moscow', 'Karachi', 'Manila', 'Cairo', 'Beijing', 'Lagos', 'Istanbul', 'Berlin', 'New York', 'Almaty'];
 export const FLIGHT_STEPS = [
-  { t: u('Free eligibility check'), s: u('We confirm your route and costs in writing.'), at: 0.08 },
+  { t: u('Free eligibility check'), s: u('We confirm your route and costs in writing.'), at: 0.06 },
   { t: u('Documents & attestation'), s: u('Checked, translated and attested where needed.'), at: 0.3 },
   { t: u('Nomination & entry permit'), s: u('Filed with the Abu Dhabi authorities.'), at: 0.52 },
   { t: u('Medical & Emirates ID'), s: u('Booked for you, VIP where offered.'), at: 0.74 },
@@ -79,14 +80,14 @@ export function FlightPath({ title = u('Your journey to Abu Dhabi'), intro = u('
         <span className="fp-cloud c1" aria-hidden="true" /><span className="fp-cloud c2" aria-hidden="true" /><span className="fp-cloud c3" aria-hidden="true" />
         <div className="fp-from"><small>{u('Departing', locale)}</small><b key={from}>{FROM[from]}</b></div>
         <div className="fp-to"><small>{u('Arriving', locale)}</small><b>{u('Abu Dhabi', locale)}</b></div>
-        <svg viewBox="0 0 1200 400" className="fp-svg" role="img" aria-label={`Flight route with ${pts.length} steps to an Abu Dhabi Golden Visa`}>
+        <svg viewBox="0 0 1200 300" className="fp-svg" role="img" aria-label={`Flight route with ${pts.length} steps to an Abu Dhabi Golden Visa`}>
           <defs>
             <linearGradient id="fpg" x1="0" x2="1"><stop offset="0" stopColor="#7a5200" /><stop offset=".5" stopColor="#d4af37" /><stop offset="1" stopColor="#f2d27a" /></linearGradient>
             <filter id="fpglow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
           </defs>
           <path d={D} className="fp-route" fill="none" />
           <path d={D} className="fp-trail" fill="none" stroke="url(#fpg)" filter="url(#fpglow)" />
-          <g className="fp-skyline" transform="translate(1178 92) scale(.8)" aria-hidden="true">
+          <g className="fp-skyline" transform="translate(1178 72) scale(.8)" aria-hidden="true">
             <path d="M-34 0v-22h8v22M-22 0v-40l5-8 5 8v40M-8 0v-30h9v30M5 0v-52l3-14 3 14v52M16 0v-26h10v26" />
           </g>
           {pts.map((s, i) => (
