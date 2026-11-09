@@ -6,10 +6,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from './Icon';
 import { u } from '@/lib/ui';
+import { SITE } from '@/lib/site';
 
 // Kept inside a short 1200x300 box so every stop, including step 1, is on screen together.
 const D = 'M70 235 C 210 235, 260 100, 420 120 S 640 255, 790 195 S 990 55, 1140 90';
-const FROM = ['Mumbai', 'London', 'Moscow', 'Karachi', 'Manila', 'Cairo', 'Beijing', 'Lagos', 'Istanbul', 'Berlin', 'New York', 'Almaty'];
+const FROM_DEFAULT = ['Mumbai', 'London', 'Moscow', 'Karachi', 'Manila', 'Cairo', 'Beijing', 'Lagos', 'Istanbul', 'Berlin', 'New York', 'Almaty'];
 export const FLIGHT_STEPS = [
   { t: u('Free eligibility check'), s: u('We confirm your route and costs in writing.'), at: 0.06 },
   { t: u('Documents & attestation'), s: u('Checked, translated and attested where needed.'), at: 0.3 },
@@ -18,6 +19,8 @@ export const FLIGHT_STEPS = [
   { t: u('Golden Visa issued'), s: u('Ten years, renewable, family included.'), at: 0.97 },
 ];
 
+const fromList = () => (SITE.flightFrom?.length ? SITE.flightFrom : FROM_DEFAULT);
+
 export function FlightPath({ title = u('Your journey to Abu Dhabi'), intro = u('Scroll and follow your flight: every stop is a step we handle for you.'), mode = 'scroll', steps = FLIGHT_STEPS, locale = 'en' }: { title?: string; intro?: string; mode?: 'scroll' | 'loop'; steps?: { t: string; s: string; at?: number }[]; locale?: string }) {
   const root = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(-1);
@@ -25,7 +28,7 @@ export function FlightPath({ title = u('Your journey to Abu Dhabi'), intro = u('
   const pts = steps.map((x, i) => ({ ...x, at: x.at ?? (i + 0.5) / steps.length }));
 
   // Origin city flips every few seconds.
-  useEffect(() => { const i = setInterval(() => setFrom((f) => (f + 1) % FROM.length), 2600); return () => clearInterval(i); }, []);
+  useEffect(() => { const i = setInterval(() => setFrom((f) => (f + 1) % fromList().length), 2600); return () => clearInterval(i); }, []);
 
   useEffect(() => {
     const el = root.current;
@@ -78,7 +81,7 @@ export function FlightPath({ title = u('Your journey to Abu Dhabi'), intro = u('
       </div>
       <div className="fp-sky">
         <span className="fp-cloud c1" aria-hidden="true" /><span className="fp-cloud c2" aria-hidden="true" /><span className="fp-cloud c3" aria-hidden="true" />
-        <div className="fp-from"><small>{u('Departing', locale)}</small><b key={from}>{FROM[from]}</b></div>
+        <div className="fp-from"><small>{u('Departing', locale)}</small><b key={from}>{fromList()[from % fromList().length]}</b></div>
         <div className="fp-to"><small>{u('Arriving', locale)}</small><b>{u('Abu Dhabi', locale)}</b></div>
         <svg viewBox="0 0 1200 300" className="fp-svg" role="img" aria-label={`Flight route with ${pts.length} steps to an Abu Dhabi Golden Visa`}>
           <defs>

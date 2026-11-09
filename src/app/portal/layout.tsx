@@ -9,11 +9,14 @@ export const metadata: Metadata = { title: { default: 'Client portal | Abu Dhabi
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#f8f7f5' };
 
 export default async function PortalRoot({ children }: { children: ReactNode }) {
-  applyRuntimeSync();
+  const site = applyRuntimeSync();
   const { lang } = await T();
   return (
     <html lang={lang.html} dir={lang.dir} className={fontVars}>
-      <body>{children}</body>
+      <body>
+        <script dangerouslySetInnerHTML={{ __html: `window.__ADGV_SITE=${JSON.stringify(site).replace(/</g, '\\u003c')}` }} />
+        {children}
+      </body>
     </html>
   );
 }

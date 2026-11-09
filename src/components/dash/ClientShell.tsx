@@ -6,6 +6,7 @@ import { LangSelect } from './LangSelect';
 import { logout, setLang } from '@/app/portal/actions';
 import { waLink } from '@/lib/site';
 import type { ClientArea } from '@/lib/server/portal';
+import { coinImg, fullLogo } from '@/components/BrandLogo';
 
 export type NavKey = 'home' | 'files' | 'orders' | 'quotes' | 'invoices' | 'statement' | 'request' | 'requests' | 'calendar' | 'account';
 
@@ -22,7 +23,7 @@ export function ClientShell({ area, active, title, children, back, updates = 0 }
     <div className="cs">
       <input type="checkbox" id="cs-nav" className="cs-tg" aria-hidden="true" tabIndex={-1} autoComplete="off" suppressHydrationWarning />
       <aside className="cs-side" aria-label={t.menu}>
-        <a className="cs-logo" href={`${base}/`}><img src="/brand/logo.webp" alt="Abu Dhabi Golden Visa" /></a>
+        <a className="cs-logo" href={`${base}/`}><img src={fullLogo()} alt="Abu Dhabi Golden Visa" /></a>
         <a className="btn btn-dark cs-new" href={`${base}/services/`}><Icon name="plus" size={16} /> {t.newRequest}</a>
         <nav>
           <p>{t.gTrack}</p>

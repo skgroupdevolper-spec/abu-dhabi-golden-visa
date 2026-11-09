@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, type ReactNode } from 'react';
+import { coinImg, fullLogo } from '@/components/BrandLogo';
 
 const SERVICES = ['Golden Visa', 'Family Visa', 'Valuation Certificate', 'Attestation', 'Emirates ID', 'Legal Translation', 'PRO Services', 'Retirement Visa'];
 
@@ -23,7 +24,7 @@ export function AuthShell({ eyebrow, title, text, ticks, children, top }: { eyeb
       <div className="auth-card">
         <section className="auth-left">
           <div className="auth-word" aria-hidden="true">{shown}<span className="caret" /></div>
-          <img className="auth-coin" src="/brand/coin.webp" alt="" width={150} height={150} />
+          <img className="auth-coin" src={coinImg()} alt="" width={150} height={150} />
           <div>
             <p className="eyebrow line">{eyebrow}</p>
             <h1>{title}</h1>

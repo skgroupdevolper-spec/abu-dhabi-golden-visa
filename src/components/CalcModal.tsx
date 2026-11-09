@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Calculator } from './Calculator';
+import { coinImg, fullLogo } from '@/components/BrandLogo';
 
 export const CALC_EVENT = 'adgv:calc';
 
@@ -55,7 +56,7 @@ export function CalcModal() {
     <div className="modal" role="dialog" aria-modal="true" aria-label="Golden Visa cost calculator" onClick={(e) => e.target === e.currentTarget && hide()}>
       <div className="wz" data-lenis-prevent>
         <div className="wz-top">
-          <img decoding="async" src="/brand/logo.webp" alt="Abu Dhabi Golden Visa" width={150} height={34} />
+          <img decoding="async" src={fullLogo()} alt="Abu Dhabi Golden Visa" width={150} height={34} />
           <button type="button" onClick={hide} aria-label="Close calculator">✕</button>
         </div>
         <div className="wz-body">

@@ -14,7 +14,9 @@ import { BlockView } from '@/components/BlockView';
 import { Booking } from '@/components/Booking';
 import { FlightPath } from '@/components/FlightPath';
 import type { Block } from '@/lib/blocks';
-import { getSecrets } from '@/lib/server/settings';
+import { getBlock, getSecrets } from '@/lib/server/settings';
+import { mergeHero, type HomeHero } from '@/lib/home-hero';
+import { coinImg } from '@/components/BrandLogo';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -66,7 +68,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const lp = (p: string) => localizePath(p, locale);
   const manifesto = 'From the first question to the day your residency is issued, we handle the forms, the fees and the follow-ups. You get one clear price, one advisor, and every update in your own language.';
   const gold = new Set(['clear', 'price,', 'advisor,', 'language.']);
-  const [storedFaqs, reviews, partners, over, tr] = await Promise.all([getFaqs(), getTestimonials(), getPartners(), getOverrides(), getTranslations()]);
+  const [storedFaqs, reviews, partners, over, tr, heroSaved] = await Promise.all([getFaqs(), getTestimonials(), getPartners(), getOverrides(), getTranslations(), getBlock<Partial<HomeHero>>('home-hero', {})]);
+  const H = mergeHero(heroSaved);
   const ho = over['/'] ?? {};
   const hb: Block[] = (locale !== 'en' && tr[locale]?.['/']?.blocks?.length ? tr[locale]['/'].blocks! : ho.blocks) ?? [];
   const show = (k: string) => !(ho.homeHide ?? []).includes(k);
@@ -88,18 +91,18 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <section className="hero">
         <div className="wrap hero-grid">
           <div>
-            <div className="badge glass in-hero"><i><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.8" aria-hidden="true"><path d="M5 12l5 5L19 7" /></svg></i>Abu Dhabi Golden Visa · Long-term UAE residency</div>
+            <div className="badge glass in-hero"><i><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.8" aria-hidden="true"><path d="M5 12l5 5L19 7" /></svg></i>{H.badge}</div>
             <h1>
-              <span className="line"><span>Your future in</span></span>
-              <span className="line"><span>Abu Dhabi starts</span></span>
-              <span className="line"><span><em className="goldtext">with a Golden Visa.</em></span></span>
+              <span className="line"><span>{H.line1}</span></span>
+              <span className="line"><span>{H.line2}</span></span>
+              <span className="line"><span><em className="goldtext">{H.gold}</em></span></span>
             </h1>
-            <p className="lead in-hero">Explore long-term UAE residency through property investment, business ownership, professional achievements and exceptional talent. From eligibility assessment to Emirates ID issuance, our specialists guide you through every stage.</p>
+            <p className="lead in-hero">{H.lead}</p>
             <div className="cta in-hero">
-              <a className="btn btn-gold mag" href={lp('/visa-check/')}>Check My Eligibility <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></a>
-              <a className="btn btn-glass mag" href={lp('/golden-visa-cost/')} data-open-calc="">Calculate Visa Cost</a>
+              <a className="btn btn-gold mag" href={/^https?:/.test(H.btn1Link) ? H.btn1Link : lp(H.btn1Link)}>{H.btn1} <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></a>
+              <a className="btn btn-glass mag" href={/^https?:/.test(H.btn2Link) ? H.btn2Link : lp(H.btn2Link)} {...(H.btn2Link === '/golden-visa-cost/' ? { 'data-open-calc': '' } : {})}>{H.btn2}</a>
             </div>
-            <div className="trust in-hero"><span>Free Initial Consultation</span><span>Family Applications</span><span>VIP Assistance</span></div>
+            <div className="trust in-hero">{H.trust.map((t) => <span key={t}>{t}</span>)}</div>
             <div className="in-hero"><TranslationNotice locale={locale} /></div>
           </div>
           <div className="hero-art" id="heroArt">
@@ -119,8 +122,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                       <div className="edge-stack">
                         {Array.from({ length: 14 }, (_, i) => <div key={i} className="edge" style={{ transform: `translateZ(${(-12 + (i * 24) / 13).toFixed(2)}px)` }} />)}
                       </div>
-                      <div className="face front"><img decoding="async" src="/brand/coin.webp" alt="Abu Dhabi Golden Visa coin" width={420} height={420} fetchPriority="high" /></div>
-                      <div className="face back"><img decoding="async" src="/brand/coin.webp" alt="" width={420} height={420} /></div>
+                      <div className="face front"><img decoding="async" src={coinImg()} alt="Abu Dhabi Golden Visa coin" width={420} height={420} fetchPriority="high" /></div>
+                      <div className="face back"><img decoding="async" src={coinImg()} alt="" width={420} height={420} /></div>
                     </div>
                   </div>
                 </div>
@@ -149,7 +152,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <div>
             <div className="eyebrow" style={{ marginBottom: 22 }}>Why we exist</div>
             <p id="manifesto">{manifesto.split(' ').map((w, i) => <span key={i}><span className={`w${gold.has(w) ? ' gold goldtext' : ''}`}>{w}</span>{' '}</span>)}</p>
-            <div className="sig"><img decoding="async" src="/brand/coin.webp" alt="" width={52} height={52} />Brightlink Management Consultancy · Abu Dhabi Golden Visa</div>
+            <div className="sig"><img decoding="async" src={coinImg()} alt="" width={52} height={52} />Brightlink Management Consultancy · Abu Dhabi Golden Visa</div>
           </div>
           <div className="promos">
             <a className="promo p1" href="#contact-form" data-view=""><div className="im" /><div className="pb"><small>Free eligibility check</small><b>Know your route today</b><span>Send your details and get a written answer on your eligibility.</span><em>Start my free check →</em></div></a>

@@ -37,6 +37,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { default: `${site.name} | ${site.tagline}`, template: '%s' },
     description: 'Long-term UAE residency through property, business, professional and talent routes, with family sponsorship and full application support.',
     verification: { google: seo.googleVerify || undefined, other: seo.bingVerify ? { 'msvalidate.01': seo.bingVerify } : undefined },
+    ...(site.brand?.favicon ? { icons: { icon: site.brand.favicon, apple: site.brand.favicon } } : {}),
   };
 }
 

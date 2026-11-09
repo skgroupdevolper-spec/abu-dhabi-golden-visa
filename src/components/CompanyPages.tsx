@@ -10,30 +10,11 @@ import { Icon } from './Icon';
 import { L } from './L';
 import { LeadForm } from './LeadForm';
 import { OfficeLive } from './OfficeLive';
-import { OfficeGlobe, type Office } from './OfficeGlobe';
+import { OfficeGlobe } from './OfficeGlobe';
+import { WORLD } from '@/lib/world';
 
 /** Well-known cities around the world: the airplane on the About globe hops from one to the next. */
-const WORLD: Office[] = [
-  { country: 'United Arab Emirates', city: 'Abu Dhabi', lat: 24.45, lng: 54.38 },
-  { country: 'United Kingdom', city: 'London', lat: 51.51, lng: -0.13 },
-  { country: 'United States', city: 'New York', lat: 40.71, lng: -74.01 },
-  { country: 'Canada', city: 'Toronto', lat: 43.65, lng: -79.38 },
-  { country: 'Brazil', city: 'São Paulo', lat: -23.55, lng: -46.63 },
-  { country: 'Nigeria', city: 'Lagos', lat: 6.52, lng: 3.38 },
-  { country: 'South Africa', city: 'Johannesburg', lat: -26.2, lng: 28.05 },
-  { country: 'Egypt', city: 'Cairo', lat: 30.04, lng: 31.24 },
-  { country: 'France', city: 'Paris', lat: 48.86, lng: 2.35 },
-  { country: 'Germany', city: 'Berlin', lat: 52.52, lng: 13.4 },
-  { country: 'Türkiye', city: 'Istanbul', lat: 41.01, lng: 28.98 },
-  { country: 'Russia', city: 'Moscow', lat: 55.76, lng: 37.62 },
-  { country: 'Saudi Arabia', city: 'Riyadh', lat: 24.71, lng: 46.68 },
-  { country: 'Pakistan', city: 'Lahore', lat: 31.52, lng: 74.36 },
-  { country: 'India', city: 'Mumbai', lat: 19.08, lng: 72.88 },
-  { country: 'China', city: 'Shanghai', lat: 31.23, lng: 121.47 },
-  { country: 'Japan', city: 'Tokyo', lat: 35.68, lng: 139.69 },
-  { country: 'Singapore', city: 'Singapore', lat: 1.35, lng: 103.82 },
-  { country: 'Australia', city: 'Sydney', lat: -33.87, lng: 151.21 },
-];
+
 import { u } from '@/lib/ui';
 
 const mapSrc = () => `https://maps.google.com/maps?q=${encodeURIComponent(/crystal tower/i.test(SITE.office) ? 'Crystal Tower Business Bay Dubai' : SITE.office || 'Business Bay, Dubai')}&z=16&output=embed`;
@@ -263,7 +244,7 @@ export function AboutHub({ locale }: { locale: Locale }) {
 
       <section className="block cp-globe" data-reveal>
         <div className="bh"><p className="eyebrow">{u('Clients worldwide', locale)}</p><h2>{u('From anywhere in the world to Abu Dhabi', locale)}</h2><p>{u('We prepare Golden Visa files for people living all over the world. Follow the flight between the cities our clients come from.', locale)}</p></div>
-        <OfficeGlobe offices={WORLD} locale={locale} label="world" />
+        <OfficeGlobe offices={SITE.world?.length ? SITE.world : WORLD} locale={locale} label="world" />
       </section>
 
 

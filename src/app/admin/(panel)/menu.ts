@@ -30,6 +30,8 @@ export const ADMIN_MENU: { title: string; items: Item[] }[] = [
     { href: '/admin/subscribers/', label: 'Subscribers', ic: 'mail' },
   ] },
   { title: 'Website', items: [
+    { href: '/admin/brand/', label: 'Logo & brand', ic: 'image', roles: FULL },
+    { href: '/admin/home/', label: 'Home page text', ic: 'home', roles: FULL },
     { href: '/admin/header/', label: 'Header & menu', ic: 'menu', roles: FULL },
     { href: '/admin/footer/', label: 'Footer', ic: 'layout', roles: FULL },
     { href: '/admin/design/', label: 'Design & typography', ic: 'palette', roles: FULL },

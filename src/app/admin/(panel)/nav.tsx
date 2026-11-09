@@ -6,6 +6,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Icon } from '@/components/Icon';
 
 import { ADMIN_MENU, allowed, type Item, type Role } from './menu';
+import { coinImg, fullLogo } from '@/components/BrandLogo';
 
 
 export function AdminNav({ counts, role, mobile, perms }: { counts: { leads: number; apps: number; unread: number; notes?: number }; role: Role; mobile?: boolean; perms?: string[] }) {
@@ -35,7 +36,7 @@ export function AdminNav({ counts, role, mobile, perms }: { counts: { leads: num
   if (mobile)
     return (
       <div className="mtop">
-        <img src="/brand/logo.webp" alt="" />
+        <img src={fullLogo()} alt="" />
         <button type="button" className="btn btn-sm" style={{ marginInlineStart: 'auto' }} onClick={() => setOpen((o) => !o)} aria-expanded={open}>{open ? 'Close' : 'Menu'}{counts.notes ? ` (${counts.notes})` : ''}</button>
         {open && (
           <nav className="mmenu" aria-label="Admin" onClick={() => setOpen(false)}>

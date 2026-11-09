@@ -1414,3 +1414,4 @@ footer.site .legal > span { max-width: 640px; }
 /* Company pages sit inside .apply-main-wrap: give every section after the first its full top space back. */
 .apply-main-wrap > .block:not(:first-child) { padding-top: clamp(34px, 4.4vw, 60px); }
 .apply-main-wrap > .block.cp-founder, .apply-main-wrap > .block.cp-licence, .apply-main-wrap > .block.cp-enquiry { padding: clamp(22px, 3vw, 36px); }
+.blogo.still .bl-coin { animation: none; }

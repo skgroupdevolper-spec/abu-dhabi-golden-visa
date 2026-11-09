@@ -25,6 +25,9 @@ export async function saveGeneral(_: St, f: FormData): Promise<St> {
     office: s(f, 'office', 240), hours: s(f, 'hours', 200), mapsUrl: s(f, 'mapsUrl', 600), poBox: s(f, 'poBox', 40), registered: /^\d{4}-\d{2}-\d{2}$/.test(s(f, 'registered', 10)) ? s(f, 'registered', 10) : '', licenceIssuer: s(f, 'licenceIssuer', 160), legalType: s(f, 'legalType', 80), activities: String(f.get('activities') ?? '').slice(0, 1200),
     offices: String(f.get('offices') ?? '').split('\n').map((l) => l.split('|').map((x) => x.trim())).filter((x) => x[0] && !Number.isNaN(Number(x[2])) && !Number.isNaN(Number(x[3])) && x[2] !== '' && x[3] !== '').slice(0, 12)
       .map(([country, city, lat, lng, note]) => ({ country: country.slice(0, 60), city: (city || '').slice(0, 60), lat: Math.max(-85, Math.min(85, Number(lat))), lng: Math.max(-180, Math.min(180, Number(lng))), note: (note || '').slice(0, 120) })),
+    world: String(f.get('world') ?? '').split('\n').map((l) => l.split('|').map((x) => x.trim())).filter((x) => x[0] && x[2] !== undefined && x[2] !== '' && x[3] !== undefined && x[3] !== '' && !Number.isNaN(Number(x[2])) && !Number.isNaN(Number(x[3])))
+      .slice(0, 60).map(([country, city, lat, lng]) => ({ country: country.slice(0, 60), city: (city || '').slice(0, 60), lat: Math.max(-85, Math.min(85, Number(lat))), lng: Math.max(-180, Math.min(180, Number(lng))) })),
+    flightFrom: s(f, 'flightFrom', 1000).split(',').map((x) => x.trim().slice(0, 40)).filter(Boolean).slice(0, 30),
     founder: { name: s(f, 'founderName', 120), title: s(f, 'founderTitle', 120), quote: s(f, 'founderQuote', 400), linkedin: s(f, 'founderLinkedin', 300) }, disclaimer: s(f, 'disclaimer', 400), footerAbout: s(f, 'footerAbout', 800),
   });
   return done();
@@ -347,4 +350,24 @@ export async function saveStageDefaults(_: St, f: FormData): Promise<St> {
   await saveBlock('stage-next', STAGES.map((_, i) => s(f, `sd_${i}`, 400)));
   revalidatePath('/admin/applications/', 'layout');
   return { ok: 'Default texts saved. They are used when you choose a stage.' };
+}
+
+/* ---------- logo & brand ---------- */
+const img = (f: FormData, k: string) => { const v = s(f, k, 600); return /^(\/|https:\/\/)[^\s"'<>]+$/.test(v) ? v : ''; };
+export async function saveBrand(_: St, f: FormData): Promise<St> {
+  await requireAdmin(FULL);
+  await saveSite({ brand: { logoText: img(f, 'logoText'), logoMark: img(f, 'logoMark'), logo: img(f, 'logo'), coin: img(f, 'coin'), favicon: img(f, 'favicon'), spin: b(f, 'spin') } });
+  return done();
+}
+
+/* ---------- home page hero text ---------- */
+export async function saveHomeHero(_: St, f: FormData): Promise<St> {
+  await requireAdmin(FULL);
+  const link = (k: string) => { const v = s(f, k, 300); return /^(\/|https:\/\/)/.test(v) ? v : ''; };
+  await saveBlock('home-hero', {
+    badge: s(f, 'badge', 120), line1: s(f, 'line1', 60), line2: s(f, 'line2', 60), gold: s(f, 'gold', 60), lead: s(f, 'lead', 600),
+    btn1: s(f, 'btn1', 40), btn1Link: link('btn1Link'), btn2: s(f, 'btn2', 40), btn2Link: link('btn2Link'),
+    trust: s(f, 'trust', 400).split('\n').map((x) => x.trim().slice(0, 50)).filter(Boolean).slice(0, 5),
+  });
+  return done();
 }

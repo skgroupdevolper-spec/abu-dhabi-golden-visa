@@ -10,7 +10,7 @@ export type Design = {
 
 export const DEFAULT_DESIGN: Design = {
   headingFont: 'Instrument Serif', bodyFont: 'Manrope', baseSize: 17, h1Size: 60, h2Size: 38, h3Size: 24, headingWeight: 400,
-  lineHeight: 1.6, letterSpacing: -0.015, radius: 22, buttonShape: 'pill', buttonSize: 'm', shadow: 'soft', container: 1320, sectionSpace: 26, uppercaseEyebrow: true, customCss: '', motion: 'full', textFx: 'words', cursor: true, smooth: false,
+  lineHeight: 1.6, letterSpacing: -0.015, radius: 22, buttonShape: 'pill', buttonSize: 'm', shadow: 'soft', container: 1320, sectionSpace: 56, uppercaseEyebrow: true, customCss: '', motion: 'full', textFx: 'words', cursor: true, smooth: false,
 };
 
 export const HEADING_FONTS = ['Instrument Serif', 'Playfair Display', 'Cormorant Garamond', 'DM Serif Display', 'Libre Baskerville', 'Lora', 'Marcellus', 'Cinzel', 'Poppins', 'Montserrat', 'Inter', 'Manrope', 'Raleway', 'Outfit'];
@@ -29,7 +29,7 @@ export function cleanDesign(o?: Partial<Design>): Design {
     radius: n(d.radius, 22, 0, 40), buttonShape: (['pill', 'rounded', 'square'] as const).includes(d.buttonShape) ? d.buttonShape : 'pill',
     buttonSize: (['s', 'm', 'l'] as const).includes(d.buttonSize) ? d.buttonSize : 'm',
     shadow: (['none', 'soft', 'medium', 'strong'] as const).includes(d.shadow) ? d.shadow : 'soft',
-    container: n(d.container, 1320, 960, 1800), sectionSpace: n(d.sectionSpace, 26, 0, 120), uppercaseEyebrow: d.uppercaseEyebrow !== false,
+    container: n(d.container, 1320, 960, 1800), sectionSpace: d.sectionSpace === 26 ? 56 : n(d.sectionSpace, 56, 0, 120), uppercaseEyebrow: d.uppercaseEyebrow !== false,
     customCss: String(d.customCss ?? '').slice(0, 50000),
     motion: (['full', 'subtle', 'off'] as const).includes(d.motion) ? d.motion : 'full', textFx: (['words', 'letters', 'fade', 'none'] as const).includes(d.textFx) ? d.textFx : 'words',
     cursor: d.cursor !== false, smooth: d.smooth === true,
@@ -60,7 +60,7 @@ h1,h2,h3{font-weight:${d.headingWeight};letter-spacing:${d.letterSpacing}em}
 h3{font-size:${d.h3Size}px}
 .btn{border-radius:${btnR};min-height:${btnH}px}
 .wrap{max-width:${d.container}px}
-.block{padding-block:${d.sectionSpace}px}
+.block{padding-block:clamp(${Math.round(d.sectionSpace * 0.6)}px,4.4vw,${d.sectionSpace}px)}
 .facts,.card,.panel,.tbl,.doc-grid li,.req-grid li,.timeline li>div,.aw-card,.cta-band-in,.side-apply,.bk-card{border-radius:${d.radius}px}
 .facts,.card,.side-apply{box-shadow:${SHADOW[d.shadow]}}
 ${d.uppercaseEyebrow ? '' : '.eyebrow{text-transform:none;letter-spacing:.02em}'}`;

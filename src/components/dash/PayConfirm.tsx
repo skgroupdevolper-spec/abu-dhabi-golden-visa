@@ -2,6 +2,7 @@
 
 // "Confirming your payment" → "Payment received": checks the provider every 2 seconds until confirmed.
 import { useEffect, useState } from 'react';
+import { coinImg, fullLogo } from '@/components/BrandLogo';
 
 type P = { token: string; pid: string; sid: string; gwRef: string; failed: boolean; initial: 'paid' | 'pending'; customer: string; amount: number; label: string; appRef: string; receipt?: string; paidAt?: string; reference: string };
 const fmt = (iso?: string) => new Date(iso || Date.now()).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Dubai' });
@@ -32,7 +33,7 @@ export function PayConfirm(p: P) {
   return (
     <main className="paywrap">
       <div className={`paycard ${state}`}>
-        <div className="paytop"><img src="/brand/logo-coin.webp" alt="" width={44} height={44} /><span>Abu Dhabi Golden Visa</span></div>
+        <div className="paytop"><img src={coinImg()} alt="" width={44} height={44} /><span>Abu Dhabi Golden Visa</span></div>
         <div className="paybody">
           {paid ? (
             <div className="pay-ok" aria-hidden="true"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24" /><path d="M15 27l7 7 15-16" /></svg></div>

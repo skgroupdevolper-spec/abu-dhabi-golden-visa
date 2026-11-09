@@ -8,6 +8,7 @@ import { Icon } from '@/components/Icon';
 import { logout } from '../actions';
 import { AdminNav, AdminSearch } from './nav';
 import { AdminBell } from '@/components/dash/AdminBell';
+import { coinImg, fullLogo } from '@/components/BrandLogo';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +26,7 @@ export default async function Panel({ children }: { children: ReactNode }) {
   return (
     <div className="admin">
       <aside className="side">
-        <Link href="/admin/" className="brand"><img src="/brand/logo.webp" alt="Abu Dhabi Golden Visa" /></Link>
+        <Link href="/admin/" className="brand"><img src={fullLogo()} alt="Abu Dhabi Golden Visa" /></Link>
         <AdminNav counts={counts} role={who.role} perms={who.perms} />
       </aside>
       <div className="admin-body">
