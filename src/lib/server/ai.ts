@@ -4,7 +4,8 @@ import { readJsonFile, updateJsonFile } from './store';
 import type { AiUse } from '@/lib/settings-schema';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
-const DEFAULT_MODEL = { openai: 'gpt-4.1-mini', gemini: 'gemini-2.5-flash', anthropic: 'claude-haiku-4-5' } as const;
+const GEMINI_FALLBACK = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite'];
+const DEFAULT_MODEL = { openai: 'gpt-4.1-mini', gemini: 'gemini-3.8-flash', anthropic: 'claude-haiku-4-5' } as const;
 
 async function pick(use?: AiUse) {
   const a = (await getSecrets()).ai;
@@ -49,13 +50,21 @@ export async function complete(system: string, messages: Msg[], o: { json?: bool
     text = j.choices?.[0]?.message?.content ?? '';
   } else if (p === 'gemini') {
     if (!a.geminiKey) throw new Error('Gemini key missing');
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-      method: 'POST', headers: { 'x-goog-api-key': a.geminiKey, 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(90000),
-      body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: messages.map((m) => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] })), generationConfig: { maxOutputTokens: max, ...(o.json ? { responseMimeType: 'application/json' } : {}) } }),
-    });
-    const j = await r.json();
-    if (!r.ok) throw new Error(j?.error?.message || `Gemini error ${r.status}`);
-    text = j.candidates?.[0]?.content?.parts?.map((x: { text?: string }) => x.text ?? '').join('') ?? '';
+    // Google retires older models (e.g. 2.5 Flash for new users): if the chosen one is refused,
+    // fall back to the current stable Flash models automatically instead of failing every job.
+    const tryModels = [...new Set([model, ...GEMINI_FALLBACK])];
+    let lastErr = '';
+    for (const m of tryModels) {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(m)}:generateContent`, {
+        method: 'POST', headers: { 'x-goog-api-key': a.geminiKey, 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(90000),
+        body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: messages.map((x) => ({ role: x.role === 'assistant' ? 'model' : 'user', parts: [{ text: x.content }] })), generationConfig: { maxOutputTokens: max, ...(o.json ? { responseMimeType: 'application/json' } : {}) } }),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok) { text = j.candidates?.[0]?.content?.parts?.map((x: { text?: string }) => x.text ?? '').join('') ?? ''; lastErr = ''; break; }
+      lastErr = j?.error?.message || `Gemini error ${r.status}`;
+      if (!(r.status === 404 || /no longer available|not found|not supported|deprecated|update your code to use/i.test(lastErr))) break;
+    }
+    if (lastErr) throw new Error(lastErr);
   } else {
     if (!a.anthropicKey) throw new Error('Anthropic key missing');
     const r = await fetch('https://api.anthropic.com/v1/messages', {

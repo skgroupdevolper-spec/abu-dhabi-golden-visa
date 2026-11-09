@@ -7,7 +7,7 @@ import type { AiUse } from '@/lib/settings-schema';
 
 const mask = (k: string) => (k ? `Saved: ••••${k.slice(-4)}` : 'Not set');
 const LABEL: Record<AiUse, string> = { chat: 'Chatbot AI', translate: 'Translation AI', writer: 'Writer AI (research, outline, article)', editor: 'Editor AI (second pass; a different provider gives a fresher edit)' };
-const MODELS = 'e.g. gpt-4.1-mini · gemini-2.5-flash · claude-haiku-4-5 (empty = recommended)';
+const MODELS = 'e.g. gpt-4.1-mini · gemini-3.8-flash · claude-haiku-4-5 (empty = recommended)';
 
 export async function AiPanel({ uses, images = false, title = 'AI provider & API keys' }: { uses: AiUse[]; images?: boolean; title?: string }) {
   const a = (await getSecrets()).ai;
@@ -30,7 +30,7 @@ export async function AiPanel({ uses, images = false, title = 'AI provider & API
           <div className="full form" style={{ gridTemplateColumns: '1fr 1fr' }}>
             <div className="field"><label htmlFor="p_images">Picture provider (AI covers)</label>
               <select id="p_images" name="p_images" defaultValue={a.images?.provider ?? 'none'}><option value="none">None (designed covers and photo library)</option><option value="openai">OpenAI images</option><option value="gemini">Google Gemini images</option></select></div>
-            <div className="field"><label htmlFor="m_images">Picture model</label><input id="m_images" name="m_images" defaultValue={a.images?.model ?? ''} placeholder="gpt-image-1 · gemini-2.5-flash-image" /></div>
+            <div className="field"><label htmlFor="m_images">Picture model</label><input id="m_images" name="m_images" defaultValue={a.images?.model ?? ''} placeholder="gpt-image-1 · gemini-3.1-flash-image" /></div>
           </div>
         )}
         <div className="field"><label htmlFor="provider">Main provider (used when a feature says “same as main”)</label>

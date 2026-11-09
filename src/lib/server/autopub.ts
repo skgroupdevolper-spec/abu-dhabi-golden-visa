@@ -51,11 +51,17 @@ export async function aiCover(title: string, style = ''): Promise<string | undef
     if (!r.ok) throw new Error(`Cover image (OpenAI): ${r.status}`);
     b64 = (await r.json())?.data?.[0]?.b64_json;
   } else if (prov === 'gemini' && a.geminiKey) {
-    const model = a.images?.model || 'gemini-2.5-flash-image';
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, { method: 'POST', headers: { 'x-goog-api-key': a.geminiKey, 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }), signal: AbortSignal.timeout(150000) });
-    if (!r.ok) throw new Error(`Cover image (Gemini): ${r.status}`);
-    const j = await r.json();
-    b64 = j?.candidates?.[0]?.content?.parts?.find((p: { inlineData?: { data: string } }) => p.inlineData)?.inlineData?.data;
+    // Current stable Nano Banana models first; older ones are tried only if chosen in settings.
+    const models = [...new Set([a.images?.model || 'gemini-3.1-flash-image', 'gemini-3.1-flash-image', 'gemini-3.1-flash-lite-image'])];
+    let err = '';
+    for (const model of models) {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, { method: 'POST', headers: { 'x-goog-api-key': a.geminiKey, 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }), signal: AbortSignal.timeout(150000) });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok) { b64 = j?.candidates?.[0]?.content?.parts?.find((p: { inlineData?: { data: string } }) => p.inlineData)?.inlineData?.data; err = ''; break; }
+      err = `Cover image (Gemini): ${j?.error?.message || r.status}`;
+      if (!(r.status === 404 || /no longer available|not found|not supported|update your code to use/i.test(err))) break;
+    }
+    if (err) throw new Error(err);
   } else return undefined;
   if (!b64) return undefined;
   const name = `${newId(4)}-cover.png`;
