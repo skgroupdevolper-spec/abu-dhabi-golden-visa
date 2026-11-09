@@ -5,6 +5,29 @@ import { redirect } from 'next/navigation';
 import { list, patch, verifyPassword, type Role, type TeamUser } from './collections';
 import { now } from './store';
 import { isPlaceholder, sessionSecret } from './secrets';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
+/** Read a value straight from the site's .env file. Hosting panels often save passwords without quotes;
+ *  the standard .env loader then treats everything after a "#" as a comment and cuts the password. Here
+ *  the whole rest of the line is used (surrounding quotes removed), so such passwords still work. */
+function rawEnv(name: string): string | undefined {
+  const loaded = process.env[name];
+  for (const f of ['.env.production.local', '.env.local', '.env.production', '.env']) {
+    let txt = '';
+    try { txt = readFileSync(path.join(process.cwd(), f), 'utf8'); } catch { continue; }
+    for (const line of txt.split(/\r?\n/)) {
+      const m = line.match(new RegExp(`^\\s*(?:export\\s+)?${name}\\s*=\\s*(.*)$`));
+      if (!m) continue;
+      let v = m[1].trim();
+      if (v.length >= 2 && (v[0] === '"' || v[0] === "'") && v.endsWith(v[0])) v = v.slice(1, -1);
+      // only trust the raw line when it extends what the loader saw (the cut-at-# case)
+      if (!loaded || (v.length > loaded.length && v.startsWith(loaded))) return v;
+      return loaded;
+    }
+  }
+  return loaded;
+}
 
 const COOKIE = 'adgv_admin';
 const CLIENT_COOKIE = 'adgv_client';
@@ -20,7 +43,8 @@ function safeEq(a: string, b: string) {
 /** Owner accounts from the server environment: ADMIN_EMAIL / ADMIN_PASSWORD (or ADMIN_USERS="a@x.com:pass,b@y.com:pass"). */
 function envUsers(): [string, string][] {
   const out: [string, string][] = [];
-  if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD && !isPlaceholder(process.env.ADMIN_PASSWORD)) out.push([process.env.ADMIN_EMAIL.toLowerCase(), process.env.ADMIN_PASSWORD]);
+  const pw = rawEnv('ADMIN_PASSWORD');
+  if (process.env.ADMIN_EMAIL && pw && !isPlaceholder(pw)) out.push([process.env.ADMIN_EMAIL.toLowerCase(), pw]);
   for (const pair of (process.env.ADMIN_USERS || '').split(',')) {
     const i = pair.indexOf(':');
     if (i > 0 && !isPlaceholder(pair.slice(i + 1).trim())) out.push([pair.slice(0, i).trim().toLowerCase(), pair.slice(i + 1).trim()]);
