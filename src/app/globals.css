@@ -1400,3 +1400,13 @@ footer.site .legal > span { max-width: 640px; }
 .block + .block { margin-top: 0; border-top: 1px solid transparent; border-image: linear-gradient(90deg, transparent, rgba(184, 144, 31, 0.38) 20%, rgba(184, 144, 31, 0.38) 80%, transparent) 1; }
 .block + .block-flight { border-top: 0; }
 .block h2 { line-height: 1.12; }
+
+/* Coloured panel sections get real space outside them (their padding is inside the colour). */
+.block.cp-founder, .block.cp-licence, .block.cp-enquiry { margin-block: clamp(30px, 4.4vw, 60px); }
+.block.cp-founder + .block, .block.cp-licence + .block, .block.cp-enquiry + .block,
+.block + .block.cp-founder, .block + .block.cp-licence, .block + .block.cp-enquiry { border-top: 0; }
+/* Section headings with a label and a short intro: label on top, heading, then the intro — never squeezed in one row. */
+.bh:has(> p) { flex-direction: column; align-items: flex-start; gap: 10px; margin-bottom: clamp(20px, 2.6vw, 30px); }
+.bh:has(> p) h2 { max-width: 22ch; }
+.bh:has(> p) > p:not(.eyebrow) { margin: 0; max-width: 640px; color: var(--navy-soft); }
+.bk.al-center .bh:has(> p) { align-items: center; text-align: center; }
