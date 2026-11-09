@@ -452,7 +452,7 @@
 .home .hero{padding-top:128px}
 .home .hero-art{padding-top:0;gap:22px;justify-content:center}
 /* the orbit icons sit outside the orb, so give it room above and below */
-.home .orb{width:min(400px,46vh,80vw);margin:40px 0 36px}
+.home .orb{width:min(400px,46vh,80vw);margin:40px 0 54px}
 .home .finder.in-hero{margin:0;width:min(440px,100%)}
 .home .wa.in-hero{order:3;margin:0 auto;padding:8px 16px;box-shadow:none;background:rgba(255,255,255,.55)}
 .home .wa.in-hero .k{font-size:11px}
