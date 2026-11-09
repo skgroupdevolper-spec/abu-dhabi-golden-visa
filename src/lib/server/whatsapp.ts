@@ -13,17 +13,27 @@ export function fill(tpl: string, vars: Record<string, string | number | undefin
 
 /** Sends one WhatsApp message through the Cloud API when it is set up; otherwise records it only. */
 export async function sendWa(to: string, event: WaEvent, vars: Record<string, string | number | undefined>, opts: { force?: boolean; text?: string } = {}) {
+  const r = await sendOne(to, event, vars, opts);
+  // Extra messages the team added for this trigger go out right after the main one.
+  if (!opts.text && !opts.force) {
+    const extra = ((await getSecrets()).whatsapp.customs ?? []).filter((c) => c.on && c.when === event && c.text.trim());
+    for (const c of extra) await sendOne(to, event, vars, {}, { text: c.text, name: c.templateName });
+  }
+  return r;
+}
+
+async function sendOne(to: string, event: WaEvent, vars: Record<string, string | number | undefined>, opts: { force?: boolean; text?: string } = {}, custom?: { text: string; name?: string }) {
   const w = (await getSecrets()).whatsapp;
-  const text = opts.text ?? fill(w.templates[event] || '', vars);
+  const text = custom ? fill(custom.text, vars) : opts.text ?? fill(w.templates[event] || '', vars);
   const number = digits(to);
   if (!number || number.length < 8) return { ok: false, error: 'No valid number' };
-  if (!opts.force && !w.autos[event]) return { ok: false, error: 'Automatic message is off' };
+  if (!custom && !opts.force && !w.autos[event]) return { ok: false, error: 'Automatic message is off' };
   if (w.mode !== 'cloud' || !w.phoneNumberId || !w.accessToken) {
     return { ok: false, error: 'WhatsApp Cloud API is not connected (link mode)' };
   }
-  const name = w.templateNames[event];
+  const name = custom ? custom.name : w.templateNames[event];
   const keys = (WA_EVENTS.find((e) => e.key === event)?.vars.match(/\{(\w+)\}/g) ?? []).map((k) => k.slice(1, -1));
-  const body = name && !opts.text
+  const body = name && (custom || !opts.text)
     ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name, language: { code: w.templateLang || 'en' }, components: [{ type: 'body', parameters: keys.map((k) => ({ type: 'text', text: String(vars[k] ?? '-').slice(0, 900) || '-' })) }] } }
     : { messaging_product: 'whatsapp', to: number, type: 'text', text: { body: text.slice(0, 4000), preview_url: true } };
   let ok = false, error = '';

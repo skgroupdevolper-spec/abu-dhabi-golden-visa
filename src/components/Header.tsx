@@ -128,7 +128,7 @@ export function Header({ locale }: { locale: Locale }) {
             {langChip('u')}
             <div className="chip u">
               <button type="button" aria-haspopup="true" aria-expanded={open === 'cur'} aria-label={u('Choose currency', locale)} onClick={() => toggle('cur')}>
-                <Icon name="coins" size={16} /> {cur} <Icon name="chev" size={13} className="dd" />
+                <Icon name="cash" size={16} /> {cur} <Icon name="chev" size={13} className="dd" />
               </button>
               {open === 'cur' && (
                 <div className="drop curs" role="menu">

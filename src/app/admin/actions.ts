@@ -26,7 +26,7 @@ export type FormState = { ok?: string; error?: string } | undefined;
 
 /* ---------- sign in ---------- */
 const tries = new Map<string, number[]>();
-export async function login(_: FormState, f: FormData): Promise<FormState> {
+export async function login(_: FormState, f: FormData): Promise<FormState & { need2fa?: boolean }> {
   const email = s(f, 'email', 160);
   const t = Date.now();
   const recent = (tries.get(email) || []).filter((x) => t - x < 15 * 60_000);
@@ -39,8 +39,8 @@ export async function login(_: FormState, f: FormData): Promise<FormState> {
   const { checkSecondStep, getTotp } = await import('@/lib/server/totp');
   if ((await getTotp(who.email))?.enabled) {
     const code = s(f, 'code', 20);
-    if (!code) return { error: 'Two-step login is on: enter the 6-digit code from your authenticator app (or a backup code).' };
-    if (!(await checkSecondStep(who.email, code))) { tries.set(email, [...recent, t]); return { error: 'The code is not correct or has expired.' }; }
+    if (!code) return { need2fa: true, error: 'Two-step login is on for this account: enter the 6-digit code from your authenticator app (or a backup code).' };
+    if (!(await checkSecondStep(who.email, code))) { tries.set(email, [...recent, t]); return { need2fa: true, error: 'The code is not correct or has expired.' }; }
   }
   tries.delete(email);
   await startSession(who);

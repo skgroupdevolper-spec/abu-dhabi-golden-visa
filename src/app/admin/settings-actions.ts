@@ -8,7 +8,7 @@ import { sendMail } from '@/lib/server/mail';
 import { getSecrets, getSite, saveBlock, saveSecrets, saveSite } from '@/lib/server/settings';
 import { newId, now, readJsonFile, updateJsonFile, writeJsonFile } from '@/lib/server/store';
 import { sendWa } from '@/lib/server/whatsapp';
-import { WA_EVENTS, type PublicSite, type WaEvent } from '@/lib/settings-schema';
+import { WA_EVENTS, type PublicSite, type WaCustom, type WaEvent } from '@/lib/settings-schema';
 
 type St = { ok?: string; error?: string } | undefined;
 const s = (f: FormData, k: string, max = 2000) => String(f.get(k) ?? '').trim().slice(0, max);
@@ -94,7 +94,17 @@ export async function saveWhatsApp(_: St, f: FormData): Promise<St> {
     const n = s(f, `name_${e.key}`, 80);
     if (n) templateNames[e.key] = n;
   }
-  await saveSecrets({ whatsapp: { ...cur, mode: s(f, 'mode') === 'cloud' ? 'cloud' : 'link', phoneNumberId: s(f, 'phoneNumberId', 60), accessToken: s(f, 'accessToken', 800) || cur.accessToken, businessId: s(f, 'businessId', 60), verifyToken: s(f, 'verifyToken', 120), teamNumbers: s(f, 'teamNumbers', 400), templateLang: s(f, 'templateLang', 10) || 'en', autos, templates, templateNames } });
+  // extra messages added in the list (rows marked for removal are dropped)
+  const customs: WaCustom[] = [];
+  const rows = Math.min(50, Number(f.get('c_count') || 0) || 0);
+  for (let i = 0; i < rows; i++) {
+    if (b(f, `c_del_${i}`)) continue;
+    const text = s(f, `c_text_${i}`, 1000);
+    const when = s(f, `c_when_${i}`, 20) as WaEvent;
+    if (!text || !WA_EVENTS.some((e) => e.key === when)) continue;
+    customs.push({ id: s(f, `c_id_${i}`, 20) || newId(5), label: s(f, `c_label_${i}`, 80) || 'Extra message', on: b(f, `c_on_${i}`), when, text, templateName: s(f, `c_name_${i}`, 80) || undefined });
+  }
+  await saveSecrets({ whatsapp: { ...cur, mode: s(f, 'mode') === 'cloud' ? 'cloud' : 'link', phoneNumberId: s(f, 'phoneNumberId', 60), accessToken: s(f, 'accessToken', 800) || cur.accessToken, businessId: s(f, 'businessId', 60), verifyToken: s(f, 'verifyToken', 120), teamNumbers: s(f, 'teamNumbers', 400), templateLang: s(f, 'templateLang', 10) || 'en', autos, templates, templateNames, customs } });
   return { ok: 'WhatsApp settings saved.' };
 }
 export async function testWhatsApp(_: St, f: FormData): Promise<St> {
@@ -328,4 +338,13 @@ export async function setAdvisor(f: FormData) {
   const name = s(f, 'name', 80), phone = s(f, 'phone', 30), valid = s(f, 'validUntil', 10);
   await updateApplication(s(f, 'app', 40), (a) => { a.advisor = name ? { name, phone } : undefined; a.validUntil = /^\d{4}-\d{2}-\d{2}$/.test(valid) ? valid : undefined; });
   revalidatePath(`/admin/applications/${s(f, 'app', 40)}/`);
+}
+
+/* ---------- default "next step" text per application stage ---------- */
+export async function saveStageDefaults(_: St, f: FormData): Promise<St> {
+  await requireAdmin(FULL);
+  const { STAGES } = await import('@/lib/stages');
+  await saveBlock('stage-next', STAGES.map((_, i) => s(f, `sd_${i}`, 400)));
+  revalidatePath('/admin/applications/', 'layout');
+  return { ok: 'Default texts saved. They are used when you choose a stage.' };
 }

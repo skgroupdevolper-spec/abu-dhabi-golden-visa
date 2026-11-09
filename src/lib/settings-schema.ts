@@ -26,6 +26,8 @@ export type Secrets = {
   whatsapp: {
     mode: 'link' | 'cloud'; phoneNumberId: string; accessToken: string; businessId: string; verifyToken: string; teamNumbers: string;
     autos: Record<WaEvent, boolean>; templates: Record<WaEvent, string>; templateNames: Partial<Record<WaEvent, string>>; templateLang: string;
+    /** Extra messages the team adds: each one is sent too when its trigger happens. */
+    customs?: WaCustom[];
   };
   smtp: { host: string; port: number; secure: boolean; user: string; pass: string; from: string; notify: string };
   seo: { homeTitle: string; homeMeta: string; googleVerify: string; bingVerify: string; headCode: string; bodyCode: string };
@@ -37,6 +39,7 @@ export type Secrets = {
   };
 };
 
+export type WaCustom = { id: string; label: string; on: boolean; when: WaEvent; text: string; templateName?: string };
 export type AiUse = 'chat' | 'translate' | 'writer' | 'editor';
 export type WaEvent = 'leadTeam' | 'welcome' | 'status' | 'quote' | 'confirmed' | 'payment' | 'paid' | 'message' | 'document' | 'reset';
 

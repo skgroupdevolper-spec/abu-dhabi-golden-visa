@@ -58,7 +58,7 @@ export function FlightPath({ title = u('Your journey to Abu Dhabi'), intro = u('
         if (mode === 'loop') {
           gsap.to(plane, { motionPath: mp, duration: 9, ease: 'power1.inOut', repeat: -1, repeatDelay: 0.6, onUpdate() { update(this.progress()); } });
         } else {
-          gsap.to(plane, { motionPath: mp, ease: 'none', scrollTrigger: { trigger: el.querySelector('.fp-sky'), start: 'top 78%', end: 'bottom 35%', scrub: 0.8, onUpdate: (s) => update(s.progress) } });
+          gsap.to(plane, { motionPath: mp, ease: 'none', scrollTrigger: { trigger: el.querySelector('.fp-sky'), start: 'top 85%', end: 'bottom 80%', scrub: 0.8, onUpdate: (s) => update(s.progress) } });
         }
         // Clouds drift with scroll for depth.
         el.querySelectorAll<HTMLElement>('.fp-cloud').forEach((c, i) => gsap.to(c, { xPercent: i % 2 ? -40 : 40, ease: 'none', scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true } }));

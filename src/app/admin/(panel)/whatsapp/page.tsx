@@ -7,6 +7,7 @@ import { FULL, requireAdmin } from '@/lib/server/auth';
 import { list, type WaLog } from '@/lib/server/collections';
 import { getSecrets } from '@/lib/server/settings';
 import { SITE } from '@/lib/site';
+import { WaCustomList } from '@/components/dash/WaCustomList';
 import { WA_EVENTS } from '@/lib/settings-schema';
 import { when } from '@/lib/stages';
 import { saveWhatsApp, testWhatsApp } from '../../settings-actions';
@@ -56,6 +57,7 @@ export default async function WhatsApp({ searchParams }: { searchParams: Promise
                 </div>
               ))}
             </div>
+            <WaCustomList initial={w.customs ?? []} events={WA_EVENTS.map((e) => ({ key: e.key, label: e.label, vars: e.vars }))} />
           </div>
           <div><Submit>Save WhatsApp settings</Submit></div>
         </ActionForm>

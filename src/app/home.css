@@ -432,3 +432,19 @@
 @keyframes dp-scroll{0%,8%{transform:translateY(0)}92%,100%{transform:translateY(calc(-100% + clamp(260px,42vw,460px)))}}
 .home .dashprev figcaption{padding:12px 16px;color:#d9d2bf;font:500 13.5px var(--body);text-align:center;background:#111}
 @media (prefers-reduced-motion:reduce){.home .dp-screen img{animation:none}}
+
+/* ===== Nov 2026 polish ===== */
+/* Hero: the WhatsApp quote note sits under the coin as a pill, never on top of it or the side buttons */
+.home .wa.in-hero{position:relative;right:auto;top:auto;max-width:none;margin:4px auto 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;padding:10px 18px;border-radius:999px}
+.home .wa.in-hero .v{font-size:17px;margin-top:0}
+.home .hero-art{padding-inline-end:clamp(0px,4vw,72px)}
+@media (max-width:900px){.home .hero-art{padding-inline-end:0}}
+/* Promo cards: no card covers the other card's text */
+@media (min-width:901px){
+  .home .promos{min-height:0;display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+  .home .promo{position:relative;inset:auto!important}
+  .home .promo.p1{width:100%;height:420px}
+  .home .promo.p2{width:100%;height:200px;bottom:auto;right:auto;border:0}
+  .home .promo.p1 .pb{right:auto;max-width:min(62%,420px)}
+  .home .promo.p2 .pb{right:auto;max-width:min(70%,440px)}
+}

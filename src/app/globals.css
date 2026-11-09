@@ -1362,3 +1362,16 @@ footer.site .legal > span { max-width: 640px; }
   .drop.langs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .mainbar { backdrop-filter: none; -webkit-backdrop-filter: none; background: #fff; }
 }
+
+/* ===== Nov 2026 polish ===== */
+/* header: a little air under the menu row */
+.mainbar .bar { padding-block: 8px; }
+/* every content section keeps comfortable side padding, also on phones */
+.wrap { padding-inline: max(20px, env(safe-area-inset-left, 0px)); }
+.block { padding-block: clamp(26px, 4vw, 40px); }
+/* world globe: the city list as compact chips */
+.og-list.og-world { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; max-height: 420px; overflow: auto; padding-inline-end: 4px; }
+.og-list.og-world button { padding: 10px 12px; border-radius: 14px; }
+.og-list.og-world b { font-size: 14.5px; }
+.og-list.og-world small { font-size: 12px; }
+@media (max-width: 760px) { .og-list.og-world { grid-template-columns: repeat(2, minmax(0, 1fr)); max-height: 300px; } }

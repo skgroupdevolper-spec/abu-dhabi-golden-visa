@@ -9,9 +9,11 @@ import { getApplication } from '@/lib/server/store';
 import { mergeCatalog } from '@/content/services-catalog';
 import { getServiceOverrides } from '@/lib/server/content';
 import { list, type TeamUser } from '@/lib/server/collections';
-import { setAdvisor } from '../../../settings-actions';
+import { saveStageDefaults, setAdvisor } from '../../../settings-actions';
+import { StageFields } from '@/components/dash/StageFields';
+import { getBlock } from '@/lib/server/settings';
 import { portalUrl, waTo } from '@/lib/site';
-import { ROUTE_LABELS, STAGES, day, money, when } from '@/lib/stages';
+import { ROUTE_LABELS, STAGES, STAGE_NEXT_DEFAULT, day, money, when } from '@/lib/stages';
 import {
   addPayment, archiveApplication, fillQuote, markPaid, newPortalLink, removePayment, saveClient, saveQuote, setRequests, setStage, teamMessage, toggleShare, uploadTeamDoc,
 } from '../../../actions';
@@ -29,6 +31,8 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
   const H = <input type="hidden" name="app" value={a.id} />;
   const first = a.client.name.split(' ')[0];
   const team = await list<TeamUser>('team');
+  const saved = await getBlock<string[]>('stage-next', []);
+  const nextDefaults = STAGES.map((_, i) => saved[i]?.trim() || STAGE_NEXT_DEFAULT[i] || '');
   const svc = mergeCatalog(await getServiceOverrides()).flatMap((g) => g.items);
 
   return (
@@ -54,12 +58,17 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
             <div className="bar" style={{ marginBottom: 16 }}><i style={{ width: `${((a.stage + 1) / STAGES.length) * 100}%` }} /></div>
             <ActionForm action={setStage} className="form">
               {H}
-              <div className="field"><label htmlFor="stage">Current stage</label><select id="stage" name="stage" defaultValue={a.stage}>{STAGES.map((t, i) => <option key={t} value={i}>{i + 1}. {t}</option>)}</select></div>
-              <div className="field"><label htmlFor="expected">Expected next date</label><input id="expected" name="expected" defaultValue={a.expected} placeholder="e.g. 14 Nov 2026" /></div>
-              <div className="field full"><label htmlFor="nextStep">Next step shown to the client</label><input id="nextStep" name="nextStep" defaultValue={a.nextStep} /></div>
+              <StageFields stages={STAGES} defaults={nextDefaults} stage={a.stage} next={a.nextStep} expected={a.expected} />
               <label className="row full small"><input type="checkbox" name="notify" defaultChecked /> Post a status message in the client portal</label>
               <div className="full"><Submit>Update status</Submit></div>
             </ActionForm>
+            <details className="more" style={{ marginTop: 12 }}>
+              <summary>Default next-step text for each stage</summary>
+              <ActionForm action={saveStageDefaults} className="form" >
+                {STAGES.map((t, i) => <div key={t} className="field full"><label htmlFor={`sd_${i}`}>{i + 1}. {t}</label><textarea id={`sd_${i}`} name={`sd_${i}`} rows={2} defaultValue={nextDefaults[i]} /></div>)}
+                <div className="full"><Submit>Save default texts</Submit></div>
+              </ActionForm>
+            </details>
             <ol className="timeline" style={{ marginTop: 18 }}>
               {STAGES.map((t, i) => (
                 <li key={t} className={i < a.stage ? 'done' : i === a.stage ? 'now' : ''}><span className="dot">{i < a.stage ? '✓' : i + 1}</span><div><b>{t}</b>{a.stageDates[String(i)] && <small>{day(a.stageDates[String(i)])}</small>}</div></li>

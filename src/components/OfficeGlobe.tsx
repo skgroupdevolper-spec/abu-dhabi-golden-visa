@@ -21,7 +21,7 @@ function slerp(a: V, b: V, t: number): V {
 }
 const latLng = (v: V) => [Math.asin(Math.max(-1, Math.min(1, v[1]))) * R2D, Math.atan2(v[0], v[2]) * R2D] as const;
 
-export function OfficeGlobe({ offices, locale = 'en' }: { offices: Office[]; locale?: string }) {
+export function OfficeGlobe({ offices, locale = 'en', label = 'offices' }: { offices: Office[]; locale?: string; label?: 'offices' | 'world' }) {
   const cv = useRef<HTMLCanvasElement>(null);
   const [leg, setLeg] = useState(0);
   const focus = useRef<number | null>(null);
@@ -173,15 +173,15 @@ export function OfficeGlobe({ offices, locale = 'en' }: { offices: Office[]; loc
   return (
     <div className="oglobe">
       <div className="og-stage">
-        <canvas ref={cv} className="og-cv" role="img" aria-label={`Globe with our offices: ${offices.map((o) => o.country).join(', ')}`} />
-        {offices.length > 1 && <p className="og-now" aria-live="polite">✈ {offices[leg]?.country} → {offices[next]?.country}</p>}
+        <canvas ref={cv} className="og-cv" role="img" aria-label={`${label === 'world' ? 'Globe with cities around the world' : 'Globe with our offices'}: ${offices.map((o) => o.city || o.country).join(', ')}`} />
+        {offices.length > 1 && <p className="og-now" aria-live="polite">✈ {label === 'world' ? `${offices[leg]?.city} → ${offices[next]?.city}` : `${offices[leg]?.country} → ${offices[next]?.country}`}</p>}
       </div>
-      <ul className="og-list">
+      <ul className={`og-list${label === 'world' ? ' og-world' : ''}`}>
         {offices.map((o, i) => (
           <li key={i} className={i === leg || i === next ? 'on' : ''}>
             <button type="button" onClick={() => pick(i)}>
               <span className="og-pin" aria-hidden="true" />
-              <span><b>{u(o.country, locale)}</b>{o.city && <small>{o.city}</small>}{o.note && <small className="og-note">{u(o.note, locale)}</small>}</span>
+              <span>{label === 'world' ? <><b>{o.city}</b><small>{u(o.country, locale)}</small></> : <><b>{u(o.country, locale)}</b>{o.city && <small>{o.city}</small>}</>}{o.note && <small className="og-note">{u(o.note, locale)}</small>}</span>
             </button>
           </li>
         ))}

@@ -782,3 +782,23 @@ code.k { overflow-wrap: anywhere; word-break: break-all; }
   .admin::before, .admin::after, .admin .main > * { animation: none; }
   .anav-pill { transition: none !important; }
 }
+
+/* Sign-in pages on phones: never wider than the screen */
+.auth { grid-template-columns: minmax(0, 1fr); justify-items: center; overflow-x: clip; }
+.auth > * { max-width: 100%; min-width: 0; }
+.auth-word, .auth-left h1, .auth-right h2 { overflow-wrap: anywhere; }
+@media (max-width: 520px) {
+  .auth { padding: 12px; }
+  .auth-card { border-radius: 24px; }
+  .auth-left { padding: 22px 20px; gap: 18px; }
+  .auth-right { padding: 24px 20px; }
+  .auth-top img { height: 36px; }
+  .auth-top select { max-width: 46vw; }
+}
+
+/* password field with a show/hide eye */
+.pw-wrap { position: relative; }
+.pw-wrap input { padding-inline-end: 48px; width: 100%; }
+.pw-eye { position: absolute; inset-inline-end: 6px; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; border: 0; background: transparent; border-radius: 10px; display: grid; place-items: center; color: var(--gold-deep, #8a6512); cursor: pointer; }
+.pw-eye:hover { background: rgba(201, 150, 26, .1); }
+.linkish { border: 0; background: none; padding: 0; color: var(--gold-deep, #8a6512); font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }

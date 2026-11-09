@@ -12,6 +12,19 @@ export const STAGES = [
   'Emirates ID and residence issued',
 ];
 
+/** Default "next step" text the client sees for each stage (the team can change these in admin). */
+export const STAGE_NEXT_DEFAULT = [
+  'We have received your enquiry. An advisor will review it and contact you with your eligibility and the next steps.',
+  'You are eligible for the route we discussed. We will send you a written quote to review and accept.',
+  'Thank you for your payment. Please upload the documents on your checklist so we can start preparing your file.',
+  'We are checking your documents and arranging attestation and translation where needed.',
+  'We are requesting your nomination or property valuation certificate from the relevant authority.',
+  'Your application has been submitted to the authorities. We will update you as soon as there is a response.',
+  'We are arranging your entry permit or change of status. We will share the details with you.',
+  'Please attend your medical test and biometrics appointment. We will send you the date, time and place.',
+  'Your Emirates ID and residence are being issued. We will tell you when they are ready to collect or delivered.',
+];
+
 export const ROUTE_LABELS = ROUTES.map((r) => r.label);
 
 type Fees = typeof FEE_SCHEDULE;
