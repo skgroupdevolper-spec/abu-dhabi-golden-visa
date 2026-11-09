@@ -1375,3 +1375,7 @@ footer.site .legal > span { max-width: 640px; }
 .og-list.og-world b { font-size: 14.5px; }
 .og-list.og-world small { font-size: 12px; }
 @media (max-width: 760px) { .og-list.og-world { grid-template-columns: repeat(2, minmax(0, 1fr)); max-height: 300px; } }
+
+/* Space between every section on inner pages, so coloured panels never touch each other. */
+.block + .block, .block + [data-block], [data-block] + .block { margin-top: clamp(18px, 2.6vw, 34px); }
+.block + .block-flight { margin-top: 10px; }

@@ -288,11 +288,11 @@ export function Header({ locale }: { locale: Locale }) {
           <span className="lb">{u('WhatsApp us', locale)}</span>
         </a>
         <L locale={locale} href="/visa-check/">
-          <span className="ic r"><Icon name="check" /></span>
+          <span className="ic r"><Icon name="verify" /></span>
           <span className="lb">{u('Check eligibility', locale)}</span>
         </L>
         <L locale={locale} href="/free-consultation/">
-          <span className="ic"><Icon name="doc" /></span>
+          <span className="ic"><Icon name="gift" /></span>
           <span className="lb">{u('Free consultation', locale)}</span>
         </L>
         {F.clientLogin && (
