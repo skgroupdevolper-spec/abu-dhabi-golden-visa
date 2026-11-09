@@ -448,3 +448,7 @@
   .home .promo.p1 .pb{right:auto;max-width:min(62%,420px)}
   .home .promo.p2 .pb{right:auto;max-width:min(70%,440px)}
 }
+/* Hero: keep the coin clear of the fixed header and the quote pill clear of the route card. */
+.home .hero-art{padding-top:28px}
+.home .finder.in-hero{margin-top:0}
+@media (max-width:900px){.home .hero-art{padding-top:20px}}
