@@ -37,6 +37,7 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
   // New clients choose a password here: the account is created with the application and they go straight to their dashboard.
   const [pw, setPw] = useState('');
   const [showPw, setShowPw] = useState(false);
+  const [pw2, setPw2] = useState('');
   const [me, setMe] = useState<{ name: string; email: string; phone: string } | null>(null);
 
   useEffect(() => {
@@ -84,6 +85,7 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
       if (!me) {
         if (!d.email) return setErr('Please add your email: it is your login for the client dashboard.');
         if (pw.length < 8) return setErr('Please choose a password of at least 8 characters.');
+        if (pw !== pw2) return setErr('The two passwords do not match.');
       }
     }
     if (step === 2 && fam.some((m) => !m.name.trim())) return setErr('Add a name for each family member, or remove the empty row.');
@@ -194,15 +196,6 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
                 <div className="field"><label htmlFor="ap-name"><T>{"Full name"}</T></label><input id="ap-name" autoComplete="name" value={d.name} onChange={set('name')} /></div>
                 <div className="field"><label htmlFor="ap-phone"><T>{"WhatsApp number"}</T></label><input id="ap-phone" type="tel" autoComplete="tel" placeholder="+971" value={d.phone} onChange={set('phone')} /></div>
                 <div className="field"><label htmlFor="ap-email"><T>{"Email"}</T>{!me && ' *'}</label><input id="ap-email" type="email" autoComplete="email" value={d.email} onChange={set('email')} readOnly={!!me} required={!me} /></div>
-                {!me && (
-                  <div className="field full"><label htmlFor="ap-pw"><T>{"Create a password for your dashboard"}</T> *</label>
-                    <div className="pw-row">
-                      <input id="ap-pw" type={showPw ? 'text' : 'password'} autoComplete="new-password" minLength={8} value={pw} onChange={(e) => setPw(e.target.value)} aria-describedby="ap-pw-help" />
-                      <button type="button" className="btn btn-sm btn-glass" onClick={() => setShowPw((x) => !x)} aria-pressed={showPw}>{showPw ? <T>{"Hide"}</T> : <T>{"Show"}</T>}</button>
-                    </div>
-                    <p className="help" id="ap-pw-help"><T>{"At least 8 characters. With your email this is your login to follow your file, upload documents and pay online."}</T></p>
-                  </div>
-                )}
                 <div className="field"><label htmlFor="ap-nat"><T>{"Nationality"}</T></label><input id="ap-nat" autoComplete="country-name" value={d.nationality} onChange={set('nationality')} /></div>
                 <div className="field full">
                   <span className="lbl"><T>{"Where are you now?"}</T></span>
@@ -217,7 +210,41 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
                   </select>
                 </div>
                 <div className="field"><label htmlFor="ap-notes"><T>{"Anything we should know?"}</T></label><input id="ap-notes" value={d.notes} onChange={set('notes')} placeholder="e.g. property value, deadline" /></div>
-                {!me && <p className="small muted full"><T>{"Your client account is created with this application and you go straight to your dashboard."}</T> <T>{"Already have an account?"}</T> <a href={portalLogin()}><T>{"Sign in first"}</T></a> <T>{"and your details are filled in for you."}</T></p>}
+                {!me && (
+                  <section className="acct-box full" aria-labelledby="acct-h">
+                    <div className="acct-head">
+                      <span className="acct-ic"><Icon name="lock" size={20} /></span>
+                      <div>
+                        <h4 id="acct-h"><T>{"Create your client account"}</T></h4>
+                        <p><T>{"Your account is opened with this application. Use it to follow your file, upload documents, message your advisor and pay online."}</T></p>
+                      </div>
+                    </div>
+                    <div className="acct-grid">
+                      <div className="field">
+                        <label><T>{"Login email"}</T></label>
+                        <div className="acct-login">{d.email || <span className="muted"><T>{"Add your email above"}</T></span>}</div>
+                      </div>
+                      <div className="field">
+                        <label htmlFor="ap-pw"><T>{"Create password"}</T> *</label>
+                        <div className="pw-wrap">
+                          <input id="ap-pw" type={showPw ? 'text' : 'password'} autoComplete="new-password" minLength={8} value={pw} onChange={(e) => setPw(e.target.value)} aria-describedby="ap-pw-help" placeholder="••••••••" />
+                          <button type="button" className="pw-eye" onClick={() => setShowPw((x) => !x)} aria-label={showPw ? 'Hide password' : 'Show password'} aria-pressed={showPw}><Icon name={showPw ? 'eyeoff' : 'eye'} size={18} /></button>
+                        </div>
+                      </div>
+                      <div className="field">
+                        <label htmlFor="ap-pw2"><T>{"Confirm password"}</T> *</label>
+                        <div className="pw-wrap">
+                          <input id="ap-pw2" type={showPw ? 'text' : 'password'} autoComplete="new-password" value={pw2} onChange={(e) => setPw2(e.target.value)} placeholder="••••••••" />
+                        </div>
+                      </div>
+                    </div>
+                    <ul className="pw-rules" id="ap-pw-help">
+                      <li className={pw.length >= 8 ? 'ok' : ''}><Icon name="check" size={14} /> <T>{"At least 8 characters"}</T></li>
+                      <li className={pw && pw === pw2 ? 'ok' : ''}><Icon name="check" size={14} /> <T>{"Both passwords match"}</T></li>
+                    </ul>
+                    <p className="acct-foot"><T>{"Already have an account?"}</T> <a href={portalLogin()}><T>{"Sign in first"}</T></a> <T>{"and your details are filled in for you."}</T></p>
+                  </section>
+                )}
               </div>
             </div>
           )}

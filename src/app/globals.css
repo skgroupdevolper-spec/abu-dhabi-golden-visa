@@ -1514,8 +1514,23 @@ main.page > .wrap:last-child, main > .wrap:last-of-type { padding-bottom: clamp(
 .utility .wrap { min-width: 0; }
 .utility .wrap > * { min-width: 0; }
 
-/* Apply: password with show/hide on the details step */
-.apply .pw-row { display: flex; gap: 8px; align-items: center; max-width: 520px; }
-.apply .pw-row input { flex: 1; min-width: 0; }
-.apply .pw-row .btn { flex: none; }
+/* Apply: "Create your client account" panel on the details step */
 .apply .form { align-items: start; }
+.acct-box { margin-top: 10px; padding: clamp(18px, 2.4vw, 26px); border-radius: 20px; background: linear-gradient(160deg, #fffaf0, #fff 60%); border: 1px solid rgba(212, 175, 55, 0.35); box-shadow: 0 20px 40px -34px rgba(60, 40, 0, 0.5); }
+.acct-head { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 16px; }
+.acct-ic { flex: none; width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; color: #fff; background: linear-gradient(140deg, var(--gold-light), var(--gold) 60%, var(--gold-deep)); }
+.acct-head h4 { margin: 0 0 4px; font-size: 18px; }
+.acct-head p { margin: 0; color: var(--muted, #6b6150); font-size: 14px; line-height: 1.5; }
+.acct-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.acct-login { min-height: 46px; display: flex; align-items: center; padding: 0 14px; border-radius: 12px; background: #f7f1e3; font-weight: 600; overflow-wrap: anywhere; }
+.pw-wrap { position: relative; }
+.pw-wrap input { width: 100%; padding-inline-end: 46px; }
+.pw-eye { position: absolute; inset-inline-end: 6px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border: 0; border-radius: 10px; background: transparent; color: var(--gold-deep); display: grid; place-items: center; cursor: pointer; }
+.pw-eye:hover { background: rgba(212, 175, 55, 0.12); }
+.pw-rules { list-style: none; padding: 0; margin: 12px 0 0; display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: #8a8273; }
+.pw-rules li { display: inline-flex; align-items: center; gap: 6px; }
+.pw-rules li svg { opacity: 0.35; }
+.pw-rules li.ok { color: #15803d; }
+.pw-rules li.ok svg { opacity: 1; }
+.acct-foot { margin: 14px 0 0; font-size: 13px; color: #8a8273; }
+@media (max-width: 760px) { .acct-grid { grid-template-columns: 1fr; } }
