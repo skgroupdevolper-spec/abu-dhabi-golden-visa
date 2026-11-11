@@ -1513,3 +1513,9 @@ main.page > .wrap:last-child, main > .wrap:last-of-type { padding-bottom: clamp(
 .mainbar .bar { min-width: 0; }
 .utility .wrap { min-width: 0; }
 .utility .wrap > * { min-width: 0; }
+
+/* Apply: password with show/hide on the details step */
+.apply .pw-row { display: flex; gap: 8px; align-items: center; max-width: 520px; }
+.apply .pw-row input { flex: 1; min-width: 0; }
+.apply .pw-row .btn { flex: none; }
+.apply .form { align-items: start; }

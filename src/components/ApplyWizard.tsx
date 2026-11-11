@@ -195,7 +195,7 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
                 <div className="field"><label htmlFor="ap-phone"><T>{"WhatsApp number"}</T></label><input id="ap-phone" type="tel" autoComplete="tel" placeholder="+971" value={d.phone} onChange={set('phone')} /></div>
                 <div className="field"><label htmlFor="ap-email"><T>{"Email"}</T>{!me && ' *'}</label><input id="ap-email" type="email" autoComplete="email" value={d.email} onChange={set('email')} readOnly={!!me} required={!me} /></div>
                 {!me && (
-                  <div className="field"><label htmlFor="ap-pw"><T>{"Create a password for your dashboard"}</T> *</label>
+                  <div className="field full"><label htmlFor="ap-pw"><T>{"Create a password for your dashboard"}</T> *</label>
                     <div className="pw-row">
                       <input id="ap-pw" type={showPw ? 'text' : 'password'} autoComplete="new-password" minLength={8} value={pw} onChange={(e) => setPw(e.target.value)} aria-describedby="ap-pw-help" />
                       <button type="button" className="btn btn-sm btn-glass" onClick={() => setShowPw((x) => !x)} aria-pressed={showPw}>{showPw ? <T>{"Hide"}</T> : <T>{"Show"}</T>}</button>
