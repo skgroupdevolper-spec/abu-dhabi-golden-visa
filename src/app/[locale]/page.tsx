@@ -285,7 +285,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 {[[0, CAP.home, 'Property investor', 'AED 2M+ in Abu Dhabi'], [1, CAP.bag, 'Investor', 'Deposit or company'], [5, CAP.fam, 'Family member', 'Joining a holder']].map(([r, path, t, d]) => (
                   <button key={t} className="wopt" type="button" data-open-calc="" data-route={r}>
                     <span className="wi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true" dangerouslySetInnerHTML={{ __html: String(path) }} /></span>
-                    <span><b>{u(t, locale)}</b><small>{u(d, locale)}</small></span>
+                    <span><b>{u(String(t), locale)}</b><small>{u(String(d), locale)}</small></span>
                   </button>
                 ))}
               </div>
