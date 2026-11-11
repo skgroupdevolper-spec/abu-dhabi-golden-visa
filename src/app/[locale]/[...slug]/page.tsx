@@ -70,7 +70,7 @@ async function resolve(locale: string, slug: string[]): Promise<Resolved | null>
   const t = loc !== 'en' ? tr[loc]?.[path] : undefined;
   if (t) {
     translated = true;
-    page = { ...page, seoTitle: t.seoTitle || page.seoTitle, meta: t.meta || page.meta, eyebrow: t.eyebrow || page.eyebrow, h1: t.h1 || page.h1, intro: t.intro || page.intro, sections: t.sections?.length ? t.sections : page.sections };
+    page = { ...page, seoTitle: t.seoTitle || page.seoTitle, meta: t.meta || page.meta, eyebrow: t.eyebrow || page.eyebrow, h1: t.h1 || page.h1, intro: t.intro || page.intro, sections: t.sections?.length ? t.sections : page.sections, facts: t.facts?.length ? t.facts : page.facts };
   }
   const blocks = o.blocks?.length ? (t?.blocks?.length ? t.blocks : o.blocks) : undefined;
   return { page, loc, translated, price: svc.prices[path], hidden: svc.hidden, o, blocks, post, blog };

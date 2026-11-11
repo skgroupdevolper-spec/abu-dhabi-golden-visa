@@ -49,7 +49,7 @@ function fingerprint(v: unknown): string {
 async function sourceOf(p: Page) {
   const o = (await getOverrides())[p.path] ?? (await getCustomPages()).find((c) => c.path === p.path);
   const blocks: Block[] | undefined = o?.blocks?.length ? o.blocks : undefined;
-  return { seoTitle: o?.seoTitle || p.seoTitle, meta: o?.meta || p.meta, eyebrow: o?.eyebrow || p.eyebrow, h1: o?.h1 || p.h1, intro: o?.intro || p.intro, sections: blocks ? [] : p.sections, ...(blocks ? { blocks } : {}) };
+  return { seoTitle: o?.seoTitle || p.seoTitle, meta: o?.meta || p.meta, eyebrow: o?.eyebrow || p.eyebrow, h1: o?.h1 || p.h1, intro: o?.intro || p.intro, ...(p.facts?.length ? { facts: p.facts } : {}), sections: blocks ? [] : p.sections, ...(blocks ? { blocks } : {}) };
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));

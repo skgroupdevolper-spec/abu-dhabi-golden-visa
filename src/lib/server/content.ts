@@ -30,7 +30,7 @@ export type Testimonial = { id: string; name: string; country: string; text: str
 export type Partner = { id: string; name: string; logo: string; link: string };
 export type MediaItem = { id: string; file: string; name: string; type: string; size: number; alt: string; at: string };
 export type ServiceOverrides = import('@/content/services-catalog').ServiceData;
-export type PageTranslation = { seoTitle?: string; meta?: string; eyebrow?: string; h1?: string; intro?: string; sections?: Section[]; blocks?: Block[]; at: string; manual?: boolean; h?: string };
+export type PageTranslation = { seoTitle?: string; meta?: string; eyebrow?: string; h1?: string; intro?: string; sections?: Section[]; blocks?: Block[]; facts?: { label: string; value: string }[]; at: string; manual?: boolean; h?: string };
 export type Translations = Record<string, Record<string, PageTranslation>>;
 
 export const getPosts = cache(() => list<Post>('posts'));
