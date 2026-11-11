@@ -13,6 +13,7 @@ import { Motion } from '@/components/Motion';
 import { CalcModal } from '@/components/CalcModal';
 import { OfferPopup } from '@/components/OfferPopup';
 import { ChatWidget } from '@/components/ChatWidget';
+import { VisitTracker } from '@/components/VisitTracker';
 import { LOCALE_CODES, isLocale, localeInfo } from '@/lib/i18n';
 import { SITE } from '@/lib/site';
 import { applyRuntimeSync, getBlock, getSecrets } from '@/lib/server/settings';
@@ -88,6 +89,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
         <CalcModal />
         <OfferPopup />
         <ChatWidget lang={locale} />
+        <VisitTracker />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

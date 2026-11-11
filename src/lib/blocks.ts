@@ -24,7 +24,7 @@ export type BlockStyle = {
 export type Block = { id: string; type: BlockType; hidden?: boolean; style?: BlockStyle; data: Record<string, unknown> };
 
 export type BlockType =
-  | 'hero' | 'text' | 'image' | 'imageText' | 'cards' | 'list' | 'steps' | 'table' | 'faq' | 'cta' | 'stats'
+  | 'hero' | 'text' | 'image' | 'imageText' | 'cards' | 'list' | 'steps' | 'table' | 'tabs' | 'faq' | 'cta' | 'stats'
   | 'video' | 'gallery' | 'testimonials' | 'calculator' | 'eligibility' | 'lead' | 'apply' | 'booking' | 'flight' | 'contactHub' | 'aboutHub' | 'html' | 'spacer' | 'divider';
 
 export type FieldKind = 'text' | 'textarea' | 'md' | 'image' | 'link' | 'select' | 'number' | 'lines' | 'items' | 'table' | 'check';
@@ -52,6 +52,7 @@ export const BLOCKS: Record<BlockType, { label: string; icon: string; group: 'Co
   list: { label: 'Checklist', icon: 'check', group: 'Content', fields: [{ k: 'title', label: 'Heading', kind: 'text' }, { k: 'intro', label: 'Introduction', kind: 'textarea' }, { k: 'items', label: 'Items (one per line)', kind: 'lines' }, { k: 'style', label: 'Look', kind: 'select', options: [['ticks', 'Ticks'], ['docs', 'Documents'], ['cards', 'Numbered cards']] }], make: () => ({ title: 'What you need', items: ['First item', 'Second item'], style: 'ticks' }) },
   steps: { label: 'Steps / timeline', icon: 'clock', group: 'Content', fields: [{ k: 'title', label: 'Heading', kind: 'text' }, { k: 'intro', label: 'Introduction', kind: 'textarea' }, { k: 'items', label: 'Steps', kind: 'items', sub: [{ k: 'title', label: 'Step title', kind: 'text' }, { k: 'text', label: 'Step text', kind: 'textarea' }] }, { k: 'note', label: 'Note under the steps', kind: 'text' }], make: () => ({ title: 'How it works', items: [{ title: 'Step one', text: 'What happens' }] }) },
   table: { label: 'Table / prices', icon: 'coins', group: 'Content', fields: [{ k: 'title', label: 'Heading', kind: 'text' }, { k: 'intro', label: 'Introduction', kind: 'textarea' }, { k: 'table', label: 'Table (first row = headings, columns separated by |)', kind: 'table' }, { k: 'note', label: 'Note under the table', kind: 'text' }], make: () => ({ title: 'Fees', table: 'Item | AED\nGovernment fee | 0.00' }) },
+  tabs: { label: 'Tabs', icon: 'layout', group: 'Content', fields: [{ k: 'title', label: 'Heading', kind: 'text' }, { k: 'intro', label: 'Introduction', kind: 'textarea' }, { k: 'tabs', label: 'Tabs', kind: 'items', sub: [{ k: 'label', label: 'Tab name', kind: 'text' }, { k: 'sub', label: 'Small line under the name', kind: 'text' }, { k: 'text', label: 'Text', kind: 'textarea' }, { k: 'items', label: 'Ticks (one per line)', kind: 'lines' }, { k: 'facts', label: 'Facts (one per line, Label: value)', kind: 'lines' }] }], make: () => ({ title: 'Choose an option', intro: '', tabs: [{ label: 'Option 1', sub: '', text: '', items: [], facts: [] }] }) },
   faq: { label: 'FAQs', icon: 'question', group: 'Content', fields: [{ k: 'title', label: 'Heading', kind: 'text' }, { k: 'items', label: 'Questions', kind: 'items', sub: [{ k: 'q', label: 'Question', kind: 'text' }, { k: 'a', label: 'Answer', kind: 'textarea' }] }], make: () => ({ title: 'Frequently asked questions', items: [{ q: 'Question?', a: 'Answer.' }] }) },
   cta: { label: 'Call to action', icon: 'bolt', group: 'Content', fields: [{ k: 'title', label: 'Heading', kind: 'text' }, { k: 'text', label: 'Text', kind: 'textarea' }, { k: 'b1', label: 'Main button', kind: 'items', sub: BTN }, { k: 'b2', label: 'Second button', kind: 'items', sub: BTN }], make: () => ({ title: 'Ready to apply?', text: 'Start online in a few minutes.', b1: [{ label: 'Apply Now', href: '/apply/' }], b2: [{ label: 'WhatsApp us', href: 'wa' }] }) },
   stats: { label: 'Numbers', icon: 'chart', group: 'Content', fields: [{ k: 'items', label: 'Numbers', kind: 'items', sub: [{ k: 'value', label: 'Number', kind: 'text' }, { k: 'label', label: 'Label', kind: 'text' }] }], make: () => ({ items: [{ value: '10 years', label: 'Residency' }, { value: 'AED 2M', label: 'Property route' }, { value: '20', label: 'Languages' }] }) },
@@ -109,7 +110,7 @@ export function sectionsToBlocks(sections: Section[]): Block[] {
       case 'steps': return { id, type: 'steps', data: { title: s.title, intro: s.intro ?? '', items: s.items, note: s.note ?? '' } };
       case 'cards': return { id, type: 'cards', data: { title: s.title, intro: s.intro ?? '', cols: '3', items: s.items.map((i) => ({ ...i, icon: '' })) } };
       case 'faq': return { id, type: 'faq', data: { title: s.title, items: s.items } };
-      case 'tabs': return { id, type: 'table', data: { title: s.title, intro: s.intro ?? '', table: [['Option', 'Details'], ...s.tabs.map((t) => [t.label, [t.text, ...(t.items ?? []), ...(t.facts ?? []).map((f) => `${f.label}: ${f.value}`)].filter(Boolean).join(' · ')])].map((r) => r.join(' | ')).join('\n'), note: '' } };
+      case 'tabs': return { id, type: 'tabs', data: { title: s.title, intro: s.intro ?? '', tabs: s.tabs.map((t) => ({ label: t.label, sub: t.sub ?? '', text: t.text ?? '', items: t.items ?? [], facts: (t.facts ?? []).map((f) => `${f.label}: ${f.value}`) })) } };
       case 'tool': return { id, type: s.tool === 'calculator' ? 'calculator' : s.tool === 'eligibility' ? 'eligibility' : s.tool === 'apply' ? 'apply' : s.tool === 'booking' ? 'booking' : s.tool === 'flight' ? 'flight' : s.tool === 'contact-hub' ? 'contactHub' : s.tool === 'about-hub' ? 'aboutHub' : 'lead', data: { title: s.title ?? '', intro: s.intro ?? '' } };
       case 'html': return { id, type: 'html', data: { html: s.html, title: s.title ?? '' } };
     }
@@ -130,6 +131,11 @@ export function blockToSection(b: Block): Section | null {
       return { type: 'table', title: str(d.title), intro: str(d.intro) || undefined, head: rows[0] ?? [], rows: rows.slice(1), note: str(d.note) || undefined };
     }
     case 'faq': return { type: 'faq', title: str(d.title), items: arr<{ q: string; a: string }>(d.items).filter((x) => x.q) };
+    case 'tabs': return { type: 'tabs', title: str(d.title), intro: str(d.intro) || undefined, tabs: arr<Record<string, unknown>>(d.tabs).filter((t) => str(t.label)).map((t) => ({
+      label: str(t.label), sub: str(t.sub) || undefined, text: str(t.text) || undefined,
+      items: arr<string>(t.items).map(str).filter(Boolean),
+      facts: arr<string>(t.facts).map(str).filter((x) => x.includes(':')).map((x) => ({ label: x.slice(0, x.indexOf(':')).trim(), value: x.slice(x.indexOf(':') + 1).trim() })),
+    })) };
     case 'calculator': return { type: 'tool', tool: 'calculator', title: str(d.title) || undefined, intro: str(d.intro) || undefined };
     case 'eligibility': return { type: 'tool', tool: 'eligibility', title: str(d.title) || undefined, intro: str(d.intro) || undefined };
     case 'lead': return { type: 'tool', tool: 'lead', title: str(d.title) || undefined, intro: str(d.intro) || undefined };

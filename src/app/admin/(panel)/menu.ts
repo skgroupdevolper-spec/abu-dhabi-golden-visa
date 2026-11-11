@@ -8,6 +8,7 @@ export const ADMIN_MENU: { title: string; items: Item[] }[] = [
     { href: '/admin/', label: 'Dashboard', ic: 'chart' },
     { href: '/admin/notifications/', label: 'Notifications', ic: 'bell', badge: 'notes' },
     { href: '/admin/leads/', label: 'Leads & enquiries', ic: 'inbox', badge: 'leads' },
+    { href: '/admin/visitors/', label: 'Visitors', ic: 'chart' },
     { href: '/admin/applications/', label: 'Applications', ic: 'folder', badge: 'unread' },
     { href: '/admin/customers/', label: 'Customers', ic: 'users' },
     { href: '/admin/bookings/', label: 'Appointments', ic: 'calendar' },

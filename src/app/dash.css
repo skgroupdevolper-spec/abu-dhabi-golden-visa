@@ -811,3 +811,21 @@ code.k { overflow-wrap: anywhere; word-break: break-all; }
 .img-prev { overflow: hidden; }
 .img-field-ctl { min-width: 0; }
 @media (max-width: 640px) { .img-field-row { grid-template-columns: 1fr; } }
+
+/* Visitors */
+.vis-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 14px; }
+.vis-card { display: grid; gap: 4px; padding: 18px; }
+.vis-card span { font-size: 13px; color: #6b6253; }
+.vis-card b { font-size: 28px; line-height: 1.1; }
+.vis-card small { color: #8a7f6b; }
+.vis-chart { display: flex; align-items: flex-end; gap: 3px; height: 200px; padding-top: 8px; }
+.vis-col { position: relative; flex: 1 1 0; height: 100%; display: flex; align-items: flex-end; justify-content: center; min-width: 2px; }
+.vis-col i { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, #f0d77a, #d4af37); border-radius: 4px 4px 0 0; }
+.vis-col em { position: absolute; bottom: 0; left: 25%; right: 25%; background: #111; border-radius: 3px 3px 0 0; opacity: .75; }
+.vis-axis { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 12px; color: #8a7f6b; margin-top: 8px; }
+.vis-axis i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: middle; margin: 0 4px 0 10px; }
+.vis-axis .k1 { background: #d4af37; } .vis-axis .k2 { background: #111; }
+.vis-two { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 14px; margin-top: 14px; }
+.tbl-lite { width: 100%; border-collapse: collapse; }
+.tbl-lite td, .tbl-lite th { padding: 9px 6px; border-bottom: 1px solid #f1ead6; text-align: start; vertical-align: top; }
+@media (max-width: 860px) { .vis-two { grid-template-columns: 1fr; } }
