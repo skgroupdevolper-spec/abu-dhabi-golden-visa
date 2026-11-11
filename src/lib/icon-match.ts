@@ -1,0 +1,48 @@
+// Picks the icon that matches a heading or card text. First matching rule wins, so specific words come first.
+const RULES: [RegExp, string][] = [
+  [/question|faq|ask/i, 'question'],
+  [/document|checklist|send us|have ready|have these ready|what to prove|what counts|paper|attest|translat|certificate|notary|power of attorney|\bwills?\b/i, 'doc'],
+  [/newborn|baby|birth/i, 'baby'],
+  [/spouse|children|child|parent|family|dependant|relative|husband|wife|\bsons?\b|daughter|domestic|maid|sponsor|join/i, 'family'],
+  [/doctor|health|medical|hospital|nurse|insurance|biometric/i, 'stetho'],
+  [/student|graduate|teacher|educat|school|universit|degree|academic/i, 'cap'],
+  [/talent|artist|creative|culture|scientist|research|innovat/i, 'spark'],
+  [/property|real estate|home|villa|valuation|title deed|tenancy|ejari/i, 'home'],
+  [/invest|business|company|entrepreneur|partner|licen[cs]e|trade|employ|work permit|professional|salary|executive|engineer|freelanc|mohre|tasheel|tawjeeh|pro service/i, 'briefcase'],
+  [/retire/i, 'heart'],
+  [/cost|equity|fee|price|pay|aed|budget|quote|package|vip|total/i, 'coins'],
+  [/\bwhen\b|time|timeline|how long|deadline|days|speed|faster|slower|delay/i, 'clock'],
+  [/step|process|runs|how .* works|how we|how to|stage|order|route|path|nominat/i, 'layout'],
+  [/emirates id|identity|id card/i, 'card'],
+  [/travel|entry|abroad|outside the uae|tourist|visit|remote|virtual|flight/i, 'plane'],
+  [/country|countries|nationalit|embassy|world|citizens|from (india|pakistan|uk|usa)/i, 'globe'],
+  [/renew|cancel|status|validity|check|eligib|criteria|requirement|who can|qualif|condition/i, 'check'],
+  [/benefit|gives|advantage|privilege|esaad|\bgets?\b|why/i, 'gift'],
+  [/compare|same|differ|versus| vs |or golden|which|choose|option/i, 'grid'],
+  [/mistake|problem|avoid|reason|risk|careful/i, 'shield'],
+  [/contact|office|location|centre|center|near/i, 'pin'],
+  [/we handle|our team|with us|advisor|consult|support|help|service/i, 'user'],
+  [/category|categories|golden visa/i, 'star'],
+  [/bank|account/i, 'cash'],
+  [/driv/i, 'card'],
+  [/humanitarian|frontline|hero/i, 'heart'],
+  [/profession|mainland|free zone|\bhr\b|new hire|onboard|job/i, 'briefcase'],
+  [/notari|\bfiles?\b|example|one-off|typical|items/i, 'folder'],
+  [/dates|track|calendar/i, 'calendar'],
+  [/result/i, 'chart'],
+  [/recommend/i, 'star'],
+  [/quick/i, 'bolt'],
+  [/write|message|email/i, 'mail'],
+  [/where|emirate/i, 'pin'],
+  [/good to know|keep in mind|important|rules|red flag|not enough|fine|lost|damaged|promise|duties|rights|information|using this/i, 'shield'],
+  [/need|before you|clear/i, 'check'],
+  [/\bwho\b|suits|usually applies/i, 'users'],
+  [/cover|session|module|include|own/i, 'layout'],
+  [/visa|permit/i, 'card'],
+];
+
+export function iconForText(text: string | undefined, fallback = 'star'): string {
+  if (!text) return fallback;
+  for (const [re, ic] of RULES) if (re.test(text)) return ic;
+  return fallback;
+}

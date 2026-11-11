@@ -16,6 +16,7 @@ import type { Locale } from '@/lib/i18n';
 import { Calculator } from './Calculator';
 import { Eligibility } from './Eligibility';
 import { LeadForm } from './LeadForm';
+import { iconForText } from '@/lib/icon-match';
 import { Icon } from './Icon';
 import { L } from './L';
 import { TranslationNotice } from './TranslationNotice';
@@ -24,7 +25,7 @@ import { SectionTabs } from './SectionTabs';
 import { DocChecklist } from './DocChecklist';
 import { SITE, waLink } from '@/lib/site';
 
-const CARD_ICONS = ['home', 'briefcase', 'rocket', 'user', 'star', 'spark', 'cap', 'heart', 'shield', 'globe'];
+
 
 const DOCS_RE = /document|send us|what you need|have ready|to send|bring/i;
 const sid = (t?: string) => (t ? 's-' + t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) : undefined);
@@ -33,7 +34,7 @@ function Head({ title, k, icon }: { title?: string; k: number; icon: string }) {
   if (!title) return null;
   return (
     <div className="bh">
-      <span className="bn" aria-hidden="true"><Icon name={icon} size={20} /></span>
+      <span className="bn" aria-hidden="true"><Icon name={iconForText(title, icon)} size={20} /></span>
       <h2>{title}</h2>
     </div>
   );
@@ -118,7 +119,7 @@ export function SectionView({ s, locale, i }: { s: Section; locale: Locale; i: n
           <div className="grid">
             {s.items.map((c, k) => (
               <L key={c.href} locale={locale} href={c.href} className="card glass">
-                <span className="ico"><Icon name={CARD_ICONS[(k + i) % CARD_ICONS.length]} /></span>
+                <span className="ico"><Icon name={iconForText(c.title + ' ' + (c.href ?? ''), iconForText(c.text, 'star'))} /></span>
                 <h3>{c.title}</h3>
                 <p>{c.text}</p>
                 <span className="go">{u('Learn more →', locale)}</span>
