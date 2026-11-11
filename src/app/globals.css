@@ -1511,5 +1511,5 @@ main.page > .wrap:last-child, main > .wrap:last-of-type { padding-bottom: clamp(
 .mainbar.fit3 .burger { display: grid; place-items: center; }
 .mainbar.fit3 .tools { margin-inline-start: auto; }
 .mainbar .bar { min-width: 0; }
-.utility .wrap { min-width: 0; overflow: hidden; }
+.utility .wrap { min-width: 0; }
 .utility .wrap > * { min-width: 0; }
