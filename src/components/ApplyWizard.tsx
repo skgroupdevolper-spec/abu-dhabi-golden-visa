@@ -216,14 +216,10 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
                       <span className="acct-ic"><Icon name="lock" size={20} /></span>
                       <div>
                         <h4 id="acct-h"><T>{"Create your client account"}</T></h4>
-                        <p><T>{"Your account is opened with this application. Use it to follow your file, upload documents, message your advisor and pay online."}</T></p>
+                        <p><T>{"Your email above is your login. Choose a password to follow your file, upload documents, message your advisor and pay online."}</T></p>
                       </div>
                     </div>
                     <div className="acct-grid">
-                      <div className="field">
-                        <label><T>{"Login email"}</T></label>
-                        <div className="acct-login">{d.email || <span className="muted"><T>{"Add your email above"}</T></span>}</div>
-                      </div>
                       <div className="field">
                         <label htmlFor="ap-pw"><T>{"Create password"}</T> *</label>
                         <div className="pw-wrap">
