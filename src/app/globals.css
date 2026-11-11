@@ -1552,3 +1552,7 @@ footer.site ul:not(.fcontact) li a::before { content: ''; position: absolute; in
 footer.site ul:not(.fcontact) li a:hover { transform: translateX(10px); }
 footer.site ul:not(.fcontact) li a:hover::before { opacity: 1; transform: scale(1); }
 [dir='rtl'] footer.site ul:not(.fcontact) li a:hover { transform: translateX(-10px); }
+@media (min-width: 761px) {
+  body:has(.dock) footer.site .wrap { padding-inline-end: max(40px, calc(112px - (100vw - 1320px) / 2)); }
+}
+footer.site .fcontact span { overflow-wrap: anywhere; }
