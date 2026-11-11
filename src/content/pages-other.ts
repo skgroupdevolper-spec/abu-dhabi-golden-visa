@@ -368,7 +368,39 @@ export const OTHER_PAGES: Page[] = [
     eyebrow: 'FAQs',
     h1: 'Golden Visa questions, answered',
     intro: 'Can’t find your answer? Ask us on WhatsApp.',
-    sections: [{ type: 'faq', title: 'Frequently asked questions', items: FAQS }],
+    sections: [
+      { type: 'faq', title: 'Golden Visa basics', items: FAQS },
+      { type: 'faq', title: 'Family and dependants', items: [
+        { q: 'Can I sponsor children over 18?', a: 'Yes. Golden Visa holders can sponsor sons and daughters of any age.' },
+        { q: 'Can I sponsor my parents?', a: 'Yes, with relationship proof and health insurance for each parent.' },
+        { q: 'How soon must I register a newborn?', a: 'Within 120 days of birth to avoid fines. The baby’s residence follows the parent’s visa.' },
+        { q: 'What happens to my family if I pass away?', a: 'Family members keep their residence until the visa expires.' },
+        { q: 'Can I sponsor a domestic worker?', a: 'Yes. Golden Visa holders can sponsor domestic workers with a contract, medical, Emirates ID and insurance.' },
+      ] },
+      { type: 'faq', title: 'Professionals, investors and business owners', items: [
+        { q: 'What salary do professionals need?', a: 'AED 30,000 a month on a valid UAE contract, with a bachelor’s degree and occupation level 1 or 2.' },
+        { q: 'Can a company owner apply?', a: 'Yes, with company capital or partnership share of AED 2 million or more, or a company paying AED 250,000+ a year in federal taxes.' },
+        { q: 'Can entrepreneurs apply without AED 2 million?', a: 'Yes. Owners of approved SMEs with AED 1 million+ revenue, or approved pioneering projects, can apply on the entrepreneur route.' },
+        { q: 'Can I buy property with a mortgage?', a: 'Yes, from an approved UAE bank, as long as your own paid equity is AED 2 million or more.' },
+      ] },
+      { type: 'faq', title: 'Documents and attestation', items: [
+        { q: 'Which documents need attestation?', a: 'Degrees, marriage and birth certificates issued abroad usually need attestation in the issuing country, the UAE embassy and MOFA in the UAE.' },
+        { q: 'Do I need Arabic translation?', a: 'Documents not in Arabic or English are usually translated by a sworn legal translator. Some authorities ask for Arabic for all certificates.' },
+        { q: 'How long does attestation take?', a: 'It depends on the country. Inside the UAE, MOFA attestation is often done within days once the earlier stages are complete.' },
+        { q: 'Can you collect documents from me?', a: 'Yes, in the UAE we can arrange collection and return.' },
+      ] },
+      { type: 'faq', title: 'Other UAE visas', items: [
+        { q: 'What if I do not qualify for the Golden Visa?', a: 'The Green Visa, retirement visa, remote work visa or an investor visa may fit. We compare them in the free check.' },
+        { q: 'Who can get a retirement visa?', a: 'People aged 55+ with 15 years of work history and property or savings of AED 1 million, or AED 180,000 annual income.' },
+        { q: 'What is the Green Visa?', a: 'A self-sponsored 5-year visa for skilled employees earning AED 15,000+, freelancers and investors.' },
+      ] },
+      { type: 'faq', title: 'Working with us', items: [
+        { q: 'Do you guarantee approval?', a: 'No. Decisions are made by the UAE authorities. We prepare a complete file so it is reviewed without delay.' },
+        { q: 'How do I pay?', a: 'You get an itemised quote first. Government fees are paid at cost with receipts and our fee is fixed in writing.' },
+        { q: 'Can I track my application?', a: 'Yes. After you apply you can sign in to your client portal to see status, upload documents and message us.' },
+      ] },
+      { type: 'tool', tool: 'lead', title: 'Still have a question?' },
+    ],
   },
   {
     path: '/blog/',
