@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { PAGES, getPage } from '@/content/pages';
 import type { Page, Section } from '@/content/types';
 import { md } from '@/lib/markdown';
-import { LOCALE_CODES, isLocale, type Locale } from '@/lib/i18n';
+import { isLocale, type Locale } from '@/lib/i18n';
 import { pageMetadata } from '@/lib/seo';
 import type { Block } from '@/lib/blocks';
 import { SITE } from '@/lib/site';
@@ -20,9 +20,12 @@ type Params = Promise<{ locale: string; slug: string[] }>;
 export const dynamicParams = true;
 export const revalidate = 60;
 
+// Only the English pages are built ahead of time. The other languages are built on the first visit
+// and cached (revalidate above), which keeps each website update to a few minutes instead of 15+.
 export function generateStaticParams() {
-  return LOCALE_CODES.flatMap((locale) => PAGES.map((p) => ({ locale, slug: p.path.split('/').filter(Boolean) })));
+  return PAGES.map((p) => ({ locale: 'en', slug: p.path.split('/').filter(Boolean) }));
 }
+export const dynamicParams = true;
 
 type Resolved = { page: Page; loc: Locale; translated: boolean; price?: string; hidden: string[]; o: PageOverride; blocks?: Block[]; post?: Post; blog?: { category?: string } };
 
