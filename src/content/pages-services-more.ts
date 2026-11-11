@@ -55,6 +55,34 @@ export const MORE: Record<string, More> = {
       ['Extensions', 'Only if you extend inside the UAE'],
     ]),
   },
+  '/services/investor-visa/': {
+    extra: [
+      T('All-in cost by emirate (mainland, approximate)', ['Emirate', 'Approx. AED', 'Validity'], [
+        ['Dubai', '4,500 – 6,000', '2 years'], ['Abu Dhabi', '3,500 – 5,500', '2 years'], ['Sharjah', '3,000 – 4,500', '2 years'],
+        ['Ajman', '3,000 – 4,000', '2 years'], ['Ras Al Khaimah', '3,000 – 4,000', '2 years'], ['Fujairah', '3,000 – 4,000', '2 years'], ['Umm Al Quwain', '3,000 – 4,000', '2 years'],
+      ], 'Includes processing, medical, Emirates ID and stamping; excludes the licence and office rent.'),
+      T('All-in cost in major free zones (approximate)', ['Free zone', 'Approx. AED', 'Validity'], [
+        ['DMCC (Dubai)', '5,000 – 6,500', '2 years'], ['IFZA (Dubai)', '3,750 – 5,000', '2 years'], ['SHAMS (Sharjah)', '3,500 – 4,500', '2 years'],
+        ['RAKEZ (Ras Al Khaimah)', '3,500 – 4,500', '2 years'], ['Ajman Free Zone', '3,500 – 4,500', '2 years'], ['Fujairah Creative City', '3,500 – 4,500', '2 years'], ['UAQ Free Trade Zone', '3,500 – 4,500', '2 years'],
+      ], 'Many free zones bundle visas with the licence package.'),
+      T('Important rules to know', ['Rule', 'What it means'], [
+        ['Residency', 'Enter the UAE at least once every 180 days to keep the visa'],
+        ['No other job', 'The visa does not allow salaried work for another company'],
+        ['Linked to the licence', 'If the licence is cancelled, the visa is cancelled too'],
+        ['Office', 'A valid business address or flexi-desk is needed'],
+        ['Family and staff', 'Sponsor spouse, children, parents and domestic workers'],
+      ]),
+      T('Documents by company type', ['Mainland company', 'Free-zone company'], [
+        ['Trade licence (DED)', 'Free-zone licence'], ['Memorandum of association', 'Share certificate'], ['Partners list', 'Certificate of incorporation'],
+        ['Establishment card', 'Establishment card'], ['Office lease (Ejari / Tawtheeq)', 'Flexi-desk or office lease'],
+      ]),
+    ],
+    faq: [
+      { q: 'What happens if I close my company or sell my shares?', a: 'The visa is linked to the company, so it must be cancelled. We plan a new visa or a Golden Visa before you close.' },
+      { q: 'Is a local sponsor required?', a: 'No local sponsor is needed for most activities; free zones and many mainland sectors allow 100% foreign ownership.' },
+      { q: 'Can I apply while outside the UAE?', a: 'Yes. We apply for the entry permit; you then enter for the medical and Emirates ID.' },
+    ],
+  },
   '/remote-work-visa/': {
     extra: [T('Remote work visa or another route?', ['Visa', 'Valid for', 'Income or condition', 'Best for'], [
       ['Virtual work visa', '1 year', 'USD 3,500+ a month from abroad', 'Remote employees and owners of foreign businesses'],
@@ -96,7 +124,15 @@ export const MORE: Record<string, More> = {
       ['Type', 'Certificates are simple; contracts and judgments are longer'],
       ['Speed', 'Same-day handling on request'],
     ]),
-    extra: [T('Common translations we prepare', ['Document', 'Usually needed for'], [
+    extra: [T('Turnaround by document type', ['Type', 'Examples', 'Usual time'], [
+      ['Personal', 'Birth, marriage and death certificates', '24–48 hours'], ['Immigration', 'Visa, labour and sponsorship documents', '24–72 hours'],
+      ['Business', 'MOA, POA and agreements', '2–4 working days'], ['Legal', 'Contracts and court documents', '2–5 working days'],
+    ]), T('Translation mistakes that cause rejection', ['Mistake', 'How we prevent it'], [
+      ['Name spelled differently from the passport', 'Names and dates cross-checked against your passport'],
+      ['Wrong date format', 'Dates written in the format the authority expects'],
+      ['Missing legal terms or clauses', 'Word-for-word legal translation, then a second check'],
+      ['No certified stamp', 'MOJ licensed translator’s stamp and signature on every page'],
+    ]), T('Common translations we prepare', ['Document', 'Usually needed for'], [
       ['Marriage certificate', 'Spouse visa, newborn birth registration'],
       ['Birth certificate', 'Children’s visas, schools'],
       ['Degree and transcripts', 'Work permits, Golden Visa, equivalency'],
@@ -104,11 +140,31 @@ export const MORE: Record<string, More> = {
       ['Company documents', 'Licensing, banks, courts'],
       ['Court judgments and POA', 'Legal proceedings, property'],
     ])],
-    faq: [{ q: 'Can you translate a document that is already attested?', a: 'Yes, and that is usually the best order: the translation then includes every stamp.' }, { q: 'Do you keep my documents private?', a: 'Yes. They are used only for your translation and returned or deleted afterwards.' }],
+    faq: [{ q: 'How fast is a legal translation?', a: 'Personal and immigration documents usually take 24–72 hours; business and legal documents 2–5 working days.' }, { q: 'Can you translate a document that is already attested?', a: 'Yes, and that is usually the best order: the translation then includes every stamp.' }, { q: 'Do you keep my documents private?', a: 'Yes. They are used only for your translation and returned or deleted afterwards.' }],
   },
 
   /* ---------- Employment ---------- */
   '/services/employment-visas-permits/': {
+    extra: [
+      T('Government fees from (Dubai sheet)', ['Service', 'Time', 'Gov. fees from (AED)'], [
+        ['New employee visa', '7–10 working days', '2,820.58'], ['Visa renewal', '3–5 working days', '2,947.79'],
+        ['Work permit, relative visa', '2–4 working days', '718.42'], ['Work permit, Golden Visa holder', '2–4 working days', '718.42'],
+        ['Part-time or intern permit', '2–4 working days', '467.56'], ['Visa cancellation', '1–3 working days', '377.93'],
+      ], 'Government and service-centre charges only; service fee, VAT, deposits and bank guarantees are quoted separately.'),
+      T('MOHRE labour fee per new hire, by company category', ['Category', 'AED per hire'], [['Category 1', '328'], ['Category 2', '1,284'], ['Category 3', '3,550.35']]),
+      T('Four typical files', ['File', 'Gov. fees (AED)'], [
+        ['Skilled hire from abroad, category 2, standard medical', '4,559.16'], ['Unskilled hire already in the UAE, category 3, status change', '7,368.58'],
+        ['Renewal, skilled employee, category 2', '3,087.79'], ['Cancellation for a leaver who has left the UAE', '478.28'],
+      ]),
+      T('Onboarding timeline', ['Day', 'What happens'], [
+        ['Day 0', 'Itemised quote, MOHRE category confirmed, documents listed'], ['Day 1–3', 'Offer letter typed, signed and approved; labour fee paid'],
+        ['Day 3–5', 'Entry permit, or status change if already in the UAE'], ['Day 5–8', 'Medical, biometrics, Tawjeeh and ILOE'], ['Day 7–10', 'Residence stamped, labour card and contract delivered'],
+      ]),
+      T('Dates we track so they never become fines', ['Window', 'Meaning'], [
+        ['60 days from the entry permit', 'Employee must enter, or change status if already here'], ['60 days after entry', 'Finish medical, Emirates ID and stamping'],
+        ['Contract end', 'Renewal raised before the labour card and residence lapse'], ['After cancellation', 'Labour and immigration cancelled in the right order so the grace period starts cleanly'],
+      ]),
+    ],
     gives: { title: 'What your company gains', items: ['One PRO contact for every hire, renewal and exit', 'Deadlines tracked, so no fines for late renewals or status changes', 'MOHRE, WPS, Tawjeeh and ILOE compliance kept up to date', 'Clear fees for each hire before you commit'] },
     fees: COST([
       ['Skill level', 'Unskilled, diploma, graduate, postgraduate or PhD offer letters are priced differently'],
@@ -341,8 +397,8 @@ export const MORE: Record<string, More> = {
     who: { items: ['Owners applying for the property Golden Visa', 'Off-plan buyers', 'Owners with a mortgage', 'Sellers and buyers using a representative', 'Heirs and executors'] },
     fees: COST([['Valuation', `AED 1,050 for the Abu Dhabi certificate`], ['Land department copies', 'Per document'], ['Developer and bank letters', 'Set by the developer or bank'], ['Power of attorney', 'Notary fees']]),
     steps: { items: [{ title: 'Tell us your goal', text: 'Golden Visa, sale, purchase or management.' }, { title: 'Collect documents', text: 'Title deed, developer statement, bank letter.' }, { title: 'Valuation', text: 'Requested where the value must be proven.' }, { title: 'POA if needed', text: 'Drafted and notarised.' }, { title: 'File ready', text: 'Checked and handed over or submitted.' }] },
-    extra: [T('Documents by property type', ['Property', 'Documents usually needed'], [['Ready, fully paid', 'Title deed and valuation'], ['Ready, with mortgage', 'Title deed, valuation and bank letter'], ['Off-plan', 'Sale agreement and developer payment statement'], ['Jointly owned', 'Title deed showing each owner’s share']])],
-    faq: [{ q: 'Does a mortgaged property qualify for the Golden Visa?', a: 'Yes, when your own equity meets the threshold. A bank letter shows the paid amount.' }, { q: 'Does off-plan qualify?', a: 'Often yes, from approved developers with enough paid. We check the developer statement.' }, { q: 'Who issues the valuation?', a: 'In Abu Dhabi, the real estate authority’s valuation certificate.' }, { q: 'Can I give someone power to sell my property?', a: 'Yes, with a specific property POA, notarised.' }, { q: 'Can joint owners apply?', a: 'Yes, when each owner’s share meets the rules for their category.' }],
+    extra: [T('Documents by property type', ['Property', 'Documents usually needed'], [['Ready, fully paid', 'Title deed and valuation'], ['Ready, with mortgage', 'Title deed, valuation and bank letter'], ['Off-plan', 'Sale agreement and developer payment statement'], ['Jointly owned', 'Not accepted on the property route; one owner applies, the other joins as family']])],
+    faq: [{ q: 'Does a mortgaged property qualify for the Golden Visa?', a: 'Yes, when your own equity meets the threshold. A bank letter shows the paid amount.' }, { q: 'Does off-plan qualify?', a: 'Often yes, from approved developers with enough paid. We check the developer statement.' }, { q: 'Who issues the valuation?', a: 'In Abu Dhabi, the real estate authority’s valuation certificate.' }, { q: 'Can I give someone power to sell my property?', a: 'Yes, with a specific property POA, notarised.' }, { q: 'Can joint owners apply?', a: 'Not on the Abu Dhabi property route: it is for sole owners, even between spouses. One owner can sponsor the other as family. We check alternatives for your case.' }, { q: 'Is a sales contract (SPA) enough on its own?', a: 'No. The application needs a title deed or a pre-registration certificate; the SPA supports it.' }],
   },
 };
 

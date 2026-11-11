@@ -147,8 +147,8 @@ export const TABS: Record<string, Section[]> = {
   ])],
   '/document-services/property-documentation/': [tabs('Your property situation', 'The papers you need depend on the property.', [
     { label: 'Ready, fully paid', items: ['Title deed', 'Valuation certificate'] },
-    { label: 'With a mortgage', items: ['Title deed', 'Valuation certificate', 'Bank letter showing the paid amount'] },
-    { label: 'Off-plan', items: ['Sale and purchase agreement', 'Developer payment statement', 'Developer approval where needed'] },
+    { label: 'With a mortgage', items: ['Title deed', 'Valuation certificate', 'Bank NOC and letter showing the paid amount'] },
+    { label: 'Off-plan', items: ['Pre-registration certificate (an SPA alone is not enough)', 'Sale and purchase agreement', 'Developer NOC in Arabic and payment statement'] },
     { label: 'Someone acting for you', items: ['Notarised property POA', 'Their passport and Emirates ID'] },
   ])],
 

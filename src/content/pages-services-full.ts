@@ -754,7 +754,7 @@ export const FULL_PAGES: Page[] = [
     intro: 'UAE authorities work in Arabic, so many documents must be translated by a translator licensed by the Ministry of Justice before they are accepted. We arrange certified translations of your personal, educational, business and legal papers, stamped and ready for visas, courts, banks and ministries.',
     facts: [
       { label: 'Translator', value: 'MOJ licensed' },
-      { label: 'Usual time', value: '1–2 working days' },
+      { label: 'Usual time', value: '24–72 hours' },
       { label: 'Languages', value: 'Arabic, English + more' },
       { label: 'Format', value: 'Stamped, signed copy' },
     ],
