@@ -1,5 +1,6 @@
 'use client';
 
+import { T } from './T';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { localizePath, type Locale } from '@/lib/i18n';
 import { waLink } from '@/lib/site';
@@ -23,14 +24,14 @@ export function HeroFinder({ locale }: { locale: Locale }) {
   const f = FINDER[i];
   return (
     <div className="finder glass in-hero" id="finder">
-      <div className="q">Find your route</div>
+      <div className="q"><T>{"Find your route"}</T></div>
       <div className="chips" role="group" aria-label="Which describes you?">
         {FINDER.map((x, k) => (
           <button key={x.label} type="button" aria-pressed={k === i} onClick={(e) => { setI(k); drop(e.currentTarget); }}>{x.label}</button>
         ))}
       </div>
       <div className="res">
-        <div key={i} className="fres" aria-live="polite"><small>Your route</small><b>{f.route}</b><small>{f.note}</small></div>
+        <div key={i} className="fres" aria-live="polite"><small><T>{"Your route"}</T></small><b>{f.route}</b><small>{f.note}</small></div>
         <a href={localizePath(f.href, locale)} aria-label={`See the ${f.route} route`}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
         </a>
@@ -41,23 +42,7 @@ export function HeroFinder({ locale }: { locale: Locale }) {
 
 /* ---------------- services with load more ---------------- */
 const IC: Record<string, string> = {
-  key: '<circle class="draw" pathLength="1" cx="15" cy="9" r="4.5"/><path class="draw" pathLength="1" d="M11.8 12.2L3 21M6 18l2.5 2.5M8.5 15.5L11 18"/>',
-  sun: '<circle class="draw" pathLength="1" cx="17" cy="7" r="3"/><path class="draw" pathLength="1" d="M3 20c2-4 5-6 9-6s6 1.5 8 4M3 14c2-1 4-1 6 0"/>',
-  fam: '<circle class="draw" pathLength="1" cx="8" cy="7" r="3"/><circle class="draw" pathLength="1" cx="17" cy="9" r="2.5"/><path class="draw" pathLength="1" d="M2 20c0-3.5 2.7-6 6-6s6 2.5 6 6M14 20c0-2.6 1.6-4.5 3.5-4.5S21 17.4 21 20"/>',
-  bag: '<rect class="draw" pathLength="1" x="3" y="7" width="18" height="13" rx="2.5"/><path class="draw" pathLength="1" d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/>',
-  baby: '<circle class="draw" pathLength="1" cx="12" cy="9" r="5"/><path class="draw" pathLength="1" d="M10 11c1.2 1 2.8 1 4 0M7 21c1-3 3-4.5 5-4.5s4 1.5 5 4.5"/>',
-  plane: '<path class="draw" pathLength="1" d="M2.5 13.5l19-7.5-4.5 13-5.5-4.5-4 3v-5z"/><path class="draw" pathLength="1" d="M11.5 14.5L21.5 6"/>',
-  home: '<path class="draw" pathLength="1" d="M3 11l9-7 9 7M5 9.5V20h14V9.5M10 20v-5h4v5"/>',
-  lap: '<rect class="draw" pathLength="1" x="4" y="5" width="16" height="11" rx="2"/><path class="draw" pathLength="1" d="M2 19h20M10 9l-2 2 2 2M14 9l2 2-2 2"/>',
-  doc: '<path class="draw" pathLength="1" d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path class="draw" pathLength="1" d="M14 3v5h5M9 13h6M9 17h4"/>',
-  stamp: '<path class="draw" pathLength="1" d="M9 3h6l-1 7h3a2 2 0 0 1 2 2v3H5v-3a2 2 0 0 1 2-2h3zM4 21h16"/>',
-  globe: '<circle class="draw" pathLength="1" cx="12" cy="12" r="9"/><path class="draw" pathLength="1" d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/>',
-  id: '<rect class="draw" pathLength="1" x="3" y="5" width="18" height="14" rx="2.5"/><circle class="draw" pathLength="1" cx="9" cy="11" r="2.2"/><path class="draw" pathLength="1" d="M5.5 16c.6-1.8 2-2.6 3.5-2.6s2.9.8 3.5 2.6M15 10h3M15 13h3"/>',
-  heart: '<path class="draw" pathLength="1" d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/><path class="draw" pathLength="1" d="M8 12h2l1-2 2 4 1-2h2"/>',
-  shield: '<path class="draw" pathLength="1" d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path class="draw" pathLength="1" d="M9 12l2 2 4-4"/>',
-  bank: '<path class="draw" pathLength="1" d="M3 9l9-5 9 5M5 9v9M10 9v9M14 9v9M19 9v9M3 20h18"/>',
-  car: '<path class="draw" pathLength="1" d="M5 16l1.5-5a2 2 0 0 1 2-1.5h7a2 2 0 0 1 2 1.5L19 16M4 16h16v3H4z"/><circle class="draw" pathLength="1" cx="7.5" cy="19" r="1.5"/><circle class="draw" pathLength="1" cx="16.5" cy="19" r="1.5"/>',
-  pen: '<path class="draw" pathLength="1" d="M4 20l4-1 11-11-3-3L5 16zM14 6l3 3"/>',
+  key: '<circle class="draw" pathLength="1" cx="15" cy="9" r="4.5"/><path class="draw" pathLength="1" d="M11.8 12.2L3 21M6 18l2.5 2.5M8.5 15.5L11 18"/>', sun: '<circle class="draw" pathLength="1" cx="17" cy="7" r="3"/><path class="draw" pathLength="1" d="M3 20c2-4 5-6 9-6s6 1.5 8 4M3 14c2-1 4-1 6 0"/>', fam: '<circle class="draw" pathLength="1" cx="8" cy="7" r="3"/><circle class="draw" pathLength="1" cx="17" cy="9" r="2.5"/><path class="draw" pathLength="1" d="M2 20c0-3.5 2.7-6 6-6s6 2.5 6 6M14 20c0-2.6 1.6-4.5 3.5-4.5S21 17.4 21 20"/>', bag: '<rect class="draw" pathLength="1" x="3" y="7" width="18" height="13" rx="2.5"/><path class="draw" pathLength="1" d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/>', baby: '<circle class="draw" pathLength="1" cx="12" cy="9" r="5"/><path class="draw" pathLength="1" d="M10 11c1.2 1 2.8 1 4 0M7 21c1-3 3-4.5 5-4.5s4 1.5 5 4.5"/>', plane: '<path class="draw" pathLength="1" d="M2.5 13.5l19-7.5-4.5 13-5.5-4.5-4 3v-5z"/><path class="draw" pathLength="1" d="M11.5 14.5L21.5 6"/>', home: '<path class="draw" pathLength="1" d="M3 11l9-7 9 7M5 9.5V20h14V9.5M10 20v-5h4v5"/>', lap: '<rect class="draw" pathLength="1" x="4" y="5" width="16" height="11" rx="2"/><path class="draw" pathLength="1" d="M2 19h20M10 9l-2 2 2 2M14 9l2 2-2 2"/>', doc: '<path class="draw" pathLength="1" d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path class="draw" pathLength="1" d="M14 3v5h5M9 13h6M9 17h4"/>', stamp: '<path class="draw" pathLength="1" d="M9 3h6l-1 7h3a2 2 0 0 1 2 2v3H5v-3a2 2 0 0 1 2-2h3zM4 21h16"/>', globe: '<circle class="draw" pathLength="1" cx="12" cy="12" r="9"/><path class="draw" pathLength="1" d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/>', id: '<rect class="draw" pathLength="1" x="3" y="5" width="18" height="14" rx="2.5"/><circle class="draw" pathLength="1" cx="9" cy="11" r="2.2"/><path class="draw" pathLength="1" d="M5.5 16c.6-1.8 2-2.6 3.5-2.6s2.9.8 3.5 2.6M15 10h3M15 13h3"/>', heart: '<path class="draw" pathLength="1" d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/><path class="draw" pathLength="1" d="M8 12h2l1-2 2 4 1-2h2"/>', shield: '<path class="draw" pathLength="1" d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path class="draw" pathLength="1" d="M9 12l2 2 4-4"/>', bank: '<path class="draw" pathLength="1" d="M3 9l9-5 9 5M5 9v9M10 9v9M14 9v9M19 9v9M3 20h18"/>', car: '<path class="draw" pathLength="1" d="M5 16l1.5-5a2 2 0 0 1 2-1.5h7a2 2 0 0 1 2 1.5L19 16M4 16h16v3H4z"/><circle class="draw" pathLength="1" cx="7.5" cy="19" r="1.5"/><circle class="draw" pathLength="1" cx="16.5" cy="19" r="1.5"/>', pen: '<path class="draw" pathLength="1" d="M4 20l4-1 11-11-3-3L5 16zM14 6l3 3"/>',
 };
 const SERVICES: [string, string, string, string][] = [
   ['Valuation Certificate', 'Official value certificate for your Abu Dhabi property from the Department of Municipalities and Transport, ready in about 3 working days. Fee from AED 900.', 'home', '/document-services/valuation-certificate/'],
@@ -111,7 +96,7 @@ export function ServicesGrid({ locale }: { locale: Locale }) {
               <div className="ico"><span className="orb" /><svg viewBox="0 0 24 24" dangerouslySetInnerHTML={{ __html: IC[ic] }} /></div>
               <h3>{t}</h3>
               <p>{d}</p>
-              <span className="go">Learn more <i>→</i></span>
+              <span className="go"><T>{"Learn more"}</T> <i>→</i></span>
             </div>
           </a>
         ))}
@@ -201,16 +186,16 @@ export function PhoneChat() {
 
   return (
     <div className="phone" id="phone" ref={phone}>
-      <span className="sample">Sample</span>
+      <span className="sample"><T>{"Sample"}</T></span>
       <div className="screen wa">
         <div className="wa-bar"><span>9:41</span><span className="wa-sig" aria-hidden="true"><i /><i /><i /><i /></span></div>
         <div className="head">
           <span className="wa-back" aria-hidden="true">‹</span>
           <span className="wa-avatar" aria-hidden="true"><svg viewBox="0 0 40 40"><circle cx="20" cy="15" r="7" /><path d="M7 36c1.5-7 6.6-11 13-11s11.5 4 13 11" /></svg><i /></span>
-          <span className="wa-who"><b>Sara · Your advisor</b><small className={status === 'online' ? '' : 'typing'}>{status}</small></span>
+          <span className="wa-who"><b><T>{"Sara · Your advisor"}</T></b><small className={status === 'online' ? '' : 'typing'}>{status}</small></span>
           <span className="wa-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6h13v12H3zM16 10l5-3v10l-5-3" /></svg><svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" /></svg></span>
         </div>
-        <div className="wa-day"><span>Application ADGV-0001 · Golden Visa</span></div>
+        <div className="wa-day"><span><T>{"Application ADGV-0001 · Golden Visa"}</T></span></div>
         <div className="msgs" ref={box}>
           {CHAT.map((m) => (
             <div key={m.t + m.html.slice(0, 14)} className={`msg${m.who === 'me' ? ' me' : ''}`}>
@@ -220,7 +205,7 @@ export function PhoneChat() {
             </div>
           ))}
         </div>
-        <div className="wa-input" aria-hidden="true"><span className="wa-field">☺ <em>Message</em> <i>📎</i></span><span className="wa-mic"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM6 11a6 6 0 0 0 12 0M12 17v4" /></svg></span></div>
+        <div className="wa-input" aria-hidden="true"><span className="wa-field">☺ <em><T>{"Message"}</T></em> <i>📎</i></span><span className="wa-mic"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM6 11a6 6 0 0 0 12 0M12 17v4" /></svg></span></div>
       </div>
     </div>
   );
@@ -270,16 +255,16 @@ export function HomeLeadForm() {
   }
   return (
     <form className="form" id="leadForm" style={{ marginTop: 26 }} noValidate onSubmit={submit}>
-      <div><label htmlFor="fName">Full name</label><input id="fName" name="name" autoComplete="name" required /></div>
-      <div><label htmlFor="fPhone">WhatsApp number</label><input id="fPhone" name="phone" type="tel" autoComplete="tel" placeholder="+971" required /></div>
-      <div><label htmlFor="fRoute">Route</label><select id="fRoute" name="route"><option>Real-estate investor</option><option>Non-real-estate investor</option><option>Entrepreneur</option><option>Skilled professional</option><option>University graduate</option><option>Family visa</option><option>Valuation certificate</option><option>Not sure yet</option></select></div>
-      <div><label htmlFor="fLang">Preferred language</label><select id="fLang" name="lang"><option>English</option><option>العربية</option><option>Русский</option><option>Türkçe</option><option>中文</option><option>Français</option><option>Deutsch</option><option>Español</option><option>हिन्दी</option><option>اردو</option><option>Other</option></select></div>
-      <div className="full"><label htmlFor="fMsg">Anything we should know?</label><textarea id="fMsg" name="msg" /></div>
+      <div><label htmlFor="fName"><T>{"Full name"}</T></label><input id="fName" name="name" autoComplete="name" required /></div>
+      <div><label htmlFor="fPhone"><T>{"WhatsApp number"}</T></label><input id="fPhone" name="phone" type="tel" autoComplete="tel" placeholder="+971" required /></div>
+      <div><label htmlFor="fRoute"><T>{"Route"}</T></label><select id="fRoute" name="route"><option>Real-estate investor</option><option>Non-real-estate investor</option><option>Entrepreneur</option><option>Skilled professional</option><option>University graduate</option><option>Family visa</option><option>Valuation certificate</option><option>Not sure yet</option></select></div>
+      <div><label htmlFor="fLang"><T>{"Preferred language"}</T></label><select id="fLang" name="lang"><option>English</option><option>العربية</option><option>Русский</option><option>Türkçe</option><option>中文</option><option>Français</option><option>Deutsch</option><option>Español</option><option>हिन्दी</option><option>اردو</option><option>Other</option></select></div>
+      <div className="full"><label htmlFor="fMsg"><T>{"Anything we should know?"}</T></label><textarea id="fMsg" name="msg" /></div>
       <div className="full"><button className="btn btn-gold mag" type="submit" disabled={state === 'busy'}>{state === 'busy' ? 'Sending…' : 'Get my free quote'}</button></div>
       {state === 'done' && (
         <div className="sent full" role="status">
           ✓ Thank you. An advisor will contact you on WhatsApp.{' '}
-          <a href={waLink(summary)} target="_blank" rel="noopener">Message us now →</a>
+          <a href={waLink(summary)} target="_blank" rel="noopener"><T>{"Message us now →"}</T></a>
         </div>
       )}
       {state === 'err' && <p className="err full" role="alert">{msg}</p>}

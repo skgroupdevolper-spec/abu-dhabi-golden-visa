@@ -1,5 +1,6 @@
 'use client';
 
+import { T } from './T';
 import { useEffect, useState, type MouseEvent, type ReactNode } from 'react';
 import { FEE_SCHEDULE, aed, convert } from '@/lib/fees';
 
@@ -158,7 +159,7 @@ export function Calculator({ initialRoute = null, bare = false }: { initialRoute
           <Counter k="adults" title="Adults" sub="18 years and over" icon="user" />
           <Counter k="kids" title="Children" sub="Under 18, no medical test" icon="baby" />
         </div>
-        <button type="button" className="btn btn-gold" style={{ marginTop: 16, width: '100%' }} onClick={(e) => go({ counted: true }, e)}>Continue</button>
+        <button type="button" className="btn btn-gold" style={{ marginTop: 16, width: '100%' }} onClick={(e) => go({ counted: true }, e)}><T>{"Continue"}</T></button>
       </>
     );
   } else if (current === 'med') {
@@ -282,11 +283,11 @@ export function Calculator({ initialRoute = null, bare = false }: { initialRoute
           <li>Fee schedule dated {F.date}.</li>
         </ul>
         {o.checklist && <details style={{ margin: '6px 0 4px' }}>
-          <summary style={{ cursor: 'pointer', fontWeight: 700 }}>Your document checklist and timeline</summary>
+          <summary style={{ cursor: 'pointer', fontWeight: 700 }}><T>{"Your document checklist and timeline"}</T></summary>
           <ul className="ticks" style={{ fontSize: 14 }}>{checklist.map((c) => <li key={c}>{c}</li>)}</ul>
           <ol style={{ fontSize: 14, paddingInlineStart: 20 }}>{TIMELINE.map((t) => <li key={t}>{t}</li>)}</ol>
         </details>}
-        {o.pdf && <div className="field" style={{ marginTop: 8 }}><label htmlFor="pdfname">Your name for the PDF quote (optional)</label><input id="pdfname" value={pdfName} onChange={(e) => setPdfName(e.target.value)} placeholder="Full name" /></div>}
+        {o.pdf && <div className="field" style={{ marginTop: 8 }}><label htmlFor="pdfname"><T>{"Your name for the PDF quote (optional)"}</T></label><input id="pdfname" value={pdfName} onChange={(e) => setPdfName(e.target.value)} placeholder="Full name" /></div>}
         <div className="row-actions">
           {o.pdf && <button type="button" className="btn btn-gold" onClick={downloadPdf}><Icon name="doc" size={18} /> {T('pdfB', 'Download PDF quote')}</button>}
           {o.whatsapp && <a className="btn btn-gold" href={waLink(summary)} target="_blank" rel="noopener"><Icon name="wa" size={18} /> {T('waB', 'Send to WhatsApp')}</a>}
@@ -301,7 +302,7 @@ export function Calculator({ initialRoute = null, bare = false }: { initialRoute
     <div className={bare ? 'calc-bare' : 'panel glass'} aria-live="polite" data-nofx="">
       <div className="bar-steps" aria-hidden="true">{steps.slice(0, -1).map((k, i) => <i key={k} className={i <= idx ? 'on' : ''} />)}</div>
       {hist.length > 0 && current !== 'result' && (
-        <button type="button" className="btn btn-glass" style={{ minHeight: 40, padding: '0 14px', marginBottom: 12 }} onClick={back}>‹ Back</button>
+        <button type="button" className="btn btn-glass" style={{ minHeight: 40, padding: '0 14px', marginBottom: 12 }} onClick={back}><T>{"‹ Back"}</T></button>
       )}
       <div className="wstep" key={current}>{body}</div>
     </div>

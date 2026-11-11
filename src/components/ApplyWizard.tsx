@@ -1,5 +1,6 @@
 'use client';
 
+import { T } from './T';
 // Online application: service → applicant → family → documents → review & submit.
 // Creates an enquiry and a client file (visible in the admin and the client dashboard).
 import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
@@ -118,11 +119,11 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
     return (
       <div className="apply-done wstep" role="status">
         <span className="ad-ic"><Icon name="check" size={30} /></span>
-        <p className="eyebrow">Application received</p>
+        <p className="eyebrow"><T>{"Application received"}</T></p>
         <h2>Thank you, {d.name.split(' ')[0]}. Your reference is {done.ref}.</h2>
         <p className="lead">Your advisor checks your file and sends the written quote on WhatsApp{d.email ? ' and by email' : ''}. Follow every step, upload documents and message us in your client dashboard.</p>
         <div className="row-actions" style={{ justifyContent: 'center' }}>
-          <a className="btn btn-red" href={done.link}>Open my client dashboard <Icon name="arrow" size={18} /></a>
+          <a className="btn btn-red" href={done.link}><T>{"Open my client dashboard"}</T> <Icon name="arrow" size={18} /></a>
           <a className="btn btn-glass" href={waLink(waText)} target="_blank" rel="noopener"><Icon name="wa" size={18} /> WhatsApp {SITE.whatsappDisplay}</a>
         </div>
       </div>
@@ -143,7 +144,7 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
           {step === 0 && (
             <div className="wstep">
               <div className="aw-head">
-                <div><h3>Which visa or service do you need?</h3><p className="muted">Pick one. You can add family members in a later step.</p></div>
+                <div><h3><T>{"Which visa or service do you need?"}</T></h3><p className="muted"><T>{"Pick one. You can add family members in a later step."}</T></p></div>
                 <label className="aw-search"><Icon name="grid" size={17} /><input type="search" placeholder="Search services" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search services" /></label>
               </div>
               <div className="aw-cats" role="tablist" aria-label="Service categories">
@@ -170,40 +171,40 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
 
           {step === 1 && (
             <div className="wstep">
-              <h3>Your details</h3>
+              <h3><T>{"Your details"}</T></h3>
               {me ? (
                 <div className="signed-in-note" role="status">
                   <Icon name="check" size={18} />
-                  <div><b>You are already signed in as {me.name || me.email}.</b><span>No account needed: this application is added to your client dashboard. Check the details below and continue.</span></div>
+                  <div><b>You are already signed in as {me.name || me.email}.</b><span><T>{"No account needed: this application is added to your client dashboard. Check the details below and continue."}</T></span></div>
                 </div>
-              ) : <p className="muted" style={{ margin: '6px 0 16px' }}>As written in your passport. We use WhatsApp for updates.</p>}
+              ) : <p className="muted" style={{ margin: '6px 0 16px' }}><T>{"As written in your passport. We use WhatsApp for updates."}</T></p>}
               <div className="form">
-                <div className="field"><label htmlFor="ap-name">Full name</label><input id="ap-name" autoComplete="name" value={d.name} onChange={set('name')} /></div>
-                <div className="field"><label htmlFor="ap-phone">WhatsApp number</label><input id="ap-phone" type="tel" autoComplete="tel" placeholder="+971" value={d.phone} onChange={set('phone')} /></div>
-                <div className="field"><label htmlFor="ap-email">Email</label><input id="ap-email" type="email" autoComplete="email" value={d.email} onChange={set('email')} /></div>
-                <div className="field"><label htmlFor="ap-nat">Nationality</label><input id="ap-nat" autoComplete="country-name" value={d.nationality} onChange={set('nationality')} /></div>
+                <div className="field"><label htmlFor="ap-name"><T>{"Full name"}</T></label><input id="ap-name" autoComplete="name" value={d.name} onChange={set('name')} /></div>
+                <div className="field"><label htmlFor="ap-phone"><T>{"WhatsApp number"}</T></label><input id="ap-phone" type="tel" autoComplete="tel" placeholder="+971" value={d.phone} onChange={set('phone')} /></div>
+                <div className="field"><label htmlFor="ap-email"><T>{"Email"}</T></label><input id="ap-email" type="email" autoComplete="email" value={d.email} onChange={set('email')} /></div>
+                <div className="field"><label htmlFor="ap-nat"><T>{"Nationality"}</T></label><input id="ap-nat" autoComplete="country-name" value={d.nationality} onChange={set('nationality')} /></div>
                 <div className="field full">
-                  <span className="lbl">Where are you now?</span>
+                  <span className="lbl"><T>{"Where are you now?"}</T></span>
                   <div className="seg" role="radiogroup" aria-label="Where are you now?">
-                    <button type="button" role="radio" aria-checked={d.where === 'in'} onClick={() => setD({ ...d, where: 'in' })}><Icon name="pin" size={16} /> Inside the UAE</button>
-                    <button type="button" role="radio" aria-checked={d.where === 'out'} onClick={() => setD({ ...d, where: 'out' })}><Icon name="plane" size={16} /> Outside the UAE</button>
+                    <button type="button" role="radio" aria-checked={d.where === 'in'} onClick={() => setD({ ...d, where: 'in' })}><Icon name="pin" size={16} /> <T>{"Inside the UAE"}</T></button>
+                    <button type="button" role="radio" aria-checked={d.where === 'out'} onClick={() => setD({ ...d, where: 'out' })}><Icon name="plane" size={16} /> <T>{"Outside the UAE"}</T></button>
                   </div>
                 </div>
-                <div className="field"><label htmlFor="ap-visa">Current UAE visa (if any)</label>
+                <div className="field"><label htmlFor="ap-visa"><T>{"Current UAE visa (if any)"}</T></label>
                   <select id="ap-visa" value={d.visa} onChange={set('visa')}>
                     <option value="">None / not in the UAE</option><option>Visit or tourist visa</option><option>Employment visa</option><option>Investor or partner visa</option><option>Family visa</option><option>Golden Visa</option><option>Other</option>
                   </select>
                 </div>
-                <div className="field"><label htmlFor="ap-notes">Anything we should know?</label><input id="ap-notes" value={d.notes} onChange={set('notes')} placeholder="e.g. property value, deadline" /></div>
-                {!me && <p className="small muted full">You get a private link to your client dashboard to follow your file, upload documents and pay online. Already have an account? <a href={portalLogin()}>Sign in first</a> and your details are filled in for you.</p>}
+                <div className="field"><label htmlFor="ap-notes"><T>{"Anything we should know?"}</T></label><input id="ap-notes" value={d.notes} onChange={set('notes')} placeholder="e.g. property value, deadline" /></div>
+                {!me && <p className="small muted full">You get a private link to your client dashboard to follow your file, upload documents and pay online. Already have an account? <a href={portalLogin()}><T>{"Sign in first"}</T></a> <T>{"and your details are filled in for you."}</T></p>}
               </div>
             </div>
           )}
 
           {step === 2 && (
             <div className="wstep">
-              <h3>Who is joining you?</h3>
-              <p className="muted" style={{ margin: '6px 0 16px' }}>Spouse, children of any age and parents. Children under 18 do not need a medical test. You can skip this step.</p>
+              <h3><T>{"Who is joining you?"}</T></h3>
+              <p className="muted" style={{ margin: '6px 0 16px' }}><T>{"Spouse, children of any age and parents. Children under 18 do not need a medical test. You can skip this step."}</T></p>
               <div className="fam-list">
                 {fam.map((m, i) => (
                   <div className="fam-row" key={i}>
@@ -215,7 +216,7 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
                       <select aria-label="Age" value={m.adult ? 'a' : 'k'} onChange={(e) => setFam(fam.map((x, k) => (k === i ? { ...x, adult: e.target.value === 'a' } : x)))}>
                         <option value="k">Under 18</option><option value="a">18 or over</option>
                       </select>
-                    ) : <span className="fam-tag">Adult</span>}
+                    ) : <span className="fam-tag"><T>{"Adult"}</T></span>}
                     <button type="button" className="fam-x" aria-label="Remove" onClick={() => setFam(fam.filter((_, k) => k !== i))}><Icon name="close" size={16} /></button>
                   </div>
                 ))}
@@ -230,7 +231,7 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
 
           {step === 3 && svc && (
             <div className="wstep">
-              <h3>Upload your documents</h3>
+              <h3><T>{"Upload your documents"}</T></h3>
               <p className="muted" style={{ margin: '6px 0 16px' }}>Photos or PDFs up to 15 MB each. Missing something? Submit anyway and add it later in your client dashboard.</p>
               <div className="doc-list">
                 {svc.docs.map((label) => (
@@ -242,7 +243,7 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
                 ))}
                 <label className="doc-up">
                   <span className="di"><Icon name="folder" size={18} /></span>
-                  <span className="dt"><b>Other documents</b><small>{extra.length ? `${extra.length} file(s) chosen` : 'Optional, several files allowed'}</small></span>
+                  <span className="dt"><b><T>{"Other documents"}</T></b><small>{extra.length ? `${extra.length} file(s) chosen` : 'Optional, several files allowed'}</small></span>
                   <input type="file" multiple accept="image/*,.pdf,.doc,.docx" onChange={(e) => { const fl = [...(e.target.files || [])].filter((f) => f.size <= MAX).slice(0, 8); setExtra(fl); }} />
                 </label>
               </div>
@@ -251,30 +252,30 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
 
           {step === 4 && svc && (
             <div className="wstep">
-              <h3>Review and submit</h3>
+              <h3><T>{"Review and submit"}</T></h3>
               <dl className="review">
-                <div><dt>Service</dt><dd>{svc.label}</dd></div>
-                <div><dt>Applicant</dt><dd>{d.name} · {d.phone}{d.email ? ` · ${d.email}` : ''}</dd></div>
-                <div><dt>Location</dt><dd>{d.where === 'in' ? 'Inside the UAE' : 'Outside the UAE'}{d.visa ? ` · ${d.visa}` : ''}</dd></div>
-                {famOn && <div><dt>Family</dt><dd>{fam.length ? fam.map((m) => `${m.relation}: ${m.name}`).join(', ') : 'None'}</dd></div>}
-                <div><dt>Documents</dt><dd>{Object.values(files).filter(Boolean).length + extra.length} file(s)</dd></div>
+                <div><dt><T>{"Service"}</T></dt><dd>{svc.label}</dd></div>
+                <div><dt><T>{"Applicant"}</T></dt><dd>{d.name} · {d.phone}{d.email ? ` · ${d.email}` : ''}</dd></div>
+                <div><dt><T>{"Location"}</T></dt><dd>{d.where === 'in' ? 'Inside the UAE' : 'Outside the UAE'}{d.visa ? ` · ${d.visa}` : ''}</dd></div>
+                {famOn && <div><dt><T>{"Family"}</T></dt><dd>{fam.length ? fam.map((m) => `${m.relation}: ${m.name}`).join(', ') : 'None'}</dd></div>}
+                <div><dt><T>{"Documents"}</T></dt><dd>{Object.values(files).filter(Boolean).length + extra.length} file(s)</dd></div>
               </dl>
               {route && (
                 <>
-                  <span className="lbl" style={{ marginTop: 18, display: 'block' }}>Service speed</span>
+                  <span className="lbl" style={{ marginTop: 18, display: 'block' }}><T>{"Service speed"}</T></span>
                   <div className="seg" role="radiogroup" aria-label="Service speed">
-                    <button type="button" role="radio" aria-checked={d.pkg === 'normal'} onClick={() => setD({ ...d, pkg: 'normal' })}>Standard · 7–14 working days</button>
-                    <button type="button" role="radio" aria-checked={d.pkg === 'vip'} onClick={() => setD({ ...d, pkg: 'vip' })}><Icon name="crown" size={16} /> VIP · 4–5 working days</button>
+                    <button type="button" role="radio" aria-checked={d.pkg === 'normal'} onClick={() => setD({ ...d, pkg: 'normal' })}><T>{"Standard · 7–14 working days"}</T></button>
+                    <button type="button" role="radio" aria-checked={d.pkg === 'vip'} onClick={() => setD({ ...d, pkg: 'vip' })}><Icon name="crown" size={16} /> <T>{"VIP · 4–5 working days"}</T></button>
                   </div>
                 </>
               )}
-              <label className="check" style={{ marginTop: 18 }}><input type="checkbox" checked={d.consent} onChange={set('consent')} /> The details are correct and I agree to be contacted on WhatsApp, phone or email about this application.</label>
+              <label className="check" style={{ marginTop: 18 }}><input type="checkbox" checked={d.consent} onChange={set('consent')} /> <T>{"The details are correct and I agree to be contacted on WhatsApp, phone or email about this application."}</T></label>
             </div>
           )}
 
           {err && <p className="err" role="alert" style={{ marginTop: 14 }}>{err}</p>}
           <div className="apply-nav">
-            {step > 0 && <button type="button" className="btn btn-glass" onClick={back}>Back</button>}
+            {step > 0 && <button type="button" className="btn btn-glass" onClick={back}><T>{"Back"}</T></button>}
             {step < 4 ? (
               <button type="button" className="btn btn-red" onClick={next}>{step === 2 && !fam.length ? 'Skip' : 'Continue'} <Icon name="arrow" size={18} /></button>
             ) : (
@@ -284,25 +285,25 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
         </div>
 
         <aside className="apply-side panel glass" aria-label="Summary">
-          <p className="eyebrow">Your application</p>
+          <p className="eyebrow"><T>{"Your application"}</T></p>
           <h4>{svc?.label ?? 'Choose a service'}</h4>
           {route ? (
             <>
               <ul className="sum-lines">
                 {lines.map((l, i) => <li key={i}><span>{l.label}</span><b>{aed(l.amount)}</b></li>)}
               </ul>
-              <p className="sum-total"><span>Estimated government fees</span><b>{aed(total)}</b></p>
+              <p className="sum-total"><span><T>{"Estimated government fees"}</T></span><b>{aed(total)}</b></p>
               <p className="small muted">Health insurance and our {d.pkg === 'vip' ? 'VIP' : 'Standard'} service fee (+5% VAT) are quoted in writing. Fee schedule dated {fees.date}.</p>
             </>
           ) : (
             <p className="small muted" style={{ marginTop: 8 }}>{svc ? 'Government fees for this service depend on your case. Your advisor sends an itemised quote before you pay.' : 'Pick a service to see what you need and the estimated fees.'}</p>
           )}
           <ul className="side-points">
-            <li><Icon name="check" size={16} /> Free review before you pay</li>
-            <li><Icon name="shield" size={16} /> Documents stored privately</li>
-            <li><Icon name="wa" size={16} /> Updates on WhatsApp</li>
+            <li><Icon name="check" size={16} /> <T>{"Free review before you pay"}</T></li>
+            <li><Icon name="shield" size={16} /> <T>{"Documents stored privately"}</T></li>
+            <li><Icon name="wa" size={16} /> <T>{"Updates on WhatsApp"}</T></li>
           </ul>
-          <a className="btn btn-glass btn-sm" style={{ width: '100%' }} href={waLink(waText)} target="_blank" rel="noopener"><Icon name="wa" size={16} /> Prefer WhatsApp?</a>
+          <a className="btn btn-glass btn-sm" style={{ width: '100%' }} href={waLink(waText)} target="_blank" rel="noopener"><Icon name="wa" size={16} /> <T>{"Prefer WhatsApp?"}</T></a>
         </aside>
       </div>
     </div>

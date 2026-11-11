@@ -1,3 +1,4 @@
+import { T } from './T';
 // Blog listing: category filter, featured article and image cards (admin posts and starting guides).
 import { BLOG } from '@/content/blog';
 import type { Locale } from '@/lib/i18n';
@@ -23,7 +24,7 @@ export function BlogIndex({ locale, posts, categories, current, gone = [], views
   return (
     <section className="block blog-index">
       <nav className="bi-cats" aria-label="Categories">
-        <L locale={locale} href="/blog/" className={!current ? 'on' : ''}>All guides</L>
+        <L locale={locale} href="/blog/" className={!current ? 'on' : ''}><T>{"All guides"}</T></L>
         {categories.map((c) => <L key={c.slug} locale={locale} href={`/blog/category/${c.slug}/`} className={current === c.slug ? 'on' : ''}>{c.name}</L>)}
       </nav>
       {top && (
@@ -50,7 +51,7 @@ export function BlogIndex({ locale, posts, categories, current, gone = [], views
           </L>
         ))}
       </div>
-      {!items.length && <p className="muted">No articles in this category yet.</p>}
+      {!items.length && <p className="muted"><T>{"No articles in this category yet."}</T></p>}
     </section>
   );
 }

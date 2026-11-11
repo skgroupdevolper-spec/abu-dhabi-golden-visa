@@ -1,5 +1,6 @@
 'use client';
 
+import { T } from './T';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { coinImg, fullLogo } from '@/components/BrandLogo';
 
@@ -49,7 +50,7 @@ export function ChatWidget({ lang }: { lang: string }) {
     <div className={`chatw ${cfg.position}${open ? ' open' : ''}`}>
       {open && (
         <div className="chatbox" role="dialog" aria-label={cfg.name}>
-          <div className="ch-head"><img decoding="async" src={coinImg()} alt="" width={34} height={34} /><div><b>{cfg.name}</b><small>AI assistant · answers may need checking</small></div><button type="button" onClick={() => setOpen(false)} aria-label="Close chat">✕</button></div>
+          <div className="ch-head"><img decoding="async" src={coinImg()} alt="" width={34} height={34} /><div><b>{cfg.name}</b><small><T>{"AI assistant · answers may need checking"}</T></small></div><button type="button" onClick={() => setOpen(false)} aria-label="Close chat">✕</button></div>
           <div className="ch-body" ref={box} data-lenis-prevent>
             <div className="ch-msg bot">{cfg.greeting}</div>
             {msgs.map((m, i) => <div key={i} className={`ch-msg ${m.role === 'user' ? 'me' : 'bot'}`}>{m.role === 'assistant' ? linkify(m.content) : m.content}</div>)}

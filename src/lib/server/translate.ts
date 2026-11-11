@@ -196,16 +196,19 @@ export async function autoTranslate(_paths: string[]) {
 
 export async function uiProgress() {
   const all = await readJsonFile<Record<string, Record<string, string>>>('ui-translations.json', {});
-  return { total: UI_STRINGS.length, per: Object.fromEntries(LOCALES.filter((l) => l.code !== 'en').map((l) => [l.code, UI_STRINGS.filter((s) => all[l.code]?.[s]).length])) as Record<string, number> };
+  const ALL = [...new Set([...UI_STRINGS, ...(await readJsonFile<string[]>('ui-extra.json', []))])];
+  return { total: ALL.length, per: Object.fromEntries(LOCALES.filter((l) => l.code !== 'en').map((l) => [l.code, ALL.filter((s) => all[l.code]?.[s]).length])) as Record<string, number> };
 }
 
 /** Translates the interface texts still missing in the given languages. Returns how many were added. */
 export async function translateUi(langs: string[]) {
   const { translateTexts } = await import('./mt');
+  const extra = await readJsonFile<string[]>('ui-extra.json', []);
+  const ALL = [...new Set([...UI_STRINGS, ...extra])];
   let added = 0;
   await Promise.all(langs.filter((l) => l !== 'en').map(async (lang) => {
     const have = (await readJsonFile<Record<string, Record<string, string>>>('ui-translations.json', {}))[lang] ?? {};
-    const missing = UI_STRINGS.filter((s) => !have[s]);
+    const missing = ALL.filter((s) => !have[s]);
     if (!missing.length) return;
     try {
       const map = await translateTexts(lang, missing);
@@ -219,6 +222,26 @@ export async function translateUi(langs: string[]) {
     }
   }));
   return added;
+}
+
+/** Saves texts the website showed without a translation and translates them (called every few minutes). */
+export async function flushMissingUi() {
+  const miss = globalThis.__ADGV_MISS;
+  if (!miss?.size) return;
+  const list = [...miss];
+  miss.clear();
+  let fresh: string[] = [];
+  await updateJsonFile<string[]>('ui-extra.json', [], (cur) => {
+    const set = new Set(cur);
+    fresh = list.filter((x) => !set.has(x) && !(UI_STRINGS as string[]).includes(x));
+    return [...cur, ...fresh].slice(-20000);
+  });
+  const cfg = await getBlock<{ onSave: boolean }>('langcfg', { onSave: true });
+  if (cfg.onSave && (await (await import('./mt')).engineReady())) {
+    await translateUi(await siteLangs());
+    // Reload the in-memory interface texts so the new translations show at once.
+    globalThis.__ADGV_UI = await readJsonFile<Record<string, Record<string, string>>>('ui-translations.json', {});
+  }
 }
 
 /* ---------- Translation status per page and language (sitemap dates) ---------- */

@@ -53,6 +53,28 @@ export function Header({ locale }: { locale: Locale }) {
   const [cur, setCur] = useState('AED');
   const [small, setSmall] = useState(false);
   const [showTop, setShowTop] = useState(false);
+  // Longer words in other languages: shrink the menu, then hide the red button, then use the menu button, so nothing overflows.
+  const barRef = useRef<HTMLDivElement>(null);
+  const [fit, setFit] = useState<'' | 'fit1' | 'fit2' | 'fit3'>('');
+  useEffect(() => {
+    const el = barRef.current;
+    if (!el) return;
+    const steps = ['', 'fit1', 'fit2', 'fit3'] as const;
+    const check = () => {
+      const root = el.parentElement!;
+      for (const st of steps) {
+        root.classList.remove('fit1', 'fit2', 'fit3');
+        if (st) root.classList.add(st);
+        if (el.scrollWidth <= el.clientWidth + 1) { setFit(st); return; }
+      }
+      setFit('fit3');
+    };
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    void document.fonts?.ready.then(check);
+    return () => ro.disconnect();
+  }, [locale]);
   useEffect(() => { const f = () => setShowTop(window.scrollY > 600); f(); window.addEventListener('scroll', f, { passive: true }); return () => window.removeEventListener('scroll', f); }, []);
   const [tab, setTab] = useState(0);
   const ref = useRef<HTMLElement>(null);
@@ -156,8 +178,8 @@ export function Header({ locale }: { locale: Locale }) {
             </div>
           </div>
         </div>
-        <div className="mainbar">
-          <div className="wrap bar">
+        <div className={`mainbar${fit ? ` ${fit}` : ''}`}>
+          <div className="wrap bar" ref={barRef}>
             <L locale={locale} href="/" className="logo" aria-label={`${SITE.name} home`}>
               <BrandLogo alt={SITE.name} />
             </L>
@@ -238,7 +260,7 @@ export function Header({ locale }: { locale: Locale }) {
             <div className="tools">
               {langChip('m')}
               <L locale={locale} href={SITE.nav.ctaLink || '/visa-check/'} className="btn btn-red btn-s hide-sm">
-                {SITE.nav.ctaLabel || 'Check Eligibility'}
+                {u(SITE.nav.ctaLabel || 'Check Eligibility', locale)}
               </L>
               <ApplyA className="btn btn-gold btn-s hide-xs">{u('Apply Now', locale)}</ApplyA>
               <button type="button" className="burger" aria-label={u('Open menu', locale)} onClick={() => setMobile(true)}>

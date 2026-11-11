@@ -1,3 +1,4 @@
+import { T } from './T';
 // About and Contact page sections: contact cards, enquiry with benefits, remote process, getting here
 // with map, filtered FAQ, story, promise/mission/vision, licence card, languages and office.
 // Only verified facts are shown (operator, licence, contacts, hours); no invented ratings or client counts.
@@ -59,7 +60,7 @@ function VisitBlock({ locale, title }: { locale: Locale; title: string }) {
         <div className="cta">
           <a className="btn btn-gold" href={dirHref()} target="_blank" rel="noopener"><Icon name="pin" size={18} /> {u('Get directions', locale)}</a>
           <a className="btn btn-glass" href={`tel:${SITE.phone}`}><Icon name="phone" size={18} /> {u('Call', locale)}</a>
-          <a className="btn btn-glass" href={waLink('Hello, I would like to visit your office.')} target="_blank" rel="noopener"><Icon name="wa" size={18} /> WhatsApp</a>
+          <a className="btn btn-glass" href={waLink('Hello, I would like to visit your office.')} target="_blank" rel="noopener"><Icon name="wa" size={18} /> <T>{"WhatsApp"}</T></a>
         </div>
         <Socials />
       </div>
@@ -204,7 +205,7 @@ export function AboutHub({ locale }: { locale: Locale }) {
             <h2>{SITE.founder.name}</h2>
             <p className="muted" style={{ marginTop: 4 }}>{SITE.founder.title}</p>
             {SITE.founder.quote && <blockquote>“{SITE.founder.quote}”</blockquote>}
-            {SITE.founder.linkedin && <a className="btn btn-glass" href={SITE.founder.linkedin} target="_blank" rel="noopener">LinkedIn</a>}
+            {SITE.founder.linkedin && <a className="btn btn-glass" href={SITE.founder.linkedin} target="_blank" rel="noopener"><T>{"LinkedIn"}</T></a>}
           </div>
         </section>
       )}

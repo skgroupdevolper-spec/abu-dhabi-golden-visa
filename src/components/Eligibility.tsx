@@ -1,5 +1,6 @@
 'use client';
 
+import { T } from './T';
 import { useState, type FormEvent } from 'react';
 import { waLink } from '@/lib/site';
 import { Icon } from './Icon';
@@ -72,7 +73,7 @@ export function Eligibility() {
     <div className="panel glass">
       <form onSubmit={check} className="form">
         <div className="full">
-          <span className="field"><label>Application category</label></span>
+          <span className="field"><label><T>{"Application category"}</T></label></span>
           <div className="opts two elig-opts" role="group" aria-label="Application category">
             {CATS.map((c) => (
               <button key={c.id} type="button" className="opt" aria-pressed={cat === c.id} onClick={() => { setCat(c.id); setResult(null); }}>
@@ -82,27 +83,27 @@ export function Eligibility() {
           </div>
         </div>
         {cat === 'property' && (
-          <div className="field full"><label htmlFor="el-value">Property value (AED)</label><input id="el-value" inputMode="numeric" placeholder="2,000,000" value={value} onChange={(e) => setValue(e.target.value)} required /></div>
+          <div className="field full"><label htmlFor="el-value"><T>{"Property value (AED)"}</T></label><input id="el-value" inputMode="numeric" placeholder="2,000,000" value={value} onChange={(e) => setValue(e.target.value)} required /></div>
         )}
         {cat === 'professional' && (
-          <div className="field full"><label htmlFor="el-salary">Monthly salary (AED)</label><input id="el-salary" inputMode="numeric" placeholder="30,000" value={salary} onChange={(e) => setSalary(e.target.value)} required /></div>
+          <div className="field full"><label htmlFor="el-salary"><T>{"Monthly salary (AED)"}</T></label><input id="el-salary" inputMode="numeric" placeholder="30,000" value={salary} onChange={(e) => setSalary(e.target.value)} required /></div>
         )}
-        <div className="field"><label htmlFor="el-where">Where are you now?</label><select id="el-where" value={where} onChange={(e) => setWhere(e.target.value as 'in' | 'out')}><option value="in">Inside the UAE</option><option value="out">Outside the UAE</option></select></div>
-        <div className="field"><label htmlFor="el-deps">Number of dependants</label><input id="el-deps" type="number" min={0} max={15} value={deps} onChange={(e) => setDeps(Math.max(0, Number(e.target.value) || 0))} /></div>
-        <div className="full"><button className="btn btn-red" type="submit">Check My Eligibility <Icon name="arrow" size={18} className="arrow" /></button></div>
+        <div className="field"><label htmlFor="el-where"><T>{"Where are you now?"}</T></label><select id="el-where" value={where} onChange={(e) => setWhere(e.target.value as 'in' | 'out')}><option value="in">Inside the UAE</option><option value="out">Outside the UAE</option></select></div>
+        <div className="field"><label htmlFor="el-deps"><T>{"Number of dependants"}</T></label><input id="el-deps" type="number" min={0} max={15} value={deps} onChange={(e) => setDeps(Math.max(0, Number(e.target.value) || 0))} /></div>
+        <div className="full"><button className="btn btn-red" type="submit"><T>{"Check My Eligibility"}</T> <Icon name="arrow" size={18} className="arrow" /></button></div>
       </form>
 
       {result && (
         <div className={`screen-result ${result.tone} wstep`} style={{ marginTop: 20 }} aria-live="polite">
           <h3 style={{ fontSize: 24 }}>{result.title}</h3>
           <p className="muted" style={{ marginTop: 8 }}>{result.text}</p>
-          <p className="note">This is a first screening, not a decision. The competent authorities decide eligibility.</p>
+          <p className="note"><T>{"This is a first screening, not a decision. The competent authorities decide eligibility."}</T></p>
           <form onSubmit={save} className="form" style={{ marginTop: 16 }}>
-            <div className="field"><label htmlFor="el-name">Your name</label><input id="el-name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} /></div>
-            <div className="field"><label htmlFor="el-phone">WhatsApp number</label><input id="el-phone" type="tel" autoComplete="tel" placeholder="+971" value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
+            <div className="field"><label htmlFor="el-name"><T>{"Your name"}</T></label><input id="el-name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} /></div>
+            <div className="field"><label htmlFor="el-phone"><T>{"WhatsApp number"}</T></label><input id="el-phone" type="tel" autoComplete="tel" placeholder="+971" value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
             <div className="full row-actions" style={{ marginTop: 0 }}>
-              <button className="btn btn-navy" type="submit">Save and get a call back</button>
-              <a className="btn btn-gold" href={waLink(summary)} target="_blank" rel="noopener"><Icon name="wa" size={18} /> Continue on WhatsApp</a>
+              <button className="btn btn-navy" type="submit"><T>{"Save and get a call back"}</T></button>
+              <a className="btn btn-gold" href={waLink(summary)} target="_blank" rel="noopener"><Icon name="wa" size={18} /> <T>{"Continue on WhatsApp"}</T></a>
             </div>
             {saved && <p className="full note" role="status">{saved}</p>}
           </form>

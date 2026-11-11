@@ -1502,3 +1502,14 @@ main.page > .wrap:last-child, main > .wrap:last-of-type { padding-bottom: clamp(
   .dock > a:not(.dock-top) { display: none; }
   .dock .dock-top .ic { width: 46px; height: 46px; }
 }
+
+/* Header fits any language: tighter menu, then no red button, then the menu button (set by Header.tsx). */
+.mainbar.fit1 .nav-link, .mainbar.fit2 .nav-link { padding: 9px 7px; font-size: 13.5px; letter-spacing: -0.01em; }
+.mainbar.fit1 .tools .btn-s, .mainbar.fit2 .tools .btn-s { padding-inline: 14px; font-size: 13.5px; }
+.mainbar.fit2 .tools .btn-red { display: none; }
+.mainbar.fit3 .nav { display: none; }
+.mainbar.fit3 .burger { display: grid; place-items: center; }
+.mainbar.fit3 .tools { margin-inline-start: auto; }
+.mainbar .bar { min-width: 0; }
+.utility .wrap { min-width: 0; overflow: hidden; }
+.utility .wrap > * { min-width: 0; }

@@ -1,5 +1,6 @@
 'use client';
 
+import { T } from './T';
 // "Book a time that suits you": live UAE clock and open/closed countdown, meeting type, month calendar
 // with free days, time slots, details, and a confirmation with WhatsApp and calendar (.ics) buttons.
 import { useEffect, useMemo, useState } from 'react';
@@ -146,7 +147,7 @@ export function Booking({ title, intro, service = '', locale = 'en' }: { title?:
                       ))}
                     </>
                   )}
-                  <p className="muted small" style={{ marginTop: 10 }}>All times are UAE time (GMT+4).</p>
+                  <p className="muted small" style={{ marginTop: 10 }}><T>{"All times are UAE time (GMT+4)."}</T></p>
                   <button type="button" className="btn btn-gold bk-go" disabled={!type || !date || !time} onClick={() => setStep(2)}>{u('Continue', locale)} <Icon name="arrow" size={18} /></button>
                 </div>
               </div>

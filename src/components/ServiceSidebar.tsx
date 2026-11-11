@@ -1,5 +1,6 @@
 'use client';
 
+import { T } from './T';
 import { u } from '@/lib/ui';
 import { useMemo, useState } from 'react';
 import { catalog } from '@/content/services-catalog';
@@ -42,7 +43,7 @@ export function ServiceSidebar({ current, locale, hidden = [] }: { current: stri
               ))}
             </div>
           ))}
-          {count === 0 && <p className="muted" style={{ padding: '6px 10px' }}>No service matches “{q}”. <a href={localizePath('/contact/', locale)}>Ask us</a>.</p>}
+          {count === 0 && <p className="muted" style={{ padding: '6px 10px' }}>No service matches “{q}”. <a href={localizePath('/contact/', locale)}><T>{"Ask us"}</T></a>.</p>}
         </nav>
       </div>
     </aside>
