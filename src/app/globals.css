@@ -1471,3 +1471,23 @@ main.page .block + .block { margin-top: clamp(16px,2vw,24px) !important; border-
 main.page .block .bh { margin-bottom: 18px; }
 main.page .block.block-flight, main.page .block.cp-founder { background: transparent; border: 0 !important; box-shadow: none; backdrop-filter: none; }
 @media (max-width: 760px) { main.page .block { border-radius: 20px; padding: 20px 16px !important; } }
+
+/* Breathing room around the quick-facts strip and the "On this page" bar */
+.facts-strip { padding-block: clamp(18px, 2.4vw, 30px) clamp(22px, 3vw, 36px); }
+.facts-strip .fnote { margin-top: 12px; }
+.onpage { margin-bottom: clamp(22px, 3vw, 40px); }
+.onpage + .wrap { padding-top: 4px; padding-bottom: clamp(36px, 5vw, 72px); }
+main.page > .wrap:last-child, main > .wrap:last-of-type { padding-bottom: clamp(36px, 5vw, 72px); }
+@media (min-width: 761px) {
+  body:has(.dock) .facts-strip .wrap, body:has(.dock) .onpage .wrap { padding-inline-end: max(40px, calc(112px - (100vw - 1320px) / 2)); }
+}
+@media (max-width: 760px) {
+  .facts-strip { padding-block: 14px 22px; }
+  .fs-in { flex-direction: column; align-items: stretch; }
+  .fs-tiles { grid-template-columns: 1fr 1fr !important; }
+  .fs-cta { width: 100%; }
+  .fs-cta .btn { width: 100%; }
+  .onpage { margin-bottom: 18px; }
+  main.page .block + .block { margin-top: 14px !important; }
+  body { overflow-x: clip; }
+}
