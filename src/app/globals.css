@@ -1415,3 +1415,10 @@ footer.site .legal > span { max-width: 640px; }
 .apply-main-wrap > .block:not(:first-child) { padding-top: clamp(34px, 4.4vw, 60px); }
 .apply-main-wrap > .block.cp-founder, .apply-main-wrap > .block.cp-licence, .apply-main-wrap > .block.cp-enquiry { padding: clamp(22px, 3vw, 36px); }
 .blogo.still .bl-coin { animation: none; }
+
+/* Card lists: the number is a small badge, never a full-width bar; "Label: text" items show the label as a title. */
+.req-grid li { align-content: start; }
+.req-grid .rn { justify-self: start; display: inline-grid; place-items: center; min-width: 46px; height: 46px; padding: 0 10px; border-radius: 14px; background: #fbf6e6; font-size: 22px; }
+.req-grid .rt { display: grid; gap: 6px; }
+.req-grid .rt b { font-size: 16.5px; color: var(--ink, #111); }
+.req-grid .rt span { color: var(--navy-soft, #555); line-height: 1.55; }
