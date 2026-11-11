@@ -1534,3 +1534,6 @@ main.page > .wrap:last-child, main > .wrap:last-of-type { padding-bottom: clamp(
 .pw-rules li.ok svg { opacity: 1; }
 .acct-foot { margin: 14px 0 0; font-size: 13px; color: #8a8273; }
 @media (max-width: 760px) { .acct-grid { grid-template-columns: 1fr; } }
+
+/* WhatsApp message icon: dots drawn a little bolder so they read at small sizes */
+.si-wa { stroke-width: 1.9; }
