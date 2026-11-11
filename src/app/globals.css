@@ -1542,9 +1542,9 @@ main.page > .wrap:last-child, main > .wrap:last-of-type { padding-bottom: clamp(
 img.si-img { display: inline-block; object-fit: contain; flex: none; vertical-align: middle; }
 
 /* Footer: contact lines with an icon that matches each line */
-footer.site .fcontact li { margin-bottom: 10px; }
-footer.site .fcontact a, footer.site .fcontact .fc-row { display: inline-flex; align-items: flex-start; gap: 10px; line-height: 1.5; }
-footer.site .fcontact .si { flex: none; margin-top: 2px; color: var(--gold-deep); transition: transform 0.25s; }
+footer.site .fcontact li { margin: 0; }
+footer.site .fcontact a, footer.site .fcontact .fc-row { display: inline-flex; align-items: flex-start; gap: 10px; line-height: inherit; }
+footer.site .fcontact .si { flex: none; margin-top: 1px; color: var(--gold-deep); transition: transform 0.25s; }
 footer.site .fcontact a:hover .si { transform: scale(1.12); }
 /* Footer: other menus show a small gold dot on hover */
 footer.site ul:not(.fcontact) li a { position: relative; display: inline-block; transition: transform 0.25s, color 0.2s; }
