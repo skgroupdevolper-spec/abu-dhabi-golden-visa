@@ -10,9 +10,9 @@ export const SERVICE_CATALOG: CatalogGroup[] = [
     items: [
       { label: 'Golden Visa', href: '/golden-visa/', note: '10-year residency' },
       { label: 'Retirement Visa', href: '/retirement-visa/', note: 'Renewable 5 years' },
-      { label: 'Family Visa', href: '/family-golden-visa/', note: 'Spouse, children, parents' },
+      { label: 'Family Visa', href: '/services/family-visa/', note: 'Spouse, children, parents' },
       { label: 'Investor & Partner Visa', href: '/services/investor-visa/', note: 'Company owners' },
-      { label: 'Newborn Visa', href: '/family-golden-visa/newborn/', note: 'Babies born in the UAE' },
+      { label: 'Newborn Visa', href: '/services/newborn-visa/', note: 'Babies born in the UAE' },
       { label: 'Maid Visa', href: '/services/maid-visa/', note: 'Domestic workers' },
       { label: 'Tourist Visa', href: '/services/tourist-visa/', note: 'Visit the UAE' },
       { label: 'Virtual Work Visa', href: '/remote-work-visa/', note: 'Work remotely from the UAE' },

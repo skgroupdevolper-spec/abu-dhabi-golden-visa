@@ -5,6 +5,7 @@ import { SERVICE_PAGES } from './pages-services';
 import { COUNTRY_PAGES } from './countries';
 import { BLOG } from './blog';
 import { enrich } from './enrich';
+import { FULL_PAGES } from './pages-services-full';
 
 const APPLY_PAGE: Page = {
   path: '/apply/',
@@ -16,7 +17,9 @@ const APPLY_PAGE: Page = {
   sections: [{ type: 'tool', tool: 'apply' }],
 };
 
-export const PAGES: Page[] = [...GOLDEN_VISA_PAGES, ...OTHER_PAGES, ...SERVICE_PAGES, ...COUNTRY_PAGES, ...BLOG, APPLY_PAGE].map(enrich);
+// Full service pages replace any older, shorter page with the same path.
+const FULL_PATHS = new Set(FULL_PAGES.map((p) => p.path));
+export const PAGES: Page[] = [...[...GOLDEN_VISA_PAGES, ...OTHER_PAGES, ...SERVICE_PAGES, ...COUNTRY_PAGES].filter((p) => !FULL_PATHS.has(p.path)), ...FULL_PAGES, ...BLOG, APPLY_PAGE].map(enrich);
 
 const BY_PATH = new Map(PAGES.map((p) => [p.path, p]));
 

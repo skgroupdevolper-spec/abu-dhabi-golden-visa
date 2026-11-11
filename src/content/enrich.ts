@@ -4,6 +4,11 @@
 // detailed sections (steps, fee tables, documents, comparisons). Checked 5 November 2026.
 import type { Page, Section } from './types';
 import { FEE_SCHEDULE } from '@/lib/fees';
+import { FULL_PAGES } from './pages-services-full';
+
+// Full service pages already carry their own sections; only these still take the shared extra blocks.
+const FULL_PATHS = new Set(FULL_PAGES.map((p) => p.path));
+const FULL_KEEP_ADD = new Set(['/services/golden-visa-renewal/']);
 
 type Fact = { label: string; value: string };
 const n = (v: number) => v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -415,7 +420,8 @@ function defaultImage(p: string) {
 /** Adds quick facts, the apply link and detailed sections to every page. */
 export function enrich(page: Page): Page {
   if (page.article || ['/privacy/', '/terms/', '/disclaimer/', '/apply/'].includes(page.path)) return page;
-  const r = RICH[page.path];
+  const r0 = RICH[page.path];
+  const r = r0 && FULL_PATHS.has(page.path) && !FULL_KEEP_ADD.has(page.path) ? { facts: r0.facts, apply: r0.apply } : r0;
   let sections = page.sections;
   if (r?.patch) sections = r.patch(sections);
   let add = r?.add ?? [];
