@@ -5,6 +5,7 @@
 import type { Page, Section } from './types';
 import { FEE_SCHEDULE } from '@/lib/fees';
 import { FULL_PAGES } from './pages-services-full';
+import { EXTRA } from './pages-extra';
 
 // Full service pages already carry their own sections; only these still take the shared extra blocks.
 const FULL_PATHS = new Set(FULL_PAGES.map((p) => p.path));
@@ -433,6 +434,31 @@ export function enrich(page: Page): Page {
     const extra = add.filter((s) => !have.has('title' in s ? s.title ?? '' : ''));
     const tail = sections.findIndex((s) => s.type === 'tool' && s.tool === 'lead');
     sections = tail >= 0 ? [...sections.slice(0, tail), ...extra, ...sections.slice(tail)] : [...sections, ...extra];
+  }
+  // Official-source extras: tabs near the top, more sections before the enquiry form, extra questions.
+  const x = FULL_PATHS.has(page.path) ? undefined : EXTRA[page.path];
+  if (x) {
+    const titled = (z: Section) => ('title' in z ? z.title ?? '' : '');
+    const have = new Set(sections.map(titled));
+    const top = (x.top ?? []).filter((z) => !have.has(titled(z)));
+    const add = (x.add ?? []).filter((z) => !have.has(titled(z)) && !top.includes(z));
+    const firstContent = sections.findIndex((z) => z.type !== 'tool');
+    const at = firstContent < 0 ? 0 : firstContent + 1;
+    sections = [...sections.slice(0, at), ...top, ...sections.slice(at)];
+    const tail = sections.findIndex((z) => z.type === 'tool' && (z.tool === 'lead' || z.tool === 'booking'));
+    sections = tail >= 0 ? [...sections.slice(0, tail), ...add, ...sections.slice(tail)] : [...sections, ...add];
+    if (x.faq?.length) {
+      const fi = sections.findIndex((z) => z.type === 'faq');
+      if (fi >= 0) {
+        const f = sections[fi] as Extract<Section, { type: 'faq' }>;
+        const qs = new Set(f.items.map((i) => i.q));
+        sections = sections.map((z, k) => (k === fi ? { ...f, items: [...f.items, ...x.faq!.filter((i) => !qs.has(i.q))] } : z));
+      } else {
+        const t2 = sections.findIndex((z) => z.type === 'tool' && (z.tool === 'lead' || z.tool === 'booking'));
+        const fq: Section = { type: 'faq', title: 'Questions we answer every day', items: x.faq };
+        sections = t2 >= 0 ? [...sections.slice(0, t2), fq, ...sections.slice(t2)] : [...sections, fq];
+      }
+    }
   }
   const facts = page.facts ?? r?.facts ?? (isGv(page.path) ? GV_FACTS({ label: 'Route', value: page.eyebrow.replace(/^Golden Visa for /, '') }) : DEFAULT_FACTS);
   const image = page.image ?? defaultImage(page.path);
