@@ -182,7 +182,7 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
         <div className="wrap">
           <nav className="crumbs" aria-label={u('Breadcrumb', locale)}>
             <L locale={locale} href="/">{u('Home', locale)}</L>
-            {crumbs.map((c) => getPage(c) && (<span key={c}>/ <L locale={locale} href={c}>{getPage(c)!.eyebrow}</L></span>))}
+            {crumbs.map((c) => getPage(c) && (<span key={c}>/ <L locale={locale} href={c}>{u(getPage(c)!.eyebrow, locale)}</L></span>))}
             <span aria-current="page">/ {page.eyebrow}</span>
           </nav>
           <div className={`phero-grid${isApply || page.article || (!heroImg && (!factsOn || !facts.length)) ? ' solo' : ''}`}>
@@ -276,8 +276,8 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
             <div className="grid">
               {page.related.map((r) => getPage(r) && (
                 <L key={r} locale={locale} href={r} className="card glass">
-                  <p className="eyebrow">{getPage(r)!.eyebrow}</p>
-                  <h3>{getPage(r)!.h1}</h3>
+                  <p className="eyebrow">{u(getPage(r)!.eyebrow, locale)}</p>
+                  <h3>{u(getPage(r)!.h1, locale)}</h3>
                   <span className="go">{u('Read more →', locale)}</span>
                 </L>
               ))}

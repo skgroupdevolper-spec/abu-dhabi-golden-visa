@@ -72,8 +72,11 @@ export function Header({ locale }: { locale: Locale }) {
     check();
     const ro = new ResizeObserver(check);
     ro.observe(el);
+    for (const c of Array.from(el.children)) ro.observe(c);
     void document.fonts?.ready.then(check);
-    return () => ro.disconnect();
+    const t1 = setTimeout(check, 800), t2 = setTimeout(check, 2500);
+    window.addEventListener('load', check);
+    return () => { ro.disconnect(); clearTimeout(t1); clearTimeout(t2); window.removeEventListener('load', check); };
   }, [locale]);
   useEffect(() => { const f = () => setShowTop(window.scrollY > 600); f(); window.addEventListener('scroll', f, { passive: true }); return () => window.removeEventListener('scroll', f); }, []);
   const [tab, setTab] = useState(0);
