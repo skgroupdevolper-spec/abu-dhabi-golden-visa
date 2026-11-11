@@ -1,4 +1,0 @@
-
-/* password with show/hide on the details step */
-.pw-row { display: flex; gap: 8px; align-items: center; }
-.pw-row input { flex: 1; min-width: 0; }
