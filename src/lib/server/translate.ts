@@ -161,6 +161,7 @@ export async function siteLangs() {
 
 /** Starts a background run for everything missing or changed, if automatic translation is on. Used at server start and by the daily job. */
 export async function autoCatchUp() {
+  if (process.env.CI) return; // no background translation during automated tests
   await clearStaleJob();
   const cfg = await getBlock<{ onSave: boolean }>('langcfg', { onSave: true });
   if (!cfg.onSave || globalThis.__adgvTranslating || !(await (await import('./mt')).engineReady())) return;
@@ -182,6 +183,7 @@ export async function translationProgress() {
 
 /** Translates changed pages into all languages in the background after an admin saves (if switched on). */
 export async function autoTranslate(_paths: string[]) {
+  if (process.env.CI) return;
   const cfg = await getBlock<{ onSave: boolean }>('langcfg', { onSave: true });
   if (!cfg.onSave || !(await (await import('./mt')).engineReady())) return;
   // The fingerprint check picks up exactly the pages that changed. If a run is busy, try again shortly.
@@ -226,6 +228,7 @@ export async function translateUi(langs: string[]) {
 
 /** Saves texts the website showed without a translation and translates them (called every few minutes). */
 export async function flushMissingUi() {
+  if (process.env.CI) return;
   const miss = globalThis.__ADGV_MISS;
   if (!miss?.size) return;
   const list = [...miss];
