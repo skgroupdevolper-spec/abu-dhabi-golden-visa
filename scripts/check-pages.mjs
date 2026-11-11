@@ -141,6 +141,7 @@ for (const vp of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
   await page.fill('#ap-phone', '+971500000001');
   await page.fill('#ap-email', 'apply@example.com');
   await page.fill('#ap-nat', 'British');
+  await page.fill('#ap-pw', 'sample-pass-123');
   await page.screenshot({ path: 'shots/apply-1.jpg', fullPage: true });
   await page.click('.apply-nav .btn-red');
   await page.click('text=+ Add spouse');
