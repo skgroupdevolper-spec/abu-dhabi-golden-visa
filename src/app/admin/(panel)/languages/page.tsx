@@ -19,6 +19,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function Languages() {
   await requireAdmin(FULL);
+  await import('@/lib/server/translate').then((m) => m.clearStaleJob()).catch(() => {});
   const [prog, job, ready, logs, langcfg] = await Promise.all([translationProgress(), getBlock<TranslateJob>('translateJob', JOB0), engineReady(), list<AiLog>('ai-log'), langCfg()]);
   const langs = LOCALES.filter((l) => l.code !== 'en');
   const site = await getSite();

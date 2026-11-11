@@ -147,6 +147,12 @@ export async function runTranslation(langs: string[], auto = false) {
   }
 }
 
+/** A run shown as "running" but not alive in this server process was cut off by a restart or deploy. */
+export async function clearStaleJob() {
+  const j = await getBlock<TranslateJob>('translateJob', JOB0);
+  if (j.running && !globalThis.__adgvTranslating) await saveBlock('translateJob', { ...j, running: false, current: undefined, message: 'Interrupted by a website update. It continues automatically.' });
+}
+
 /** Languages switched on for the website (all of them if none are chosen). */
 export async function siteLangs() {
   const on = (await import('./settings').then((m) => m.getSite())).languages;
@@ -155,6 +161,7 @@ export async function siteLangs() {
 
 /** Starts a background run for everything missing or changed, if automatic translation is on. Used at server start and by the daily job. */
 export async function autoCatchUp() {
+  await clearStaleJob();
   const cfg = await getBlock<{ onSave: boolean }>('langcfg', { onSave: true });
   if (!cfg.onSave || globalThis.__adgvTranslating || !(await (await import('./mt')).engineReady())) return;
   const langs = await siteLangs();

@@ -55,9 +55,10 @@ export async function startTranslation(_: St, f: FormData): Promise<St> {
 export async function translateEverything(): Promise<St> {
   await requireAdmin(FULL);
   if (!(await (await import('@/lib/server/mt')).engineReady())) return { error: 'The chosen translation engine needs a key. Choose Google (free) or add the key.' };
+  const { siteLangs, clearStaleJob } = await import('@/lib/server/translate');
+  await clearStaleJob();
   const job = await getBlock<TranslateJob>('translateJob', JOB0);
   if (job.running) return { error: 'Translation is already running. Watch the progress bar at the top.' };
-  const { siteLangs } = await import('@/lib/server/translate');
   const langs = await siteLangs();
   await saveBlock('translateJob', { ...JOB0, running: true, langs, auto: true, startedAt: new Date().toISOString() });
   void runTranslation(langs, true);

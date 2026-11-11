@@ -4,6 +4,6 @@ export async function register() {
     const { applyRuntimeSync } = await import('./lib/server/settings');
     applyRuntimeSync();
     // After each deploy, translate new or changed pages into all website languages in the background.
-    setTimeout(() => { void import('./lib/server/translate').then((m) => m.autoCatchUp()).catch(() => {}); }, 90_000);
+    setTimeout(() => { void import('./lib/server/translate').then((m) => m.autoCatchUp()).catch(() => {}); }, 60_000);
   }
 }
