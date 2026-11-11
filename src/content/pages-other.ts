@@ -98,13 +98,13 @@ export const OTHER_PAGES: Page[] = [
       {
         type: 'table',
         title: 'Who can apply',
-        intro: 'You need to be 55 or older and meet one of these, as set by the authorities:',
+        intro: 'You need to be 55 or older, with a work history and one financial condition, as set out on the UAE government portal:',
         head: ['Route', 'Usual benchmark'],
         rows: [
-          ['Property', 'Property in the UAE worth about AED 1 million, owned outright'],
-          ['Savings', 'Financial savings of about AED 1 million'],
-          ['Income', 'A steady monthly retirement income (the benchmark differs by emirate)'],
-          ['Work history', 'Having worked in the UAE or abroad for many years, combined with the financial conditions'],
+          ['Work history', 'At least 15 years of work, inside or outside the UAE'],
+          ['Property', 'Property in the UAE worth at least AED 1 million'],
+          ['Savings', 'Financial savings of at least AED 1 million'],
+          ['Income', 'Annual income of at least AED 180,000 (AED 240,000 in Dubai), from any source'],
         ],
         note: 'Benchmarks change and differ between emirates. We confirm the current rules for Abu Dhabi before you apply.',
       },

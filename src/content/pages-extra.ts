@@ -15,7 +15,7 @@ const steps = (title: string, items: { title: string; text: string }[], note?: s
 export type Extra = { top?: Section[]; add?: Section[]; faq?: { q: string; a: string }[] };
 
 /* ---------------- shared blocks ---------------- */
-const HOW_NOMINATION = steps('How nomination works in Abu Dhabi', [
+export const HOW_NOMINATION = steps('How nomination works in Abu Dhabi', [
   { title: 'Free eligibility check', text: 'We review your documents against the official criteria for your category before anything is filed.' },
   { title: 'Nomination request', text: 'UAE residents apply for Golden Visa nomination through the Abu Dhabi Residents Office on TAMM. Applicants outside the UAE apply to the Abu Dhabi Investment Office (ADIO). We prepare and submit the file with you.' },
   { title: 'Recommendation where required', text: 'Some categories need a recommending body: a business incubator for entrepreneurs, a ministry for specialists, the Ministry of Culture for creatives.' },
@@ -24,7 +24,7 @@ const HOW_NOMINATION = steps('How nomination works in Abu Dhabi', [
   { title: 'Residence issued', text: 'The 10-year residence is issued and the Emirates ID delivered. Family follows in the same file.' },
 ], 'Nomination is decided by the competent authority; we prepare a complete file so it is reviewed without delay.');
 
-const GV_BENEFITS = ticks('What every Golden Visa holder gets', [
+export const GV_BENEFITS = ticks('What every Golden Visa holder gets', [
   'Up to 10 years of residence, renewed while you still qualify',
   'No sponsor or employer needed: change jobs or start a business freely',
   'No six-month rule: long periods abroad do not cancel the visa',
@@ -34,9 +34,9 @@ const GV_BENEFITS = ticks('What every Golden Visa holder gets', [
   'Esaad privilege card with discounts across the UAE and abroad',
 ]);
 
-const GV_DOCS_BASE = ['Passport valid for at least six months', 'Recent colour photo on a white background', 'Emirates ID and current visa, if you live in the UAE', 'Health insurance for you and your family'];
+export const GV_DOCS_BASE = ['Passport valid for at least six months', 'Recent colour photo on a white background', 'Emirates ID and current visa, if you live in the UAE', 'Health insurance for you and your family'];
 
-const GV_FAQ_COMMON = [
+export const GV_FAQ_COMMON = [
   { q: 'Can I apply from outside the UAE?', a: 'Yes. Non-residents apply for nomination through the Abu Dhabi Investment Office, then receive an entry permit to complete the medical and Emirates ID in the UAE.' },
   { q: 'Is health insurance required?', a: 'Yes. ICP requires valid health insurance for the holder and the family for the residence period.' },
   { q: 'Do I lose the visa if I stay abroad for more than six months?', a: 'No. The Golden Visa is not cancelled by long stays abroad.' },
@@ -44,7 +44,7 @@ const GV_FAQ_COMMON = [
 ];
 
 /* ---------------- category data (official criteria) ---------------- */
-const CAT_TABS = tabs('The eight Golden Visa categories', 'Tap a category to see the official criteria in our own words. Each route is 10 years and renewable.', [
+export const CAT_TABS = tabs('The eight Golden Visa categories', 'Tap a category to see the official criteria in our own words. Each route is 10 years and renewable.', [
   { label: 'Real estate investors', sub: 'AED 2M+ property', items: ['Property worth AED 2 million or more in total, in the investor’s name', 'Mortgage from an approved UAE bank allowed: your own equity must be AED 2M+', 'Off-plan units from an approved developer, with AED 2M+ paid', 'Sole ownership on the Abu Dhabi route'] },
   { label: 'Investors', sub: 'AED 2M deposit or capital', items: ['AED 2 million deposit with an investment fund or national bank', 'Or company capital or partnership share of AED 2M+', 'Or a company paying AED 250,000+ a year in federal taxes (or your share of it) for two years', 'Capital must be your own, not loan-financed, with proof of source'] },
   { label: 'Entrepreneurs', sub: 'Approved or proven ventures', items: ['Owner or partner of an approved SME with AED 1M+ annual revenue', 'Or an approved pioneering idea from an accredited incubator or authority', 'Or founder of ventures sold for AED 7M+ in total'] },

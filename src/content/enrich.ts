@@ -6,6 +6,7 @@ import type { Page, Section } from './types';
 import { FEE_SCHEDULE } from '@/lib/fees';
 import { FULL_PAGES } from './pages-services-full';
 import { EXTRA } from './pages-extra';
+import { EXTRA2, joinExtra } from './pages-extra2';
 
 // Full service pages already carry their own sections; only these still take the shared extra blocks.
 const FULL_PATHS = new Set(FULL_PAGES.map((p) => p.path));
@@ -436,12 +437,12 @@ export function enrich(page: Page): Page {
     sections = tail >= 0 ? [...sections.slice(0, tail), ...extra, ...sections.slice(tail)] : [...sections, ...extra];
   }
   // Official-source extras: tabs near the top, more sections before the enquiry form, extra questions.
-  const x = FULL_PATHS.has(page.path) ? undefined : EXTRA[page.path];
+  const x = FULL_PATHS.has(page.path) ? undefined : joinExtra(EXTRA[page.path], EXTRA2[page.path]);
   if (x) {
     const titled = (z: Section) => ('title' in z ? z.title ?? '' : '');
     const have = new Set(sections.map(titled));
-    const top = (x.top ?? []).filter((z) => !have.has(titled(z)));
-    const add = (x.add ?? []).filter((z) => !have.has(titled(z)) && !top.includes(z));
+    const top = (x.top ?? []).filter((z) => !have.has(titled(z)) && (have.add(titled(z)), true));
+    const add = (x.add ?? []).filter((z) => !have.has(titled(z)) && (have.add(titled(z)), true));
     const firstContent = sections.findIndex((z) => z.type !== 'tool');
     const at = firstContent < 0 ? 0 : firstContent + 1;
     sections = [...sections.slice(0, at), ...top, ...sections.slice(at)];
