@@ -9,7 +9,7 @@ import { EDIT, FULL, requireAdmin } from '@/lib/server/auth';
 import type { Role } from '@/lib/server/collections';
 import { UPLOAD_DIR, updateJsonFile } from '@/lib/server/store';
 
-type Item = { id: string; read?: boolean; status?: string; archived?: boolean };
+type Item = { id: string; read?: boolean; status?: string; archived?: boolean; kind?: string };
 const KINDS: Record<string, { file: string; page: string; roles: Role[] }> = {
   notifications: { file: 'notifications.json', page: '/admin/notifications/', roles: ['owner', 'admin', 'staff', 'viewer'] },
   leads: { file: 'leads.json', page: '/admin/leads/', roles: EDIT },
@@ -18,6 +18,7 @@ const KINDS: Record<string, { file: string; page: string; roles: Role[] }> = {
   walog: { file: 'whatsapp-log.json', page: '/admin/whatsapp/?tab=log', roles: FULL },
   chats: { file: 'chats.json', page: '/admin/chatbot/', roles: FULL },
   bookings: { file: 'bookings.json', page: '/admin/bookings/', roles: EDIT },
+  ailog: { file: 'ai-log.json', page: '/admin/languages/', roles: FULL },
 };
 
 async function drop(kind: string, keep: (x: Item) => boolean) {
@@ -47,7 +48,7 @@ export async function deleteItems(f: FormData) {
 export async function clearItems(f: FormData) {
   const kind = String(f.get('kind') || ''), scope = String(f.get('scope') || '');
   const st = scope.startsWith('status:') ? scope.slice(7) : '';
-  await drop(kind, (x) => !(scope === 'all' || (scope === 'read' && x.read) || (st && x.status === st) || (scope === 'archived' && x.archived)));
+  await drop(kind, (x) => !(scope === 'all' || (scope === 'read' && x.read) || (st && x.status === st) || (scope === 'archived' && x.archived) || (scope.startsWith('kind:') && x.kind === scope.slice(5))));
 }
 
 /** Delete (on=1) or restore (on=0) a built-in page or guide. Built-in pages are part of the code, so

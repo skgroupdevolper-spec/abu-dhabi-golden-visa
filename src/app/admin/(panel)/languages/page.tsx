@@ -8,6 +8,7 @@ import { getBlock } from '@/lib/server/settings';
 import { JOB0, translationProgress, type AiLog, type TranslateJob } from '@/lib/server/translate';
 import { LOCALES } from '@/lib/i18n';
 import { when } from '@/lib/stages';
+import { clearItems } from '@/app/admin/delete-actions';
 import { AiPanel } from '@/components/dash/AiPanel';
 import { clearTranslations, saveLangCfg, saveSiteLanguages, startTranslation, stopTranslation, translateInterface } from '../../ai-actions';
 import { uiProgress } from '@/lib/server/translate';
@@ -80,7 +81,7 @@ export default async function Languages() {
       </div>
       <div id="ai" style={{ marginTop: 16 }}><AiPanel uses={['translate']} title="Translation AI provider & API key" /></div>
       {logs.filter((l) => l.kind === 'translate').length > 0 && (
-        <div className="panel" style={{ marginTop: 16 }}><h2>Recent errors</h2><div className="files" style={{ marginTop: 10 }}>{logs.filter((l) => l.kind === 'translate').slice(0, 20).map((l) => <div key={l.id} className="file"><span className="fn"><b>{l.text}</b><small>{when(l.at)}</small></span></div>)}</div></div>
+        <div className="panel" style={{ marginTop: 16 }}><div className="panel-h"><h2>Recent errors</h2><form action={clearItems}><input type="hidden" name="kind" value="ailog" /><input type="hidden" name="scope" value="kind:translate" /><button className="btn btn-sm" type="submit">Clear old errors</button></form></div><p className="small muted">Messages about “gemini-2.5-flash” are old: Google retired that model and the site now switches to Gemini 3.8 Flash automatically. Clear them and run the translation again.</p><div className="files" style={{ marginTop: 10 }}>{logs.filter((l) => l.kind === 'translate').slice(0, 20).map((l) => <div key={l.id} className="file"><span className="fn"><b>{l.text}</b><small>{when(l.at)}</small></span></div>)}</div></div>
       )}
     </>
   );

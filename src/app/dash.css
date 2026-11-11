@@ -841,3 +841,10 @@ code.k { overflow-wrap: anywhere; word-break: break-all; }
 .stc.st-appr { color: #15803d; } .stc.st-rej { color: #b42318; } .stc.st-hold { color: #b7791f; }
 .ohero.st-rej { background: radial-gradient(120% 140% at 0% 0%, #5a1b1b, #1f0a0a 60%); }
 .ohero.st-appr { background: radial-gradient(120% 140% at 0% 0%, #14532d, #0a2414 60%); }
+
+/* Admin: long text wraps instead of being cut off */
+.file .fn b { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; line-height: 1.45; }
+.file { min-width: 0; max-width: 100%; }
+.files { min-width: 0; }
+.tbl td, .tbl th { overflow-wrap: anywhere; }
+.panel, .kpi, .notice { min-width: 0; overflow-wrap: anywhere; }
