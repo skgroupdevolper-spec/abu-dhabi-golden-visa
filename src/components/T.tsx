@@ -14,3 +14,9 @@ export function T({ children }: { children: string }) {
   const loc = useLoc();
   return <>{u(children, loc)}</>;
 }
+
+/** <Opt>English</Opt>: a select option shown in the visitor's language; the submitted value stays English. */
+export function Opt({ children, value, disabled }: { children: string; value?: string; disabled?: boolean }) {
+  const loc = useLoc();
+  return <option value={value ?? children} disabled={disabled}>{u(children, loc)}</option>;
+}

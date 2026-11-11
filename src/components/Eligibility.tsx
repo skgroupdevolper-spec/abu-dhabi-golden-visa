@@ -1,6 +1,6 @@
 'use client';
 
-import { T } from './T';
+import { Opt, T } from './T';
 import { useState, type FormEvent } from 'react';
 import { waLink } from '@/lib/site';
 import { Icon } from './Icon';
@@ -88,7 +88,7 @@ export function Eligibility() {
         {cat === 'professional' && (
           <div className="field full"><label htmlFor="el-salary"><T>{"Monthly salary (AED)"}</T></label><input id="el-salary" inputMode="numeric" placeholder="30,000" value={salary} onChange={(e) => setSalary(e.target.value)} required /></div>
         )}
-        <div className="field"><label htmlFor="el-where"><T>{"Where are you now?"}</T></label><select id="el-where" value={where} onChange={(e) => setWhere(e.target.value as 'in' | 'out')}><option value="in">Inside the UAE</option><option value="out">Outside the UAE</option></select></div>
+        <div className="field"><label htmlFor="el-where"><T>{"Where are you now?"}</T></label><select id="el-where" value={where} onChange={(e) => setWhere(e.target.value as 'in' | 'out')}><Opt value="in">{"Inside the UAE"}</Opt><Opt value="out">{"Outside the UAE"}</Opt></select></div>
         <div className="field"><label htmlFor="el-deps"><T>{"Number of dependants"}</T></label><input id="el-deps" type="number" min={0} max={15} value={deps} onChange={(e) => setDeps(Math.max(0, Number(e.target.value) || 0))} /></div>
         <div className="full"><button className="btn btn-red" type="submit"><T>{"Check My Eligibility"}</T> <Icon name="arrow" size={18} className="arrow" /></button></div>
       </form>

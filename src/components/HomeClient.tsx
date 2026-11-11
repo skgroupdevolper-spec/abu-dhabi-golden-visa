@@ -1,6 +1,7 @@
 'use client';
 
-import { T } from './T';
+import { Opt, T } from './T';
+import { u } from '@/lib/ui';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { localizePath, type Locale } from '@/lib/i18n';
 import { waLink } from '@/lib/site';
@@ -27,11 +28,11 @@ export function HeroFinder({ locale }: { locale: Locale }) {
       <div className="q"><T>{"Find your route"}</T></div>
       <div className="chips" role="group" aria-label="Which describes you?">
         {FINDER.map((x, k) => (
-          <button key={x.label} type="button" aria-pressed={k === i} onClick={(e) => { setI(k); drop(e.currentTarget); }}>{x.label}</button>
+          <button key={x.label} type="button" aria-pressed={k === i} onClick={(e) => { setI(k); drop(e.currentTarget); }}>{u(x.label, locale)}</button>
         ))}
       </div>
       <div className="res">
-        <div key={i} className="fres" aria-live="polite"><small><T>{"Your route"}</T></small><b>{f.route}</b><small>{f.note}</small></div>
+        <div key={i} className="fres" aria-live="polite"><small><T>{"Your route"}</T></small><b>{u(f.route, locale)}</b><small>{u(f.note, locale)}</small></div>
         <a href={localizePath(f.href, locale)} aria-label={`See the ${f.route} route`}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
         </a>
@@ -94,8 +95,8 @@ export function ServicesGrid({ locale }: { locale: Locale }) {
           <a key={t} className="sc glass tilt" href={href.startsWith('#') ? href : localizePath(href, locale)}>
             <div className="bd">
               <div className="ico"><span className="orb" /><svg viewBox="0 0 24 24" dangerouslySetInnerHTML={{ __html: IC[ic] }} /></div>
-              <h3>{t}</h3>
-              <p>{d}</p>
+              <h3>{u(t, locale)}</h3>
+              <p>{u(d, locale)}</p>
               <span className="go"><T>{"Learn more"}</T> <i>→</i></span>
             </div>
           </a>
@@ -111,9 +112,9 @@ export function ServicesGrid({ locale }: { locale: Locale }) {
             else setN((x) => Math.min(SERVICES.length, x + 6));
           }}
         >
-          {all ? 'Talk to us about any other service' : 'Load more services'}
+          {u(all ? 'Talk to us about any other service' : 'Load more services', locale)}
         </button>
-        <small>{all ? `All ${SERVICES.length} services shown` : `Showing ${n} of ${SERVICES.length}`}</small>
+        <small>{all ? u('All {n} services shown', locale).replace('{n}', String(SERVICES.length)) : u('Showing {n} of {total}', locale).replace('{n}', String(n)).replace('{total}', String(SERVICES.length))}</small>
       </div>
     </>
   );
@@ -257,8 +258,8 @@ export function HomeLeadForm() {
     <form className="form" id="leadForm" style={{ marginTop: 26 }} noValidate onSubmit={submit}>
       <div><label htmlFor="fName"><T>{"Full name"}</T></label><input id="fName" name="name" autoComplete="name" required /></div>
       <div><label htmlFor="fPhone"><T>{"WhatsApp number"}</T></label><input id="fPhone" name="phone" type="tel" autoComplete="tel" placeholder="+971" required /></div>
-      <div><label htmlFor="fRoute"><T>{"Route"}</T></label><select id="fRoute" name="route"><option>Real-estate investor</option><option>Non-real-estate investor</option><option>Entrepreneur</option><option>Skilled professional</option><option>University graduate</option><option>Family visa</option><option>Valuation certificate</option><option>Not sure yet</option></select></div>
-      <div><label htmlFor="fLang"><T>{"Preferred language"}</T></label><select id="fLang" name="lang"><option>English</option><option>العربية</option><option>Русский</option><option>Türkçe</option><option>中文</option><option>Français</option><option>Deutsch</option><option>Español</option><option>हिन्दी</option><option>اردو</option><option>Other</option></select></div>
+      <div><label htmlFor="fRoute"><T>{"Route"}</T></label><select id="fRoute" name="route"><Opt>{"Real-estate investor"}</Opt><Opt>{"Non-real-estate investor"}</Opt><Opt>{"Entrepreneur"}</Opt><Opt>{"Skilled professional"}</Opt><Opt>{"University graduate"}</Opt><Opt>{"Family visa"}</Opt><Opt>{"Valuation certificate"}</Opt><Opt>{"Not sure yet"}</Opt></select></div>
+      <div><label htmlFor="fLang"><T>{"Preferred language"}</T></label><select id="fLang" name="lang"><Opt>{"English"}</Opt><option>العربية</option><option>Русский</option><Opt>{"Türkçe"}</Opt><option>中文</option><Opt>{"Français"}</Opt><Opt>{"Deutsch"}</Opt><Opt>{"Español"}</Opt><option>हिन्दी</option><option>اردو</option><Opt>{"Other"}</Opt></select></div>
       <div className="full"><label htmlFor="fMsg"><T>{"Anything we should know?"}</T></label><textarea id="fMsg" name="msg" /></div>
       <div className="full"><button className="btn btn-gold mag" type="submit" disabled={state === 'busy'}>{state === 'busy' ? 'Sending…' : 'Get my free quote'}</button></div>
       {state === 'done' && (

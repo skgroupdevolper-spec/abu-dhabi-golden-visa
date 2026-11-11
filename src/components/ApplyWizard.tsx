@@ -1,6 +1,6 @@
 'use client';
 
-import { T } from './T';
+import { Opt, T } from './T';
 // Online application: service → applicant → family → documents → review & submit.
 // Creates an enquiry and a client file (visible in the admin and the client dashboard).
 import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
@@ -192,7 +192,7 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
                 </div>
                 <div className="field"><label htmlFor="ap-visa"><T>{"Current UAE visa (if any)"}</T></label>
                   <select id="ap-visa" value={d.visa} onChange={set('visa')}>
-                    <option value="">None / not in the UAE</option><option>Visit or tourist visa</option><option>Employment visa</option><option>Investor or partner visa</option><option>Family visa</option><option>Golden Visa</option><option>Other</option>
+                    <Opt value="">{"None / not in the UAE"}</Opt><Opt>{"Visit or tourist visa"}</Opt><Opt>{"Employment visa"}</Opt><Opt>{"Investor or partner visa"}</Opt><Opt>{"Family visa"}</Opt><Opt>{"Golden Visa"}</Opt><Opt>{"Other"}</Opt>
                   </select>
                 </div>
                 <div className="field"><label htmlFor="ap-notes"><T>{"Anything we should know?"}</T></label><input id="ap-notes" value={d.notes} onChange={set('notes')} placeholder="e.g. property value, deadline" /></div>
@@ -209,12 +209,12 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
                 {fam.map((m, i) => (
                   <div className="fam-row" key={i}>
                     <select aria-label="Relation" value={m.relation} onChange={(e) => setFam(fam.map((x, k) => (k === i ? { ...x, relation: e.target.value as Member['relation'], adult: e.target.value === 'Child' ? x.adult : true } : x)))}>
-                      <option>Spouse</option><option>Child</option><option>Parent</option>
+                      <Opt>{"Spouse"}</Opt><Opt>{"Child"}</Opt><Opt>{"Parent"}</Opt>
                     </select>
                     <input aria-label="Full name" placeholder="Full name" value={m.name} onChange={(e) => setFam(fam.map((x, k) => (k === i ? { ...x, name: e.target.value } : x)))} />
                     {m.relation === 'Child' ? (
                       <select aria-label="Age" value={m.adult ? 'a' : 'k'} onChange={(e) => setFam(fam.map((x, k) => (k === i ? { ...x, adult: e.target.value === 'a' } : x)))}>
-                        <option value="k">Under 18</option><option value="a">18 or over</option>
+                        <Opt value="k">{"Under 18"}</Opt><Opt value="a">{"18 or over"}</Opt>
                       </select>
                     ) : <span className="fam-tag"><T>{"Adult"}</T></span>}
                     <button type="button" className="fam-x" aria-label="Remove" onClick={() => setFam(fam.filter((_, k) => k !== i))}><Icon name="close" size={16} /></button>
