@@ -829,3 +829,15 @@ code.k { overflow-wrap: anywhere; word-break: break-all; }
 .tbl-lite { width: 100%; border-collapse: collapse; }
 .tbl-lite td, .tbl-lite th { padding: 9px 6px; border-bottom: 1px solid #f1ead6; text-align: start; vertical-align: top; }
 @media (max-width: 860px) { .vis-two { grid-template-columns: 1fr; } }
+
+/* Authority decision on a client file */
+.decision-box { margin: 16px 0; padding: 18px 20px; border-radius: 18px; border: 1px solid; display: grid; gap: 6px; }
+.decision-box p { margin: 0; }
+.decision-box .btn { justify-self: start; margin-top: 6px; }
+.decision-box.d-approved { background: #e9f7ee; border-color: #9fd8b3; color: #14532d; }
+.decision-box.d-rejected, .decision-box.d-withdrawn { background: #fdecec; border-color: #f2b8b8; color: #7f1d1d; }
+.decision-box.d-on_hold { background: #fff6e0; border-color: #f0d48a; color: #78350f; }
+.stc-pill.st-appr { background: #e3f3e8; color: var(--ok); } .stc-pill.st-rej { background: #fdecec; color: #b42318; } .stc-pill.st-hold { background: #fff6e0; color: #b7791f; }
+.stc.st-appr { color: #15803d; } .stc.st-rej { color: #b42318; } .stc.st-hold { color: #b7791f; }
+.ohero.st-rej { background: radial-gradient(120% 140% at 0% 0%, #5a1b1b, #1f0a0a 60%); }
+.ohero.st-appr { background: radial-gradient(120% 140% at 0% 0%, #14532d, #0a2414 60%); }

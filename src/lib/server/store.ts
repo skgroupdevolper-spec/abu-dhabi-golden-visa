@@ -31,7 +31,11 @@ export type Application = {
   payments: Payment[]; documents: Doc[]; requests: string[]; messages: Message[]; leadId?: string;
   /** Advisor shown to the client, terms and quote validity. */
   advisor?: { name: string; phone: string }; validUntil?: string; confirmedAt?: string;
+  /** Authority decision on the file: approved, rejected (with reason), on hold or withdrawn. */
+  decision?: Decision;
 };
+export type DecisionResult = 'approved' | 'rejected' | 'on_hold' | 'withdrawn';
+export type Decision = { result: DecisionResult; reason: string; at: string; by?: string; refNo?: string; validTo?: string; nextAction?: string; history?: { result: DecisionResult; reason: string; at: string }[] };
 
 export type Fees = typeof FEE_SCHEDULE;
 type Settings = { fees: Fees };

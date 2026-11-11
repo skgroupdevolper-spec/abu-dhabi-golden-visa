@@ -13,9 +13,10 @@ import { saveStageDefaults, setAdvisor } from '../../../settings-actions';
 import { StageFields } from '@/components/dash/StageFields';
 import { getBlock } from '@/lib/server/settings';
 import { portalUrl, waTo } from '@/lib/site';
+import { DECISION_PILL, DECISION_TEXT } from '@/lib/decision';
 import { ROUTE_LABELS, STAGES, STAGE_NEXT_DEFAULT, day, money, when } from '@/lib/stages';
 import {
-  addPayment, archiveApplication, fillQuote, markPaid, newPortalLink, removePayment, saveClient, saveQuote, setRequests, setStage, teamMessage, toggleShare, uploadTeamDoc,
+  addPayment, archiveApplication, fillQuote, markPaid, newPortalLink, removePayment, saveClient, saveQuote, setDecision, setRequests, setStage, teamMessage, toggleShare, uploadTeamDoc,
 } from '../../../actions';
 
 export const metadata: Metadata = { title: 'Application' };
@@ -74,6 +75,43 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
                 <li key={t} className={i < a.stage ? 'done' : i === a.stage ? 'now' : ''}><span className="dot">{i < a.stage ? '✓' : i + 1}</span><div><b>{t}</b>{a.stageDates[String(i)] && <small>{day(a.stageDates[String(i)])}</small>}</div></li>
               ))}
             </ol>
+          </section>
+
+          {/* DECISION */}
+          <section className="panel" id="decision">
+            <div className="panel-h"><h2>Authority decision</h2>{a.decision ? <span className={`pill ${DECISION_PILL[a.decision.result]}`}>{DECISION_TEXT[a.decision.result].title} · {day(a.decision.at)}</span> : <span className="pill">Awaiting decision</span>}</div>
+            {a.decision && (
+              <div className="notice" style={{ marginBottom: 14 }}>
+                <b>{DECISION_TEXT[a.decision.result].title}</b> on {when(a.decision.at)}{a.decision.by ? ` by ${a.decision.by}` : ''}
+                {a.decision.refNo && <><br />Authority reference: {a.decision.refNo}</>}
+                {a.decision.validTo && <><br />Visa valid until: {day(a.decision.validTo)}</>}
+                {a.decision.reason && <><br />Reason / note: {a.decision.reason}</>}
+                {a.decision.nextAction && <><br />Next step for client: {a.decision.nextAction}</>}
+              </div>
+            )}
+            <ActionForm action={setDecision} className="form">
+              {H}
+              <div className="field full">
+                <label>Decision</label>
+                <div className="row" role="radiogroup">
+                  {(['approved', 'rejected', 'on_hold', 'withdrawn'] as const).map((r) => (
+                    <label key={r} className="row small" style={{ gap: 6 }}><input type="radio" name="result" value={r} defaultChecked={a.decision?.result === r} required /> {DECISION_TEXT[r].title}</label>
+                  ))}
+                </div>
+              </div>
+              <div className="field"><label htmlFor="refNo">Authority reference (optional)</label><input id="refNo" name="refNo" defaultValue={a.decision?.refNo ?? ''} placeholder="e.g. ICP or TAMM application number" /></div>
+              <div className="field"><label htmlFor="validTo">Visa valid until (if approved)</label><input id="validTo" name="validTo" type="date" defaultValue={a.decision?.validTo ?? ''} /></div>
+              <div className="field full"><label htmlFor="reason">Reason or note from the authority (required if rejected)</label><textarea id="reason" name="reason" rows={3} defaultValue={a.decision?.reason ?? ''} placeholder="e.g. Salary certificate not accepted; degree attestation missing" /></div>
+              <div className="field full"><label htmlFor="nextAction">What the client should do next</label><textarea id="nextAction" name="nextAction" rows={2} defaultValue={a.decision?.nextAction ?? ''} placeholder="e.g. We can appeal or re-apply once the attested degree is ready" /></div>
+              <label className="row full small"><input type="checkbox" name="advance" defaultChecked /> If approved, move the file to “Entry permit or change of status”</label>
+              <label className="row full small"><input type="checkbox" name="notify" defaultChecked /> Tell the client (portal message, WhatsApp and email)</label>
+              <div className="full row"><Submit>Save decision</Submit>{a.decision && <Submit className="btn" name="clear" value="1">Clear decision (reopen)</Submit>}</div>
+            </ActionForm>
+            {!!a.decision?.history?.length && (
+              <details className="more" style={{ marginTop: 12 }}><summary>Earlier decisions ({a.decision.history.length})</summary>
+                <ul className="small">{a.decision.history.map((h, i) => <li key={i}>{DECISION_TEXT[h.result].title} · {when(h.at)}{h.reason ? ` · ${h.reason}` : ''}</li>)}</ul>
+              </details>
+            )}
           </section>
 
           {/* QUOTE */}

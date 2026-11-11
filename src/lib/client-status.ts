@@ -2,9 +2,14 @@
 import type { Dict } from './portal-i18n';
 import { STAGES } from './stages';
 
-type A = { stage: number; quote: { sentAt?: string; acceptedAt?: string; lines: { amount: number }[]; serviceFee: number; vat: number }; payments: { status: string; amount: number }[] };
+type A = { decision?: { result: string }; stage: number; quote: { sentAt?: string; acceptedAt?: string; lines: { amount: number }[]; serviceFee: number; vat: number }; payments: { status: string; amount: number }[] };
 
-export function fileStatus(a: A, t: Dict): { key: 'prep' | 'quote' | 'conf' | 'prog' | 'done'; label: string } {
+export function fileStatus(a: A, t: Dict): { key: 'prep' | 'quote' | 'conf' | 'prog' | 'done' | 'appr' | 'rej' | 'hold'; label: string } {
+  const d = a.decision?.result;
+  if (d === 'approved' && a.stage < STAGES.length - 1) return { key: 'appr', label: 'Approved ✓' };
+  if (d === 'rejected') return { key: 'rej', label: 'Not approved' };
+  if (d === 'on_hold') return { key: 'hold', label: 'On hold' };
+  if (d === 'withdrawn') return { key: 'rej', label: 'Withdrawn' };
   const paid = a.payments.some((p) => p.status === 'paid'), due = a.payments.some((p) => p.status === 'due');
   if (a.stage >= STAGES.length - 1) return { key: 'done', label: t.stCompleted };
   if (!a.quote.sentAt) return { key: 'prep', label: t.stPreparing };

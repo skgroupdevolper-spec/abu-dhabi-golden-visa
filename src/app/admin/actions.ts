@@ -13,6 +13,7 @@ import { createApplication, getApplication, getFees, newId, now, saveFees, updat
 import { STAGES, governmentLines, money } from '@/lib/stages';
 import { SITE, portalUrl } from '@/lib/site';
 import { sendWa } from '@/lib/server/whatsapp';
+import { DECISION_TEXT } from '@/lib/decision';
 
 const V = (a: Application, extra: Record<string, string | number | undefined> = {}) => ({ name: a.client.name.split(' ')[0], ref: a.ref, link: portalUrl(a.token), ...extra });
 
@@ -327,3 +328,31 @@ export async function totpDisable(_: FormState, f: FormData): Promise<FormState>
   revalidatePath('/admin/profile/');
   return { ok: 'Two-step login is off.' };
 }
+
+/* ---------- authority decision: approved / rejected / on hold / withdrawn ---------- */
+
+export async function setDecision(_: FormState, f: FormData): Promise<FormState> {
+  const result = s(f, 'result', 20);
+  if (f.get('clear')) {
+    await edit(f, (a) => { if (a.decision) a.decision = { ...a.decision, history: [...(a.decision.history ?? []), { result: a.decision.result, reason: a.decision.reason, at: a.decision.at }] }; delete (a as { decision?: unknown }).decision; });
+    return { ok: 'Decision cleared. The file is open again.' };
+  }
+  if (!DECISION_TEXT[result]) return { error: 'Choose a decision.' };
+  const reason = s(f, 'reason', 800), nextAction = s(f, 'nextAction', 600);
+  if (result === 'rejected' && !reason) return { error: 'Please add the reason the authority gave, so the client understands what happened.' };
+  const me = await import('@/lib/server/auth').then((m) => m.currentAdmin());
+  const D = DECISION_TEXT[result];
+  const app = await edit(f, (a) => {
+    const prev = a.decision ? [...(a.decision.history ?? []), { result: a.decision.result, reason: a.decision.reason, at: a.decision.at }] : [];
+    a.decision = { result: result as 'approved', reason, at: now(), by: me?.name || me?.email, refNo: s(f, 'refNo', 80) || undefined, validTo: s(f, 'validTo', 20) || undefined, nextAction: nextAction || undefined, history: prev };
+    if (result === 'approved' && f.get('advance') && a.stage < 6) { a.stage = 6; a.stageDates['6'] = a.stageDates['6'] || now(); a.nextStep = STAGE_NEXT_DEFAULT_6; }
+    if (f.get('notify')) a.messages.push({ id: newId(6), by: 'team', at: now(), text: `${D.client}${reason ? `\nReason: ${reason}` : ''}${nextAction ? `\nNext: ${nextAction}` : ''}` });
+  });
+  if (app && f.get('notify')) {
+    const r = await sendWa(app.client.phone, 'status', V(app, { status: D.title, next: nextAction || reason || '' }));
+    void mailClient(app, `Application ${app.ref}: ${D.title}`, `${D.client}${reason ? `\nReason: ${reason}` : ''}${nextAction ? `\nNext step: ${nextAction}` : ''}`);
+    return { ok: `Decision saved: ${D.title}.${r.ok ? ' WhatsApp sent.' : ''}` };
+  }
+  return { ok: `Decision saved: ${D.title}.` };
+}
+const STAGE_NEXT_DEFAULT_6 = 'We are arranging your entry permit or change of status. We will share the details with you.';

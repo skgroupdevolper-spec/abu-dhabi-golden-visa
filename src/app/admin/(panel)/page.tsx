@@ -27,6 +27,12 @@ export default async function Overview() {
         <div className="kpi reveal"><small>Awaiting payment</small><b style={{ fontSize: 30 }}>{money(due)}</b><small>{apps.flatMap((a) => a.payments).filter((p) => p.status === 'due').length} requests</small></div>
         <div className="kpi goldbg reveal"><small>Payments received</small><b style={{ fontSize: 30 }}>{money(paid)}</b><small>All time</small></div>
       </div>
+      <div className="grid4" style={{ marginTop: 16 }}>
+        {([['approved', 'Approved visas'], ['rejected', 'Not approved'], ['on_hold', 'On hold'], ['none', 'Awaiting decision']] as const).map(([r, t]) => {
+          const c = apps.filter((a) => (r === 'none' ? !a.decision : a.decision?.result === r)).length;
+          return <Link key={r} href={`/admin/applications/?d=${r}`} className="kpi reveal" style={{ textDecoration: 'none' }}><small>{t}</small><b>{c}</b><small>{r === 'approved' && apps.length ? `${Math.round((c / Math.max(1, apps.filter((a) => a.decision && a.decision.result !== 'on_hold').length)) * 100)}% of decided files` : 'Open list →'}</small></Link>;
+        })}
+      </div>
       <div className="cols" style={{ marginTop: 16 }}>
         <div className="panel">
           <div className="panel-h"><h2>Latest enquiries</h2><Link href="/admin/leads/" className="btn btn-sm">See all</Link></div>

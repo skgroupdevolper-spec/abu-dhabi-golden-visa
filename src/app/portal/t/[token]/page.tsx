@@ -6,6 +6,7 @@ import { getApplicationByToken } from '@/lib/server/store';
 import { SITE, waLink, waTo } from '@/lib/site';
 import { getPayCfg, online, orderBalance } from '@/lib/server/payments';
 import { LiveRefresh } from '@/components/dash/LiveRefresh';
+import { DECISION_TEXT } from '@/lib/decision';
 import { STAGES, day, money, when } from '@/lib/stages';
 import { PortalTop } from '@/components/dash/PortalTop';
 import { ClientShell } from '@/components/dash/ClientShell';
@@ -44,7 +45,9 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
   const showBank = pay.bankOn && toPay > 0 && !!(pay.bankIban || pay.bankAccount);
   const last = STAGES.length - 1;
   const st = a.stage >= last ? t.stCompleted : !a.quote.sentAt ? t.stPreparing : !a.quote.acceptedAt && !paid.length ? t.stQuotation : due.length ? t.stConfirmed : t.inProgress;
-  const stKey = a.stage >= last ? 'done' : !a.quote.sentAt ? 'prep' : !a.quote.acceptedAt && !paid.length ? 'quote' : due.length ? 'conf' : 'prog';
+  const dec = a.decision, decT = dec ? DECISION_TEXT[dec.result] : undefined;
+  const stKey0 = a.stage >= last ? 'done' : !a.quote.sentAt ? 'prep' : !a.quote.acceptedAt && !paid.length ? 'quote' : due.length ? 'conf' : 'prog';
+  const stKey = dec?.result === 'rejected' || dec?.result === 'withdrawn' ? 'rej' : dec?.result === 'on_hold' ? 'hold' : dec?.result === 'approved' && a.stage < last ? 'appr' : stKey0;
   const dueSum = due.reduce((s, p) => s + p.amount, 0), paidSum = paid.reduce((s, p) => s + p.amount, 0);
   const valid = a.validUntil || (a.quote.sentAt ? new Date(new Date(a.quote.sentAt).getTime() + pay.validDays * 864e5).toISOString().slice(0, 10) : '');
   const adv = a.advisor ?? { name: t.yourAdvisor, phone: SITE.whatsappDisplay };
@@ -60,7 +63,7 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
           <div className="oh-l">
             <p className="oh-k">{t.orderLabel}</p>
             <h1 className="oh-ref">{a.ref}</h1>
-            <div className="oh-chips"><span className="chip st">● {st}</span><span className="chip">📅 {fmtD(a.createdAt)}</span><span className="chip">👤 {adv.name}</span></div>
+            <div className="oh-chips"><span className="chip st">● {decT && stKey !== 'done' ? decT.title : st}</span><span className="chip">📅 {fmtD(a.createdAt)}</span><span className="chip">👤 {adv.name}</span></div>
             <p className="oh-step">{t.step} {a.stage + 1} {t.of} {STAGES.length}: <b>{t.stages[a.stage]}</b></p>
             <div className="bar oh-bar"><i style={{ width: `${pct}%` }} /></div>
           </div>
@@ -70,6 +73,16 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
             {paidSum > 0 && <span className="oh-paid">✓ {t.paidSoFar}: {money(paidSum)}</span>}
           </div>
         </section>
+        {dec && decT && (
+          <section className={`decision-box d-${dec.result}`} role="status">
+            <b>{decT.client}</b>
+            {dec.refNo && <p>Reference: {dec.refNo}</p>}
+            {dec.validTo && <p>Visa valid until: {fmtD(dec.validTo)}</p>}
+            {dec.reason && <p>{dec.result === 'approved' ? 'Note' : 'Reason'}: {dec.reason}</p>}
+            {dec.nextAction && <p><b>Next step:</b> {dec.nextAction}</p>}
+            {dec.result !== 'approved' && <a className="btn btn-gold btn-sm" href={advWa} target="_blank" rel="noopener">Talk to your advisor</a>}
+          </section>
+        )}
         <div className="oh-actions">
           {a.quote.sentAt && <a className="btn btn-glass" href="quote/"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14" /></svg> {t.downloadPdf}</a>}
           <a className="btn btn-ghost" href={signedIn ? `${base}/services/` : waLink(`Hello, I would like another service (${a.ref}).`)}>⊕ {t.requestAnother}</a>
