@@ -7,6 +7,7 @@ import { APPLY_SERVICES, applyService, type ApplyService } from '@/content/apply
 import { FEE_SCHEDULE, ROUTES, aed } from '@/lib/fees';
 import { governmentLines } from '@/lib/stages';
 import { SITE, waLink } from '@/lib/site';
+import { portalApply, portalLogin } from '@/lib/portal-links';
 import { Icon } from './Icon';
 
 type Member = { relation: 'Spouse' | 'Child' | 'Parent'; name: string; adult: boolean };
@@ -19,7 +20,7 @@ const SVC_ICON: Record<string, string> = {
   employment: 'briefcase', iloe: 'shield', valuation: 'coins', cancellation: 'close', 'emirates-id': 'user', medical: 'stetho', 'visa-check': 'check',
 };
 
-export function ApplyWizard() {
+export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
   const [step, setStep] = useState(0);
   const [svc, setSvc] = useState<ApplyService | null>(null);
   const [q, setQ] = useState('');
@@ -42,6 +43,8 @@ export function ApplyWizard() {
     // Signed-in clients: use their account details instead of asking again.
     fetch('/api/me/', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((j) => {
       if (!j?.signedIn) return;
+      // On the public website a signed-in client goes straight to the application inside their dashboard.
+      if (!inPortal) { window.location.replace(portalApply(new URLSearchParams(window.location.search).get('service'))); return; }
       setMe({ name: j.name || '', email: j.email || '', phone: j.phone || '' });
       setD((x) => ({ ...x, name: x.name || j.name || '', email: x.email || j.email || '', phone: x.phone || j.phone || '' }));
     }).catch(() => {});
@@ -192,7 +195,7 @@ export function ApplyWizard() {
                   </select>
                 </div>
                 <div className="field"><label htmlFor="ap-notes">Anything we should know?</label><input id="ap-notes" value={d.notes} onChange={set('notes')} placeholder="e.g. property value, deadline" /></div>
-                {!me && <p className="small muted full">You get a private link to your client dashboard to follow your file, upload documents and pay online. Already have an account? <a href="/portal/login/">Sign in first</a> and your details are filled in for you.</p>}
+                {!me && <p className="small muted full">You get a private link to your client dashboard to follow your file, upload documents and pay online. Already have an account? <a href={portalLogin()}>Sign in first</a> and your details are filled in for you.</p>}
               </div>
             </div>
           )}

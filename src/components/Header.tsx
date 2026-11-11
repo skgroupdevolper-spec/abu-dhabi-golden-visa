@@ -4,7 +4,8 @@ import { OfficeStatus } from './OfficeStatus';
 import { u } from '@/lib/ui';
 import { catalog } from '@/content/services-catalog';
 import { BrandLogo } from './BrandLogo';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { portalApply, portalHome, portalLogin } from '@/lib/portal-links';
 import { usePathname } from 'next/navigation';
 import { NAV } from '@/content/nav';
 import { LOCALES, localeInfo, localizePath, splitLocale, type Locale } from '@/lib/i18n';
@@ -98,7 +99,12 @@ export function Header({ locale }: { locale: Locale }) {
   const leave = (k: string) => { if (timer.current) clearTimeout(timer.current); timer.current = setTimeout(() => setOpen((o) => (o === k ? null : o)), 220); };
 
   const F = SITE.features;
-  const portal = process.env.NEXT_PUBLIC_PORTAL_URL || '/portal/login/';
+  // Signed-in clients go straight to their dashboard: no second sign-in, applications open inside it.
+  const [me, setMe] = useState<string | null>(null);
+  useEffect(() => { fetch('/api/me/', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((j) => j?.signedIn && setMe(String(j.name || '').split(' ')[0] || 'Account')).catch(() => {}); }, []);
+  const portal = me ? portalHome() : portalLogin();
+  const loginLabel = me ? u('My dashboard', locale) : u('Login', locale);
+  const ApplyA = ({ className, children }: { className: string; children: ReactNode }) => (me ? <a href={portalApply()} className={className}>{children}</a> : <L locale={locale} href="/apply/" className={className}>{children}</L>);
   const waHello = waLink('Hello, I would like help with the Abu Dhabi Golden Visa.');
 
   const langChip = (cls = '') => F.languageSwitcher && (
@@ -129,7 +135,7 @@ export function Header({ locale }: { locale: Locale }) {
             <a href={`mailto:${SITE.email}`} className="hide-md"><Icon name="mail" size={15} /> {SITE.email}</a>
             <span className="hide-md"><OfficeStatus locale={locale} fallback={SITE.hours} /></span>
             <span className="u-sp" />
-            {F.clientLogin && <a href={portal}><Icon name="user" size={15} /> {u('Login', locale)}</a>}
+            {F.clientLogin && <a href={portal}><Icon name="user" size={15} /> {loginLabel}</a>}
             {langChip('u')}
             <div className="chip u">
               <button type="button" aria-haspopup="true" aria-expanded={open === 'cur'} aria-label={u('Choose currency', locale)} onClick={() => toggle('cur')}>
@@ -190,7 +196,7 @@ export function Header({ locale }: { locale: Locale }) {
                           <p className="eyebrow">{item.href === '/blog/' ? 'Have a question?' : 'Need help choosing?'}</p>
                           <b>{item.href === '/blog/' ? 'Ask an advisor for free' : 'Tell us what you need'}</b>
                           <p>{u('An advisor replies on WhatsApp with the steps, documents and a written quote.', locale)}</p>
-                          <L locale={locale} href="/apply/" className="btn btn-gold btn-s">{u('Apply online', locale)}</L>
+                          <ApplyA className="btn btn-gold btn-s">{u('Apply online', locale)}</ApplyA>
                           <a href={waHello} target="_blank" rel="noopener" className="btn btn-red btn-s">{u('WhatsApp us', locale)}</a>
                         </div>
                       </div>
@@ -214,7 +220,7 @@ export function Header({ locale }: { locale: Locale }) {
                           <b>{u('Free eligibility check in one minute', locale)}</b>
                           <p>{u('Answer a few questions and an advisor confirms your best route on WhatsApp.', locale)}</p>
                           <L locale={locale} href="/visa-check/" className="btn btn-red btn-s">{u('Check eligibility', locale)}</L>
-                          <L locale={locale} href="/apply/" className="btn btn-gold btn-s">{u('Apply online', locale)}</L>
+                          <ApplyA className="btn btn-gold btn-s">{u('Apply online', locale)}</ApplyA>
                         </div>
                       </div>
                       )
@@ -234,7 +240,7 @@ export function Header({ locale }: { locale: Locale }) {
               <L locale={locale} href={SITE.nav.ctaLink || '/visa-check/'} className="btn btn-red btn-s hide-sm">
                 {SITE.nav.ctaLabel || 'Check Eligibility'}
               </L>
-              <L locale={locale} href="/apply/" className="btn btn-gold btn-s hide-xs">{u('Apply Now', locale)}</L>
+              <ApplyA className="btn btn-gold btn-s hide-xs">{u('Apply Now', locale)}</ApplyA>
               <button type="button" className="burger" aria-label={u('Open menu', locale)} onClick={() => setMobile(true)}>
                 <Icon name="menu" />
               </button>
@@ -270,9 +276,9 @@ export function Header({ locale }: { locale: Locale }) {
             ),
           )}
           <div className="cta">
-            <L locale={locale} href="/apply/" className="btn btn-gold">
+            <ApplyA className="btn btn-gold">
               {u('Apply Now', locale)}
-            </L>
+            </ApplyA>
             <L locale={locale} href="/visa-check/" className="btn btn-red">
               {u('Check Eligibility', locale)}
             </L>
@@ -303,7 +309,7 @@ export function Header({ locale }: { locale: Locale }) {
         {F.clientLogin && (
           <a href={portal}>
             <span className="ic"><Icon name="user" /></span>
-            <span className="lb">{u('Login', locale)}</span>
+            <span className="lb">{loginLabel}</span>
           </a>
         )}
         <a href="#top" className={`dock-top${showTop ? ' on' : ''}`} aria-hidden={!showTop} tabIndex={showTop ? 0 : -1} onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
