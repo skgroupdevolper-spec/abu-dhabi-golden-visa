@@ -4,6 +4,8 @@
 // the current figures in writing before anything is paid. Checked November 2026.
 import type { Page, Section } from './types';
 import { FEE_SCHEDULE as F } from '@/lib/fees';
+import { MORE, WHY_US } from './pages-services-more';
+import { TABS } from './pages-services-tabs';
 
 type Fact = { label: string; value: string };
 type Row = string[];
@@ -30,16 +32,26 @@ export type Full = {
 const CTA = { label: 'Get a Free Consultation', href: '/free-consultation/' };
 export const FEES_NOTE = 'Government fees are charged at cost with official receipts. Our professional fee is quoted separately, in writing, before you pay.';
 
-export function full(s: Full): Page {
+export function full(s0: Full): Page {
+  // Fill any missing part from MORE, append extra tables and questions, and add the tabs for this page.
+  const m = MORE[s0.path] ?? {};
+  const s: Full = {
+    ...s0,
+    gives: s0.gives ?? m.gives, who: s0.who ?? m.who, fees: s0.fees ?? m.fees, steps: s0.steps ?? m.steps, docs: s0.docs ?? m.docs,
+    extra: [...(s0.extra ?? []), ...(m.extra ?? [])],
+    faq: [...(s0.faq ?? []), ...(m.faq ?? []).filter((f) => !(s0.faq ?? []).some((x) => x.q === f.q))],
+  };
   const sec: Section[] = [];
   if (s.about) sec.push({ type: 'text', title: s.about.title, body: s.about.body });
   if (s.gives) sec.push({ type: 'list', title: s.gives.title ?? 'What it gives you', items: s.gives.items, style: 'ticks' });
+  sec.push(...(TABS[s.path] ?? []));
   if (s.who) sec.push({ type: 'list', title: s.who.title ?? 'Who can apply', intro: s.who.intro, items: s.who.items, style: 'cards' });
   sec.push({ type: 'list', title: 'What we handle for you', items: s.handle, style: 'ticks' });
   if (s.fees) sec.push({ type: 'table', title: s.fees.title ?? 'Government fees', intro: s.fees.intro, head: s.fees.head, rows: s.fees.rows, note: s.fees.note ?? FEES_NOTE });
   if (s.steps) sec.push({ type: 'steps', title: s.steps.title ?? 'How it works, step by step', intro: s.steps.intro, items: s.steps.items, note: s.steps.note });
   if (s.docs) sec.push({ type: 'list', title: s.docs.title ?? 'Documents to send us', intro: s.docs.intro, items: s.docs.items, style: 'docs' });
   if (s.extra) sec.push(...s.extra);
+  sec.push(WHY_US);
   if (s.faq?.length) sec.push({ type: 'faq', title: 'Questions we answer every day', items: s.faq });
   sec.push({ type: 'tool', tool: 'lead', title: `Ask about ${s.name.replace(/^The /, '').toLowerCase()}`, intro: 'Send your details. An advisor checks your case and replies on WhatsApp with the documents list and an itemised quote.' });
   return {

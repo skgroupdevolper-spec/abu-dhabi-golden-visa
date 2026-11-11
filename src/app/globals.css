@@ -1422,3 +1422,39 @@ footer.site .legal > span { max-width: 640px; }
 .req-grid .rt { display: grid; gap: 6px; }
 .req-grid .rt b { font-size: 16.5px; color: var(--ink, #111); }
 .req-grid .rt span { color: var(--navy-soft, #555); line-height: 1.55; }
+
+/* Section tabs */
+.stabs { display: grid; gap: 14px; }
+.stabs-list { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 4px; margin: -4px; }
+.stabs-list::-webkit-scrollbar { display: none; }
+.stabs-list button { flex: 0 0 auto; display: grid; gap: 2px; text-align: start; padding: 12px 18px; border-radius: 16px; border: 1px solid #efe5c6; background: #fff; cursor: pointer; font: inherit; color: inherit; transition: background .25s, border-color .25s, transform .25s; }
+.stabs-list button small { font-size: 12.5px; color: var(--navy-soft, #666); }
+.stabs-list button:hover { transform: translateY(-1px); border-color: rgba(212, 175, 55, .6); }
+.stabs-list button.on { background: linear-gradient(135deg, #f6e7b4, #d4af37); border-color: transparent; color: #111; box-shadow: 0 14px 30px -20px rgba(138, 106, 18, .8); }
+.stabs-list button.on small { color: #3a2c06; }
+.stabs-panel { padding: clamp(18px, 3vw, 28px); border-radius: 22px; background: #fff; border: 1px solid #efe5c6; box-shadow: 0 22px 50px -40px rgba(0, 0, 0, .5); animation: stabsIn .35s ease; }
+.stabs-panel h3 { margin: 0 0 8px; font: 400 clamp(22px, 2.6vw, 28px)/1.15 var(--display); }
+.stabs-panel p { margin: 0 0 12px; line-height: 1.65; }
+.stabs-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 0 0 14px; }
+.stabs-facts div { padding: 12px 14px; border-radius: 14px; background: #fbf6e6; }
+.stabs-facts dt { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--gold-deep, #8a6a12); }
+.stabs-facts dd { margin: 4px 0 0; font-weight: 700; }
+.stabs-items { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.stabs-items li { display: flex; gap: 10px; align-items: flex-start; line-height: 1.55; }
+.stabs-items li svg { flex: 0 0 auto; margin-top: 3px; color: var(--gold-deep, #8a6a12); }
+@keyframes stabsIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Tickable document checklist */
+.dchk { display: grid; gap: 12px; }
+.dchk-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.dchk-count { font-size: 14.5px; }
+.dchk-count b { font-size: 18px; }
+.dchk-bar { flex: 1 1 140px; height: 8px; border-radius: 99px; background: #f3ecd6; overflow: hidden; }
+.dchk-bar i { display: block; height: 100%; background: linear-gradient(90deg, #f0d77a, #d4af37); transition: width .3s; }
+.dchk .doc-grid li { padding: 0; }
+.dchk .doc-grid label { display: flex; gap: 12px; align-items: center; width: 100%; padding: 14px 16px; cursor: pointer; }
+.dchk .doc-grid input { position: absolute; opacity: 0; pointer-events: none; }
+.dchk .doc-grid li.got { border-color: rgba(212, 175, 55, .65); background: #fffaf0; }
+.dchk .doc-grid li.got .di { background: linear-gradient(135deg, #f0d77a, #d4af37); color: #111; }
+.dchk .doc-grid label:focus-within { outline: 2px solid var(--gold, #d4af37); outline-offset: 2px; border-radius: 16px; }
+.dchk-send { justify-self: start; }

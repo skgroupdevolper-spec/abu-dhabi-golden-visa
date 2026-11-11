@@ -109,6 +109,7 @@ export function sectionsToBlocks(sections: Section[]): Block[] {
       case 'steps': return { id, type: 'steps', data: { title: s.title, intro: s.intro ?? '', items: s.items, note: s.note ?? '' } };
       case 'cards': return { id, type: 'cards', data: { title: s.title, intro: s.intro ?? '', cols: '3', items: s.items.map((i) => ({ ...i, icon: '' })) } };
       case 'faq': return { id, type: 'faq', data: { title: s.title, items: s.items } };
+      case 'tabs': return { id, type: 'table', data: { title: s.title, intro: s.intro ?? '', table: [['Option', 'Details'], ...s.tabs.map((t) => [t.label, [t.text, ...(t.items ?? []), ...(t.facts ?? []).map((f) => `${f.label}: ${f.value}`)].filter(Boolean).join(' · ')])].map((r) => r.join(' | ')).join('\n'), note: '' } };
       case 'tool': return { id, type: s.tool === 'calculator' ? 'calculator' : s.tool === 'eligibility' ? 'eligibility' : s.tool === 'apply' ? 'apply' : s.tool === 'booking' ? 'booking' : s.tool === 'flight' ? 'flight' : s.tool === 'contact-hub' ? 'contactHub' : s.tool === 'about-hub' ? 'aboutHub' : 'lead', data: { title: s.title ?? '', intro: s.intro ?? '' } };
       case 'html': return { id, type: 'html', data: { html: s.html, title: s.title ?? '' } };
     }

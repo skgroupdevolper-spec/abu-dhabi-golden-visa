@@ -20,6 +20,8 @@ import { Icon } from './Icon';
 import { L } from './L';
 import { TranslationNotice } from './TranslationNotice';
 import { ApplyWizard } from './ApplyWizard';
+import { SectionTabs } from './SectionTabs';
+import { DocChecklist } from './DocChecklist';
 import { SITE, waLink } from '@/lib/site';
 
 const CARD_ICONS = ['home', 'briefcase', 'rocket', 'user', 'star', 'spark', 'cap', 'heart', 'shield', 'globe'];
@@ -55,7 +57,7 @@ export function SectionView({ s, locale, i }: { s: Section; locale: Locale; i: n
           <Head title={s.title} k={i} icon={style === 'docs' ? 'doc' : style === 'cards' ? 'shield' : 'check'} />
           {s.intro && <p className="intro">{s.intro}</p>}
           {style === 'docs' ? (
-            <ul className="doc-grid">{s.items.map((it) => <li key={it}><span className="di"><Icon name="doc" size={18} /></span><span>{it}</span></li>)}</ul>
+            <DocChecklist items={s.items} service={s.title} />
           ) : style === 'cards' ? (
             <ul className="req-grid">{s.items.map((it, k) => { const m = it.match(/^([^:]{2,60}):\s+(.+)$/); return <li key={it}><span className="rn">{String(k + 1).padStart(2, '0')}</span>{m ? <span className="rt"><b>{m[1]}</b><span>{m[2].charAt(0).toUpperCase() + m[2].slice(1)}</span></span> : <span>{it}</span>}</li>; })}</ul>
           ) : (
@@ -64,6 +66,14 @@ export function SectionView({ s, locale, i }: { s: Section; locale: Locale; i: n
         </section>
       );
     }
+    case 'tabs':
+      return (
+        <section className="block" id={sid(s.title)} data-reveal>
+          <Head title={s.title} k={i} icon="spark" />
+          {s.intro && <p className="intro">{s.intro}</p>}
+          <SectionTabs tabs={s.tabs} />
+        </section>
+      );
     case 'table':
       return (
         <section className="block" id={sid(s.title)} data-reveal>

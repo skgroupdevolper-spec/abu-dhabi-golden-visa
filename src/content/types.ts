@@ -5,6 +5,8 @@ export type Section =
   | { type: 'steps'; title: string; intro?: string; items: { title: string; text: string }[]; note?: string }
   | { type: 'cards'; title: string; intro?: string; items: { title: string; text: string; href: string }[] }
   | { type: 'faq'; title: string; items: { q: string; a: string }[] }
+  /** Switchable tabs: one panel per option (family member, visa type, permit group...). */
+  | { type: 'tabs'; title: string; intro?: string; tabs: { label: string; sub?: string; text?: string; items?: string[]; facts?: { label: string; value: string }[] }[] }
   | { type: 'tool'; tool: 'calculator' | 'eligibility' | 'lead' | 'apply' | 'booking' | 'flight' | 'contact-hub' | 'about-hub'; title?: string; intro?: string }
   /** Rendered from the safe Markdown renderer only (blog posts, admin page additions). */
   | { type: 'html'; title?: string; html: string };
