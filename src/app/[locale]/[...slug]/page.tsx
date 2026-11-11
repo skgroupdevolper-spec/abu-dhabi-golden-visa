@@ -25,7 +25,6 @@ export const revalidate = 60;
 export function generateStaticParams() {
   return PAGES.map((p) => ({ locale: 'en', slug: p.path.split('/').filter(Boolean) }));
 }
-export const dynamicParams = true;
 
 type Resolved = { page: Page; loc: Locale; translated: boolean; price?: string; hidden: string[]; o: PageOverride; blocks?: Block[]; post?: Post; blog?: { category?: string } };
 
