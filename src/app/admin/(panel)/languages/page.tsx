@@ -10,7 +10,7 @@ import { LOCALES } from '@/lib/i18n';
 import { when } from '@/lib/stages';
 import { clearItems } from '@/app/admin/delete-actions';
 import { AiPanel } from '@/components/dash/AiPanel';
-import { clearTranslations, saveLangCfg, saveSiteLanguages, startTranslation, stopTranslation, translateInterface } from '../../ai-actions';
+import { clearTranslations, saveLangCfg, saveSiteLanguages, startTranslation, stopTranslation, translateEverything, translateInterface } from '../../ai-actions';
 import { uiProgress } from '@/lib/server/translate';
 import { getSite } from '@/lib/server/settings';
 
@@ -27,6 +27,14 @@ export default async function Languages() {
     <>
       <div className="topbar"><div><p className="eyebrow">Languages & translation</p><h1>Languages &amp; translation</h1></div>
         <div className="row"><a className="btn" href="/admin/languages/edit/">Edit a translation by hand</a>{job.running && <form action={stopTranslation}><button className="btn" type="submit">Stop translating</button></form>}</div></div>
+      <div className="panel goldbg" style={{ marginBottom: 16 }}>
+        <div className="panel-h"><h2>Translate the whole website</h2></div>
+        <p className="help">One click translates every page, guide and blog post into all {langs.length} website languages, plus menus and buttons. Only pages that are missing or changed in English are sent, six at a time. New pages and edits are translated automatically after each save and after each update of the website, so you do not need to come back here.</p>
+        {ready ? (
+          <ActionForm action={translateEverything}><Submit className="btn btn-gold">{job.running ? 'Running…' : 'Translate everything now'}</Submit></ActionForm>
+        ) : <p className="notice err">Add the translation AI key at the bottom of this page first.</p>}
+      </div>
+      {job.running && <meta httpEquiv="refresh" content="8" />}
       {job.running ? (
         <div className="notice" style={{ marginBottom: 16 }}><b>Translating… {job.done} of {job.total}</b>{job.errors ? ` · ${job.errors} errors` : ''}<div className="bar" style={{ margin: '8px 0' }}><i style={{ width: `${job.total ? (job.done / job.total) * 100 : 0}%` }} /></div><span className="small muted">{job.current}</span></div>
       ) : job.finishedAt && <p className="notice" style={{ marginBottom: 16 }}>Last run finished {when(job.finishedAt)}: {job.done} translated{job.errors ? `, ${job.errors} errors` : ''}. {job.message}</p>}
@@ -39,8 +47,8 @@ export default async function Languages() {
               const n = prog.perLang[l.code] ?? 0;
               return (
                 <div key={l.code}>
-                  <div className="row" style={{ justifyContent: 'space-between', fontSize: 14 }}><span><b>{l.native}</b> <span className="muted">/{l.code}/</span></span><span>{n} / {prog.total}</span></div>
-                  <div className="bar" style={{ marginTop: 4 }}><i style={{ width: `${(n / prog.total) * 100}%` }} /></div>
+                  <div className="row" style={{ justifyContent: 'space-between', fontSize: 14 }}><span><b>{l.native}</b> <span className="muted">/{l.code}/</span></span><span>{prog.upToDate[l.code] ?? 0} up to date{n - (prog.upToDate[l.code] ?? 0) > 0 ? ` · ${n - (prog.upToDate[l.code] ?? 0)} to update` : ''} / {prog.total}</span></div>
+                  <div className="bar" style={{ marginTop: 4 }}><i style={{ width: `${((prog.upToDate[l.code] ?? 0) / prog.total) * 100}%` }} /></div>
                   {n > 0 && <form action={clearTranslations} style={{ marginTop: 4 }}><input type="hidden" name="lang" value={l.code} /><button className="btn btn-sm btn-ghost" type="submit">Remove {l.name} translations</button></form>}
                 </div>
               );
@@ -66,7 +74,7 @@ export default async function Languages() {
         <div className="panel">
           <h2>Translate automatically</h2>
           <ActionForm action={saveLangCfg} className="row" >
-            <Toggle name="onSave" label="Translate into all 20 languages every time I save" help="Pages, page-builder sections and blog posts are translated in the background after each save." on={langcfg.onSave} />
+            <Toggle name="onSave" label="Translate automatically (recommended)" help="New pages, edits and blog posts are translated into all website languages in the background after each save and after every website update." on={langcfg.onSave} />
             <Submit className="btn btn-sm">Save</Submit>
           </ActionForm>
           {!ready && <p className="notice err">Add the translation AI key below first.</p>}

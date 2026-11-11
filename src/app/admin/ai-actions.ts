@@ -51,6 +51,20 @@ export async function startTranslation(_: St, f: FormData): Promise<St> {
   void runTranslation(langs, f.get('auto') === 'on');
   return { ok: 'Translation started. It runs in the background; refresh to see progress.' };
 }
+/** One click: every page, every website language, missing or changed. */
+export async function translateEverything(): Promise<St> {
+  await requireAdmin(FULL);
+  if (!(await aiReady('translate'))) return { error: 'Add the translation AI key on this page first (Translation AI provider & API key).' };
+  const job = await getBlock<TranslateJob>('translateJob', JOB0);
+  if (job.running) return { error: 'Translation is already running. Watch the progress bar at the top.' };
+  const { siteLangs } = await import('@/lib/server/translate');
+  const langs = await siteLangs();
+  await saveBlock('translateJob', { ...JOB0, running: true, langs, auto: true, startedAt: new Date().toISOString() });
+  void runTranslation(langs, true);
+  revalidatePath('/admin/languages/');
+  return { ok: `Started: all pages into ${langs.length} languages, six pages at a time. You can leave this page; it keeps running.` };
+}
+
 export async function stopTranslation() {
   await requireAdmin(FULL);
   const job = await getBlock<TranslateJob>('translateJob', JOB0);

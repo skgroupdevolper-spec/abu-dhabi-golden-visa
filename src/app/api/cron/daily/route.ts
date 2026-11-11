@@ -21,5 +21,6 @@ export async function GET(req: NextRequest) {
   const pub = await autoRun();
   const job = await getBlock<TranslateJob>('translateJob', JOB0);
   if (job.auto && job.langs.length) void runTranslation(job.langs, true);
+  else await import('@/lib/server/translate').then((m) => m.autoCatchUp()).catch(() => {});
   return NextResponse.json({ ok: true, autopublisher: pub.message, translation: job.auto ? 'resumed' : 'off', paymentsConfirmed: payments, exchangeRates: fx ? 'updated' : 'unchanged', interfaceTexts: uiAdded });
 }
