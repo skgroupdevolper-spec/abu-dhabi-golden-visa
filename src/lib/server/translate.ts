@@ -54,6 +54,21 @@ async function sourceOf(p: Page) {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/** Every translatable text in a page (skips types, links, images and other structure). */
+function texts(v: unknown, out: string[] = [], key = ''): string[] {
+  if (KEEP.has(key)) return out;
+  if (Array.isArray(v)) v.forEach((x) => texts(x, out));
+  else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) texts(x, out, k);
+  else if (typeof v === 'string' && /[A-Za-z]{2}/.test(v) && !/^(https?:|\/|#|mailto:|tel:)/.test(v)) out.push(v);
+  return out;
+}
+function swap(v: unknown, map: Record<string, string>, key = ''): unknown {
+  if (KEEP.has(key)) return v;
+  if (Array.isArray(v)) return v.map((x) => swap(x, map));
+  if (v && typeof v === 'object') return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, swap(x, map, k)]));
+  return typeof v === 'string' && map[v] ? map[v] : v;
+}
+
 export async function translatePage(p: Page, lang: string, cfg?: import('./mt').LangCfg) {
   const src = await sourceOf(p);
   const { translateTexts } = await import('./mt');
