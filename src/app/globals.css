@@ -1537,3 +1537,5 @@ main.page > .wrap:last-child, main > .wrap:last-of-type { padding-bottom: clamp(
 
 /* WhatsApp message icon: dots drawn a little bolder so they read at small sizes */
 .si-wa { stroke-width: 1.9; }
+.acct-login { font-size: 14px; line-height: 1.35; }
+.acct-login .muted { font-weight: 400; font-size: 13px; }
