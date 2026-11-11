@@ -167,7 +167,7 @@ export function Water() {
     onScroll();
 
     const dropArr = new Float32Array(32);
-    let flowT = 0, last = performance.now(), frame = 0, raf = 0;
+    let simTick = 0, flowT = 0, last = performance.now(), frame = 0, raf = 0;
     const loop = (now: number) => {
       raf = requestAnimationFrame(loop);
       frame++;
@@ -175,8 +175,9 @@ export function Water() {
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
       velocity *= 0.9;
-      flowT += dt * (1 + Math.min(Math.abs(velocity), 80) * 0.06);
-      if (simOK && simP) {
+      flowT += dt * 0.5 * (1 + Math.min(Math.abs(velocity), 80) * 0.04);
+      simTick++;
+      if (simOK && simP && simTick % 2 === 0) {
         const drops: Drop[] = [];
         if (ptr.moved && ptr.px >= 0) {
           const dx = ptr.x - ptr.px, dy = ptr.y - ptr.py, sp = Math.min(Math.hypot(dx, dy), 80);
@@ -192,7 +193,7 @@ export function Water() {
           const d = pending.shift()!;
           drops.push([d[0] / window.innerWidth, 1 - d[1] / window.innerHeight, d[2], d[3]]);
         }
-        if (Math.random() < (LITE ? 0.06 : 0.025) && drops.length < 8) drops.push([Math.random(), Math.random(), 0.012 + Math.random() * 0.02, -(0.15 + Math.random() * 0.25)]);
+        if (Math.random() < (LITE ? 0.03 : 0.012) && drops.length < 8) drops.push([Math.random(), Math.random(), 0.012 + Math.random() * 0.02, -(0.15 + Math.random() * 0.25)]);
         if (Math.abs(velocity) > 0.4) {
           const ey = velocity > 0 ? 0.02 : 0.98, str = -Math.min(Math.abs(velocity) * 0.006, 0.35);
           for (let q = 0; q < 3 && drops.length < 8; q++) drops.push([Math.random(), ey, 0.035 + Math.random() * 0.03, str * (0.6 + Math.random() * 0.4)]);
@@ -213,8 +214,8 @@ export function Water() {
         gl.uniform1i(simP.u.nd, nd);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
         cur = 1 - cur;
+        shiftPx = 0;
       }
-      shiftPx = 0;
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.viewport(0, 0, W, H);
       gl.useProgram(drawP.p);
@@ -235,7 +236,7 @@ export function Water() {
       if (!el) return;
       const r = el.getBoundingClientRect();
       if (r.bottom > 0 && r.top < window.innerHeight) pending.push([r.left + r.width / 2, r.top + r.height / 2, 0.05, -0.55]);
-    }, 1400);
+    }, 2800);
 
     return () => {
       cancelAnimationFrame(raf);

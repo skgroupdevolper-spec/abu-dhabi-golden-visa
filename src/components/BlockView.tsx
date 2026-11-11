@@ -6,6 +6,7 @@ import { md } from '@/lib/markdown';
 import type { Locale } from '@/lib/i18n';
 import { SITE, waLink } from '@/lib/site';
 import { SectionView } from './PageView';
+import { iconForText } from '@/lib/icon-match';
 import { Icon } from './Icon';
 import { L } from './L';
 
@@ -66,7 +67,7 @@ function Inner({ b, locale, i, reviews }: { b: Block; locale: Locale; i: number;
           {H}{str(d.intro) && <p className="intro">{str(d.intro)}</p>}
           <div className={`bk-cards c${str(d.cols) || '3'}`}>
             {arr(d.items).map((c, k) => {
-              const inner = (<>{c.image ? <img decoding="async" src={c.image} alt={c.title} loading="lazy" className="bk-card-img" /> : <span className="ico"><Icon name={c.icon || 'star'} /></span>}<h3>{c.title}</h3>{c.text && <p>{c.text}</p>}{c.href && <span className="go">Learn more →</span>}</>);
+              const inner = (<>{c.image ? <img decoding="async" src={c.image} alt={c.title} loading="lazy" className="bk-card-img" /> : <span className="ico"><Icon name={c.icon || iconForText(c.title, 'star')} /></span>}<h3>{c.title}</h3>{c.text && <p>{c.text}</p>}{c.href && <span className="go">Learn more →</span>}</>);
               return c.href ? <L key={k} locale={locale} href={c.href} className="card glass bk-card">{inner}</L> : <div key={k} className="card glass bk-card">{inner}</div>;
             })}
           </div>

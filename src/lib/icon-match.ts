@@ -1,7 +1,13 @@
 // Picks the icon that matches a heading or card text. First matching rule wins, so specific words come first.
 const RULES: [RegExp, string][] = [
-  [/question|faq|ask/i, 'question'],
-  [/document|checklist|send us|have ready|have these ready|what to prove|what counts|paper|attest|translat|certificate|notary|power of attorney|\bwills?\b/i, 'doc'],
+  [/question|faq|\bask/i, 'question'],
+  [/document|checklist|send us|have ready|have these ready|what to prove|what counts|paper|attest|translat|certificate|notary|power of attorney/i, 'doc'],
+  [/iloe|loss of employment|job loss/i, 'shield'],
+  [/metro|bus|train/i, 'train'],
+  [/\bcar\b|parking|taxi|uber|careem|driv/i, 'car'],
+  [/passport/i, 'passport'],
+  [/court|judicial|legal|law|sharia|\bwills?\b|estate planning/i, 'scale'],
+  [/company|office|licen[cs]e|mainland|free zone|setup|set up/i, 'building'],
   [/newborn|baby|birth/i, 'baby'],
   [/spouse|children|child|parent|family|dependant|relative|husband|wife|\bsons?\b|daughter|domestic|maid|sponsor|join/i, 'family'],
   [/doctor|health|medical|hospital|nurse|insurance|biometric/i, 'stetho'],

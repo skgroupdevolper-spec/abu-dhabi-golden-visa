@@ -10,6 +10,7 @@ import { NAV } from '@/content/nav';
 import { LOCALES, localeInfo, localizePath, splitLocale, type Locale } from '@/lib/i18n';
 import { RATES, siteFx } from '@/lib/fees';
 import { liveLocales, SITE, waLink } from '@/lib/site';
+import { iconForText } from '@/lib/icon-match';
 import { Icon } from './Icon';
 import { L } from './L';
 
@@ -33,6 +34,8 @@ const ICON_RULES: [RegExp, string][] = [
   [/indian|pakistan|russia|kazakh|chin|filip|niger|egypt|uk|usa|turk|german|country/i, 'globe'], [/golden/i, 'star'],
 ];
 function iconFor(label: string, group: string) {
+  const m = iconForText(label, '');
+  if (m) return m;
   for (const [re, ic] of ICON_RULES) if (re.test(label)) return ic;
   for (const [re, ic] of ICON_RULES) if (re.test(group)) return ic;
   return 'star';
@@ -48,6 +51,8 @@ export function Header({ locale }: { locale: Locale }) {
   const [mobile, setMobile] = useState(false);
   const [cur, setCur] = useState('AED');
   const [small, setSmall] = useState(false);
+  const [showTop, setShowTop] = useState(false);
+  useEffect(() => { const f = () => setShowTop(window.scrollY > 600); f(); window.addEventListener('scroll', f, { passive: true }); return () => window.removeEventListener('scroll', f); }, []);
   const [tab, setTab] = useState(0);
   const ref = useRef<HTMLElement>(null);
 
@@ -301,6 +306,10 @@ export function Header({ locale }: { locale: Locale }) {
             <span className="lb">{u('Login', locale)}</span>
           </a>
         )}
+        <a href="#top" className={`dock-top${showTop ? ' on' : ''}`} aria-hidden={!showTop} tabIndex={showTop ? 0 : -1} onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+          <span className="ic"><Icon name="up" /></span>
+          <span className="lb">{u('Back to top', locale)}</span>
+        </a>
       </nav>}
 
       {F.mobileBar && <nav className="mnav" aria-label={u('Mobile', locale)}>

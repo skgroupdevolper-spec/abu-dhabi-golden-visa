@@ -1491,3 +1491,14 @@ main.page > .wrap:last-child, main > .wrap:last-of-type { padding-bottom: clamp(
   main.page .block + .block { margin-top: 14px !important; }
   body { overflow-x: clip; }
 }
+
+/* Dock: calculator stays gold; every other button uses the same soft cream style. Back-to-top appears after scrolling. */
+.dock .ic, .dock .ic.w, .dock .ic.r { background: #fbf4dd; color: var(--gold-deep); border: 1px solid rgba(184, 144, 31, 0.32); }
+.dock .ic.g { background: linear-gradient(140deg, var(--gold-light), var(--gold) 60%, var(--gold-deep)); color: #fff; border-color: transparent; }
+.dock .dock-top { opacity: 0; transform: translateY(10px) scale(.9); pointer-events: none; transition: opacity .3s, transform .3s, max-width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.dock .dock-top.on { opacity: 1; transform: none; pointer-events: auto; }
+@media (max-width: 760px) {
+  .dock { display: flex !important; top: auto; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); transform: none; }
+  .dock > a:not(.dock-top) { display: none; }
+  .dock .dock-top .ic { width: 46px; height: 46px; }
+}

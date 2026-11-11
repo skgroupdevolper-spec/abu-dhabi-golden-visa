@@ -139,9 +139,9 @@ export function ContactHub({ locale }: { locale: Locale }) {
             <div><dt>{u('Opening hours', locale)}</dt><dd>{SITE.hours}</dd></div>
           </dl>
           <ul className="cp-travel">
-            <li><Icon name="plane" size={18} /> <span><b>{u('By metro', locale)}</b> {u('From Business Bay metro station take bus F14 towards Bay Square, get off near Empire Heights or Bay Square, then walk 2 to 3 minutes.', locale)}</span></li>
-            <li><Icon name="home" size={18} /> <span><b>{u('By car', locale)}</b> {u('Free visitor parking at Crystal Tower.', locale)}</span></li>
-            <li><Icon name="pin" size={18} /> <span><b>{u('Taxi, Uber or Careem', locale)}</b> {u('Set the destination to “Brightlink Management Consultancy, Crystal Tower”.', locale)}</span></li>
+            <li><Icon name="train" size={18} /> <span><b>{u('By metro', locale)}</b> {u('From Business Bay metro station take bus F14 towards Bay Square, get off near Empire Heights or Bay Square, then walk 2 to 3 minutes.', locale)}</span></li>
+            <li><Icon name="car" size={18} /> <span><b>{u('By car', locale)}</b> {u('Free visitor parking at Crystal Tower.', locale)}</span></li>
+            <li><Icon name="car" size={18} /> <span><b>{u('Taxi, Uber or Careem', locale)}</b> {u('Set the destination to “Brightlink Management Consultancy, Crystal Tower”.', locale)}</span></li>
           </ul>
           <div className="cta"><a className="btn btn-gold" href={dirHref()} target="_blank" rel="noopener"><Icon name="pin" size={18} /> {u('Get directions', locale)}</a><a className="btn btn-glass" href="#book">{u('Book a visit', locale)}</a></div>
         </div>

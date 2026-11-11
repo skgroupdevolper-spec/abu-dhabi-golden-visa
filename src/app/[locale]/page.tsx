@@ -374,11 +374,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <h2 style={{ marginTop: 14 }}>Long-term security, <em className="goldtext">real freedom.</em></h2>
           <div className="wgrid">
             {[
-              ['clock', 'Up to 10 years', 'Renewable while you still meet the conditions.'],
-              ['shield', 'No sponsor needed', 'Change jobs or start a business freely.'],
+              ['calendar', 'Up to 10 years', 'Renewable while you still meet the conditions.'],
+              ['user', 'No sponsor needed', 'Change jobs or start a business freely.'],
               ['plane', 'No six-month rule', 'Stay outside the UAE for long periods without losing residency.'],
               ['family', 'Family sponsorship', 'Spouse, children of any age and parents.'],
-              ['home', 'Domestic workers', 'Sponsor household staff, subject to UAE rules.'],
+              ['users', 'Domestic workers', 'Sponsor household staff, subject to UAE rules.'],
               ['heart', 'Family continuity', 'Family residency stays valid if the holder passes away.'],
             ].map(([ic, t, d]) => (
               <div className="wcard glass tilt" key={t}><span className="bi"><Icon name={ic} /></span><div><h3>{t}</h3><p>{d}</p></div></div>
