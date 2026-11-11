@@ -5,6 +5,8 @@ import { BrandLogo } from './BrandLogo';
 import type { Locale } from '@/lib/i18n';
 import { SITE, waLink } from '@/lib/site';
 import { L } from './L';
+import { Icon } from './Icon';
+import { iconForText } from '@/lib/icon-match';
 import { Newsletter } from './Newsletter';
 
 export function Footer({ locale }: { locale: Locale }) {
@@ -46,15 +48,16 @@ export function Footer({ locale }: { locale: Locale }) {
           ))}
           <div>
             <h4>{u('Contact', locale)}</h4>
-            <ul>
-              <li><a href={waLink('Hello, I would like help with the Abu Dhabi Golden Visa.')} target="_blank" rel="noopener">WhatsApp {SITE.whatsappDisplay}</a></li>
-              <li><span>{SITE.email}</span></li>
-              <li><span>{SITE.office}</span></li>
-              {SITE.hours && <li><span>{SITE.hours}</span></li>}
-              <li><L locale={locale} href="/apply/">{u('Apply online', locale)}</L></li>
-              <li><L locale={locale} href="/contact/">{u('Contact us', locale)}</L></li>
-              <li><L locale={locale} href="/about/">{u('About us', locale)}</L></li>
-              {SITE.nav.footerLinks.map((x) => <li key={x.href + x.label}><L locale={locale} href={x.href}>{x.label}</L></li>)}
+            <ul className="fcontact">
+              <li><a href={waLink('Hello, I would like help with the Abu Dhabi Golden Visa.')} target="_blank" rel="noopener"><Icon name="wa" size={17} /><span>WhatsApp {SITE.whatsappDisplay}</span></a></li>
+              {SITE.phone && SITE.phone !== SITE.whatsappDisplay && <li><a href={`tel:${SITE.phone.replace(/[^\d+]/g, '')}`}><Icon name="phone" size={17} /><span>{SITE.phone}</span></a></li>}
+              <li><a href={`mailto:${SITE.email}`}><Icon name="mail" size={17} /><span>{SITE.email}</span></a></li>
+              <li>{SITE.mapsUrl ? <a href={SITE.mapsUrl} target="_blank" rel="noopener"><Icon name="pin" size={17} /><span>{SITE.office}</span></a> : <span className="fc-row"><Icon name="pin" size={17} /><span>{SITE.office}</span></span>}</li>
+              {SITE.hours && <li><span className="fc-row"><Icon name="clock" size={17} /><span>{SITE.hours}</span></span></li>}
+              <li><L locale={locale} href="/apply/"><Icon name="doc" size={17} /><span>{u('Apply online', locale)}</span></L></li>
+              <li><L locale={locale} href="/contact/"><Icon name="user" size={17} /><span>{u('Contact us', locale)}</span></L></li>
+              <li><L locale={locale} href="/about/"><Icon name="star" size={17} /><span>{u('About us', locale)}</span></L></li>
+              {SITE.nav.footerLinks.map((x) => <li key={x.href + x.label}><L locale={locale} href={x.href}><Icon name={iconForText(x.label, 'arrow')} size={17} /><span>{u(x.label, locale)}</span></L></li>)}
             </ul>
           </div>
         </div>
