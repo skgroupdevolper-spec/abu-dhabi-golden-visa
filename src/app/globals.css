@@ -1539,3 +1539,4 @@ main.page > .wrap:last-child, main > .wrap:last-of-type { padding-bottom: clamp(
 .si-wa { stroke-width: 1.9; }
 .acct-login { font-size: 14px; line-height: 1.35; }
 .acct-login .muted { font-weight: 400; font-size: 13px; }
+img.si-img { display: inline-block; object-fit: contain; flex: none; vertical-align: middle; }

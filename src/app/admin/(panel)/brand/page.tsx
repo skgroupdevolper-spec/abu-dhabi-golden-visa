@@ -23,6 +23,7 @@ export default async function BrandPage() {
         <ImageField name="logo" label="Full logo (one image)" initial={b.logo ?? ''} fallback="/brand/logo.webp" help="Used in the admin, the customer portal and the cost calculator." />
         <ImageField name="coin" label="Large coin" initial={b.coin ?? ''} fallback="/brand/coin.webp" help="The big coin in the home page hero, the chat window, sign-in pages and the offer pop-up. Square image." />
         <ImageField name="favicon" label="Browser tab icon (favicon)" initial={b.favicon ?? ''} fallback="/icon.png" help="Square PNG, at least 192 × 192." />
+        <ImageField name="waIcon" label="WhatsApp icon (all WhatsApp buttons)" initial={b.waIcon ?? ''} fallback="/brand/wa-bubble.svg" help="Upload the official WhatsApp icon (SVG or PNG, square) from WhatsApp’s brand resources page: whatsappbrand.com. It replaces the message-bubble icon on every WhatsApp button of the website and dashboard. Leave empty to keep the bubble." />
         <div className="full"><Submit>Save logo &amp; brand</Submit></div>
       </ActionForm>
     </>

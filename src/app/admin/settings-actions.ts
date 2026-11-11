@@ -356,7 +356,7 @@ export async function saveStageDefaults(_: St, f: FormData): Promise<St> {
 const img = (f: FormData, k: string) => { const v = s(f, k, 600); return /^(\/|https:\/\/)[^\s"'<>]+$/.test(v) ? v : ''; };
 export async function saveBrand(_: St, f: FormData): Promise<St> {
   await requireAdmin(FULL);
-  await saveSite({ brand: { logoText: img(f, 'logoText'), logoMark: img(f, 'logoMark'), logo: img(f, 'logo'), coin: img(f, 'coin'), favicon: img(f, 'favicon'), spin: b(f, 'spin') } });
+  await saveSite({ brand: { logoText: img(f, 'logoText'), logoMark: img(f, 'logoMark'), logo: img(f, 'logo'), coin: img(f, 'coin'), favicon: img(f, 'favicon'), waIcon: img(f, 'waIcon'), spin: b(f, 'spin') } });
   return done();
 }
 

@@ -8,7 +8,7 @@ export type PublicSite = {
   /** Offices on the About page globe (country, city, latitude, longitude, note). */
   offices?: { country: string; city: string; lat: number; lng: number; note?: string }[];
   /** Logo and brand images (empty = the built-in gold coin and name). */
-  brand?: { logoText?: string; logoMark?: string; logo?: string; coin?: string; favicon?: string; spin?: boolean };
+  brand?: { logoText?: string; logoMark?: string; logo?: string; coin?: string; favicon?: string; spin?: boolean; waIcon?: string };
   /** Cities on the About page "Clients worldwide" globe (empty = built-in list). */
   world?: { country: string; city: string; lat: number; lng: number }[];
   /** Departure cities that rotate on the flight route. */

@@ -1,3 +1,4 @@
+import { SITE } from '@/lib/site';
 const PATHS: Record<string, string> = {
   home: 'M4 21V9l8-6 8 6v12M9 21v-6h6v6',
   briefcase: 'M3 7h18v13H3zM8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18',
@@ -70,6 +71,9 @@ const PATHS: Record<string, string> = {
 };
 
 export function Icon({ name, size = 22, className }: { name: string; size?: number; className?: string }) {
+  // WhatsApp buttons use the official icon uploaded in Admin > Logo & brand, when there is one.
+  const wa = name === 'wa' ? SITE.brand?.waIcon : undefined;
+  if (wa) return <img className={`si si-wa si-img${className ? ` ${className}` : ''}`} data-i="wa" src={wa} width={size} height={size} alt="" aria-hidden="true" decoding="async" />;
   return (
     <svg className={`si si-${name}${className ? ` ${className}` : ''}`} data-i={name} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d={PATHS[name] ?? PATHS.star} />
