@@ -66,9 +66,17 @@ export async function checkLogin(email: string, password: string): Promise<Admin
   return null;
 }
 
-async function setSigned(name: string, data: object, days: number) {
+/** Shared parent domain (".abudhabigoldenvisa.com") so a client signed in on the portal is also recognised on the main site. */
+function sharedDomain(): string | undefined {
+  if (process.env.CI || process.env.NODE_ENV !== 'production') return undefined;
+  const portal = (process.env.PORTAL_HOST || 'app.abudhabigoldenvisa.com').toLowerCase();
+  const parts = portal.split('.');
+  return parts.length >= 3 && !/localhost|\d+$/.test(portal) ? '.' + parts.slice(1).join('.') : undefined;
+}
+async function setSigned(name: string, data: object, days: number, shared = false) {
   const payload = Buffer.from(JSON.stringify({ ...data, x: Date.now() + days * DAY })).toString('base64url');
-  (await cookies()).set(name, `${payload}.${sign(payload)}`, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production' && !process.env.CI, path: '/', maxAge: days * 24 * 3600 });
+  const domain = shared ? sharedDomain() : undefined;
+  (await cookies()).set(name, `${payload}.${sign(payload)}`, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production' && !process.env.CI, path: '/', maxAge: days * 24 * 3600, ...(domain ? { domain } : {}) });
 }
 async function readSigned<T>(name: string): Promise<T | null> {
   const v = (await cookies()).get(name)?.value;
@@ -114,6 +122,11 @@ export const FULL: Role[] = ['owner', 'admin'];
 export const EDIT: Role[] = ['owner', 'admin', 'staff'];
 
 /* ---------- client accounts ---------- */
-export async function startClientSession(id: string) { await setSigned(CLIENT_COOKIE, { c: id }, 30); }
-export async function endClientSession() { (await cookies()).delete(CLIENT_COOKIE); }
+export async function startClientSession(id: string) { await setSigned(CLIENT_COOKIE, { c: id }, 30, true); }
+export async function endClientSession() {
+  const jar = await cookies();
+  jar.delete(CLIENT_COOKIE);
+  const domain = sharedDomain();
+  if (domain) jar.set(CLIENT_COOKIE, '', { path: '/', maxAge: 0, domain });
+}
 export async function currentClientId() { return (await readSigned<{ c: string }>(CLIENT_COOKIE))?.c ?? null; }

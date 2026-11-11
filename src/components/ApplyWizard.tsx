@@ -32,12 +32,19 @@ export function ApplyWizard() {
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<{ ref: string; link: string } | null>(null);
+  const [me, setMe] = useState<{ name: string; email: string; phone: string } | null>(null);
 
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get('service');
     const s = applyService(id);
     if (s) { setSvc(s); setStep(1); }
     fetch('/api/fees/').then((r) => (r.ok ? r.json() : null)).then((j) => j?.perPerson && setFees(j)).catch(() => {});
+    // Signed-in clients: use their account details instead of asking again.
+    fetch('/api/me/', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((j) => {
+      if (!j?.signedIn) return;
+      setMe({ name: j.name || '', email: j.email || '', phone: j.phone || '' });
+      setD((x) => ({ ...x, name: x.name || j.name || '', email: x.email || j.email || '', phone: x.phone || j.phone || '' }));
+    }).catch(() => {});
   }, []);
 
   const set = (k: keyof typeof d) => (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
@@ -161,7 +168,12 @@ export function ApplyWizard() {
           {step === 1 && (
             <div className="wstep">
               <h3>Your details</h3>
-              <p className="muted" style={{ margin: '6px 0 16px' }}>As written in your passport. We use WhatsApp for updates.</p>
+              {me ? (
+                <div className="signed-in-note" role="status">
+                  <Icon name="check" size={18} />
+                  <div><b>You are already signed in as {me.name || me.email}.</b><span>No account needed: this application is added to your client dashboard. Check the details below and continue.</span></div>
+                </div>
+              ) : <p className="muted" style={{ margin: '6px 0 16px' }}>As written in your passport. We use WhatsApp for updates.</p>}
               <div className="form">
                 <div className="field"><label htmlFor="ap-name">Full name</label><input id="ap-name" autoComplete="name" value={d.name} onChange={set('name')} /></div>
                 <div className="field"><label htmlFor="ap-phone">WhatsApp number</label><input id="ap-phone" type="tel" autoComplete="tel" placeholder="+971" value={d.phone} onChange={set('phone')} /></div>
@@ -180,7 +192,7 @@ export function ApplyWizard() {
                   </select>
                 </div>
                 <div className="field"><label htmlFor="ap-notes">Anything we should know?</label><input id="ap-notes" value={d.notes} onChange={set('notes')} placeholder="e.g. property value, deadline" /></div>
-                <p className="small muted full">You get a private link to your client dashboard to follow your file, upload documents and pay online. Sign up later with the same email or WhatsApp number to see all your files in one place.</p>
+                {!me && <p className="small muted full">You get a private link to your client dashboard to follow your file, upload documents and pay online. Already have an account? <a href="/portal/login/">Sign in first</a> and your details are filled in for you.</p>}
               </div>
             </div>
           )}

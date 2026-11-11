@@ -1458,3 +1458,9 @@ footer.site .legal > span { max-width: 640px; }
 .dchk .doc-grid li.got .di { background: linear-gradient(135deg, #f0d77a, #d4af37); color: #111; }
 .dchk .doc-grid label:focus-within { outline: 2px solid var(--gold, #d4af37); outline-offset: 2px; border-radius: 16px; }
 .dchk-send { justify-self: start; }
+
+/* Online application: signed-in client notice */
+.signed-in-note { display: flex; gap: 12px; align-items: flex-start; margin: 8px 0 16px; padding: 14px 16px; border-radius: 16px; background: #f3fbf4; border: 1px solid #b9e2c1; color: #1e5a2b; }
+.signed-in-note svg { flex: none; margin-top: 2px; }
+.signed-in-note div { display: grid; gap: 2px; }
+.signed-in-note span { color: #2f6b3c; font-size: 14.5px; }

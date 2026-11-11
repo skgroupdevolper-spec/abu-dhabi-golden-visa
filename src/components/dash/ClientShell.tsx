@@ -8,7 +8,7 @@ import { waLink } from '@/lib/site';
 import type { ClientArea } from '@/lib/server/portal';
 import { coinImg, fullLogo } from '@/components/BrandLogo';
 
-export type NavKey = 'home' | 'files' | 'orders' | 'quotes' | 'invoices' | 'statement' | 'request' | 'requests' | 'calendar' | 'account';
+export type NavKey = 'home' | 'files' | 'orders' | 'quotes' | 'invoices' | 'statement' | 'apply' | 'request' | 'requests' | 'calendar' | 'account';
 
 export function ClientShell({ area, active, title, children, back, updates = 0 }: { area: Pick<ClientArea, 'base' | 'me' | 't' | 'lang' | 'mine'>; active: NavKey; title: string; children: ReactNode; back?: string; updates?: number }) {
   const { base, me, t, lang, mine } = area;
@@ -36,6 +36,7 @@ export function ClientShell({ area, active, title, children, back, updates = 0 }
           {L('invoices', '/invoices/', 'card', t.invoices, due || undefined)}
           {L('statement', '/statement/', 'chart', t.statement)}
           <p>{t.gRequests}</p>
+          {L('apply', '/apply/', 'folder', 'New application')}
           {L('request', '/services/', 'plus', t.newRequest)}
           {L('requests', '/requests/', 'inbox', t.myRequests)}
           <a href={waLink(`Hello, this is ${me.name}. `)} target="_blank" rel="noopener"><Icon name="wa" size={17} /><span>{t.whatsappUs}</span></a>
