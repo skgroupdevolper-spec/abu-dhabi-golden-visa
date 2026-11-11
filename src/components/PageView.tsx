@@ -57,7 +57,7 @@ export function SectionView({ s, locale, i }: { s: Section; locale: Locale; i: n
           {style === 'docs' ? (
             <ul className="doc-grid">{s.items.map((it) => <li key={it}><span className="di"><Icon name="doc" size={18} /></span><span>{it}</span></li>)}</ul>
           ) : style === 'cards' ? (
-            <ul className="req-grid">{s.items.map((it, k) => { const m = it.match(/^([^:]{2,60}):\s+(.+)$/); return <li key={it}><span className="rn">{String(k + 1).padStart(2, '0')}</span>{m ? <span className="rt"><b>{m[1]}</b><span>{m[2]}</span></span> : <span>{it}</span>}</li>; })}</ul>
+            <ul className="req-grid">{s.items.map((it, k) => { const m = it.match(/^([^:]{2,60}):\s+(.+)$/); return <li key={it}><span className="rn">{String(k + 1).padStart(2, '0')}</span>{m ? <span className="rt"><b>{m[1]}</b><span>{m[2].charAt(0).toUpperCase() + m[2].slice(1)}</span></span> : <span>{it}</span>}</li>; })}</ul>
           ) : (
             <ul className="ticks">{s.items.map((it) => <li key={it}>{it}</li>)}</ul>
           )}
