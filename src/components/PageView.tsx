@@ -194,7 +194,7 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
                 <div className="cta">
                   <L locale={locale} href={applyHref} className="btn btn-gold">{u('Apply Now', locale)} <Icon name="arrow" size={18} className="arrow" /></L>
                   {page.cta && page.cta.href !== '/free-consultation/' ? (
-                    <L locale={locale} href={page.cta.href} className="btn btn-red">{page.cta.label}</L>
+                    <L locale={locale} href={page.cta.href} className="btn btn-red">{u(page.cta.label, locale)}</L>
                   ) : (
                     <L locale={locale} href="/golden-visa-cost/" className="btn btn-red" data-open-calc="">{u('Calculate Visa Cost', locale)}</L>
                   )}
@@ -272,7 +272,7 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
         {blocks ? <BlockView blocks={blocks} locale={locale} reviews={reviews} /> : page.sections.map((s, i) => <SectionView key={i} s={s} locale={locale} i={i} />)}
         {page.related && page.related.length > 0 && (
           <section className="block" data-reveal>
-            <Head title="Related services and guides" k={0} icon="grid" />
+            <Head title={u('Related services and guides', locale)} k={0} icon="grid" />
             <div className="grid">
               {page.related.map((r) => getPage(r) && (
                 <L key={r} locale={locale} href={r} className="card glass">

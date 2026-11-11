@@ -1,6 +1,7 @@
 'use client';
 
-import { T } from './T';
+import { T, useLoc } from './T';
+import { u } from '@/lib/ui';
 import { useState, type FormEvent, type ChangeEvent } from 'react';
 import { SITE, waLink } from '@/lib/site';
 import { Icon } from './Icon';
@@ -8,6 +9,7 @@ import { Icon } from './Icon';
 const SERVICES = ['Property investor Golden Visa', 'Business / investor Golden Visa', 'Entrepreneur Golden Visa', 'Skilled professional Golden Visa', 'Talent or student Golden Visa', 'Family visa', 'Renewal', 'Document services', 'Valuation certificate', 'Something else'];
 
 export function LeadForm({ source = 'contact' }: { source?: string }) {
+  const loc = useLoc();
   const [f, setF] = useState({ name: '', phone: '', email: '', service: SERVICES[0], message: '' });
   const [state, setState] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
   const [err, setErr] = useState('');
@@ -53,11 +55,11 @@ export function LeadForm({ source = 'contact' }: { source?: string }) {
       <div className="field"><label htmlFor={`${source}-name`}><T>{"Full name"}</T></label><input id={`${source}-name`} autoComplete="name" value={f.name} onChange={set('name')} required /></div>
       <div className="field"><label htmlFor={`${source}-phone`}><T>{"WhatsApp number"}</T></label><input id={`${source}-phone`} type="tel" autoComplete="tel" placeholder="+971" value={f.phone} onChange={set('phone')} required /></div>
       <div className="field"><label htmlFor={`${source}-email`}><T>{"Email (optional)"}</T></label><input id={`${source}-email`} type="email" autoComplete="email" value={f.email} onChange={set('email')} /></div>
-      <div className="field"><label htmlFor={`${source}-service`}><T>{"Service"}</T></label><select id={`${source}-service`} value={f.service} onChange={set('service')}>{SERVICES.map((s) => <option key={s}>{s}</option>)}</select></div>
+      <div className="field"><label htmlFor={`${source}-service`}><T>{"Service"}</T></label><select id={`${source}-service`} value={f.service} onChange={set('service')}>{SERVICES.map((s) => <option key={s} value={s}>{u(s, loc)}</option>)}</select></div>
       <div className="field full"><label htmlFor={`${source}-msg`}><T>{"Anything we should know?"}</T></label><textarea id={`${source}-msg`} value={f.message} onChange={set('message')} /></div>
       {err && <p className="err full" role="alert">{err}</p>}
       <div className="full row-actions" style={{ marginTop: 0 }}>
-        <button className="btn btn-red" type="submit" disabled={state === 'sending'}>{state === 'sending' ? 'Sending…' : 'Get My Free Quote'}</button>
+        <button className="btn btn-red" type="submit" disabled={state === 'sending'}>{u(state === 'sending' ? 'Sending…' : 'Get My Free Quote', loc)}</button>
         <a className="btn btn-glass" href={waLink('Hello, I would like a free Golden Visa consultation.')} target="_blank" rel="noopener"><Icon name="wa" size={18} /> <T>{"WhatsApp us"}</T></a>
       </div>
       <p className="full note"><T>{"By sending this form you agree that we contact you about your enquiry. See our privacy policy."}</T></p>

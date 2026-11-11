@@ -1,3 +1,4 @@
+import { u } from '@/lib/ui';
 import { headers } from 'next/headers';
 import { readJsonFile } from '@/lib/server/store';
 import type { Metadata, Viewport } from 'next';
@@ -79,7 +80,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
       </head>
       <body>
         <TrackingCode head={seo.headCode} body={seo.bodyCode} />
-        <a href="#main" className="skip btn btn-navy">Skip to content</a>
+        <a href="#main" className="skip btn btn-navy">{u('Skip to content', locale)}</a>
         <Water />
         <Header locale={locale} />
         <main id="main" className="page">{children}</main>

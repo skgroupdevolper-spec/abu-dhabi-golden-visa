@@ -23,7 +23,7 @@ export function Footer({ locale }: { locale: Locale }) {
           <div className="fbrand">
             <BrandLogo alt={SITE.name} size={50} />
             <p>
-              {SITE.footerAbout || `${SITE.name} is an independent residency consultancy website managed by ${SITE.operator}, UAE. Trade Licence No. ${SITE.licence}.`}
+              {u(SITE.footerAbout || `${SITE.name} is an independent residency consultancy website managed by ${SITE.operator}, UAE. Trade Licence No. ${SITE.licence}.`, locale)}
             </p>
             {SITE.features.newsletter && <Newsletter />}
             <div className="social">
