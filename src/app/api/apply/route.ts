@@ -2,7 +2,10 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { clientIp } from '@/lib/server/ratelimit';
 import { addLead, createApplication, updateApplication, updateLead, type Doc } from '@/lib/server/store';
 import { saveUpload } from '@/lib/server/files';
-import { notify } from '@/lib/server/collections';
+import { hashPassword, insert, list, notify, patch, verifyPassword, type Customer } from '@/lib/server/collections';
+import { startClientSession } from '@/lib/server/auth';
+import { currentCustomer, portalLang } from '@/lib/server/portal';
+import { newId, now } from '@/lib/server/store';
 import { sendTeam, sendWa } from '@/lib/server/whatsapp';
 import { mailTeam, sendMail } from '@/lib/server/mail';
 import { applyService } from '@/content/apply';
@@ -30,10 +33,15 @@ export async function POST(req: NextRequest) {
   try { f = await req.formData(); } catch { return NextResponse.json({ ok: false, error: 'Invalid request.' }, { status: 400 }); }
 
   const svc = applyService(s(f, 'service', 60));
-  const name = s(f, 'name', 120), phone = s(f, 'phone', 40), email = s(f, 'email', 160).toLowerCase();
+  const me = await currentCustomer();
+  const name = s(f, 'name', 120), phone = s(f, 'phone', 40);
+  // A signed-in client always files under their own account email.
+  const email = (me?.email || s(f, 'email', 160)).toLowerCase();
+  const password = me ? '' : String(f.get('password') ?? '').slice(0, 200);
   if (!svc) return NextResponse.json({ ok: false, error: 'Please choose a service.' }, { status: 400 });
   if (name.length < 2 || phone.replace(/\D/g, '').length < 7) return NextResponse.json({ ok: false, error: 'Please add your name and WhatsApp number.' }, { status: 400 });
   if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return NextResponse.json({ ok: false, error: 'Please check your email address.' }, { status: 400 });
+  if (!me && password && (password.length < 8 || !email)) return NextResponse.json({ ok: false, error: !email ? 'Please add your email: it is your login for the client dashboard.' : 'Please choose a password of at least 8 characters.' }, { status: 400 });
   if (f.get('consent') !== 'true') return NextResponse.json({ ok: false, error: 'Please agree to be contacted about your application.' }, { status: 400 });
 
   let family: { relation: string; name: string; adult: boolean }[] = [];
@@ -74,6 +82,25 @@ export async function POST(req: NextRequest) {
     });
 
     const link = portalUrl(app.token);
+
+    // Client account: create it with the chosen password and sign the client in, so they land in their dashboard.
+    // An existing account is never changed here: with the right password the client is signed in, otherwise
+    // the application is still linked to that email and they sign in as usual.
+    let account: 'signed-in' | 'created' | 'exists' | 'none' = me ? 'signed-in' : 'none';
+    if (!me && password && email) {
+      const found = (await list<Customer>('customers')).find((c) => c.email === email);
+      if (!found) {
+        const c: Customer = { id: newId(8), name, email, phone, pass: await hashPassword(password), lang: await portalLang(), active: true, createdAt: now(), lastLogin: now() };
+        await insert<Customer>('customers', c);
+        await notify('customer', `New client account: ${name} (${email}), from application ${app.ref}`, '/admin/customers/');
+        await startClientSession(c.id);
+        account = 'created';
+      } else if (found.active && (await verifyPassword(password, found.pass))) {
+        await patch<Customer>('customers', found.id, (x) => { x.lastLogin = now(); });
+        await startClientSession(found.id);
+        account = 'signed-in';
+      } else account = 'exists';
+    }
     await notify('lead', `New online application ${app.ref}: ${name} (${svc.label}), ${docs.length} document(s)`, `/admin/applications/${app.id}/`);
     void Promise.allSettled([
       sendTeam('leadTeam', { name, phone, service: `${svc.label} · ${app.ref}`, message: notes.slice(0, 300) }),
@@ -81,7 +108,7 @@ export async function POST(req: NextRequest) {
       mailTeam(`New online application ${app.ref}: ${name}`, `${notes}\n\nPhone: ${phone}\nEmail: ${email}\nDocuments: ${docs.length}${failed.length ? ` (not saved: ${failed.join(', ')})` : ''}`),
       email ? sendMail(email, `Your application ${app.ref}`, `Dear ${name.split(' ')[0]},\n\nThank you for your application (${svc.label}). Your reference is ${app.ref}.\n\nFollow your file, upload documents and message your advisor here:\n${link}\n\nAbu Dhabi Golden Visa\nNot an official UAE government website.`) : Promise.resolve(),
     ]);
-    return NextResponse.json({ ok: true, ref: app.ref, link });
+    return NextResponse.json({ ok: true, ref: app.ref, link, account });
   } catch (e) {
     console.error('Application not saved', e);
     return NextResponse.json({ ok: false, error: 'We could not save your application. Please send it on WhatsApp.' }, { status: 500 });

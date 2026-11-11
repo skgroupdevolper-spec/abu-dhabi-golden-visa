@@ -8,7 +8,7 @@ import { APPLY_SERVICES, applyService, type ApplyService } from '@/content/apply
 import { FEE_SCHEDULE, ROUTES, aed } from '@/lib/fees';
 import { governmentLines } from '@/lib/stages';
 import { SITE, waLink } from '@/lib/site';
-import { portalApply, portalLogin } from '@/lib/portal-links';
+import { portalApply, portalHome, portalLogin } from '@/lib/portal-links';
 import { Icon } from './Icon';
 
 type Member = { relation: 'Spouse' | 'Child' | 'Parent'; name: string; adult: boolean };
@@ -33,7 +33,10 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
   const [fees, setFees] = useState(FEE_SCHEDULE);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
-  const [done, setDone] = useState<{ ref: string; link: string } | null>(null);
+  const [done, setDone] = useState<{ ref: string; link: string; account?: string } | null>(null);
+  // New clients choose a password here: the account is created with the application and they go straight to their dashboard.
+  const [pw, setPw] = useState('');
+  const [showPw, setShowPw] = useState(false);
   const [me, setMe] = useState<{ name: string; email: string; phone: string } | null>(null);
 
   useEffect(() => {
@@ -78,6 +81,10 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
       if (d.name.trim().length < 2) return setErr('Please add your full name as in your passport.');
       if (d.phone.replace(/\D/g, '').length < 7) return setErr('Please add your WhatsApp number with the country code.');
       if (d.email && !/^\S+@\S+\.\S+$/.test(d.email)) return setErr('Please check your email address.');
+      if (!me) {
+        if (!d.email) return setErr('Please add your email: it is your login for the client dashboard.');
+        if (pw.length < 8) return setErr('Please choose a password of at least 8 characters.');
+      }
     }
     if (step === 2 && fam.some((m) => !m.name.trim())) return setErr('Add a name for each family member, or remove the empty row.');
     setStep((x) => Math.min(4, famOn || x !== 1 ? x + 1 : x + 2));
@@ -99,6 +106,7 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
     fd.set('service', svc.id); fd.set('serviceLabel', svc.label); fd.set('route', route?.label || svc.label);
     for (const [k, v] of Object.entries(d)) fd.set(k, String(v));
     fd.set('family', JSON.stringify(fam));
+    if (!me && pw) fd.set('password', pw);
     fd.set('language', document.documentElement.lang || 'en');
     if (total) fd.set('estimate', String(total));
     for (const [label, f] of Object.entries(files)) if (f) { fd.append('files', f); fd.append('labels', label); }
@@ -107,7 +115,9 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
       const r = await fetch('/api/apply/', { method: 'POST', body: fd });
       const j = await r.json().catch(() => ({}));
       if (!r.ok || !j.ok) throw new Error(j.error || 'We could not submit your application. Please send it on WhatsApp.');
-      setDone({ ref: j.ref, link: j.link });
+      setDone({ ref: j.ref, link: j.link, account: j.account });
+      // Account created (or the right password for an existing one): open the dashboard right away.
+      if (j.account === 'created' || j.account === 'signed-in') setTimeout(() => { window.location.href = portalHome(); }, 1800);
     } catch (e) {
       setErr((e as Error).message);
     } finally { setBusy(false); }
@@ -121,9 +131,11 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
         <span className="ad-ic"><Icon name="check" size={30} /></span>
         <p className="eyebrow"><T>{"Application received"}</T></p>
         <h2>Thank you, {d.name.split(' ')[0]}. Your reference is {done.ref}.</h2>
+        {(done.account === 'created' || done.account === 'signed-in') && <p className="signed-in-note" style={{ justifyContent: 'center' }}><Icon name="check" size={18} /> <span><T>{"Your account is ready and you are signed in. Opening your dashboard…"}</T></span></p>}
+        {done.account === 'exists' && <p className="notice" style={{ textAlign: 'start' }}><T>{"You already have an account with this email, so we did not create a new one. Your application is added to that account: sign in with your existing password to see it."}</T> <a href={portalLogin()}><T>{"Sign in"}</T></a></p>}
         <p className="lead">Your advisor checks your file and sends the written quote on WhatsApp{d.email ? ' and by email' : ''}. Follow every step, upload documents and message us in your client dashboard.</p>
         <div className="row-actions" style={{ justifyContent: 'center' }}>
-          <a className="btn btn-red" href={done.link}><T>{"Open my client dashboard"}</T> <Icon name="arrow" size={18} /></a>
+          <a className="btn btn-red" href={done.account === 'created' || done.account === 'signed-in' ? portalHome() : done.link}><T>{"Open my client dashboard"}</T> <Icon name="arrow" size={18} /></a>
           <a className="btn btn-glass" href={waLink(waText)} target="_blank" rel="noopener"><Icon name="wa" size={18} /> WhatsApp {SITE.whatsappDisplay}</a>
         </div>
       </div>
@@ -181,7 +193,16 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
               <div className="form">
                 <div className="field"><label htmlFor="ap-name"><T>{"Full name"}</T></label><input id="ap-name" autoComplete="name" value={d.name} onChange={set('name')} /></div>
                 <div className="field"><label htmlFor="ap-phone"><T>{"WhatsApp number"}</T></label><input id="ap-phone" type="tel" autoComplete="tel" placeholder="+971" value={d.phone} onChange={set('phone')} /></div>
-                <div className="field"><label htmlFor="ap-email"><T>{"Email"}</T></label><input id="ap-email" type="email" autoComplete="email" value={d.email} onChange={set('email')} /></div>
+                <div className="field"><label htmlFor="ap-email"><T>{"Email"}</T>{!me && ' *'}</label><input id="ap-email" type="email" autoComplete="email" value={d.email} onChange={set('email')} readOnly={!!me} required={!me} /></div>
+                {!me && (
+                  <div className="field"><label htmlFor="ap-pw"><T>{"Create a password for your dashboard"}</T> *</label>
+                    <div className="pw-row">
+                      <input id="ap-pw" type={showPw ? 'text' : 'password'} autoComplete="new-password" minLength={8} value={pw} onChange={(e) => setPw(e.target.value)} aria-describedby="ap-pw-help" />
+                      <button type="button" className="btn btn-sm btn-glass" onClick={() => setShowPw((x) => !x)} aria-pressed={showPw}>{showPw ? <T>{"Hide"}</T> : <T>{"Show"}</T>}</button>
+                    </div>
+                    <p className="help" id="ap-pw-help"><T>{"At least 8 characters. With your email this is your login to follow your file, upload documents and pay online."}</T></p>
+                  </div>
+                )}
                 <div className="field"><label htmlFor="ap-nat"><T>{"Nationality"}</T></label><input id="ap-nat" autoComplete="country-name" value={d.nationality} onChange={set('nationality')} /></div>
                 <div className="field full">
                   <span className="lbl"><T>{"Where are you now?"}</T></span>
@@ -196,7 +217,7 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
                   </select>
                 </div>
                 <div className="field"><label htmlFor="ap-notes"><T>{"Anything we should know?"}</T></label><input id="ap-notes" value={d.notes} onChange={set('notes')} placeholder="e.g. property value, deadline" /></div>
-                {!me && <p className="small muted full">You get a private link to your client dashboard to follow your file, upload documents and pay online. Already have an account? <a href={portalLogin()}><T>{"Sign in first"}</T></a> <T>{"and your details are filled in for you."}</T></p>}
+                {!me && <p className="small muted full"><T>{"Your client account is created with this application and you go straight to your dashboard."}</T> <T>{"Already have an account?"}</T> <a href={portalLogin()}><T>{"Sign in first"}</T></a> <T>{"and your details are filled in for you."}</T></p>}
               </div>
             </div>
           )}

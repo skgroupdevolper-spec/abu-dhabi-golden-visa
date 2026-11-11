@@ -365,6 +365,27 @@ for (const [name, vp] of Object.entries(VP)) {
   await page.close();
 }
 
+/* ---------- 8. Apply with a password: account created, signed in, dashboard opens; existing account never changed ---------- */
+{
+  const form = (pw, email) => ({ service: 'gv-property', name: 'CI Applicant', phone: '+971500000123', email, consent: 'true', where: 'in', family: '[]', password: pw });
+  const a1 = await request.newContext({ baseURL: base, extraHTTPHeaders: { 'x-forwarded-for': '10.8.8.1' } });
+  const r1 = await (await a1.post('/api/apply/', { multipart: form('ci-pass-12345', 'ci-apply@example.com') })).json().catch(() => ({}));
+  if (!r1.ok || r1.account !== 'created') fail('apply-account', `new applicant account not created: ${JSON.stringify(r1).slice(0, 160)}`);
+  const me1 = await (await a1.get('/api/me/')).json().catch(() => ({}));
+  if (!me1.signedIn) fail('apply-account', 'new applicant is not signed in after applying');
+  const dash = await a1.get('/portal/', { maxRedirects: 0 });
+  if (dash.status() !== 200) fail('apply-account', `dashboard after applying → HTTP ${dash.status()}`);
+  else if (!(await dash.text()).includes('ADGV-')) warn('apply-account', 'dashboard does not list the new application reference');
+  await a1.dispose();
+  const a2 = await request.newContext({ baseURL: base, extraHTTPHeaders: { 'x-forwarded-for': '10.8.8.2' } });
+  const r2 = await (await a2.post('/api/apply/', { multipart: form('a-wrong-password', 'ci-apply@example.com') })).json().catch(() => ({}));
+  if (!r2.ok || r2.account !== 'exists') fail('apply-account', `existing email with wrong password: ${JSON.stringify(r2).slice(0, 160)}`);
+  if ((await (await a2.get('/api/me/')).json().catch(() => ({}))).signedIn) fail('security', 'wrong password on apply signed the visitor in');
+  const r3 = await (await a2.post('/api/apply/', { multipart: form('ci-pass-12345', 'ci-apply@example.com') })).json().catch(() => ({}));
+  if (r3.account !== 'signed-in') fail('apply-account', `existing account with the right password not signed in: ${JSON.stringify(r3).slice(0, 160)}`);
+  await a2.dispose();
+}
+
 await browser.close();
 const report = { ok: fails.length === 0, fails, warns: [...new Set(warns)].slice(0, 200), stats };
 writeFileSync('shots/e2e-report.json', JSON.stringify(report, null, 2));
