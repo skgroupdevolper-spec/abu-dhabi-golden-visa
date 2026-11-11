@@ -2,11 +2,10 @@ import 'server-only';
 import { PAGES } from '@/content/pages';
 import type { Page } from '@/content/types';
 import { LOCALES } from '@/lib/i18n';
-import { complete, parseJson, underDailyLimit } from './ai';
+import { underDailyLimit } from './ai';
 import { insert } from './collections';
 import { getCustomPages, getOverrides, getPublishedPosts, postToPage, type Translations } from './content';
 import type { Block } from '@/lib/blocks';
-import { aiReady } from './ai';
 import { getBlock, saveBlock } from './settings';
 import { newId, now, readJsonFile, updateJsonFile } from './store';
 import UI_STRINGS from '@/lib/ui-strings.json';
@@ -53,46 +52,14 @@ async function sourceOf(p: Page) {
   return { seoTitle: o?.seoTitle || p.seoTitle, meta: o?.meta || p.meta, eyebrow: o?.eyebrow || p.eyebrow, h1: o?.h1 || p.h1, intro: o?.intro || p.intro, sections: blocks ? [] : p.sections, ...(blocks ? { blocks } : {}) };
 }
 
-/** Splits a list into groups of about `max` characters of JSON, so each AI request stays small and fast. */
-function chunk<T>(items: T[], max = 9000): T[][] {
-  const out: T[][] = [];
-  let cur: T[] = [], size = 0;
-  for (const it of items) {
-    const n = JSON.stringify(it).length;
-    if (cur.length && size + n > max) { out.push(cur); cur = []; size = 0; }
-    cur.push(it); size += n;
-  }
-  if (cur.length) out.push(cur);
-  return out;
-}
-
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-/** One AI request, retried twice when the provider is busy (rate limits, timeouts). */
-async function ask(system: string, payload: unknown): Promise<unknown> {
-  let last: unknown;
-  for (let i = 0; i < 3; i++) {
-    try {
-      const out = await complete(system, [{ role: 'user', content: JSON.stringify(payload) }], { json: true, maxTokens: 8000, kind: 'auto', use: 'translate' });
-      return parseJson(out);
-    } catch (e) {
-      last = e;
-      if (i < 2) await sleep(1500 * (i + 1) + Math.random() * 800);
-    }
-  }
-  throw last;
-}
 
-export async function translatePage(p: Page, lang: string) {
-  const name = LOCALES.find((l) => l.code === lang)?.name ?? lang;
+export async function translatePage(p: Page, lang: string, cfg?: import('./mt').LangCfg) {
   const src = await sourceOf(p);
-  const system = `You are a professional legal-immigration translator for a UAE residency consultancy website. Translate every human-readable string value in the JSON into ${name}${lang === 'at' ? ' (Austrian German)' : ''}. Keep the JSON structure, keys and array lengths identical. Do not translate or change values of "type", "tool" or "href". Keep numbers, currency (AED), names of authorities and brand names accurate. Natural, clear, polite tone; never add promises or guarantees. Return JSON only.`;
-  // Header texts and each group of sections are translated at the same time (parallel requests).
-  const head = { seoTitle: src.seoTitle, meta: src.meta, eyebrow: src.eyebrow, h1: src.h1, intro: src.intro };
-  const list: unknown[] = (src.blocks ?? src.sections) as unknown[];
-  const groups = chunk(list);
-  const [hT, ...gT] = await Promise.all([ask(system, head), ...groups.map((g) => ask(system, { items: g }))]);
-  const items = groups.flatMap((g, i) => restore(g, (gT[i] as { items?: unknown[] } | undefined)?.items) as unknown[]);
-  const t = { ...(restore(head, hT) as typeof head), sections: src.blocks ? [] : items, ...(src.blocks ? { blocks: items } : {}) } as typeof src;
+  const { translateTexts } = await import('./mt');
+  // Text by text with a cache: only texts not translated before are sent, many at the same time.
+  const map = await translateTexts(lang, texts(src), cfg);
+  const t = swap(src, map) as typeof src;
   await updateJsonFile<Translations>('translations.json', {}, (all) => {
     all[lang] = all[lang] ?? {};
     all[lang][p.path] = { ...t, at: now(), h: fingerprint(src) } as Translations[string][string];
@@ -123,6 +90,8 @@ export async function runTranslation(langs: string[], auto = false) {
     const ui = translateUi(langs).catch(() => 0);
     const todo = await staleList(langs);
     const fresh = new Set<string>();
+    const { langCfg } = await import('./mt');
+    const cfg = await langCfg();
     const job: TranslateJob = { running: true, langs, total: todo.length, done: 0, errors: 0, startedAt: now(), auto };
     await saveBlock('translateJob', job);
     let next = 0, stop = false, lastSave = 0;
@@ -137,10 +106,10 @@ export async function runTranslation(langs: string[], auto = false) {
       while (!stop && next < todo.length) {
         const [p, l] = todo[next++];
         if (!(await getBlock<TranslateJob>('translateJob', JOB0)).running) { stop = true; break; }
-        if (!(await underDailyLimit('auto'))) { job.message = 'Daily AI limit reached. It continues tomorrow or when you raise the limit in Site settings.'; stop = true; break; }
+        if (cfg.engine === 'ai' && !(await underDailyLimit('auto'))) { job.message = 'Daily AI limit reached. It continues tomorrow or when you raise the limit in Site settings.'; stop = true; break; }
         job.current = `${l.toUpperCase()} ${p.path}`;
         try {
-          await translatePage(p, l);
+          await translatePage(p, l, cfg);
           job.done++;
           fresh.add(p.path);
         } catch (e) {
@@ -151,8 +120,8 @@ export async function runTranslation(langs: string[], auto = false) {
         await save();
       }
     };
-    // Six pages at a time: about six times faster than one by one, and still gentle on the AI provider.
-    await Promise.all(Array.from({ length: Math.min(6, todo.length || 1) }, worker));
+    // Several pages at the same time (each page also sends its texts in parallel batches).
+    await Promise.all(Array.from({ length: Math.min(cfg.engine === 'ai' ? 4 : 5, todo.length || 1) }, worker));
     await ui;
     job.running = false; job.current = undefined; job.finishedAt = now();
     if (stop && !job.message) job.message = 'Stopped.';
@@ -172,7 +141,7 @@ export async function siteLangs() {
 /** Starts a background run for everything missing or changed, if automatic translation is on. Used at server start and by the daily job. */
 export async function autoCatchUp() {
   const cfg = await getBlock<{ onSave: boolean }>('langcfg', { onSave: true });
-  if (!cfg.onSave || globalThis.__adgvTranslating || !(await aiReady('translate'))) return;
+  if (!cfg.onSave || globalThis.__adgvTranslating || !(await (await import('./mt')).engineReady())) return;
   const langs = await siteLangs();
   if (!(await staleList(langs)).length) return;
   void runTranslation(langs, true).catch(() => {});
@@ -192,7 +161,7 @@ export async function translationProgress() {
 /** Translates changed pages into all languages in the background after an admin saves (if switched on). */
 export async function autoTranslate(_paths: string[]) {
   const cfg = await getBlock<{ onSave: boolean }>('langcfg', { onSave: true });
-  if (!cfg.onSave || !(await aiReady())) return;
+  if (!cfg.onSave || !(await (await import('./mt')).engineReady())) return;
   // The fingerprint check picks up exactly the pages that changed. If a run is busy, try again shortly.
   const start = async (tries = 0): Promise<void> => {
     if (globalThis.__adgvTranslating) { if (tries < 30) { await sleep(20000); return start(tries + 1); } return; }
@@ -208,34 +177,25 @@ export async function uiProgress() {
   return { total: UI_STRINGS.length, per: Object.fromEntries(LOCALES.filter((l) => l.code !== 'en').map((l) => [l.code, UI_STRINGS.filter((s) => all[l.code]?.[s]).length])) as Record<string, number> };
 }
 
-/** Translates the interface texts still missing in the given languages (batches of 60). Returns how many were added. */
+/** Translates the interface texts still missing in the given languages. Returns how many were added. */
 export async function translateUi(langs: string[]) {
+  const { translateTexts } = await import('./mt');
   let added = 0;
-  for (const lang of langs) {
-    if (lang === 'en') continue;
-    const name = LOCALES.find((l) => l.code === lang)?.name ?? lang;
+  await Promise.all(langs.filter((l) => l !== 'en').map(async (lang) => {
     const have = (await readJsonFile<Record<string, Record<string, string>>>('ui-translations.json', {}))[lang] ?? {};
     const missing = UI_STRINGS.filter((s) => !have[s]);
-    const batches: string[][] = [];
-    for (let i = 0; i < missing.length; i += 60) batches.push(missing.slice(i, i + 60));
-    await Promise.all(batches.map(async (batch) => {
-      if (!(await underDailyLimit('auto'))) return;
-      const system = `Translate short website interface texts (menu items, buttons, labels, headings) of a UAE Golden Visa consultancy into ${name}${lang === 'at' ? ' (Austrian German)' : ''}. Keep them short and natural for buttons and menus. Keep AED, numbers, brand names (WhatsApp, Emirates ID, Golden Visa may be translated naturally), arrows and symbols. Return JSON: {"t": [translations in the same order]}.`;
-      try {
-        const out = await complete(system, [{ role: 'user', content: JSON.stringify(batch) }], { json: true, maxTokens: 6000, kind: 'auto', use: 'translate' });
-        const tr = parseJson<{ t: string[] }>(out).t ?? [];
-        if (tr.length !== batch.length) return;
-        await updateJsonFile<Record<string, Record<string, string>>>('ui-translations.json', {}, (all) => {
-          all[lang] = all[lang] ?? {};
-          batch.forEach((s, k) => { const v = String(tr[k] ?? '').trim(); if (v) all[lang][s] = v.slice(0, 600); });
-          return all;
-        });
-        added += batch.length;
-      } catch (e) {
-        await insert<AiLog>('ai-log', { id: newId(6), at: now(), kind: 'translate', text: `Interface texts (${lang}): ${(e as Error).message}`.slice(0, 300), ok: false }, 1000);
-      }
-    }));
-  }
+    if (!missing.length) return;
+    try {
+      const map = await translateTexts(lang, missing);
+      await updateJsonFile<Record<string, Record<string, string>>>('ui-translations.json', {}, (all) => {
+        all[lang] = all[lang] ?? {};
+        for (const [k, v] of Object.entries(map)) if (!all[lang][k]) { all[lang][k] = v.slice(0, 600); added++; }
+        return all;
+      });
+    } catch (e) {
+      await insert<AiLog>('ai-log', { id: newId(6), at: now(), kind: 'translate', text: `Interface texts (${lang}): ${(e as Error).message}`.slice(0, 300), ok: false }, 1000);
+    }
+  }));
   return added;
 }
 

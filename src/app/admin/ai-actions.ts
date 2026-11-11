@@ -42,7 +42,7 @@ export async function testAi(_: St, f?: FormData): Promise<St> {
 
 export async function startTranslation(_: St, f: FormData): Promise<St> {
   await requireAdmin(FULL);
-  if (!(await aiReady())) return { error: 'Add an AI key in Site settings > AI keys first.' };
+  if (!(await (await import('@/lib/server/mt')).engineReady())) return { error: 'The chosen translation engine needs a key. Choose Google (free) or add the key.' };
   const langs = f.getAll('langs').map(String).filter((c) => LOCALES.some((l) => l.code === c && c !== 'en'));
   if (!langs.length) return { error: 'Choose at least one language.' };
   const job = await getBlock<TranslateJob>('translateJob', JOB0);
@@ -54,7 +54,7 @@ export async function startTranslation(_: St, f: FormData): Promise<St> {
 /** One click: every page, every website language, missing or changed. */
 export async function translateEverything(): Promise<St> {
   await requireAdmin(FULL);
-  if (!(await aiReady('translate'))) return { error: 'Add the translation AI key on this page first (Translation AI provider & API key).' };
+  if (!(await (await import('@/lib/server/mt')).engineReady())) return { error: 'The chosen translation engine needs a key. Choose Google (free) or add the key.' };
   const job = await getBlock<TranslateJob>('translateJob', JOB0);
   if (job.running) return { error: 'Translation is already running. Watch the progress bar at the top.' };
   const { siteLangs } = await import('@/lib/server/translate');
@@ -62,7 +62,7 @@ export async function translateEverything(): Promise<St> {
   await saveBlock('translateJob', { ...JOB0, running: true, langs, auto: true, startedAt: new Date().toISOString() });
   void runTranslation(langs, true);
   revalidatePath('/admin/languages/');
-  return { ok: `Started: all pages into ${langs.length} languages, six pages at a time. You can leave this page; it keeps running.` };
+  return { ok: `Started: all pages into ${langs.length} languages. You can leave this page; it keeps running in the background.` };
 }
 
 export async function stopTranslation() {
@@ -202,14 +202,14 @@ export async function saveTranslation(_: St, f: FormData): Promise<St> {
 }
 export async function retranslatePage(_: St, f: FormData): Promise<St> {
   await requireAdmin(EDIT);
-  if (!(await aiReady('translate'))) return { error: 'Add the translation AI key first: Languages > AI provider & API key.' };
+  if (!(await (await import('@/lib/server/mt')).engineReady())) return { error: 'The chosen translation engine needs a key. Choose Google (free) in Languages.' };
   const { findPage, translatePage } = await import('@/lib/server/translate');
   const p = await findPage(s(f, 'path', 300));
   if (!p) return { error: 'Save or publish this page first.' };
   const lang = s(f, 'lang', 10);
   if (lang === 'all') {
     const langs = LOCALES.filter((l) => l.code !== 'en').map((l) => l.code);
-    void (async () => { for (const l of langs) { try { await translatePage(p, l); } catch { /* next language */ } } revalidatePath('/', 'layout'); })();
+    void (async () => { await Promise.all(langs.map((l) => translatePage(p, l).catch(() => {}))); revalidatePath('/', 'layout'); })();
     return { ok: `Translating into ${langs.length} languages in the background. Refresh in a minute to see the ticks.` };
   }
   try { await translatePage(p, lang); } catch (e) { return { error: (e as Error).message }; }
@@ -231,7 +231,12 @@ export async function suggestKeywordsNow(_: St, f: FormData): Promise<St> {
 }
 export async function saveLangCfg(_: St, f: FormData): Promise<St> {
   await requireAdmin(FULL);
-  await saveBlock('langcfg', { onSave: f.get('onSave') === 'on' });
+  const { langCfg } = await import('@/lib/server/mt');
+  const cur = await langCfg();
+  const engine = (['google', 'deepl', 'ai'].includes(String(f.get('engine'))) ? String(f.get('engine')) : cur.engine ?? 'google') as 'google';
+  const key = String(f.get('deeplKey') ?? '').trim();
+  await saveBlock('langcfg', { ...cur, onSave: f.get('onSave') === 'on', engine, ...(key ? { deeplKey: key.slice(0, 120) } : {}) });
+  revalidatePath('/admin/languages/');
   return { ok: 'Saved.' };
 }
 
@@ -255,7 +260,7 @@ export async function saveSiteLanguages(_: St, f: FormData): Promise<St> {
 /** Translates the website interface (menus, buttons, booking, flight path, contact/about) into the website languages. */
 export async function translateInterface(_: St): Promise<St> {
   await requireAdmin(FULL);
-  if (!(await aiReady('translate'))) return { error: 'Add the translation AI key first (below on this page).' };
+  if (!(await (await import('@/lib/server/mt')).engineReady())) return { error: 'The chosen translation engine needs a key. Choose Google (free) on this page.' };
   const { translateUi } = await import('@/lib/server/translate');
   const on = (await getSite()).languages;
   const langs = LOCALES.filter((l) => l.code !== 'en' && (!on?.length || on.includes(l.code))).map((l) => l.code);

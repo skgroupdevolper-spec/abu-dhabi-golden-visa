@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { ActionForm, Submit } from '@/components/dash/ActionForm';
 import { Toggle } from '@/components/dash/Fields';
 import { FULL, requireAdmin } from '@/lib/server/auth';
-import { aiReady } from '@/lib/server/ai';
+import { engineReady, langCfg } from '@/lib/server/mt';
 import { list } from '@/lib/server/collections';
 import { getBlock } from '@/lib/server/settings';
 import { JOB0, translationProgress, type AiLog, type TranslateJob } from '@/lib/server/translate';
@@ -19,7 +19,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function Languages() {
   await requireAdmin(FULL);
-  const [prog, job, ready, logs, langcfg] = await Promise.all([translationProgress(), getBlock<TranslateJob>('translateJob', JOB0), aiReady('translate'), list<AiLog>('ai-log'), getBlock<{ onSave: boolean }>('langcfg', { onSave: true })]);
+  const [prog, job, ready, logs, langcfg] = await Promise.all([translationProgress(), getBlock<TranslateJob>('translateJob', JOB0), engineReady(), list<AiLog>('ai-log'), langCfg()]);
   const langs = LOCALES.filter((l) => l.code !== 'en');
   const site = await getSite();
   const uip = await uiProgress();
@@ -29,10 +29,10 @@ export default async function Languages() {
         <div className="row"><a className="btn" href="/admin/languages/edit/">Edit a translation by hand</a>{job.running && <form action={stopTranslation}><button className="btn" type="submit">Stop translating</button></form>}</div></div>
       <div className="panel goldbg" style={{ marginBottom: 16 }}>
         <div className="panel-h"><h2>Translate the whole website</h2></div>
-        <p className="help">One click translates every page, guide and blog post into all {langs.length} website languages, plus menus and buttons. Only pages that are missing or changed in English are sent, six at a time. New pages and edits are translated automatically after each save and after each update of the website, so you do not need to come back here.</p>
+        <p className="help">One click translates every page, guide and blog post into all {langs.length} website languages, plus menus and buttons. Every English text is translated once and remembered, so only new or changed texts are sent. New pages and edits are translated automatically after each save and after each update of the website, so you do not need to come back here.</p>
         {ready ? (
           <ActionForm action={translateEverything}><Submit className="btn btn-gold">{job.running ? 'Running…' : 'Translate everything now'}</Submit></ActionForm>
-        ) : <p className="notice err">Add the translation AI key at the bottom of this page first.</p>}
+        ) : <p className="notice err">The chosen engine needs a key. Choose Google (free) below, or add the key.</p>}
       </div>
       {job.running && <meta httpEquiv="refresh" content="8" />}
       {job.running ? (
@@ -73,16 +73,21 @@ export default async function Languages() {
         </div>
         <div className="panel">
           <h2>Translate automatically</h2>
-          <ActionForm action={saveLangCfg} className="row" >
+          <ActionForm action={saveLangCfg} className="stack">
+            <span className="lbl">Translation engine</span>
+            <label className="row small"><input type="radio" name="engine" value="google" defaultChecked={(langcfg.engine ?? 'google') === 'google'} /> <span><b>Google Translate: free, no key, fastest</b> (recommended). The whole site in a few minutes.</span></label>
+            <label className="row small"><input type="radio" name="engine" value="deepl" defaultChecked={langcfg.engine === 'deepl'} /> <span><b>DeepL</b>: very natural for European languages. Needs a DeepL API key; languages DeepL does not have (Hindi, Urdu, Croatian) use Google.</span></label>
+            <div className="field"><label htmlFor="deeplKey">DeepL API key {langcfg.deeplKey ? '(saved, leave empty to keep)' : ''}</label><input id="deeplKey" name="deeplKey" type="password" autoComplete="off" placeholder={langcfg.deeplKey ? '••••••••' : 'from deepl.com/your-account/keys'} /></div>
+            <label className="row small"><input type="radio" name="engine" value="ai" defaultChecked={langcfg.engine === 'ai'} /> <span><b>AI (Gemini, OpenAI or Claude key below)</b>: good quality, slower and uses the daily AI limit.</span></label>
             <Toggle name="onSave" label="Translate automatically (recommended)" help="New pages, edits and blog posts are translated into all website languages in the background after each save and after every website update." on={langcfg.onSave} />
             <Submit className="btn btn-sm">Save</Submit>
           </ActionForm>
-          {!ready && <p className="notice err">Add the translation AI key below first.</p>}
+          {!ready && <p className="notice err">The chosen engine needs a key. Choose Google (free) or add the key.</p>}
           <ActionForm action={startTranslation} className="stack">
             <span className="lbl">Languages</span>
             <div className="grid2">{langs.map((l) => <label key={l.code} className="row small"><input type="checkbox" name="langs" value={l.code} defaultChecked={['ar', 'ru', 'hi', 'ur', 'zh'].includes(l.code)} /> {l.native}</label>)}</div>
             <Toggle name="auto" label="Keep going every day" help="With the daily scheduled job, new pages and guides are translated too." on={job.auto} />
-            <p className="help">Each page uses one AI request per language; the daily limit is in Site settings. A native speaker should review important pages.</p>
+            <p className="help">Any translation can be corrected by hand with “Edit a translation by hand”; hand edits are never overwritten.</p>
             <Submit>Translate missing pages</Submit>
           </ActionForm>
         </div>
