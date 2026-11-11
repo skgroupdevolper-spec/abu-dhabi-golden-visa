@@ -11,6 +11,8 @@ const walk = (d) => {
     if (!/\.(tsx?|mjs)$/.test(f)) continue;
     const src = readFileSync(p, 'utf8');
     for (const m of src.matchAll(/\bu\(\s*(['"`])((?:\\.|(?!\1).)+)\1/g)) if (!m[2].includes('${')) found.add(m[2].replace(/\\(['"`])/g, '$1'));
+    // <T>{"text"}</T>, <Tx>{"text"}</Tx> and <Opt>{"text"}</Opt> in the website components.
+    for (const m of src.matchAll(/<(?:T|Tx|Opt)(?:\s[^>]*)?>\{("(?:\\.|[^"\\])*")\}<\/(?:T|Tx|Opt)>/g)) { try { found.add(JSON.parse(m[1])); } catch { /* skip */ } }
   }
 };
 walk('src');

@@ -14,6 +14,22 @@ export function u(en: string, locale?: string): string {
   const all = typeof window !== 'undefined' ? window.__ADGV_UI : globalThis.__ADGV_UI;
   const t = all?.[locale]?.[en];
   // On the server, remember texts that have no translation yet; they are translated automatically in the background.
-  if (!t && typeof window === 'undefined' && en && en.length < 600 && /[A-Za-z]{2}/.test(en)) (globalThis.__ADGV_MISS ??= new Set()).add(en);
+  if (!t && en && en.length < 600 && /[A-Za-z]{2}/.test(en)) {
+    if (typeof window === 'undefined') (globalThis.__ADGV_MISS ??= new Set()).add(en);
+    else report(en);
+  }
   return t || en;
+}
+
+/* In the browser, texts shown without a translation are sent to the server in one small batch. */
+let pending: Set<string> | undefined;
+let timer: ReturnType<typeof setTimeout> | undefined;
+function report(en: string) {
+  (pending ??= new Set()).add(en);
+  if (timer) return;
+  timer = setTimeout(() => {
+    const list = [...(pending ?? [])].slice(0, 100);
+    pending = undefined; timer = undefined;
+    try { navigator.sendBeacon?.('/api/ui-miss/', new Blob([JSON.stringify(list)], { type: 'application/json' })); } catch { /* ignore */ }
+  }, 3000);
 }
