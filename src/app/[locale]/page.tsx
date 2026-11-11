@@ -7,7 +7,6 @@ import { pageMetadata } from '@/lib/seo';
 import { SITE, waLink } from '@/lib/site';
 import { Eligibility } from '@/components/Eligibility';
 import { Icon } from '@/components/Icon';
-import { TranslationNotice } from '@/components/TranslationNotice';
 import { FaqList, HeroFinder, HomeEffects, HomeLeadForm, PhoneChat, ServicesGrid } from '@/components/HomeClient';
 import { getFaqs, getOverrides, getPartners, getTestimonials, getTranslations } from '@/lib/server/content';
 import { BlockView } from '@/components/BlockView';
@@ -105,7 +104,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <a className="btn btn-glass mag" href={/^https?:/.test(H.btn2Link) ? H.btn2Link : lp(H.btn2Link)} {...(H.btn2Link === '/golden-visa-cost/' ? { 'data-open-calc': '' } : {})}>{u(H.btn2, locale)}</a>
             </div>
             <div className="trust in-hero">{H.trust.map((t) => <span key={t}>{u(t, locale)}</span>)}</div>
-            <div className="in-hero"><TranslationNotice locale={locale} /></div>
           </div>
           <div className="hero-art" id="heroArt">
             <div className="orb">
