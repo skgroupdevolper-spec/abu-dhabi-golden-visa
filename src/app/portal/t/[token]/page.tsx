@@ -12,6 +12,7 @@ import { PortalTop } from '@/components/dash/PortalTop';
 import { ClientShell } from '@/components/dash/ClientShell';
 import { clientArea, currentCustomer, portalBase, T } from '@/lib/server/portal';
 import { acceptQuote, clientMessage, clientUpload } from '../../actions';
+import { Icon } from '@/components/Icon';
 
 export const metadata: Metadata = { title: 'My application' };
 export const dynamic = 'force-dynamic';
@@ -63,7 +64,7 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
           <div className="oh-l">
             <p className="oh-k">{t.orderLabel}</p>
             <h1 className="oh-ref">{a.ref}</h1>
-            <div className="oh-chips"><span className="chip st">● {decT && stKey !== 'done' ? decT.title : st}</span><span className="chip">📅 {fmtD(a.createdAt)}</span><span className="chip">👤 {adv.name}</span></div>
+            <div className="oh-chips"><span className="chip st">● {decT && stKey !== 'done' ? decT.title : st}</span><span className="chip"><Icon name="calendar" size={14} className="ei" /> {fmtD(a.createdAt)}</span><span className="chip"><Icon name="user" size={14} className="ei" /> {adv.name}</span></div>
             <p className="oh-step">{t.step} {a.stage + 1} {t.of} {STAGES.length}: <b>{t.stages[a.stage]}</b></p>
             <div className="bar oh-bar"><i style={{ width: `${pct}%` }} /></div>
           </div>
@@ -85,20 +86,20 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
         )}
         <div className="oh-actions">
           {a.quote.sentAt && <a className="btn btn-glass" href="quote/"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14" /></svg> {t.downloadPdf}</a>}
-          <a className="btn btn-ghost" href={signedIn ? `${base}/services/` : waLink(`Hello, I would like another service (${a.ref}).`)}>⊕ {t.requestAnother}</a>
+          <a className="btn btn-ghost" href={signedIn ? `${base}/services/` : waLink(`Hello, I would like another service (${a.ref}).`)}><Icon name="plus" size={14} className="ei" /> {t.requestAnother}</a>
           <LiveRefresh token={a.token} stamp={a.updatedAt} label={t.live} />
         </div>
         {sp.cancelled && <p className="notice">{t.payCancelled}</p>}
         {sp.payerror && <p className="notice err">{t.payError}</p>}
         {due.length > 0 && (
           <section className="paybox">
-            <div><b>💳 {t.readyToProceed}</b><p>{t.payIntro}</p></div>
+            <div><b><Icon name="card" size={14} className="ei" /> {t.readyToProceed}</b><p>{t.payIntro}</p></div>
             <div className="paybox-r">{due.map((p) => <a key={p.id} className="btn btn-gold" href={live || p.link ? `pay/${p.id}/` : showBank ? '#bank' : waLink(`Hello, I would like to pay ${p.label} for ${a.ref}.`)}>{t.payConfirm} · {money(p.amount)}</a>)}</div>
           </section>
         )}
         {canOrderPay && (
           <section className="paybox">
-            <div><b>💳 {t.readyToProceed}</b><p>{t.payWhole}</p></div>
+            <div><b><Icon name="card" size={14} className="ei" /> {t.readyToProceed}</b><p>{t.payWhole}</p></div>
             <div className="paybox-r"><a className="btn btn-gold" href={payHref}>{t.payConfirm} · {money(balance)}</a></div>
           </section>
         )}
@@ -118,11 +119,11 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
               </dl>
             </section>
             <section className="panel reveal svc-order">
-              <div className="so-h"><span>🔗</span><div><h2>{t.servicesInOrder} <em>1</em></h2><p>{t.trackProgress}</p></div></div>
-              <div className="so-item"><span className="so-ic">🚀</span><span><b>{a.route}</b><small>{t.stages[a.stage]}{a.expected ? ` · ${t.expected} ${a.expected}` : ''}</small></span><span className={`pill ${a.stage >= last ? 'ok' : 'new'}`}>{a.stage >= last ? t.stCompleted : t.inProgress}</span></div>
+              <div className="so-h"><span><Icon name="folder" size={14} className="ei" /></span><div><h2>{t.servicesInOrder} <em>1</em></h2><p>{t.trackProgress}</p></div></div>
+              <div className="so-item"><span className="so-ic"><Icon name="rocket" size={14} className="ei" /></span><span><b>{a.route}</b><small>{t.stages[a.stage]}{a.expected ? ` · ${t.expected} ${a.expected}` : ''}</small></span><span className={`pill ${a.stage >= last ? 'ok' : 'new'}`}>{a.stage >= last ? t.stCompleted : t.inProgress}</span></div>
             </section>
             {toPay > 0 && fromTeam.length === 0 && (
-              <div className="lockbox">🔒 <span><b>{t.finalFiles}</b><br />{t.unlockAfterPay}</span></div>
+              <div className="lockbox"><Icon name="lock" size={14} className="ei" /> <span><b>{t.finalFiles}</b><br />{t.unlockAfterPay}</span></div>
             )}
             <section className="panel reveal" id="status">
               <h2>{t.progress}</h2>
@@ -151,7 +152,7 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
                   </div>
                   <div className="total"><span>{t.total}</span><b>{money(total)}</b></div>
                   <p className="small muted" style={{ marginTop: 10 }}>{t.feesNote}</p>
-                  <div className="row" style={{ marginTop: 12 }}>{!a.quote.acceptedAt && (payHref ? <a className="btn btn-gold" href={payHref}>💳 {t.payConfirm}</a> : <form action={acceptQuote}>{TK}<button className="btn btn-gold" type="submit">{t.accept}</button></form>)}<a className="btn" href="quote/">{t.downloadQuote}</a></div>
+                  <div className="row" style={{ marginTop: 12 }}>{!a.quote.acceptedAt && (payHref ? <a className="btn btn-gold" href={payHref}><Icon name="card" size={14} className="ei" /> {t.payConfirm}</a> : <form action={acceptQuote}>{TK}<button className="btn btn-gold" type="submit">{t.accept}</button></form>)}<a className="btn" href="quote/">{t.downloadQuote}</a></div>
                 </>
               )}
             </section>
@@ -180,7 +181,7 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
 
             {showBank && (
               <section className="panel reveal bankbox" id="bank">
-                <h2>🏦 {t.bankTitle}</h2>
+                <h2><Icon name="building" size={14} className="ei" /> {t.bankTitle}</h2>
                 <p className="small muted">{t.bankIntro}</p>
                 <div className="lines" style={{ marginTop: 10 }}>
                   <div><span>{t.amountToPay}</span><b>{money(toPay)}</b></div>
@@ -231,20 +232,20 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
 
           <div className="stack">
             <section className="panel reveal">
-              <h2>👤 {t.yourContact}</h2>
-              <div className="advc"><span className="adv-av">{adv.name.slice(0, 1).toUpperCase()}</span><span><b>{adv.name}</b><small>📞 {adv.phone || SITE.whatsappDisplay}</small></span><a className="btn btn-sm btn-wa" href={advWa} target="_blank" rel="noopener">WhatsApp</a></div>
+              <h2><Icon name="user" size={14} className="ei" /> {t.yourContact}</h2>
+              <div className="advc"><span className="adv-av">{adv.name.slice(0, 1).toUpperCase()}</span><span><b>{adv.name}</b><small><Icon name="phone" size={14} className="ei" /> {adv.phone || SITE.whatsappDisplay}</small></span><a className="btn btn-sm btn-wa" href={advWa} target="_blank" rel="noopener">WhatsApp</a></div>
             </section>
             <section className="panel reveal qa">
-              <h2>⚡ {t.quickActions}</h2>
-              {payHref && <a className="btn btn-gold" href={payHref}>💳 {due.length ? t.payNow : t.payConfirm}</a>}
-              {a.quote.sentAt && <a className="btn btn-line" href="quote/">⬇ {t.downloadPdf}</a>}
+              <h2><Icon name="bolt" size={14} className="ei" /> {t.quickActions}</h2>
+              {payHref && <a className="btn btn-gold" href={payHref}><Icon name="card" size={14} className="ei" /> {due.length ? t.payNow : t.payConfirm}</a>}
+              {a.quote.sentAt && <a className="btn btn-line" href="quote/"><Icon name="download" size={14} className="ei" /> {t.downloadPdf}</a>}
               {signedIn && <a className="btn btn-line" href={`${base}/`}>← {t.allOrders}</a>}
-              {signedIn && <a className="btn btn-line" href={`${base}/statement/`}>🧾 {t.statement}</a>}
-              <a className="btn btn-line" href={signedIn ? `${base}/services/` : waLink(`Hello, I would like another service (${a.ref}).`)}>⊕ {t.requestAnother}</a>
+              {signedIn && <a className="btn btn-line" href={`${base}/statement/`}><Icon name="doc" size={14} className="ei" /> {t.statement}</a>}
+              <a className="btn btn-line" href={signedIn ? `${base}/services/` : waLink(`Hello, I would like another service (${a.ref}).`)}><Icon name="plus" size={14} className="ei" /> {t.requestAnother}</a>
             </section>
-            <details className="panel reveal tnc"><summary><b>📄 {t.terms}</b></summary><p className="small">{t.termsText}</p>{pay.termsUrl && <a className="small" href={pay.termsUrl} target="_blank" rel="noopener">{t.terms} →</a>}</details>
+            <details className="panel reveal tnc"><summary><b><Icon name="doc" size={14} className="ei" /> {t.terms}</b></summary><p className="small">{t.termsText}</p>{pay.termsUrl && <a className="small" href={pay.termsUrl} target="_blank" rel="noopener">{t.terms} →</a>}</details>
             <section className="panel reveal" id="messages">
-              <div className="panel-h"><h2>💬 {t.communication}</h2><a className="btn btn-sm btn-wa" href={ask} target="_blank" rel="noopener">WhatsApp</a></div>
+              <div className="panel-h"><h2><Icon name="inbox" size={14} className="ei" /> {t.communication}</h2><a className="btn btn-sm btn-wa" href={ask} target="_blank" rel="noopener">WhatsApp</a></div>
               <div className="thread">
                 {a.messages.length === 0 ? <p className="muted small" style={{ margin: 0 }}>{t.advisorPosts}</p> : a.messages.map((m) => (
                   <div key={m.id} className={`msg${m.by === 'client' ? ' mine' : ''}`}>{m.text}<span className="meta">{m.by === 'client' ? t.you : t.yourAdvisor} · {when(m.at)}</span></div>

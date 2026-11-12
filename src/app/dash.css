@@ -856,3 +856,10 @@ code.k { overflow-wrap: anywhere; word-break: break-all; }
 .user-form .uf-sec:first-of-type { border-top: 0; padding-top: 0; }
 .user-form .uf-actions { position: sticky; bottom: 0; background: inherit; padding: 12px 0 4px; gap: 10px; }
 .linkbtn { background: none; border: 0; padding: 0; color: var(--gold-deep, #8a6512); font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Brand palette only (black and gold) on the client order page: no green banners */
+.ohero.st-conf, .ohero.st-appr { background: radial-gradient(120% 140% at 0% 0%, #3a2c10, #121212 60%); border: 1px solid rgba(242, 210, 122, .35); }
+.paybox { background: linear-gradient(110deg, #111 0%, #1d1608 55%, #6b4d0c 100%); border: 1px solid rgba(242, 210, 122, .4); box-shadow: 0 20px 40px -26px rgba(0, 0, 0, .7); }
+.paybox b { color: var(--gold-light, #f2d27a); }
+.ei { vertical-align: -2px; margin-inline-end: 2px; flex: none; }
+.btn .ei { margin-inline-end: 4px; }

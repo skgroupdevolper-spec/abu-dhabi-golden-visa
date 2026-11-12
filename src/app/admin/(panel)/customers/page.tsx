@@ -10,13 +10,14 @@ import { LOCALES } from '@/lib/i18n';
 import { waTo } from '@/lib/site';
 import { day, when } from '@/lib/stages';
 import { addCustomer, customerAction, saveCustomer } from '../../settings-actions';
+import { PwInput } from '@/components/dash/PwInput';
 
 export const metadata: Metadata = { title: 'Customers' };
 const dg = (p: string) => p.replace(/\D/g, '').slice(-9);
 
-export default async function Customers({ searchParams }: { searchParams: Promise<{ q?: string; edit?: string; s?: string }> }) {
+export default async function Customers({ searchParams }: { searchParams: Promise<{ q?: string; edit?: string; s?: string; created?: string }> }) {
   const me = await requireAdmin();
-  const { q = '', edit, s = 'all' } = await searchParams;
+  const { q = '', edit, s = 'all', created } = await searchParams;
   const [allC, apps] = await Promise.all([list<Customer>('customers'), listApplications()]);
   // Staff see only the clients of the files assigned to them.
   const { scopeOf } = await import('@/lib/server/scope');
@@ -71,35 +72,33 @@ export default async function Customers({ searchParams }: { searchParams: Promis
           )}
         </div>
         {full && (
-          <div className="panel">
-            {cur ? (
-              <>
-                <h2>Edit: {cur.name}</h2>
-                <ActionForm action={saveCustomer} className="form" key={cur.id}>
-                  <input type="hidden" name="id" value={cur.id} />
-                  <F name="name" label="Name" value={cur.name} />
-                  <F name="email" label="Email (login)" value={cur.email} type="email" />
-                  <F name="phone" label="Phone / WhatsApp" value={cur.phone} />
-                  <div className="field"><label htmlFor="lang">Dashboard language</label><select id="lang" name="lang" defaultValue={cur.lang}>{langs}</select></div>
-                  <F name="password" label="New password (empty = keep)" type="password" full />
-                  <div className="full"><Toggle name="active" label="Active (can sign in)" on={cur.active} /></div>
-                  <div className="full row"><Submit>Save client</Submit><Link className="btn" href="/admin/customers/">Close</Link></div>
-                </ActionForm>
-              </>
-            ) : (
-              <>
-                <h2>Add a client</h2>
-                <p className="help">Creates a customer dashboard login. Their applications are linked by email or phone.</p>
-                <ActionForm action={addCustomer} className="form" reset>
-                  <F name="name" label="Name" />
-                  <F name="email" label="Email (login)" type="email" />
-                  <F name="phone" label="Phone / WhatsApp" placeholder="+971…" />
-                  <div className="field"><label htmlFor="lang">Dashboard language</label><select id="lang" name="lang" defaultValue="en">{langs}</select></div>
-                  <F name="password" label="Password (8+ characters)" type="password" full />
-                  <div className="full"><Submit>Create client account</Submit></div>
-                </ActionForm>
-              </>
-            )}
+          <div className="panel user-form">
+            <div className="uf-head">
+              <span className="uf-avatar">{(cur?.name || '+').slice(0, 1).toUpperCase()}</span>
+              <div>
+                <h2 style={{ margin: 0 }}>{cur ? cur.name : 'Add a client'}</h2>
+                <p className="small muted" style={{ margin: '4px 0 0' }}>{cur ? `${cur.email} · joined ${new Date(cur.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })} · last sign-in ${cur.lastLogin ? new Date(cur.lastLogin).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'never'}` : 'Creates a customer dashboard login. Their applications are linked by email or phone.'}</p>
+              </div>
+              {cur && <span className={`pill ${cur.active ? 'ok' : 'due'}`} style={{ marginInlineStart: 'auto' }}>{cur.active ? 'Active' : 'Disabled'}</span>}
+            </div>
+            {created === '1' && <p className="notice ok" role="status">Client account created. You can change anything below.</p>}
+            <ActionForm action={cur ? saveCustomer : addCustomer} className="form" key={cur?.id ?? 'new'}>
+              {cur && <input type="hidden" name="id" value={cur.id} />}
+              <h3 className="full uf-sec">1. Client details</h3>
+              <F name="name" label="Full name" value={cur?.name} />
+              <F name="phone" label="Phone / WhatsApp" value={cur?.phone} placeholder="+971…" />
+              <div className="field"><label htmlFor="lang">Dashboard language</label><select id="lang" name="lang" defaultValue={cur?.lang ?? 'en'}>{langs}</select></div>
+              <div />
+              <h3 className="full uf-sec">2. Sign-in</h3>
+              <F name="email" label="Email (used to sign in)" value={cur?.email} type="email" />
+              <div className="field">
+                <label htmlFor="password">{cur ? 'New password' : 'Password (8+ characters)'}</label>
+                <PwInput id="password" name="password" autoComplete="new-password" placeholder={cur ? 'Leave empty to keep the current one' : ''} generate />
+              </div>
+              <div className="full"><Toggle name="active" label="Active (can sign in)" help="Disable to block sign-in without deleting the account" on={cur ? cur.active : true} /></div>
+              {!cur && <div className="full"><Toggle name="welcome" label="Email the client that their account is ready" help="Sends the “Client account created” email with the dashboard link (never the password)" on={true} /></div>}
+              <div className="full row uf-actions"><Submit>{cur ? 'Save changes' : 'Create client account'}</Submit><Link className="btn" href="/admin/customers/">{cur ? 'Close' : 'Cancel'}</Link></div>
+            </ActionForm>
           </div>
         )}
       </div>

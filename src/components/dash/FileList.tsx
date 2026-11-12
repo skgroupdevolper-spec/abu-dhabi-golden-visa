@@ -3,6 +3,7 @@ import { Icon } from '../Icon';
 import { filePct, fileStatus, fileTotal } from '@/lib/client-status';
 import { money } from '@/lib/stages';
 import type { ClientArea } from '@/lib/server/portal';
+import { Icon } from '@/components/Icon';
 
 type Tab = 'all' | 'open' | 'quote' | 'prog' | 'done';
 export function FileList({ area, path, q = '', tab = 'all', tabs = true, only, empty }: { area: ClientArea; path: string; q?: string; tab?: string; tabs?: boolean; only?: (k: string) => boolean; empty: string }) {
@@ -21,7 +22,7 @@ export function FileList({ area, path, q = '', tab = 'all', tabs = true, only, e
       </form>
       {tabs && <div className="ftabs">{TABS.map(([k, l]) => <a key={k} className={tab === k ? 'on' : ''} href={`${base}${path}?tab=${k}${q ? `&q=${encodeURIComponent(q)}` : ''}`}>{l}</a>)}</div>}
       {rows.length === 0 ? (
-        <div className="emptyc"><Icon name="briefcase" size={28} /><b>{empty}</b><a className="btn" href={`${base}/services/`}>⊕ {t.newRequest}</a></div>
+        <div className="emptyc"><Icon name="briefcase" size={28} /><b>{empty}</b><a className="btn" href={`${base}/services/`}><Icon name="plus" size={14} className="ei" /> {t.newRequest}</a></div>
       ) : rows.map(({ a, s }) => {
         const total = fileTotal(a), pct = filePct(a), dueP = a.payments.find((p) => p.status === 'due'), qp = quotePay(a);
         return (
@@ -31,7 +32,7 @@ export function FileList({ area, path, q = '', tab = 'all', tabs = true, only, e
               <span className="jr-m"><b>{a.ref}</b><small>{a.route} · {t.stages[a.stage]}</small><small><Icon name="calendar" size={12} /> {new Date(a.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}{a.advisor?.name ? ` · ${a.advisor.name}` : ''}</small></span>
               <span className="orow-r"><b>{total ? money(total) : '—'}</b><em className={`stc-pill st-${s.key}`}>{s.label}</em></span>
             </a>
-            {(dueP || qp > 0) && <a className="btn btn-gold btn-sm orow-pay" href={`${base}/t/${a.token}/${dueP ? `pay/${dueP.id}/` : live ? 'pay/order/' : '#bank'}`}>💳 {dueP ? t.payNow : t.payConfirm} · {money(dueP ? dueP.amount : qp)}</a>}
+            {(dueP || qp > 0) && <a className="btn btn-gold btn-sm orow-pay" href={`${base}/t/${a.token}/${dueP ? `pay/${dueP.id}/` : live ? 'pay/order/' : '#bank'}`}><Icon name="card" size={14} className="ei" /> {dueP ? t.payNow : t.payConfirm} · {money(dueP ? dueP.amount : qp)}</a>}
           </div>
         );
       })}

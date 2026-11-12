@@ -185,9 +185,16 @@ export async function addCustomer(_: St, f: FormData): Promise<St> {
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: 'Enter a valid email.' };
   if (pass.length < 8) return { error: 'Use a password of at least 8 characters.' };
   if ((await list<Customer>('customers')).some((c) => c.email === email)) return { error: 'This email already has a client account.' };
-  await insert<Customer>('customers', { id: newId(8), name, email, phone: s(f, 'phone', 30), pass: await hashPassword(pass), lang: s(f, 'lang', 5) || 'en', active: true, createdAt: now() });
+  const id = newId(8);
+  await insert<Customer>('customers', { id, name, email, phone: s(f, 'phone', 30), pass: await hashPassword(pass), lang: s(f, 'lang', 5) || 'en', active: f.has('active') ? b(f, 'active') : true, createdAt: now() });
+  if (b(f, 'welcome')) {
+    const { mailEvent } = await import('@/lib/server/mail');
+    const { portalHome } = await import('@/lib/portal-links');
+    const home = portalHome();
+    void mailEvent(email, 'account', { name: name.split(' ')[0], email, link: home.startsWith('http') ? home : `${(await getSite()).url}${home}` });
+  }
   revalidatePath('/admin/customers/');
-  return { ok: 'Client account created. Share the login details privately, for example on WhatsApp.' };
+  redirect(`/admin/customers/?edit=${id}&created=1`);
 }
 export async function saveCustomer(_: St, f: FormData): Promise<St> {
   await requireAdmin(FULL);

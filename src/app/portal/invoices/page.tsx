@@ -37,7 +37,7 @@ export default async function Invoices({ searchParams }: { searchParams: Promise
             <span className="jr-m"><b>{r.paid ? r.no : r.ref}</b><small>{r.label}</small><small><Icon name="calendar" size={12} /> {day(r.at)}{r.method ? ` · ${r.method}` : ''}</small></span>
             <span className="orow-r"><b className={r.paid ? 'okc' : ''}>{money(r.amount)}</b><em className={`stc-pill ${r.paid ? 'st-done' : 'st-quote'}`}>{r.paid ? `✓ ${t.paid}` : t.due}</em></span>
           </a>
-          {r.paid ? r.pdf && <a className="btn btn-sm orow-pay" href={r.pdf} target="_blank" rel="noopener">⬇ {t.receipt} PDF</a> : <a className="btn btn-gold btn-sm orow-pay" href={r.href}>💳 {t.payNow}</a>}
+          {r.paid ? r.pdf && <a className="btn btn-sm orow-pay" href={r.pdf} target="_blank" rel="noopener"><Icon name="download" size={14} className="ei" /> {t.receipt} PDF</a> : <a className="btn btn-gold btn-sm orow-pay" href={r.href}><Icon name="card" size={14} className="ei" /> {t.payNow}</a>}
         </div>
       ))}
     </ClientShell>

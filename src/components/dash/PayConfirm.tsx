@@ -3,6 +3,7 @@
 // "Confirming your payment" → "Payment received": checks the provider every 2 seconds until confirmed.
 import { useEffect, useState } from 'react';
 import { coinImg, fullLogo } from '@/components/BrandLogo';
+import { Icon } from '@/components/Icon';
 
 type P = { token: string; pid: string; sid: string; gwRef: string; failed: boolean; initial: 'paid' | 'pending'; customer: string; amount: number; label: string; appRef: string; receipt?: string; paidAt?: string; reference: string };
 const fmt = (iso?: string) => new Date(iso || Date.now()).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Dubai' });
@@ -58,7 +59,7 @@ export function PayConfirm(p: P) {
             <a className={`btn ${paid ? 'btn-glass' : 'btn-gold'}`} href="../../../">Back to my application {p.appRef}</a>
           </div>
         </div>
-        <p className="payfoot">🔒 Secure card payment · {p.appRef}</p>
+        <p className="payfoot"><Icon name="lock" size={14} className="ei" /> Secure card payment · {p.appRef}</p>
       </div>
     </main>
   );
