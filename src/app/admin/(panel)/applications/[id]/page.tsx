@@ -74,7 +74,7 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
             </details>
             <ol className="timeline" style={{ marginTop: 18 }}>
               {STAGES.map((t, i) => (
-                <li key={t} className={i < a.stage ? 'done' : i === a.stage ? 'now' : ''}><span className="dot">{i < a.stage ? '✓' : i + 1}</span><div><b>{t}</b>{a.stageDates[String(i)] && <small>{day(a.stageDates[String(i)])}</small>}</div></li>
+                <li key={t} className={i <= a.stage ? 'done' : i === a.stage + 1 ? 'now' : ''}><span className="dot">{i <= a.stage ? '✓' : i + 1}</span><div><b>{t}</b>{i <= a.stage && a.stageDates[String(i)] && <small>{day(a.stageDates[String(i)])}</small>}</div></li>
               ))}
             </ol>
           </section>

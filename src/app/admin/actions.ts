@@ -138,8 +138,10 @@ export async function setStage(_: FormState, f: FormData): Promise<FormState> {
   const stage = Math.max(0, Math.min(STAGES.length - 1, n(f, 'stage')));
   const app = await edit(f, (a) => {
     a.stage = stage;
-    // Every step up to this one counts as done, so the client sees each earlier step ticked.
+    // The chosen stage and every step before it count as done, so the client sees each earlier step ticked.
     for (let i = 0; i <= stage; i++) a.stageDates[String(i)] = a.stageDates[String(i)] || now();
+    // Moving back: later steps are no longer done, so their dates go.
+    for (const k of Object.keys(a.stageDates)) if (Number(k) > stage) delete a.stageDates[k];
     a.nextStep = s(f, 'nextStep', 400);
     a.expected = s(f, 'expected', 60);
     if (f.get('notify')) a.messages.push({ id: newId(6), by: 'team', at: now(), text: `Status update: ${STAGES[stage]}.${a.nextStep ? `\nNext: ${a.nextStep}` : ''}` });

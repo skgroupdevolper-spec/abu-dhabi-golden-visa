@@ -128,7 +128,7 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
               <h2>{t.progress}</h2>
               <ol className="timeline" style={{ marginTop: 14 }}>
                 {STAGES.map((st, i) => (
-                  <li key={st} className={i < a.stage ? 'done' : i === a.stage ? 'now' : ''}><span className="dot">{i < a.stage ? '✓' : i + 1}</span><div><b>{t.stages[i]}</b>{a.stageDates[String(i)] && <small>{day(a.stageDates[String(i)])}</small>}</div></li>
+                  <li key={st} className={i <= a.stage ? 'done' : i === a.stage + 1 ? 'now' : ''}><span className="dot">{i <= a.stage ? '✓' : i + 1}</span><div><b>{t.stages[i]}</b>{i <= a.stage && a.stageDates[String(i)] && <small>{day(a.stageDates[String(i)])}</small>}</div></li>
                 ))}
               </ol>
             </section>
