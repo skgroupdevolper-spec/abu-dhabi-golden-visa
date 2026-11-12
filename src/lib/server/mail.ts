@@ -127,14 +127,14 @@ export function renderMail(subject: string, text: string, c: MailCfg, o: MailOpt
       ${SITE.whatsappDisplay ? `<p style="margin:12px 0 0;font-size:14px;color:${soft}">Or call: <a href="tel:${esc(String(SITE.phone || SITE.whatsapp).replace(/[^\d+]/g, ''))}" style="color:${gold};font-weight:700;text-decoration:none">${esc(SITE.whatsappDisplay)}</a></p>` : ''}
     </td></tr>` : '';
   const soc = SITE.social || ({} as Record<string, string>);
-  const socials = c.showSocial ? (['facebook', 'instagram', 'linkedin', 'x', 'youtube', 'tiktok'] as const).filter((k) => (soc as Record<string, string>)[k]).map((k) => `<a href="${esc((soc as Record<string, string>)[k])}" style="color:${gold};text-decoration:none;font-size:13px;font-weight:600;margin-left:12px">${k === 'x' ? 'X' : k[0].toUpperCase() + k.slice(1)}</a>`).join('') : '';
+  const socials = c.showSocial ? (['facebook', 'instagram', 'linkedin', 'x', 'youtube', 'tiktok'] as const).filter((k) => (soc as Record<string, string>)[k]).map((k) => `<a href="${esc((soc as Record<string, string>)[k])}" style="color:${gold};text-decoration:none;font-size:13px;font-weight:600;margin-right:14px">${({ x: 'X', linkedin: 'LinkedIn', youtube: 'YouTube', tiktok: 'TikTok' } as Record<string, string>)[k] ?? k[0].toUpperCase() + k.slice(1)}</a>`).join('') : '';
   const contact = c.showContact ? `<tr><td style="padding:22px 32px;border-top:1px solid ${line}">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td valign="bottom" style="font-size:13px;line-height:1.7;color:${soft}">
         <b style="font-size:15px;color:${ink}">${esc(c.signOff.split('\n').slice(-1)[0] || SITE.name)}</b><br>
         ${SITE.office ? `${esc(SITE.office)}<br>` : ''}
         ${SITE.whatsappDisplay ? `WhatsApp <a href="${wa}" style="color:${gold};text-decoration:none">${esc(SITE.whatsappDisplay)}</a><br>` : ''}
         ${SITE.email ? `<a href="mailto:${esc(SITE.email)}" style="color:${gold};text-decoration:none">${esc(SITE.email)}</a>` : ''}
-      </td><td align="right" valign="bottom">${socials}</td></tr></table>
+      </td></tr>${socials ? `<tr><td style="padding-top:10px">${socials}</td></tr>` : ''}</table>
     </td></tr>` : '';
   const foot = c.footer || `© ${new Date().getFullYear()} ${SITE.operator || SITE.name}${SITE.office ? ` · ${SITE.office}` : ''}`;
   const host = (SITE.url || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
