@@ -27,6 +27,31 @@ export default async function WhatsApp({ searchParams }: { searchParams: Promise
         <span className={`pill ${connected ? 'ok' : 'due'}`}>{connected ? 'Cloud API connected' : 'Link mode (buttons only)'}</span>
       </div>
       <Tabs base="/admin/whatsapp/" tabs={[['setup', 'Setup'], ['messages', 'Automatic messages'], ['test', 'Send a test'], ['log', 'Message log']]} cur={tab} />
+      {tab === 'setup' && (() => {
+        const names = Object.values(w.templateNames ?? {}).filter(Boolean).length;
+        const steps: [boolean, string, string][] = [
+          [!!w.phoneNumberId && !!w.businessId, 'Phone number ID and Business account ID', 'Meta for Developers → your app → WhatsApp → API setup.'],
+          [!!w.accessToken, 'Permanent access token', 'Business settings → Users → System users → Add (Admin) → Generate token with whatsapp_business_messaging and whatsapp_business_management, “Never expires”. The 24-hour test token stops working the next day.'],
+          [w.mode === 'cloud', 'Mode set to “Cloud API”', 'Choose “Cloud API: send automatic messages” below and press Save.'],
+          [!!w.verifyToken, 'Webhook connected', 'Type any word in “Webhook verify token”, Save, then in Meta → WhatsApp → Configuration paste the Webhook URL and the same word, Verify, and subscribe to “messages”.'],
+          [names > 0, `Approved message templates (${names} entered)`, 'WhatsApp Manager → Message templates → create one per message (Utility category), wait for approval, then type each name under “Automatic messages”. Without templates, messages only reach clients who wrote to you in the last 24 hours.'],
+        ];
+        const doneN = steps.filter((x) => x[0]).length;
+        return (
+          <div className="panel wa-check" style={{ marginBottom: 16 }}>
+            <div className="row" style={{ justifyContent: 'space-between' }}><h2 style={{ margin: 0 }}>Setup checklist</h2><span className={`pill ${doneN === steps.length ? 'ok' : 'due'}`}>{doneN} of {steps.length} done</span></div>
+            <ol style={{ listStyle: 'none', padding: 0, margin: '12px 0 0', display: 'grid', gap: 10 }}>
+              {steps.map(([ok, t, how], i) => (
+                <li key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <span style={{ flex: 'none', width: 24, height: 24, borderRadius: '50%', display: 'grid', placeItems: 'center', fontSize: 13, fontWeight: 700, background: ok ? 'linear-gradient(135deg,#f3d77e,#c9961a)' : 'transparent', border: ok ? '0' : '1.5px solid #d9c48a', color: '#111' }}>{ok ? '✓' : i + 1}</span>
+                  <div><b>{t}</b>{!ok && <p className="help" style={{ margin: '2px 0 0' }}>{how}</p>}</div>
+                </li>
+              ))}
+            </ol>
+            <p className="help" style={{ marginTop: 12 }}>When all steps are done, open “Send a test” and send to your own number. Also make sure the number is registered in WhatsApp Manager (display name approved) and a payment method is added in Meta Business settings.</p>
+          </div>
+        );
+      })()}
       {(tab === 'setup' || tab === 'messages') && (
         <ActionForm action={saveWhatsApp} className="stack">
           <div className="panel" style={{ display: tab === 'setup' ? 'block' : 'none' }}>
