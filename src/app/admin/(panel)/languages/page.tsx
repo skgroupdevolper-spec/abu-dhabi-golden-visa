@@ -1,3 +1,4 @@
+import { PwInput } from '@/components/dash/PwInput';
 import type { Metadata } from 'next';
 import { ActionForm, Submit } from '@/components/dash/ActionForm';
 import { Toggle } from '@/components/dash/Fields';
@@ -78,7 +79,7 @@ export default async function Languages() {
             <span className="lbl">Translation engine</span>
             <label className="row small"><input type="radio" name="engine" value="google" defaultChecked={(langcfg.engine ?? 'google') === 'google'} /> <span><b>Google Translate: free, no key, fastest</b> (recommended). The whole site in a few minutes.</span></label>
             <label className="row small"><input type="radio" name="engine" value="deepl" defaultChecked={langcfg.engine === 'deepl'} /> <span><b>DeepL</b>: very natural for European languages. Needs a DeepL API key; languages DeepL does not have (Hindi, Urdu, Croatian) use Google.</span></label>
-            <div className="field"><label htmlFor="deeplKey">DeepL API key {langcfg.deeplKey ? '(saved, leave empty to keep)' : ''}</label><input id="deeplKey" name="deeplKey" type="password" autoComplete="off" placeholder={langcfg.deeplKey ? '••••••••' : 'from deepl.com/your-account/keys'} /></div>
+            <div className="field"><label htmlFor="deeplKey">DeepL API key {langcfg.deeplKey ? '(saved, leave empty to keep)' : ''}</label><PwInput id="deeplKey" name="deeplKey"  autoComplete="off" placeholder={langcfg.deeplKey ? '••••••••' : 'from deepl.com/your-account/keys'} /></div>
             <label className="row small"><input type="radio" name="engine" value="ai" defaultChecked={langcfg.engine === 'ai'} /> <span><b>AI (Gemini, OpenAI or Claude key below)</b>: good quality, slower and uses the daily AI limit.</span></label>
             <Toggle name="onSave" label="Translate automatically (recommended)" help="New pages, edits and blog posts are translated into all website languages in the background after each save and after every website update." on={langcfg.onSave} />
             <Submit className="btn btn-sm">Save</Submit>

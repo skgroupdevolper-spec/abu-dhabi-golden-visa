@@ -6,6 +6,7 @@ import { FULL, requireAdmin } from '@/lib/server/auth';
 import { ROLE_LABEL, list, type TeamUser } from '@/lib/server/collections';
 import { day, when } from '@/lib/stages';
 import { addUser, saveUser, updateUser } from '../../settings-actions';
+import { PwInput } from '@/components/dash/PwInput';
 import { ADMIN_MENU, ALWAYS } from '../menu';
 
 export const metadata: Metadata = { title: 'Admin users' };
@@ -27,9 +28,47 @@ function Perms({ u }: { u?: TeamUser }) {
   );
 }
 
-export default async function Users({ searchParams }: { searchParams: Promise<{ edit?: string; q?: string }> }) {
+/** One form for adding and editing a team member, so both look and work the same. */
+function UserForm({ u, created }: { u?: TeamUser; created?: boolean }) {
+  const isNew = !u;
+  return (
+    <>
+      <div className="uf-head">
+        <span className="uf-avatar">{(u?.name || '+').slice(0, 1).toUpperCase()}</span>
+        <div>
+          <h2 style={{ margin: 0 }}>{isNew ? 'Add a team member' : u.name}</h2>
+          <p className="small muted" style={{ margin: '4px 0 0' }}>{isNew ? 'Fill in their details, choose what they can open and set a password.' : `${u.title || ROLE_LABEL[u.role]} · added ${day(u.createdAt)} · ${u.logins ?? 0} sign-ins · last ${u.lastLogin ? when(u.lastLogin) : 'never'}`}</p>
+        </div>
+        {!isNew && <span className={`pill ${u.active ? 'ok' : 'due'}`} style={{ marginInlineStart: 'auto' }}>{u.active ? 'Active' : 'Paused'}</span>}
+      </div>
+      {created && <p className="notice ok" role="status">User added. Share the password with them privately. You can change anything below.</p>}
+      <ActionForm action={isNew ? addUser : saveUser} className="form" key={u?.id ?? 'new'}>
+        {u && <input type="hidden" name="id" value={u.id} />}
+        <h3 className="full uf-sec">1. Profile</h3>
+        <F name="name" label="Full name" value={u?.name} placeholder="e.g. Abbas Khan" />
+        <F name="title" label="Job title" value={u?.title} placeholder="e.g. Visa Consultant" />
+        <F name="phone" label="Phone / WhatsApp" value={u?.phone} placeholder="+971 5x xxx xxxx" />
+        <div className="field"><label htmlFor="role">Role</label><select id="role" name="role" defaultValue={u?.role ?? 'staff'}>{ROLES.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}</select></div>
+        <h3 className="full uf-sec">2. Sign-in</h3>
+        <F name="email" label="Email (used to sign in)" value={u?.email} type="email" placeholder="name@company.com" />
+        <div className="field">
+          <label htmlFor="password">{isNew ? 'Password (10+ characters)' : 'New password'}</label>
+          <PwInput id="password" name="password" autoComplete="new-password" placeholder={isNew ? '' : 'Leave empty to keep the current one'} generate />
+        </div>
+        <div className="full"><Toggle name="active" label="Active (can sign in)" help="Pause to block sign-in without deleting the user" on={u ? u.active : true} /></div>
+        <h3 className="full uf-sec">3. Access</h3>
+        <Perms u={u} />
+        <h3 className="full uf-sec">4. Private note</h3>
+        <F name="note" label="Only admins see this" value={u?.note} type="textarea" rows={2} full />
+        <div className="full row uf-actions"><Submit>{isNew ? 'Create user' : 'Save changes'}</Submit><Link className="btn" href="/admin/users/">{isNew ? 'Cancel' : 'Close'}</Link></div>
+      </ActionForm>
+    </>
+  );
+}
+
+export default async function Users({ searchParams }: { searchParams: Promise<{ edit?: string; q?: string; created?: string }> }) {
   const me = await requireAdmin(FULL);
-  const { edit, q = '' } = await searchParams;
+  const { edit, q = '', created } = await searchParams;
   const all = await list<TeamUser>('team');
   const users = all.filter((u) => !q || `${u.name} ${u.email} ${u.role}`.toLowerCase().includes(q.toLowerCase()));
   const u = all.find((x) => x.id === edit);
@@ -63,40 +102,8 @@ export default async function Users({ searchParams }: { searchParams: Promise<{ 
           </div>
           <p className="help" style={{ marginTop: 10 }}>Signed in as {me.email}.</p>
         </div>
-        <div className="panel">
-          {edit === 'new' || !u ? (
-            <>
-              <h2>Add a user</h2>
-              <ActionForm action={addUser} className="form" reset>
-                <F name="name" label="Name" />
-                <F name="title" label="Job title" placeholder="Visa consultant" />
-                <F name="email" label="Email (login)" type="email" />
-                <F name="phone" label="Phone / WhatsApp" />
-                <div className="field"><label htmlFor="role">Role</label><select id="role" name="role" defaultValue="staff">{ROLES.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}</select></div>
-                <F name="password" label="Password (10+ characters)" type="password" />
-                <Perms />
-                <div className="full"><Submit>Add user</Submit></div>
-              </ActionForm>
-            </>
-          ) : (
-            <>
-              <h2>Edit: {u.name}</h2>
-              <p className="small muted">Added {day(u.createdAt)} · {u.logins ?? 0} sign-ins · last {u.lastLogin ? when(u.lastLogin) : 'never'}</p>
-              <ActionForm action={saveUser} className="form" key={u.id}>
-                <input type="hidden" name="id" value={u.id} />
-                <F name="name" label="Name" value={u.name} />
-                <F name="title" label="Job title" value={u.title} />
-                <F name="email" label="Email (login)" value={u.email} type="email" />
-                <F name="phone" label="Phone / WhatsApp" value={u.phone} />
-                <div className="field"><label htmlFor="role">Role</label><select id="role" name="role" defaultValue={u.role}>{ROLES.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}</select></div>
-                <F name="password" label="New password (leave empty to keep)" type="password" />
-                <div className="full"><Toggle name="active" label="Active (can sign in)" on={u.active} /></div>
-                <Perms u={u} />
-                <F name="note" label="Private note" value={u.note} type="textarea" rows={2} full />
-                <div className="full row"><Submit>Save user</Submit><Link className="btn" href="/admin/users/">Close</Link></div>
-              </ActionForm>
-            </>
-          )}
+        <div className="panel user-form">
+          <UserForm u={u} created={created === '1'} />
         </div>
       </div>
     </>

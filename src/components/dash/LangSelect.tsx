@@ -1,6 +1,7 @@
 'use client';
 
 import { PORTAL_LANGS } from '@/lib/portal-i18n';
+import { PwInput } from './PwInput';
 
 /** Language picker for the customer dashboard; saves the choice and reloads the page. */
 export function LangSelect({ action, current, back, label }: { action: (f: FormData) => Promise<void>; current: string; back: string; label: string }) {
@@ -18,10 +19,7 @@ export function PasswordInput({ id, name, label, autoComplete }: { id: string; n
   return (
     <div className="field">
       <label htmlFor={id}>{label}</label>
-      <div className="pw">
-        <input id={id} name={name} type="password" autoComplete={autoComplete} required />
-        <button type="button" aria-label="Show password" onClick={(e) => { const i = e.currentTarget.previousElementSibling as HTMLInputElement; i.type = i.type === 'password' ? 'text' : 'password'; }}>👁</button>
-      </div>
+      <PwInput id={id} name={name} autoComplete={autoComplete} required />
     </div>
   );
 }

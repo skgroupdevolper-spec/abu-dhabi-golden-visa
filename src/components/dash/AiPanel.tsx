@@ -1,3 +1,4 @@
+import { PwInput } from '@/components/dash/PwInput';
 // AI keys and provider/model per feature, shown on the Chatbot, Languages and Auto Publisher pages.
 import { ActionForm, Submit } from './ActionForm';
 import { getSecrets } from '@/lib/server/settings';
@@ -36,9 +37,9 @@ export async function AiPanel({ uses, images = false, title = 'AI provider & API
         <div className="field"><label htmlFor="provider">Main provider (used when a feature says “same as main”)</label>
           <select id="provider" name="provider" defaultValue={a.provider}><option value="">Off</option><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option><option value="anthropic">Anthropic Claude</option></select></div>
         <div className="field"><label htmlFor="dailyBudget">Daily limit of automatic AI requests</label><input id="dailyBudget" name="dailyBudget" type="number" defaultValue={a.dailyBudget} /></div>
-        <div className="field"><label htmlFor="openaiKey">OpenAI API key</label><input id="openaiKey" name="openaiKey" type="password" autoComplete="off" placeholder={mask(a.openaiKey)} /></div>
-        <div className="field"><label htmlFor="geminiKey">Google Gemini API key</label><input id="geminiKey" name="geminiKey" type="password" autoComplete="off" placeholder={mask(a.geminiKey)} /></div>
-        <div className="field"><label htmlFor="anthropicKey">Anthropic Claude API key</label><input id="anthropicKey" name="anthropicKey" type="password" autoComplete="off" placeholder={mask(a.anthropicKey)} /></div>
+        <div className="field"><label htmlFor="openaiKey">OpenAI API key</label><PwInput id="openaiKey" name="openaiKey"  autoComplete="off" placeholder={mask(a.openaiKey)} /></div>
+        <div className="field"><label htmlFor="geminiKey">Google Gemini API key</label><PwInput id="geminiKey" name="geminiKey"  autoComplete="off" placeholder={mask(a.geminiKey)} /></div>
+        <div className="field"><label htmlFor="anthropicKey">Anthropic Claude API key</label><PwInput id="anthropicKey" name="anthropicKey"  autoComplete="off" placeholder={mask(a.anthropicKey)} /></div>
         <div className="field small"><span className="lbl">Remove a key</span><label className="row"><input type="checkbox" name="clear_openaiKey" /> OpenAI</label><label className="row"><input type="checkbox" name="clear_geminiKey" /> Gemini</label><label className="row"><input type="checkbox" name="clear_anthropicKey" /> Claude</label></div>
         <p className="help full">Get keys at platform.openai.com, aistudio.google.com and console.anthropic.com.</p>
         <div className="full"><Submit>Save AI settings</Submit></div>

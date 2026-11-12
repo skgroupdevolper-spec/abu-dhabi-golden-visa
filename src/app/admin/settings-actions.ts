@@ -127,9 +127,11 @@ export async function addUser(_: St, f: FormData): Promise<St> {
   if (pass.length < 10) return { error: 'Use a password of at least 10 characters.' };
   if ((await list<TeamUser>('team')).some((u) => u.email === email)) return { error: 'This email already has an account.' };
   const role = (ROLES.includes(s(f, 'role')) ? s(f, 'role') : 'staff') as Role;
-  await insert<TeamUser>('team', { id: newId(6), email, name: s(f, 'name', 80) || email, role, pass: await hashPassword(pass), active: true, createdAt: now(), phone: s(f, 'phone', 30), title: s(f, 'title', 80), perms: permsOf(f) });
+  const id = newId(6);
+  await insert<TeamUser>('team', { id, email, name: s(f, 'name', 80) || email, role, pass: await hashPassword(pass), active: f.has('active') ? b(f, 'active') : true, createdAt: now(), phone: s(f, 'phone', 30), title: s(f, 'title', 80), note: s(f, 'note', 600), perms: permsOf(f) });
   revalidatePath('/admin/users/');
-  return { ok: 'User added. Share the password with them privately.' };
+  // Open the new user in the same form, ready for any change.
+  redirect(`/admin/users/?edit=${id}&created=1`);
 }
 export async function saveUser(_: St, f: FormData): Promise<St> {
   await requireAdmin(FULL);

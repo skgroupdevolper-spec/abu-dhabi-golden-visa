@@ -1,3 +1,4 @@
+import { PwInput } from './PwInput';
 import type { ReactNode } from 'react';
 
 export function F({ name, label, value, type = 'text', help, full, placeholder, rows }: { name: string; label: string; value?: string | number; type?: string; help?: ReactNode; full?: boolean; placeholder?: string; rows?: number }) {
@@ -6,7 +7,9 @@ export function F({ name, label, value, type = 'text', help, full, placeholder, 
       <label htmlFor={name}>{label}</label>
       {type === 'textarea'
         ? <textarea id={name} name={name} defaultValue={value as string} placeholder={placeholder} rows={rows ?? 4} />
-        : <input id={name} name={name} type={type} defaultValue={value} placeholder={placeholder} autoComplete="off" />}
+        : type === 'password'
+          ? <PwInput id={name} name={name} defaultValue={value} placeholder={placeholder} autoComplete="new-password" />
+          : <input id={name} name={name} type={type} defaultValue={value} placeholder={placeholder} autoComplete="off" />}
       {help && <p className="help">{help}</p>}
     </div>
   );
