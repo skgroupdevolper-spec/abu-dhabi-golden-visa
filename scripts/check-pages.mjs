@@ -158,8 +158,9 @@ for (const vp of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
   await page.screenshot({ path: 'shots/apply-4.jpg', fullPage: true });
   await page.click('.apply-nav .btn-red');
   await page.waitForSelector('.apply-done', { timeout: 15000 });
-  await page.screenshot({ path: 'shots/apply-done.jpg', fullPage: true });
+  // Read the reference first: a new account is sent on to its dashboard after a moment.
   const ref = await page.textContent('.apply-done h2');
+  await page.screenshot({ path: 'shots/apply-done.jpg' }).catch(() => {});
   report.push({ path: 'apply-flow', vp: 1440, errors: errs, facts: { ref } });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(base + '/golden-visa/property-investment/');
