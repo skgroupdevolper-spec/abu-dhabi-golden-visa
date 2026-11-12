@@ -13,7 +13,6 @@ import { StageFields } from '@/components/dash/StageFields';
 import { getBlock } from '@/lib/server/settings';
 import { portalUrl, waTo } from '@/lib/site';
 import { myScope, scopedApp } from '@/lib/server/scope';
-import { list, type TeamUser } from '@/lib/server/collections';
 import { DECISION_PILL, DECISION_TEXT } from '@/lib/decision';
 import { ROUTE_LABELS, STAGES, STAGE_NEXT_DEFAULT, day, money, when } from '@/lib/stages';
 import {
@@ -27,7 +26,7 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
   const a = await scopedApp(id);
   if (!a) notFound();
   const sc = await myScope();
-  const team = sc.full ? (await list<TeamUser>('team')).filter((u) => u.active) : [];
+  const staffList = sc.full ? (await list<TeamUser>('team')).filter((u) => u.active) : [];
   const link = portalUrl(a.token);
   const gov = a.quote.lines.reduce((s, l) => s + l.amount, 0);
   const quoteTotal = gov + a.quote.serviceFee + a.quote.vat;
@@ -83,12 +82,12 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
           {/* ASSIGNED TEAM MEMBER (owners and admins) */}
           {sc.full && (
             <section className="panel" id="assign">
-              <div className="panel-h"><h2>Assigned to</h2><span className="pill">{a.assignee ? (team.find((u) => u.email === a.assignee)?.name || a.assignee) : 'Not assigned'}</span></div>
+              <div className="panel-h"><h2>Assigned to</h2><span className="pill">{a.assignee ? (staffList.find((u) => u.email === a.assignee)?.name || a.assignee) : 'Not assigned'}</span></div>
               <form action={assignApp} className="row">
                 <input type="hidden" name="app" value={a.id} />
                 <select name="assignee" defaultValue={a.assignee ?? ''} aria-label="Team member" style={{ minWidth: 240 }}>
                   <option value="">Not assigned (owners and admins only)</option>
-                  {team.map((u) => <option key={u.id} value={u.email}>{u.name} · {u.role}</option>)}
+                  {staffList.map((u) => <option key={u.id} value={u.email}>{u.name} · {u.role}</option>)}
                 </select>
                 <button className="btn btn-gold btn-sm" type="submit">Save</button>
               </form>
