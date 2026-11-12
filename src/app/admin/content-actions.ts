@@ -47,9 +47,12 @@ export async function savePost(_: St, f: FormData): Promise<St> {
 export async function postAction(f: FormData) {
   await requireAdmin(EDIT);
   const id = s(f, 'id', 40), act = s(f, 'act', 20);
+  const g = globalThis as unknown as { __ADGV_TRACE?: unknown[] };
+  const before = (await list<Post>('posts')).length;
   if (act === 'delete') await remove<Post>('posts', id);
   else if (act === 'publish') await patch<Post>('posts', id, (p) => { p.status = 'published'; p.publishedAt = p.publishedAt || now(); p.updatedAt = now(); });
   else if (act === 'unpublish') await patch<Post>('posts', id, (p) => { p.status = 'draft'; });
+  g.__ADGV_TRACE = [{ at: now(), fn: 'postAction', keys: [...f.keys()], id, act, before, after: (await list<Post>('posts')).length }, ...(g.__ADGV_TRACE ?? [])].slice(0, 10);
   live();
   revalidatePath('/admin/posts/');
   if (act === 'delete' && f.get('back')) (await import('next/navigation')).redirect('/admin/posts/');
