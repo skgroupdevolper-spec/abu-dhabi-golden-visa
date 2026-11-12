@@ -4,11 +4,13 @@ import { revalidatePath as nextRevalidate } from 'next/cache';
  * Refreshes cached pages after a save.
  * On the live server, refreshing inside a save made the whole request fail (503), so saves,
  * deletes and stage changes did not go through. Admin and dashboard pages are always built fresh,
- * and public pages refresh on their own timer (about a minute), so on the live server this is
- * skipped unless ADGV_REVALIDATE=1 is set.
+ * and public pages refresh on their own timer (about a minute), so on the live server public
+ * paths are skipped unless ADGV_REVALIDATE=1 is set.
  */
 export function revalidatePath(path: string, type?: 'layout' | 'page') {
-  if (process.env.NODE_ENV === 'production' && process.env.ADGV_REVALIDATE !== '1') return;
+  // Admin and dashboard pages: refreshing them sends the updated page straight back after a save.
+  const own = path.startsWith('/admin/') || path.startsWith('/portal/');
+  if (!own && process.env.NODE_ENV === 'production' && process.env.ADGV_REVALIDATE !== '1') return;
   try {
     nextRevalidate(path, type);
   } catch (e) {
