@@ -1,3 +1,4 @@
+import { HScroll } from '@/components/HScroll';
 import { SubmitterFix } from '@/components/dash/SubmitterFix';
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
@@ -17,6 +18,7 @@ export default async function PortalRoot({ children }: { children: ReactNode }) 
       <body>
         <script dangerouslySetInnerHTML={{ __html: `window.__ADGV_SITE=${JSON.stringify(site).replace(/</g, '\\u003c')}` }} />
         <SubmitterFix />
+        <HScroll />
         {children}
       </body>
     </html>

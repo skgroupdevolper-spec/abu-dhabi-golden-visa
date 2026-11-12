@@ -1,3 +1,4 @@
+import { HScroll } from '@/components/HScroll';
 import { u } from '@/lib/ui';
 import { headers } from 'next/headers';
 import { readJsonFile } from '@/lib/server/store';
@@ -84,6 +85,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
         <Water />
         <Header locale={locale} />
         <main id="main" className="page">{children}</main>
+        <HScroll />
         <Footer locale={locale} />
         <PriceFx />
         <Motion level={design.motion} textFx={design.textFx} cursor={design.cursor} smooth={design.smooth} />

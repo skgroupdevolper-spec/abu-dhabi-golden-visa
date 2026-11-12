@@ -863,3 +863,11 @@ code.k { overflow-wrap: anywhere; word-break: break-all; }
 .paybox b { color: var(--gold-light, #f2d27a); }
 .ei { vertical-align: -2px; margin-inline-end: 2px; flex: none; }
 .btn .ei { margin-inline-end: 4px; }
+
+/* Slim gold scrollbars in the admin and client dashboard (computers only) */
+@media (hover: hover) and (pointer: fine) {
+  .admin, .portal, body { scrollbar-width: thin; scrollbar-color: rgba(184, 144, 31, .55) transparent; }
+  .admin ::-webkit-scrollbar, .portal ::-webkit-scrollbar { width: 8px; height: 6px; }
+  .admin ::-webkit-scrollbar-thumb, .portal ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #e8c766, #b8901f); border-radius: 99px; }
+  .admin ::-webkit-scrollbar-track, .portal ::-webkit-scrollbar-track { background: rgba(184, 144, 31, .06); }
+}

@@ -1,3 +1,4 @@
+import { HScroll } from '@/components/HScroll';
 import { SubmitterFix } from '@/components/dash/SubmitterFix';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
@@ -31,6 +32,7 @@ export default async function Panel({ children }: { children: ReactNode }) {
   return (
     <div className="admin">
       <SubmitterFix />
+      <HScroll />
       <aside className="side">
         <Link href="/admin/" className="brand"><img src={fullLogo()} alt="Abu Dhabi Golden Visa" /></Link>
         <AdminNav counts={counts} role={who.role} perms={who.perms} />

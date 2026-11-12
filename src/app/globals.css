@@ -1556,3 +1556,16 @@ footer.site ul:not(.fcontact) li a:hover::before { opacity: 1; transform: scale(
   body:has(.dock) footer.site .wrap { padding-inline-end: max(40px, calc(112px - (100vw - 1320px) / 2)); }
 }
 footer.site .fcontact span { overflow-wrap: anywhere; }
+
+/* Sideways rows: a slim gold scrollbar on computers (hidden on touch screens, where swiping is natural) */
+@media (hover: hover) and (pointer: fine) {
+  .onpage-in, .aw-cats, .apply-steps, .stabs-list { scrollbar-width: thin !important; scrollbar-color: rgba(184, 144, 31, .55) transparent; padding-bottom: 8px; }
+  .onpage-in::-webkit-scrollbar, .aw-cats::-webkit-scrollbar, .apply-steps::-webkit-scrollbar, .stabs-list::-webkit-scrollbar { display: block !important; height: 5px; }
+  .onpage-in::-webkit-scrollbar-thumb, .aw-cats::-webkit-scrollbar-thumb, .apply-steps::-webkit-scrollbar-thumb, .stabs-list::-webkit-scrollbar-thumb { background: linear-gradient(90deg, #e8c766, #b8901f); border-radius: 99px; }
+  .onpage-in::-webkit-scrollbar-track, .aw-cats::-webkit-scrollbar-track, .apply-steps::-webkit-scrollbar-track, .stabs-list::-webkit-scrollbar-track { background: rgba(184, 144, 31, .08); border-radius: 99px; }
+  html { scrollbar-width: thin; scrollbar-color: rgba(184, 144, 31, .6) #f6f1e4; }
+  html::-webkit-scrollbar { width: 10px; } html::-webkit-scrollbar-track { background: #f6f1e4; }
+  html::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #e8c766, #b8901f); border-radius: 99px; border: 2px solid #f6f1e4; }
+}
+.hs-drag { cursor: grabbing; user-select: none; scroll-behavior: auto !important; }
+.hs-drag a { pointer-events: none; }
