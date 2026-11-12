@@ -18,8 +18,18 @@ export async function sendMail(to: string, subject: string, text: string, opts: 
     await t.sendMail({ from: m.from || m.user, to, subject, text: cleanText(text), html });
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: (e as Error).message };
+    cached?.t.close(); cached = null; // next email connects fresh
+    return { ok: false, error: friendly((e as Error).message) };
   }
+}
+
+/** Turns mail server errors into plain advice. */
+function friendly(msg: string) {
+  if (/wrong version number|ssl3_get_record|tls_validate_record_header/i.test(msg)) return 'SSL setting does not match the port. Use port 465 with SSL, or port 587 (STARTTLS).';
+  if (/EAUTH|Invalid login|535|authentication/i.test(msg)) return 'The mail server refused the username or password. For Gmail/Google Workspace use an App Password; for Outlook/Zoho check SMTP access is enabled.';
+  if (/ENOTFOUND|EAI_AGAIN/i.test(msg)) return 'The SMTP host name was not found. Check it (e.g. smtp.gmail.com, smtp.zoho.com, smtp.office365.com).';
+  if (/ETIMEDOUT|ECONNREFUSED|timeout/i.test(msg)) return 'Could not reach the mail server on this port. Try 465 (SSL) or 587, and check the host.';
+  return msg;
 }
 
 // One reusable SMTP connection (pooled), rebuilt only when the email settings change: much faster than connecting per email.
@@ -29,7 +39,11 @@ async function transport(m: { host: string; port: number; secure: boolean; user:
   if (cached?.key === key) return cached.t;
   const nodemailer = await import('nodemailer');
   cached?.t.close();
-  const t = nodemailer.createTransport({ pool: true, maxConnections: 3, host: m.host, port: Number(m.port) || 465, secure: !!m.secure, auth: { user: m.user, pass: m.pass }, connectionTimeout: 15000, greetingTimeout: 10000, socketTimeout: 20000 });
+  // The SSL setting follows the port: 465 = SSL from the start; 587, 25 or 2525 = STARTTLS (encrypted after connecting).
+  // A wrong switch ("wrong version number") can no longer break sending.
+  const port = Number(m.port) || 465;
+  const secure = port === 465 ? true : port === 587 || port === 25 || port === 2525 ? false : !!m.secure;
+  const t = nodemailer.createTransport({ pool: true, maxConnections: 3, host: m.host.trim(), port, secure, requireTLS: !secure, auth: { user: m.user.trim(), pass: m.pass }, connectionTimeout: 15000, greetingTimeout: 10000, socketTimeout: 20000 });
   cached = { key, t };
   return t;
 }

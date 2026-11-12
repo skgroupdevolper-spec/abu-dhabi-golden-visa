@@ -89,7 +89,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
             <F name="pass" label="Password" type="password" help={mask(sec.smtp.pass)} />
             <F name="from" label="From (e.g. Abu Dhabi Golden Visa <info@…>)" value={sec.smtp.from} />
             <F name="notify" label="Send website notifications to" value={sec.smtp.notify} help="New enquiries, applications and client accounts" />
-            <Toggle name="secure" label="Use SSL (turn on for port 465)" on={sec.smtp.secure} />
+            <Toggle name="secure" label="Use SSL" help="Set automatically from the port: 465 = SSL, 587 = STARTTLS. Only matters for other ports." on={sec.smtp.secure} />
             <div className="full row"><Submit className="btn">Save</Submit><Submit name="test" value="1">Save and send a test email</Submit></div>
           </ActionForm>
         )}
