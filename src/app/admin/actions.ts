@@ -11,10 +11,11 @@ const requireFull = () => requireAny(FULL);
 import { saveUpload } from '@/lib/server/files';
 import { createApplication, getApplication, getFees, newId, now, saveFees, updateApplication, type Fees, updateLead, listLeads, type Application, type LeadStatus } from '@/lib/server/store';
 import { STAGES, governmentLines, money } from '@/lib/stages';
-import { SITE, portalUrl } from '@/lib/site';
+import { portalUrl } from '@/lib/site';
 import { sendWa } from '@/lib/server/whatsapp';
 import { DECISION_TEXT } from '@/lib/decision';
 
+import { mailEvent } from '@/lib/server/mail';
 const V = (a: Application, extra: Record<string, string | number | undefined> = {}) => ({ name: a.client.name.split(' ')[0], ref: a.ref, link: portalUrl(a.token), ...extra });
 
 const s = (f: FormData, k: string, max = 500) => String(f.get(k) ?? '').trim().slice(0, max);
@@ -86,6 +87,7 @@ export async function convertLead(f: FormData) {
   });
   await updateLead(lead.id, { status: 'converted', applicationId: app.id });
   await sendWa(app.client.phone, 'welcome', V(app));
+  void mailEvent(app.client.email, 'welcome', V(app, { service: app.route }));
   redirect(`/admin/applications/${app.id}/`);
 }
 
@@ -128,11 +130,6 @@ export async function saveClient(_: FormState, f: FormData): Promise<FormState> 
 }
 
 /** Email copy of a client update (only when the client has an email and SMTP is set up). */
-async function mailClient(a: Application, subject: string, body: string, withLink = true) {
-  if (!a.client.email) return;
-  const { sendMail } = await import('@/lib/server/mail');
-  await sendMail(a.client.email, `${subject} · Abu Dhabi Golden Visa`, `Hello ${a.client.name.split(' ')[0]},\n\n${body}${withLink ? `\n\nFollow your application, pay and download documents here:\n${portalUrl(a.token)}` : ''}\n\nKind regards,\nAbu Dhabi Golden Visa\n${SITE.whatsappDisplay} · ${SITE.email}`).catch(() => {});
-}
 
 export async function setStage(_: FormState, f: FormData): Promise<FormState> {
   const stage = Math.max(0, Math.min(STAGES.length - 1, n(f, 'stage')));
@@ -156,7 +153,7 @@ export async function setStage(_: FormState, f: FormData): Promise<FormState> {
   }
   if (app && f.get('notify')) {
     const r = await sendWa(app.client.phone, 'status', V(app, { status: STAGES[stage], next: app.nextStep }));
-    void mailClient(app, `Status update ${app.ref}: ${STAGES[stage]}`, `Your application ${app.ref} moved to: ${STAGES[stage]}.${app.nextStep ? `\nNext step: ${app.nextStep}` : ''}${app.expected ? `\nExpected: ${app.expected}` : ''}`);
+    void mailEvent(app.client.email, 'status', V(app, { status: STAGES[stage], next: app.nextStep, expected: app.expected }));
     return { ok: `Status updated.${r.ok ? ' WhatsApp sent.' : ''}` };
   }
   return { ok: 'Status updated.' };
@@ -189,7 +186,7 @@ export async function saveQuote(_: FormState, f: FormData): Promise<FormState> {
   if (app && f.get('send')) {
     const total = app.quote.lines.reduce((x, l) => x + l.amount, 0) + app.quote.serviceFee + app.quote.vat;
     const r = await sendWa(app.client.phone, 'quote', V(app, { total: money(total) }));
-    void mailClient(app, `Your quote ${app.ref}: ${money(total)}`, `Your written quote for ${app.route} is ready: ${money(total)}.\nYou can review, accept and download it as a PDF from your secure link.`);
+    void mailEvent(app.client.email, 'quote', V(app, { route: app.route, total: money(total) }));
     return { ok: `Quote saved and sent to the client portal.${r.ok ? ' WhatsApp sent.' : ''}` };
   }
   return { ok: 'Quote saved.' };
@@ -208,7 +205,7 @@ export async function addPayment(_: FormState, f: FormData): Promise<FormState> 
   if (app) {
     const payLink = live || s(f, 'link', 600) ? `${portalUrl(app.token)}pay/${pid}/` : portalUrl(app.token);
     await sendWa(app.client.phone, 'payment', V(app, { item: s(f, 'label', 140), amount: money(amount), link: payLink }));
-    void mailClient(app, `Payment request ${app.ref}: ${money(amount)}`, `Payment request for ${app.ref}\n${s(f, 'label', 140)}: ${money(amount)}\n\nPay securely by card:\n${payLink}`, false);
+    void mailEvent(app.client.email, 'payment', V(app, { item: s(f, 'label', 140), amount: money(amount), link: payLink }));
   }
   return { ok: 'Payment request added.' };
 }
@@ -234,7 +231,7 @@ export async function uploadTeamDoc(_: FormState, f: FormData): Promise<FormStat
       a.documents.push(doc);
       if (doc.shared) a.messages.push({ id: newId(6), by: 'team', at: now(), text: `New document for you: ${doc.name}.` });
     });
-    if (app && doc.shared) { await sendWa(app.client.phone, 'document', V(app, { document: doc.name })); void mailClient(app, `New document for ${app.ref}`, `We shared a document with you: ${doc.name}.`); }
+    if (app && doc.shared) { await sendWa(app.client.phone, 'document', V(app, { document: doc.name })); void mailEvent(app.client.email, 'document', V(app, { document: doc.name })); }
     return { ok: 'Uploaded.' };
   } catch (e) {
     return { error: (e as Error).message };
@@ -259,6 +256,7 @@ export async function teamMessage(_: FormState, f: FormData): Promise<FormState>
     a.messages.push({ id: newId(6), by: 'team', at: now(), text });
   });
   const r = app ? await sendWa(app.client.phone, 'message', V(app, { text: text.slice(0, 300) })) : { ok: false };
+  if (app) void mailEvent(app.client.email, 'message', V(app, { text: text.slice(0, 1500) }));
   return { ok: `Sent to the client portal.${r.ok ? ' WhatsApp sent.' : ''}` };
 }
 
@@ -382,7 +380,7 @@ export async function setDecision(_: FormState, f: FormData): Promise<FormState>
   });
   if (app && f.get('notify')) {
     const r = await sendWa(app.client.phone, 'status', V(app, { status: D.title, next: nextAction || reason || '' }));
-    void mailClient(app, `Application ${app.ref}: ${D.title}`, `${D.client}${reason ? `\nReason: ${reason}` : ''}${nextAction ? `\nNext step: ${nextAction}` : ''}`);
+    void mailEvent(app.client.email, 'decision', V(app, { status: D.title, text: D.client, reason, next: nextAction }));
     return { ok: `Decision saved: ${D.title}.${r.ok ? ' WhatsApp sent.' : ''}` };
   }
   return { ok: `Decision saved: ${D.title}.` };

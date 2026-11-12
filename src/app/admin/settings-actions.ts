@@ -382,6 +382,15 @@ export async function saveDocCfg(_: St, f: FormData): Promise<St> {
   const { docCfg, hexOk, DOC0 } = await import('@/lib/server/doccfg');
   const cur = await docCfg();
   const which = s(f, 'which', 10);
+  if (which === 'events') {
+    const { MAIL_EVENTS } = await import('@/lib/mail-events');
+    for (const e of MAIL_EVENTS) {
+      if (!f.has(`${e.key}_subject`)) continue;
+      cur.mail.events[e.key] = { on: b(f, `${e.key}_on`), subject: s(f, `${e.key}_subject`, 200) || DOC0.mail.events[e.key].subject, badge: s(f, `${e.key}_badge`, 80), body: s(f, `${e.key}_body`, 5000) || DOC0.mail.events[e.key].body };
+    }
+    await saveBlock('doccfg', cur);
+    return { ok: 'Email messages saved. New emails use them now.' };
+  }
   if (which === 'pdf') {
     cur.pdf = {
       accent: hexOk(s(f, 'accent', 7), DOC0.pdf.accent), showLogo: b(f, 'showLogo'), showDate: b(f, 'showDate'),
@@ -395,6 +404,7 @@ export async function saveDocCfg(_: St, f: FormData): Promise<St> {
       accent: hexOk(s(f, 'accent', 7), DOC0.mail.accent), headerTitle: s(f, 'headerTitle', 60), buttonLabel: s(f, 'buttonLabel', 40) || DOC0.mail.buttonLabel,
       showWhatsApp: b(f, 'showWhatsApp'), whatsAppLabel: s(f, 'whatsAppLabel', 40) || DOC0.mail.whatsAppLabel, helpText: s(f, 'helpText', 120),
       signOff: s(f, 'signOff', 200), footer: s(f, 'footer', 300), showSocial: b(f, 'showSocial'), showContact: b(f, 'showContact'),
+      events: cur.mail.events,
     };
   }
   await saveBlock('doccfg', cur);

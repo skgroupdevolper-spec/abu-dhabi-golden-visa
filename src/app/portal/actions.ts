@@ -9,7 +9,7 @@ import { dict, PORTAL_LANGS } from '@/lib/portal-i18n';
 import { endClientSession, startClientSession } from '@/lib/server/auth';
 import { hashPassword, insert, list, notify, patch, verifyPassword, type Customer } from '@/lib/server/collections';
 import { saveUpload } from '@/lib/server/files';
-import { sendMail } from '@/lib/server/mail';
+import { mailEvent } from '@/lib/server/mail';
 import { currentCustomer, portalBase, portalLang } from '@/lib/server/portal';
 import { addLead, getApplicationByToken, listApplications, newId, now, updateApplication } from '@/lib/server/store';
 import { sendTeam, sendWa } from '@/lib/server/whatsapp';
@@ -79,7 +79,7 @@ export async function sendResetCode(_: State, f: FormData): Promise<State> {
     await patch<Customer>('customers', c.id, (x) => { x.reset = { code, exp: Date.now() + 15 * 60_000, tries: 0 }; });
     await Promise.allSettled([
       sendWa(c.phone, 'reset', { name: c.name.split(' ')[0], code }, { force: true }),
-      sendMail(c.email, 'Your Abu Dhabi Golden Visa portal code', `Your code is ${code}. It expires in 15 minutes.`),
+      mailEvent(c.email, 'reset', { name: c.name.split(' ')[0], code }),
     ]);
   }
   return { ok: d.codeSent };
@@ -160,6 +160,7 @@ export async function acceptQuote(f: FormData) {
   const { sendWa } = await import('@/lib/server/whatsapp');
   const { portalUrl } = await import('@/lib/site');
   await sendWa(a.client.phone, 'confirmed', { name: a.client.name, ref: a.ref, route: a.route, total: `AED ${total.toFixed(2)}`, date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), link: portalUrl(a.token) }).catch(() => {});
+  void mailEvent(a.client.email, 'confirmed', { name: a.client.name.split(' ')[0], ref: a.ref, route: a.route, total: `AED ${total.toFixed(2)}`, date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), link: portalUrl(a.token) });
   await updateApplication(a.id, (x) => { x.confirmedAt = now(); });
   refresh(a.token);
 }

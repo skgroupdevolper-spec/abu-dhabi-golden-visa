@@ -2,6 +2,8 @@ import 'server-only';
 import { getSecrets } from './settings';
 import { docCfg, type MailCfg } from './doccfg';
 import { SITE } from '@/lib/site';
+import { fillTpl, type MailEvent } from '@/lib/mail-events';
+import type { Transporter } from 'nodemailer';
 
 export type MailOpts = { badge?: string; title?: string };
 
@@ -11,14 +13,45 @@ export async function sendMail(to: string, subject: string, text: string, opts: 
   const m = (await getSecrets()).smtp;
   if (!m.host || !m.user || !m.pass || !to) return { ok: false, error: 'Email is not set up' };
   try {
-    const nodemailer = await import('nodemailer');
-    const t = nodemailer.createTransport({ host: m.host, port: Number(m.port) || 465, secure: !!m.secure, auth: { user: m.user, pass: m.pass } });
+    const t = await transport(m);
     const html = renderMail(subject, text, (await docCfg()).mail, opts);
     await t.sendMail({ from: m.from || m.user, to, subject, text: cleanText(text), html });
     return { ok: true };
   } catch (e) {
     return { ok: false, error: (e as Error).message };
   }
+}
+
+// One reusable SMTP connection (pooled), rebuilt only when the email settings change: much faster than connecting per email.
+let cached: { key: string; t: Transporter } | null = null;
+async function transport(m: { host: string; port: number; secure: boolean; user: string; pass: string }) {
+  const key = `${m.host}|${m.port}|${m.secure}|${m.user}|${m.pass}`;
+  if (cached?.key === key) return cached.t;
+  const nodemailer = await import('nodemailer');
+  cached?.t.close();
+  const t = nodemailer.createTransport({ pool: true, maxConnections: 3, host: m.host, port: Number(m.port) || 465, secure: !!m.secure, auth: { user: m.user, pass: m.pass }, connectionTimeout: 15000, greetingTimeout: 10000, socketTimeout: 20000 });
+  cached = { key, t };
+  return t;
+}
+
+/** Sends the email for one event, using the text set in Admin > Emails & PDFs. Never throws. */
+export async function mailEvent(to: string | undefined, event: MailEvent, vars: Record<string, string | number | undefined>) {
+  try {
+    if (!to || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return { ok: false, error: 'No email' };
+    const c = (await docCfg()).mail;
+    const tpl = c.events[event];
+    if (!tpl?.on) return { ok: false, error: 'This email is switched off' };
+    const v = { ...vars };
+    return await sendMail(to, fillTpl(tpl.subject, v).slice(0, 200), fillTpl(tpl.body, v), { badge: fillTpl(tpl.badge, v), title: event === 'teamLead' ? 'Team notice' : undefined });
+  } catch (e) {
+    return { ok: false, error: (e as Error).message };
+  }
+}
+
+/** Team copy of an event email (to the notification address in Admin > Settings > Email). */
+export async function mailEventTeam(event: MailEvent, vars: Record<string, string | number | undefined>) {
+  const m = (await getSecrets()).smtp;
+  return m.notify ? mailEvent(m.notify, event, vars) : { ok: false, error: 'No notification email set' };
 }
 
 export async function mailTeam(subject: string, text: string) {

@@ -7,9 +7,9 @@ import { startClientSession } from '@/lib/server/auth';
 import { currentCustomer, portalLang } from '@/lib/server/portal';
 import { newId, now } from '@/lib/server/store';
 import { sendTeam, sendWa } from '@/lib/server/whatsapp';
-import { mailTeam, sendMail } from '@/lib/server/mail';
+import { mailEvent, mailEventTeam } from '@/lib/server/mail';
 import { applyService } from '@/content/apply';
-import { portalUrl } from '@/lib/site';
+import { SITE, portalUrl } from '@/lib/site';
 import { LOCALES } from '@/lib/i18n';
 
 export const runtime = 'nodejs';
@@ -105,8 +105,9 @@ export async function POST(req: NextRequest) {
     void Promise.allSettled([
       sendTeam('leadTeam', { name, phone, service: `${svc.label} · ${app.ref}`, message: notes.slice(0, 300) }),
       sendWa(phone, 'welcome', { name: name.split(' ')[0], ref: app.ref, link }),
-      mailTeam(`New online application ${app.ref}: ${name}`, `${notes}\n\nPhone: ${phone}\nEmail: ${email}\nDocuments: ${docs.length}${failed.length ? ` (not saved: ${failed.join(', ')})` : ''}`),
-      email ? sendMail(email, `Your application ${app.ref}`, `Dear ${name.split(' ')[0]},\n\nThank you for your application (${svc.label}). Your reference is ${app.ref}.\n\nFollow your file, upload documents and message your advisor here:\n${link}\n\nAbu Dhabi Golden Visa\nNot an official UAE government website.`) : Promise.resolve(),
+      mailEventTeam('teamLead', { name, phone, email, service: `${svc.label} · ${app.ref}`, message: notes, link: `${SITE.url}/admin/applications/${app.id}/` }),
+      mailEvent(email, 'welcome', { name: name.split(' ')[0], ref: app.ref, service: svc.label, link }),
+      account === 'created' ? mailEvent(email, 'account', { name: name.split(' ')[0], email, link: portalUrl('').replace(/t\/\/$/, '') }) : Promise.resolve(),
     ]);
     return NextResponse.json({ ok: true, ref: app.ref, link, account });
   } catch (e) {

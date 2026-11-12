@@ -4,6 +4,7 @@ import { F, Toggle } from '@/components/dash/Fields';
 import { FULL, requireAdmin } from '@/lib/server/auth';
 import { docCfg } from '@/lib/server/doccfg';
 import { saveDocCfg } from '../../settings-actions';
+import { MAIL_EVENTS } from '@/lib/mail-events';
 
 export const metadata: Metadata = { title: 'Emails & PDFs' };
 export const dynamic = 'force-dynamic';
@@ -67,6 +68,29 @@ export default async function Documents() {
           <div className="full"><Toggle name="showContact" label="Show office, WhatsApp and email" on={mail.showContact} /></div>
           <div className="full"><Toggle name="showSocial" label="Show social links" on={mail.showSocial} /></div>
           <div className="full"><Submit>Save email settings</Submit></div>
+        </ActionForm>
+      </div>
+
+      <div className="panel" style={{ maxWidth: 900, marginTop: 18 }} id="messages">
+        <h2 style={{ margin: 0 }}>Email messages</h2>
+        <p className="help">The email sent for each event. Use the words in braces, e.g. {'{name}'} or {'{ref}'}; they are filled in for each client. A line like “Amount: {'{amount}'}” shows as a neat table row (left out when empty), and a line with only {'{link}'} becomes a gold button. Emails are sent in the background, so saving never waits for them.</p>
+        <ActionForm action={saveDocCfg} className="form">
+          <input type="hidden" name="which" value="events" />
+          {MAIL_EVENTS.map((e) => {
+            const t = mail.events[e.key];
+            return (
+              <details key={e.key} className="full mail-ev" style={{ border: '1px solid var(--line, #eee3c8)', borderRadius: 10, padding: '10px 14px' }}>
+                <summary style={{ cursor: 'pointer', fontWeight: 600 }}>{e.label} <span className={`pill ${t.on ? 'ok' : 'closed'}`} style={{ marginLeft: 8 }}>{t.on ? 'on' : 'off'}</span> <small className="muted">to {e.to === 'team' ? 'your team' : 'the client'}</small></summary>
+                <div className="form" style={{ marginTop: 10 }}>
+                  <div className="full"><Toggle name={`${e.key}_on`} label="Send this email" on={t.on} /></div>
+                  <F name={`${e.key}_subject`} label="Subject" value={t.subject} />
+                  <F name={`${e.key}_badge`} label="Gold line under the logo" value={t.badge} />
+                  <F name={`${e.key}_body`} label="Message" value={t.body} type="textarea" rows={9} full help={<>Words you can use: {e.vars}</>} />
+                </div>
+              </details>
+            );
+          })}
+          <div className="full"><Submit>Save email messages</Submit></div>
         </ActionForm>
       </div>
     </>

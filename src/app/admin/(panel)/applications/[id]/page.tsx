@@ -62,7 +62,7 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
             <ActionForm action={setStage} className="form">
               {H}
               <StageFields stages={STAGES} defaults={nextDefaults} stage={a.stage} next={a.nextStep} expected={a.expected} />
-              <label className="row full small"><input type="checkbox" name="notify" defaultChecked /> Post a status message in the client portal</label>
+              <label className="row full small"><input type="checkbox" name="notify" defaultChecked /> Tell the client (portal message, WhatsApp and email)</label>
               <div className="full"><Submit>Update status</Submit></div>
             </ActionForm>
             <details className="more" style={{ marginTop: 12 }}>

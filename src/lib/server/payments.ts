@@ -195,16 +195,17 @@ export async function settle(appId: string, pid: string, method: string, txn: st
 }
 
 async function afterPaid(a: Application, p: Payment, confirmed = false) {
-  const [{ notify }, { sendWa, sendWaDoc }, { money }, { portalUrl }, { sendMail }] = await Promise.all([import('./collections'), import('./whatsapp'), import('@/lib/stages'), import('@/lib/site'), import('./mail')]);
+  const [{ notify }, { sendWa, sendWaDoc }, { money }, { portalUrl }, { mailEvent }] = await Promise.all([import('./collections'), import('./whatsapp'), import('@/lib/stages'), import('@/lib/site'), import('./mail')]);
   await notify('payment', `Payment received: ${a.client.name}, AED ${p.amount.toFixed(2)} (${a.ref})`, `/admin/applications/${a.id}/#payments`);
   const link = portalUrl(a.token);
   if (confirmed) {
     const total = orderTotal(a);
     await sendWa(a.client.phone, 'confirmed', { name: a.client.name, ref: a.ref, route: a.route, total: `AED ${total.toFixed(2)}`, date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), link }).catch(() => {});
+    void mailEvent(a.client.email, 'confirmed', { name: a.client.name.split(' ')[0], ref: a.ref, route: a.route, total: `AED ${total.toFixed(2)}`, date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), link });
   }
   await sendWa(a.client.phone, 'paid', { name: a.client.name.split(' ')[0], ref: a.ref, item: p.label, amount: money(p.amount), receipt: p.receiptNo, link });
   if ((await getPayCfg()).receiptWa) await sendWaDoc(a.client.phone, `${link}receipt/${p.id}/pdf/`, `Payment Receipt - ${p.receiptNo}.pdf`, `✅ Payment Received, thank you! 🙏\nAmount: AED ${p.amount.toFixed(2)}\nRef: ${a.ref} | ${p.receiptNo}\nYour official receipt is attached.`);
-  if (a.client.email) await sendMail(a.client.email, `Payment received · ${p.receiptNo}`, `Hello ${a.client.name},\n\nWe received your payment of AED ${p.amount.toFixed(2)} for ${p.label} (${a.ref}).\nReceipt: ${p.receiptNo}\n\nDownload your receipt and follow your application here:\n${link}\n\nThank you,\nAbu Dhabi Golden Visa`).catch(() => {});
+  void mailEvent(a.client.email, 'paid', { name: a.client.name.split(' ')[0], ref: a.ref, item: p.label, amount: money(p.amount), receipt: p.receiptNo, link: `${link}receipt/${p.id}/pdf/` });
 }
 
 /** Finds a payment from a provider reference (webhooks). */
