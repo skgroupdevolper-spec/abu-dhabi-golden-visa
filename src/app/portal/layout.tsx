@@ -1,3 +1,4 @@
+import { SubmitterFix } from '@/components/dash/SubmitterFix';
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { fontVars } from '@/lib/fonts';
@@ -15,6 +16,7 @@ export default async function PortalRoot({ children }: { children: ReactNode }) 
     <html lang={lang.html} dir={lang.dir} className={fontVars}>
       <body>
         <script dangerouslySetInnerHTML={{ __html: `window.__ADGV_SITE=${JSON.stringify(site).replace(/</g, '\\u003c')}` }} />
+        <SubmitterFix />
         {children}
       </body>
     </html>

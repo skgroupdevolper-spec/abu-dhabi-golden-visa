@@ -1,3 +1,4 @@
+import { SubmitterFix } from '@/components/dash/SubmitterFix';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { requireAdmin } from '@/lib/server/auth';
@@ -29,6 +30,7 @@ export default async function Panel({ children }: { children: ReactNode }) {
   const initials = who.name.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
   return (
     <div className="admin">
+      <SubmitterFix />
       <aside className="side">
         <Link href="/admin/" className="brand"><img src={fullLogo()} alt="Abu Dhabi Golden Visa" /></Link>
         <AdminNav counts={counts} role={who.role} perms={who.perms} />
