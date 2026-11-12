@@ -296,7 +296,7 @@ stats.adminSections = SECTIONS.length * 2;
 /* ---------- 5. Team: limited users only see their sections ---------- */
 for (const [email, allowed, denied] of [
   ['staff-perms@ci.local', ['leads/', 'applications/'], ['users/', 'settings/', 'payments/', 'design/', 'backup/', 'customers/']],
-  ['staff@ci.local', ['leads/', 'applications/'], ['users/', 'settings/', 'backup/']],
+  ['staff@ci.local', ['leads/', 'applications/'], ['users/', 'settings/', 'backup/', 'posts/', 'pages/', 'customers/', 'whatsapp/', 'chatbot/']],
   ['viewer@ci.local', [''], ['users/', 'settings/', 'backup/']],
 ]) {
   const ctx = await browser.newContext({ viewport: VP.mobile, extraHTTPHeaders: { 'x-forwarded-for': `10.2.2.${email.length}` } });
@@ -305,6 +305,13 @@ for (const [email, allowed, denied] of [
   for (const s of allowed) {
     await visit(page, '/admin/' + s, `team ${email}`, { strictWidth: false });
     if (page.url().includes('denied=1')) fail('team', `${email} was refused /admin/${s} that it should open`);
+  }
+  if (email === 'staff@ci.local') {
+    // Nothing is assigned to this staff member: no client file or enquiry of others may show.
+    await page.goto(base + '/admin/applications/');
+    if (/ADGV-\d{4}/.test(await page.content())) fail('security', 'staff sees client files that are not assigned to them');
+    await page.goto(base + '/admin/');
+    if (/Payments received/.test(await page.content())) fail('security', 'staff dashboard shows business totals');
   }
   for (const s of denied) {
     await page.goto(base + '/admin/' + s).catch(() => {});
