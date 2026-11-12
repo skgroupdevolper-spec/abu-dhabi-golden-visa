@@ -3,7 +3,6 @@ import { Icon } from '../Icon';
 import { filePct, fileStatus, fileTotal } from '@/lib/client-status';
 import { money } from '@/lib/stages';
 import type { ClientArea } from '@/lib/server/portal';
-import { Icon } from '@/components/Icon';
 
 type Tab = 'all' | 'open' | 'quote' | 'prog' | 'done';
 export function FileList({ area, path, q = '', tab = 'all', tabs = true, only, empty }: { area: ClientArea; path: string; q?: string; tab?: string; tabs?: boolean; only?: (k: string) => boolean; empty: string }) {
