@@ -25,5 +25,6 @@ export async function GET(req: Request) {
   await check('files', async () => { const r: string[] = []; for (const f of await readdir(DATA_DIR)) { const st = await stat(path.join(DATA_DIR, f)); r.push(`${f}:${st.uid}:${(st.mode & 0o777).toString(8)}`); } return r.join(' '); });
   await check('actionKnown', async () => { const m = JSON.parse(await (await import('node:fs/promises')).readFile(path.join(process.cwd(), '.next/server/server-reference-manifest.json'), 'utf8')); const e = m.node?.[aid]; return aid ? (e ? 'yes ' + JSON.stringify(e).slice(0, 300) : 'NO (of ' + Object.keys(m.node || {}).length + ')') : 'no aid'; });
   await check('pm2', async () => `pid ${process.pid} instance ${process.env.NODE_APP_INSTANCE ?? '-'} build ${(await (await import('node:fs/promises')).readFile(path.join(process.cwd(), '.next/BUILD_ID'), 'utf8')).trim()}`);
+  out.errors = (globalThis as unknown as { __ADGV_ERR?: unknown[] }).__ADGV_ERR ?? [];
   return NextResponse.json(out, { headers: { 'Cache-Control': 'no-store' } });
 }
