@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import { DeleteButton } from '@/components/dash/DeleteButton';
 import { clearItems, deleteItems } from '@/app/admin/delete-actions';
-import { ActionForm, Submit } from '@/components/dash/ActionForm';
+import { ActionForm, CopyButton as CopyBtn, Submit } from '@/components/dash/ActionForm';
+import type { ReactNode } from 'react';
+import { randomBytes } from 'node:crypto';
 import { F, Tabs, Toggle } from '@/components/dash/Fields';
 import { FULL, requireAdmin } from '@/lib/server/auth';
 import { list, type WaLog } from '@/lib/server/collections';
@@ -10,7 +12,7 @@ import { SITE } from '@/lib/site';
 import { WaCustomList } from '@/components/dash/WaCustomList';
 import { WA_EVENTS } from '@/lib/settings-schema';
 import { when } from '@/lib/stages';
-import { saveWhatsApp, testWhatsApp } from '../../settings-actions';
+import { saveWhatsApp, testWhatsApp, waTemplates } from '../../settings-actions';
 
 export const metadata: Metadata = { title: 'WhatsApp' };
 
@@ -29,26 +31,28 @@ export default async function WhatsApp({ searchParams }: { searchParams: Promise
       <Tabs base="/admin/whatsapp/" tabs={[['setup', 'Setup'], ['messages', 'Automatic messages'], ['test', 'Send a test'], ['log', 'Message log']]} cur={tab} />
       {tab === 'setup' && (() => {
         const names = Object.values(w.templateNames ?? {}).filter(Boolean).length;
-        const steps: [boolean, string, string][] = [
-          [!!w.phoneNumberId && !!w.businessId, 'Phone number ID and Business account ID', 'Meta for Developers → your app → WhatsApp → API setup.'],
-          [!!w.accessToken, 'Permanent access token', 'Business settings → Users → System users → Add (Admin) → Generate token with whatsapp_business_messaging and whatsapp_business_management, “Never expires”. The 24-hour test token stops working the next day.'],
+        const waba = encodeURIComponent(w.businessId || '');
+        const L = (href: string, t: string) => <a className="btn btn-sm" href={href} target="_blank" rel="noopener noreferrer">{t} ↗</a>;
+        const steps: [boolean, string, string, ReactNode?][] = [
+          [!!w.phoneNumberId && !!w.businessId, 'Phone number ID and Business account ID', 'Meta for Developers → your app → WhatsApp → API setup.', L('https://developers.facebook.com/apps/', 'Open my Meta apps')],
+          [!!w.accessToken, 'Permanent access token', 'Business settings → System users → Add (Admin) → assign your app → Generate token with whatsapp_business_messaging and whatsapp_business_management, “Never expires”. The 24-hour test token stops working the next day.', L('https://business.facebook.com/settings/system-users', 'Open System users')],
           [w.mode === 'cloud', 'Mode set to “Cloud API”', 'Choose “Cloud API: send automatic messages” below and press Save.'],
-          [!!w.verifyToken, 'Webhook connected', 'Type any word in “Webhook verify token”, Save, then in Meta → WhatsApp → Configuration paste the Webhook URL and the same word, Verify, and subscribe to “messages”.'],
-          [names > 0, `Approved message templates (${names} entered)`, 'WhatsApp Manager → Message templates → create one per message (Utility category), wait for approval, then type each name under “Automatic messages”. Without templates, messages only reach clients who wrote to you in the last 24 hours.'],
+          [!!w.verifyToken, 'Webhook connected', 'Below, “Webhook verify token” already has a word filled in: press Save. Then open your app → WhatsApp → Configuration → Webhook → Edit, paste the Webhook URL and the same word, press “Verify and save”, then Subscribe to “messages”.', <><CopyBtn text={`${SITE.url}/api/whatsapp/webhook`} label="Copy webhook URL" /> {L('https://developers.facebook.com/apps/', 'Open my Meta apps')}</>],
+          [names > 0, `Approved message templates (${names} of 9 filled in)`, 'One click sends all 9 ready-made templates (Utility, English) to Meta. Approval usually takes minutes; then press “Check approval” and the names fill in by themselves.', <><ActionForm action={waTemplates} className="wa-inline"><input type="hidden" name="do" value="create" /><Submit className="btn btn-sm btn-gold">Create all templates in Meta</Submit></ActionForm> <ActionForm action={waTemplates} className="wa-inline"><input type="hidden" name="do" value="sync" /><Submit className="btn btn-sm">Check approval</Submit></ActionForm> {w.businessId && L(`https://business.facebook.com/wa/manage/message-templates/?waba_id=${waba}`, 'Open templates in Meta')}</>],
         ];
         const doneN = steps.filter((x) => x[0]).length;
         return (
           <div className="panel wa-check" style={{ marginBottom: 16 }}>
             <div className="row" style={{ justifyContent: 'space-between' }}><h2 style={{ margin: 0 }}>Setup checklist</h2><span className={`pill ${doneN === steps.length ? 'ok' : 'due'}`}>{doneN} of {steps.length} done</span></div>
             <ol style={{ listStyle: 'none', padding: 0, margin: '12px 0 0', display: 'grid', gap: 10 }}>
-              {steps.map(([ok, t, how], i) => (
+              {steps.map(([ok, t, how, link], i) => (
                 <li key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                   <span style={{ flex: 'none', width: 24, height: 24, borderRadius: '50%', display: 'grid', placeItems: 'center', fontSize: 13, fontWeight: 700, background: ok ? 'linear-gradient(135deg,#f3d77e,#c9961a)' : 'transparent', border: ok ? '0' : '1.5px solid #d9c48a', color: '#111' }}>{ok ? '✓' : i + 1}</span>
-                  <div><b>{t}</b>{!ok && <p className="help" style={{ margin: '2px 0 0' }}>{how}</p>}</div>
+                  <div style={{ flex: 1 }}><b>{t}</b>{!ok && <p className="help" style={{ margin: '2px 0 6px' }}>{how}</p>}{link && <div className="row" style={{ gap: 8, flexWrap: 'wrap', marginTop: 4 }}>{link}</div>}</div>
                 </li>
               ))}
             </ol>
-            <p className="help" style={{ marginTop: 12 }}>When all steps are done, open “Send a test” and send to your own number. Also make sure the number is registered in WhatsApp Manager (display name approved) and a payment method is added in Meta Business settings.</p>
+            <p className="help" style={{ marginTop: 12 }}>When all steps are done, open “Send a test” and send to your own number. Also make sure the number is registered (display name approved) and a payment method is added: {w.businessId && <a href={`https://business.facebook.com/wa/manage/phone-numbers/?waba_id=${waba}`} target="_blank" rel="noopener noreferrer">phone numbers ↗</a>} · <a href="https://business.facebook.com/billing_hub/payment_settings" target="_blank" rel="noopener noreferrer">payment settings ↗</a></p>
           </div>
         );
       })()}
@@ -62,7 +66,7 @@ export default async function WhatsApp({ searchParams }: { searchParams: Promise
               <F name="phoneNumberId" label="Phone number ID" value={w.phoneNumberId} help="Meta Business → WhatsApp → API setup" />
               <F name="businessId" label="WhatsApp Business account ID" value={w.businessId} />
               <F name="accessToken" label="Permanent access token" type="password" help={w.accessToken ? `Saved (…${w.accessToken.slice(-4)}). Leave empty to keep it.` : 'Create a system-user token with whatsapp_business_messaging permission.'} full />
-              <F name="verifyToken" label="Webhook verify token (any text you choose)" value={w.verifyToken} />
+              <F name="verifyToken" label="Webhook verify token (any text you choose)" value={w.verifyToken || `adgv-${randomBytes(4).toString('hex')}`} help={w.verifyToken ? undefined : 'A word is suggested; press Save to keep it, then use the same word in Meta.'} />
               <div className="field"><label>Webhook URL (paste in Meta)</label><code className="k" style={{ padding: 12, display: 'block', overflowWrap: 'anywhere' }}>{SITE.url}/api/whatsapp/webhook</code><p className="help">Subscribe to “messages”. Client replies then appear in their application.</p></div>
               <F name="teamNumbers" label="Team numbers for new-enquiry alerts" value={w.teamNumbers} type="textarea" rows={2} help="One per line, with country code" full />
               <F name="templateLang" label="Template language code" value={w.templateLang} help="For approved templates, e.g. en, ar" />

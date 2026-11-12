@@ -871,3 +871,4 @@ code.k { overflow-wrap: anywhere; word-break: break-all; }
   .admin ::-webkit-scrollbar-thumb, .portal ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #e8c766, #b8901f); border-radius: 99px; }
   .admin ::-webkit-scrollbar-track, .portal ::-webkit-scrollbar-track { background: rgba(184, 144, 31, .06); }
 }
+.wa-inline { display: inline-flex; flex-direction: column; gap: 6px; }

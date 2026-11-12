@@ -419,3 +419,12 @@ export async function saveDocCfg(_: St, f: FormData): Promise<St> {
   await saveBlock('doccfg', cur);
   return { ok: 'Saved. New emails and PDFs use it now.' };
 }
+
+/* ---------- WhatsApp templates in Meta ---------- */
+export async function waTemplates(_: St, f: FormData): Promise<St> {
+  await requireAdmin(FULL);
+  const m = await import('@/lib/server/wa-templates');
+  const r = s(f, 'do', 10) === 'sync' ? await m.syncMetaTemplates() : await m.createMetaTemplates();
+  revalidatePath('/admin/whatsapp/');
+  return r.ok ? { ok: r.msg } : { error: r.msg };
+}
