@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath } from '@/lib/server/revalidate';
 import { redirect } from 'next/navigation';
 import { FEE_SCHEDULE } from '@/lib/fees';
 import { EDIT, FULL, checkLogin, endSession, requireAdmin as requireAny, startSession } from '@/lib/server/auth';
@@ -138,11 +138,20 @@ export async function setStage(_: FormState, f: FormData): Promise<FormState> {
   const stage = Math.max(0, Math.min(STAGES.length - 1, n(f, 'stage')));
   const app = await edit(f, (a) => {
     a.stage = stage;
-    a.stageDates[String(stage)] = a.stageDates[String(stage)] || now();
+    // Every step up to this one counts as done, so the client sees each earlier step ticked.
+    for (let i = 0; i <= stage; i++) a.stageDates[String(i)] = a.stageDates[String(i)] || now();
     a.nextStep = s(f, 'nextStep', 400);
     a.expected = s(f, 'expected', 60);
     if (f.get('notify')) a.messages.push({ id: newId(6), by: 'team', at: now(), text: `Status update: ${STAGES[stage]}.${a.nextStep ? `\nNext: ${a.nextStep}` : ''}` });
   });
+  // "Save as the default text for this stage": used for every client from now on.
+  if (app && f.get('saveDefault') && app.nextStep) {
+    const { getBlock, saveBlock } = await import('@/lib/server/settings');
+    const cur = await getBlock<string[]>('stage-next', []);
+    const list = STAGES.map((_, i) => cur[i] ?? '');
+    list[stage] = app.nextStep;
+    await saveBlock('stage-next', list);
+  }
   if (app && f.get('notify')) {
     const r = await sendWa(app.client.phone, 'status', V(app, { status: STAGES[stage], next: app.nextStep }));
     void mailClient(app, `Status update ${app.ref}: ${STAGES[stage]}`, `Your application ${app.ref} moved to: ${STAGES[stage]}.${app.nextStep ? `\nNext step: ${app.nextStep}` : ''}${app.expected ? `\nExpected: ${app.expected}` : ''}`);

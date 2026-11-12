@@ -22,6 +22,7 @@ export function StageFields({ stages, defaults, stage, next, expected }: { stage
         <label htmlFor="nextStep">Next step shown to the client</label>
         <textarea id="nextStep" name="nextStep" rows={2} value={text} onChange={(e) => setText(e.target.value)} />
         <small className="muted">Filled in from the default text of this stage. Change it for this client if needed. <button type="button" className="linkish" onClick={() => setText(defaults[cur] || '')}>Use default</button></small>
+        <label className="row small" style={{ marginTop: 8, gap: 8 }}><input type="checkbox" name="saveDefault" /> Save this text as the default for “{stages[cur]}” (used for all clients from now on)</label>
       </div>
     </>
   );

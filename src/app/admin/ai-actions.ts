@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath } from '@/lib/server/revalidate';
 import { EDIT, FULL, requireAdmin } from '@/lib/server/auth';
 import { AP0, generateDraft, type AutoPub, type Mission } from '@/lib/server/autopub';
 import { insert, list, patch, remove } from '@/lib/server/collections';

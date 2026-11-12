@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath } from '@/lib/server/revalidate';
 import { redirect } from 'next/navigation';
 import { FULL, requireAdmin } from '@/lib/server/auth';
 import { hashPassword, insert, list, patch, remove, verifyPassword, type Customer, type Note, type Role, type TeamUser } from '@/lib/server/collections';

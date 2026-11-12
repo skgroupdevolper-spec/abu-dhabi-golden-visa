@@ -3,7 +3,7 @@
 // Delete and clear-out actions for admin lists (notifications, enquiries, applications, subscribers, WhatsApp log, chats, bookings).
 import { rm } from 'node:fs/promises';
 import path from 'node:path';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath } from '@/lib/server/revalidate';
 import { redirect } from 'next/navigation';
 import { EDIT, FULL, requireAdmin } from '@/lib/server/auth';
 import type { Role } from '@/lib/server/collections';

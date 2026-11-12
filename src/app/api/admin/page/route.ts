@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath } from '@/lib/server/revalidate';
 import { EDIT, currentAdmin } from '@/lib/server/auth';
 import { insert, list, remove } from '@/lib/server/collections';
 import type { CustomPage, PageOverride } from '@/lib/server/content';

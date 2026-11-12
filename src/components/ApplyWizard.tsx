@@ -119,7 +119,7 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
       if (!r.ok || !j.ok) throw new Error(j.error || 'We could not submit your application. Please send it on WhatsApp.');
       setDone({ ref: j.ref, link: j.link, account: j.account });
       // Account created (or the right password for an existing one): open the dashboard right away.
-      if (j.account === 'created' || j.account === 'signed-in') setTimeout(() => { window.location.href = portalHome(); }, 1800);
+      if (j.account === 'created' || j.account === 'signed-in') setTimeout(() => { window.location.href = portalHome(); }, 500);
     } catch (e) {
       setErr((e as Error).message);
     } finally { setBusy(false); }

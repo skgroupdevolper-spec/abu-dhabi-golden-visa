@@ -1,9 +1,13 @@
+import { fileURLToPath } from 'node:url';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   trailingSlash: true,
   poweredByHeader: false,
   // Pages are rebuilt in the background; never let a cache keep an old copy for long.
   expireTime: 600,
+  // Page cache in memory (see cache-handler.cjs): saves in the admin never depend on writing cache files.
+  cacheHandler: fileURLToPath(new URL('./cache-handler.cjs', import.meta.url)),
+  cacheMaxMemorySize: 0,
   images: { formats: ['image/avif', 'image/webp'] },
   // Client and team document uploads go through server actions.
   experimental: {

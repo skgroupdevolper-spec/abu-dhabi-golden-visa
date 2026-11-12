@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
       if (!found) {
         const c: Customer = { id: newId(8), name, email, phone, pass: await hashPassword(password), lang: await portalLang(), active: true, createdAt: now(), lastLogin: now() };
         await insert<Customer>('customers', c);
-        await notify('customer', `New client account: ${name} (${email}), from application ${app.ref}`, '/admin/customers/');
+        void notify('customer', `New client account: ${name} (${email}), from application ${app.ref}`, '/admin/customers/');
         await startClientSession(c.id);
         account = 'created';
       } else if (found.active && (await verifyPassword(password, found.pass))) {
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
         account = 'signed-in';
       } else account = 'exists';
     }
-    await notify('lead', `New online application ${app.ref}: ${name} (${svc.label}), ${docs.length} document(s)`, `/admin/applications/${app.id}/`);
+    void notify('lead', `New online application ${app.ref}: ${name} (${svc.label}), ${docs.length} document(s)`, `/admin/applications/${app.id}/`);
     void Promise.allSettled([
       sendTeam('leadTeam', { name, phone, service: `${svc.label} · ${app.ref}`, message: notes.slice(0, 300) }),
       sendWa(phone, 'welcome', { name: name.split(' ')[0], ref: app.ref, link }),

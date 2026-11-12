@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath } from '@/lib/server/revalidate';
 import { FULL, currentAdmin } from '@/lib/server/auth';
 import { getSite, saveSite } from '@/lib/server/settings';
 import type { MenuGroup, MenuItem } from '@/lib/settings-schema';

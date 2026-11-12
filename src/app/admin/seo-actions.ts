@@ -5,7 +5,7 @@ import { PAGES } from '@/content/pages';
 import { getCategories, getCustomPages, getPublishedPosts } from '@/lib/server/content';
 import { pingIndexNow } from '@/lib/server/indexnow';
 import { getSecrets, saveSecrets } from '@/lib/server/settings';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath } from '@/lib/server/revalidate';
 
 type St = { ok?: string; error?: string } | undefined;
 

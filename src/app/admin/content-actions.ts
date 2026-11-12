@@ -2,7 +2,7 @@
 
 import { mkdir, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath } from '@/lib/server/revalidate';
 import { redirect } from 'next/navigation';
 import { EDIT, FULL, requireAdmin } from '@/lib/server/auth';
 import { insert, list, patch, remove } from '@/lib/server/collections';

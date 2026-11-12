@@ -4,7 +4,7 @@ import { clientIp } from '@/lib/server/ratelimit';
 import { randomInt } from 'node:crypto';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath } from '@/lib/server/revalidate';
 import { dict, PORTAL_LANGS } from '@/lib/portal-i18n';
 import { endClientSession, startClientSession } from '@/lib/server/auth';
 import { hashPassword, insert, list, notify, patch, verifyPassword, type Customer } from '@/lib/server/collections';
