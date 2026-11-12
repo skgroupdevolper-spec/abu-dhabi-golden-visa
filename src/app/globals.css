@@ -1569,3 +1569,9 @@ footer.site .fcontact span { overflow-wrap: anywhere; }
 }
 .hs-drag { cursor: grabbing; user-select: none; scroll-behavior: auto !important; }
 .hs-drag a { pointer-events: none; }
+
+/* "VIEW" cursor: dark, clear text with the dot sitting under the word instead of on top of it */
+body.c-view .cur-ring { background: linear-gradient(135deg, #f3d77e, #c9961a); border-color: #b8901f; box-shadow: 0 10px 26px -10px rgba(0, 0, 0, .45); }
+body.c-view .cur-ring span { display: flex; flex-direction: column; align-items: center; gap: 6px; color: #111; font: 800 13px/1 var(--body); letter-spacing: .16em; padding-left: .16em; }
+body.c-view .cur-ring span::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #111; }
+body.c-view .cur-dot { opacity: 0; }
