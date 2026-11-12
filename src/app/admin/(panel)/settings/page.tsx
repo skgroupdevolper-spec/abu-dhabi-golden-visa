@@ -5,6 +5,7 @@ import { FULL, requireAdmin } from '@/lib/server/auth';
 import { getSecrets, getSite } from '@/lib/server/settings';
 import { WORLD } from '@/lib/world';
 import { saveAi, saveFeatures, saveGeneral, saveSeo, saveSmtp, saveSocial } from '../../settings-actions';
+import { SmtpPresets } from '@/components/dash/SmtpPresets';
 
 export const metadata: Metadata = { title: 'Site settings' };
 const TABS: [string, string][] = [['general', 'General & contact'], ['social', 'Social media'], ['features', 'Features'], ['seo', 'SEO & tracking'], ['email', 'Email (SMTP)'], ['ai', 'AI keys']];
@@ -83,10 +84,11 @@ export default async function Settings({ searchParams }: { searchParams: Promise
         )}
         {tab === 'email' && (
           <ActionForm action={saveSmtp} className="form">
-            <F name="host" label="SMTP host (e.g. mail.yourdomain.com)" value={sec.smtp.host} />
-            <F name="port" label="Port (465 or 587)" value={sec.smtp.port} type="number" />
+            <SmtpPresets />
+            <F name="host" label="SMTP host (e.g. smtp.gmail.com)" value={sec.smtp.host} />
+            <F name="port" label="Port (465 = SSL, 587 = STARTTLS)" value={sec.smtp.port} type="number" />
             <F name="user" label="Username (full email address)" value={sec.smtp.user} />
-            <F name="pass" label="Password" type="password" help={mask(sec.smtp.pass)} />
+            <F name="pass" label="Password (or App Password)" type="password" help={mask(sec.smtp.pass)} placeholder={sec.smtp.pass ? "•••••••••••• saved" : ""} />
             <F name="from" label="From (e.g. Abu Dhabi Golden Visa <info@…>)" value={sec.smtp.from} />
             <F name="notify" label="Send website notifications to" value={sec.smtp.notify} help="New enquiries, applications and client accounts" />
             <Toggle name="secure" label="Use SSL" help="Set automatically from the port: 465 = SSL, 587 = STARTTLS. Only matters for other ports." on={sec.smtp.secure} />
@@ -98,9 +100,9 @@ export default async function Settings({ searchParams }: { searchParams: Promise
             <div className="field full"><label htmlFor="provider">Main AI provider</label>
               <select id="provider" name="provider" defaultValue={sec.ai.provider}><option value="">Off</option><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option><option value="anthropic">Anthropic Claude</option></select>
               <p className="help">Used by the chatbot, automatic translation and the Auto Publisher.</p></div>
-            <F name="openaiKey" label="OpenAI API key" type="password" help={mask(sec.ai.openaiKey)} />
-            <F name="geminiKey" label="Google Gemini API key" type="password" help={mask(sec.ai.geminiKey)} />
-            <F name="anthropicKey" label="Anthropic API key" type="password" help={mask(sec.ai.anthropicKey)} />
+            <F name="openaiKey" label="OpenAI API key" type="password" help={mask(sec.ai.openaiKey)} placeholder={sec.ai.openaiKey ? "•••••••••••• saved" : ""} />
+            <F name="geminiKey" label="Google Gemini API key" type="password" help={mask(sec.ai.geminiKey)} placeholder={sec.ai.geminiKey ? "•••••••••••• saved" : ""} />
+            <F name="anthropicKey" label="Anthropic API key" type="password" help={mask(sec.ai.anthropicKey)} placeholder={sec.ai.anthropicKey ? "•••••••••••• saved" : ""} />
             <F name="model" label="Model (optional)" value={sec.ai.model} placeholder="Leave empty for a sensible default" />
             <F name="dailyBudget" label="Daily limit of automatic AI requests (translation, Auto Publisher)" value={sec.ai.dailyBudget} type="number" />
             <div className="full row small">

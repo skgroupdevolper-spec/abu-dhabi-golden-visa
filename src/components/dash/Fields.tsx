@@ -8,7 +8,7 @@ export function F({ name, label, value, type = 'text', help, full, placeholder, 
       {type === 'textarea'
         ? <textarea id={name} name={name} defaultValue={value as string} placeholder={placeholder} rows={rows ?? 4} />
         : type === 'password'
-          ? <PwInput id={name} name={name} defaultValue={value} placeholder={placeholder} autoComplete="new-password" />
+          ? <PwInput id={name} name={name} defaultValue={value} placeholder={placeholder || (typeof help === 'string' && /^saved/i.test(help) ? '•••••••••••• saved' : undefined)} autoComplete="new-password" />
           : <input id={name} name={name} type={type} defaultValue={value} placeholder={placeholder} autoComplete="off" />}
       {help && <p className="help">{help}</p>}
     </div>
