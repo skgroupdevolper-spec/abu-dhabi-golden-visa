@@ -196,7 +196,7 @@ for (const [name, vp] of Object.entries(VP)) {
     await page.goto(base + '/admin/leads/?s=all');
     const leadsBefore = await page.locator('.stack > .panel').count();
     const del = page.locator('.stack > .panel').first().locator('button.btn-danger');
-    if (await del.count()) { await del.click(); await del.click(); await page.waitForTimeout(1200); await page.goto(base + '/admin/leads/?s=all'); if ((await page.locator('.stack > .panel').count()) !== leadsBefore - 1) fail('owner', 'deleting an enquiry did not work'); }
+    if (await del.count()) { await del.click(); await page.locator('.cdlg button:has-text("Yes, delete")').click(); await page.waitForTimeout(1200); await page.goto(base + '/admin/leads/?s=all'); if ((await page.locator('.stack > .panel').count()) !== leadsBefore - 1) fail('owner', 'deleting an enquiry did not work'); }
     else fail('owner', 'no delete button on enquiries');
     await visit(page, '/contact/', 'contact'); await visit(page, '/about/', 'about');
     if (!(await page.goto(base + '/contact/').then(() => page.waitForSelector('.olive .ol-pill', { timeout: 8000 })).catch(() => null))) fail('contact', 'live office status is missing');
@@ -214,7 +214,7 @@ for (const [name, vp] of Object.entries(VP)) {
     const delBtn = row.locator('button.btn-danger');
     if (!(await delBtn.count())) fail('owner', 'pages list has no Delete button');
     else {
-      await delBtn.click(); await delBtn.click(); await page.waitForTimeout(1200);
+      await delBtn.click(); await page.locator('.cdlg button:has-text("Yes, delete")').click(); await page.waitForTimeout(1200);
       const gone = await api.get(testPath).catch(() => null);
       if (!gone || gone.status() !== 404) fail('owner', `deleted page still opens (${gone && gone.status()})`);
       await page.goto(base + '/admin/pages/?t=deleted');
@@ -229,7 +229,7 @@ for (const [name, vp] of Object.entries(VP)) {
     const gDel = gRow.locator('button.btn-danger');
     if (!gPath || !(await gDel.count())) fail('owner', 'built-in blog guides have no Delete button');
     else {
-      await gDel.click(); await gDel.click(); await page.waitForTimeout(1200);
+      await gDel.click(); await page.locator('.cdlg button:has-text("Yes, delete")').click(); await page.waitForTimeout(1200);
       const blog = await (await api.get('/blog/')).text();
       if (blog.includes(`href="${gPath}"`)) fail('owner', `deleted guide ${gPath} is still in the blog list`);
       if ((await api.get(gPath)).status() !== 404) fail('owner', `deleted guide ${gPath} still opens`);
@@ -268,7 +268,7 @@ for (const [name, vp] of Object.entries(VP)) {
       await row().locator('summary:has-text("Move")').click();
       await row().locator('input[type=time]').fill('10:30'); await row().locator('button:has-text("Save")').click(); await page.waitForTimeout(1500); await page.reload();
       if (!(await row().textContent())?.includes('10:30')) fail('owner', 'appointment Move did not change the time');
-      const bdel = row().locator('button:has-text("Delete")'); await bdel.click(); await bdel.click(); await page.waitForTimeout(1500); await page.reload();
+      const bdel = row().locator('button:has-text("Delete")'); await bdel.click(); await page.locator('.cdlg button:has-text("Yes, delete")').click(); await page.waitForTimeout(1500); await page.reload();
       if (await page.locator('.file', { hasText: 'CI Booker' }).count()) fail('owner', 'appointment Delete did not work');
     }
     await page.goto(base + '/');
