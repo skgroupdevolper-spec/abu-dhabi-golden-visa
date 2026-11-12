@@ -2,6 +2,10 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { DEFAULT_LOCALE, isLocale } from '@/lib/i18n';
 
 const PORTAL_HOST = (process.env.PORTAL_HOST || 'app.abudhabigoldenvisa.com').toLowerCase();
+const MAIN_HOST = (process.env.MAIN_HOST || PORTAL_HOST.replace(/^app\./, 'www.')).toLowerCase();
+// Pages of the client dashboard. Anything else asked on the dashboard address (terms, privacy,
+// blog, a service page…) belongs to the main website, so it is sent there.
+const PORTAL_PAGES = new Set(['', 'account', 'apply', 'calendar', 'files', 'forgot', 'invoices', 'login', 'orders', 'quotes', 'register', 'requests', 'services', 'statement', 't', 'logout']);
 
 /**
  * English lives at "/" with no prefix, other languages at "/xx/".
@@ -18,7 +22,11 @@ export function middleware(req: NextRequest) {
   // Customer dashboard subdomain: everything is served from /portal.
   if (host === PORTAL_HOST) {
     if (first === 'admin') { const h = new Headers(req.headers); h.set('x-admin-path', pathname.endsWith('/') ? pathname : `${pathname}/`); return NextResponse.next({ request: { headers: h } }); }
-    if (first === 'portal') return NextResponse.next();
+    if (first === 'portal' || first === 'media') return NextResponse.next();
+    if (!PORTAL_PAGES.has(first) && MAIN_HOST !== PORTAL_HOST) {
+      const to = new URL(`https://${MAIN_HOST}${pathname}${url.search}`);
+      return NextResponse.redirect(to, 308);
+    }
     url.pathname = `/portal${pathname}`;
     return NextResponse.rewrite(url);
   }
