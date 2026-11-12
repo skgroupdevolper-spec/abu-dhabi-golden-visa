@@ -20,7 +20,11 @@ const LABEL: Record<Booking['status'], string> = { new: 'New', confirmed: 'Confi
 export default async function Bookings({ searchParams }: { searchParams: Promise<{ tab?: string; b?: string }> }) {
   const me = await requireAdmin();
   const { tab = 'upcoming', b } = await searchParams;
-  const [all, raw] = await Promise.all([list<Booking>('bookings'), getBlock<Partial<BookingCfg>>('booking', BOOKING0)]);
+  const [allB, raw, apps] = await Promise.all([list<Booking>('bookings'), getBlock<Partial<BookingCfg>>('booking', BOOKING0), import('@/lib/server/store').then((m) => m.listApplications())]);
+  // Staff see only appointments of the clients assigned to them.
+  const { scopeOf } = await import('@/lib/server/scope');
+  const sc = scopeOf(me, apps);
+  const all = allB.filter((x) => sc.contact(x.email, x.phone));
   const cfg = cleanCfg(raw);
   const today = uaeNow().date;
   const sorted = [...all].sort((x, y) => `${x.date} ${x.time}`.localeCompare(`${y.date} ${y.time}`));

@@ -34,7 +34,7 @@ export function replaceAll<T>(name: string, items: T[]) {
 /* ---------- team users ---------- */
 export type Role = 'owner' | 'admin' | 'staff' | 'viewer';
 export type TeamUser = { id: string; email: string; name: string; role: Role; pass: string; active: boolean; createdAt: string; lastLogin?: string; perms?: string[]; phone?: string; title?: string; note?: string; logins?: number };
-export const ROLE_LABEL: Record<Role, string> = { owner: 'Owner (all access)', admin: 'Admin (all access)', staff: 'Staff (enquiries and applications)', viewer: 'Viewer (read only)' };
+export const ROLE_LABEL: Record<Role, string> = { owner: 'Owner (all access)', admin: 'Admin (all access)', staff: 'Staff (only files assigned to them)', viewer: 'Viewer (read only, assigned files)' };
 
 /* ---------- customers ---------- */
 export type Customer = { id: string; name: string; email: string; phone: string; pass: string; lang: string; active: boolean; createdAt: string; lastLogin?: string; reset?: { code: string; exp: number; tries: number } };
@@ -43,9 +43,9 @@ export type Customer = { id: string; name: string; email: string; phone: string;
 export type Subscriber = { id: string; email: string; lang: string; at: string };
 
 /* ---------- notifications ---------- */
-export type Note = { id: string; at: string; kind: 'lead' | 'message' | 'upload' | 'quote' | 'customer' | 'request' | 'whatsapp' | 'chat' | 'booking' | 'payment'; text: string; href: string; read: boolean };
-export function notify(kind: Note['kind'], text: string, href: string) {
-  return insert<Note>('notifications', { id: newId(6), at: now(), kind, text: text.slice(0, 200), href, read: false }, 500);
+export type Note = { id: string; at: string; kind: 'lead' | 'message' | 'upload' | 'quote' | 'customer' | 'request' | 'whatsapp' | 'chat' | 'booking' | 'payment'; text: string; href: string; read: boolean; to?: string };
+export function notify(kind: Note['kind'], text: string, href: string, to?: string) {
+  return insert<Note>('notifications', { id: newId(6), at: now(), kind, text: text.slice(0, 200), href, read: false, ...(to ? { to } : {}) }, 500);
 }
 
 /* ---------- WhatsApp log ---------- */

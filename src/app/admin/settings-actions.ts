@@ -215,13 +215,17 @@ export async function customerAction(f: FormData) {
 /* ---------- notifications ---------- */
 export async function readAllNotes() {
   await requireAdmin();
-  await updateJsonFile<Note[]>('notifications.json', [], (a) => a.map((n) => ({ ...n, read: true })));
+  const { myScope } = await import('@/lib/server/scope');
+  const sc = await myScope();
+  await updateJsonFile<Note[]>('notifications.json', [], (a) => a.map((n) => (sc.note(n) ? { ...n, read: true } : n)));
   revalidatePath('/admin/', 'layout');
 }
 export async function openNote(f: FormData) {
   await requireAdmin();
   const id = s(f, 'id', 40);
   const n = (await list<Note>('notifications')).find((x) => x.id === id);
+  const { myScope } = await import('@/lib/server/scope');
+  if (!n || !(await myScope()).note(n)) redirect('/admin/notifications/');
   await patch<Note>('notifications', id, (x) => { x.read = true; });
   redirect(n?.href || '/admin/');
 }

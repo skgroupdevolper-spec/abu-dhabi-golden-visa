@@ -17,7 +17,11 @@ const dg = (p: string) => p.replace(/\D/g, '').slice(-9);
 export default async function Customers({ searchParams }: { searchParams: Promise<{ q?: string; edit?: string; s?: string }> }) {
   const me = await requireAdmin();
   const { q = '', edit, s = 'all' } = await searchParams;
-  const [all, apps] = await Promise.all([list<Customer>('customers'), listApplications()]);
+  const [allC, apps] = await Promise.all([list<Customer>('customers'), listApplications()]);
+  // Staff see only the clients of the files assigned to them.
+  const { scopeOf } = await import('@/lib/server/scope');
+  const sc = scopeOf(me, apps);
+  const all = allC.filter((c) => sc.contact(c.email, c.phone));
   const n = q.toLowerCase();
   const rows = all.filter((c) => (s === 'all' || (s === 'active' ? c.active : !c.active)) && (!n || `${c.name} ${c.email} ${c.phone}`.toLowerCase().includes(n)));
   const full = me.role === 'owner' || me.role === 'admin' || !!me.perms?.includes('/admin/customers/');

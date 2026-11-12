@@ -53,15 +53,28 @@ export async function logout() {
 }
 
 /* ---------- enquiries ---------- */
+/** Staff may only change enquiries and files assigned to them. */
+async function guardLead(id: string) {
+  const { myScope } = await import('@/lib/server/scope');
+  const sc = await myScope();
+  const lead = (await listLeads()).find((l) => l.id === id);
+  if (!lead || !sc.lead(lead)) redirect('/admin/?denied=1');
+  return { sc, lead };
+}
+async function guardApp(id: string) {
+  const { scopedApp } = await import('@/lib/server/scope');
+  await scopedApp(id);
+}
+
 export async function setLeadStatus(f: FormData) {
   await requireAdmin();
+  await guardLead(s(f, 'id', 40));
   await updateLead(s(f, 'id', 40), { status: s(f, 'status', 20) as LeadStatus, note: s(f, 'note', 1000) });
   revalidatePath('/admin/', 'layout');
 }
 export async function convertLead(f: FormData) {
   await requireAdmin();
-  const lead = (await listLeads()).find((l) => l.id === s(f, 'id', 40));
-  if (!lead) return;
+  const { sc, lead } = await guardLead(s(f, 'id', 40));
   if (lead.applicationId) redirect(`/admin/applications/${lead.applicationId}/`);
   let language = 'English';
   try { language = JSON.parse(lead.details || '{}').language || language; } catch {}
@@ -69,6 +82,7 @@ export async function convertLead(f: FormData) {
     client: { name: lead.name, phone: lead.phone, email: lead.email, nationality: '', language },
     route: 'Property investor', location: 'in', adults: 0, kids: 0, leadId: lead.id,
     notes: [lead.service && `Service: ${lead.service}`, lead.message].filter(Boolean).join('\n'),
+    assignee: lead.assignee || (sc.full ? undefined : sc.me.email),
   });
   await updateLead(lead.id, { status: 'converted', applicationId: app.id });
   await sendWa(app.client.phone, 'welcome', V(app));
@@ -77,13 +91,16 @@ export async function convertLead(f: FormData) {
 
 /* ---------- applications ---------- */
 export async function newApplication(_: FormState, f: FormData): Promise<FormState> {
-  await requireAdmin();
+  const me = await requireAdmin();
+  const { isFull } = await import('@/lib/server/scope');
   const name = s(f, 'name', 120), phone = s(f, 'phone', 40);
   if (!name || phone.replace(/\D/g, '').length < 7) return { error: 'Add the client name and a WhatsApp number.' };
   const app = await createApplication({
     client: { name, phone, email: s(f, 'email', 160), nationality: s(f, 'nationality', 80), language: s(f, 'language', 40) || 'English' },
     route: s(f, 'route', 80), location: s(f, 'location') === 'out' ? 'out' : 'in',
     adults: Math.max(0, Math.min(10, n(f, 'adults'))), kids: Math.max(0, Math.min(10, n(f, 'kids'))), notes: s(f, 'notes', 2000),
+    // A file created by a staff member is theirs.
+    assignee: isFull(me) ? undefined : me.email,
   });
   redirect(`/admin/applications/${app.id}/`);
 }
@@ -91,6 +108,7 @@ export async function newApplication(_: FormState, f: FormData): Promise<FormSta
 async function edit(f: FormData, fn: (a: Application) => void) {
   await requireAdmin();
   const id = s(f, 'app', 40);
+  await guardApp(id);
   const a = await updateApplication(id, fn);
   revalidatePath(`/admin/applications/${id}/`);
   revalidatePath('/admin/', 'layout');
@@ -186,6 +204,7 @@ export async function addPayment(_: FormState, f: FormData): Promise<FormState> 
 
 export async function markPaid(f: FormData) {
   await requireAdmin();
+  await guardApp(s(f, 'app', 40));
   const { settle } = await import('@/lib/server/payments');
   await settle(s(f, 'app', 40), s(f, 'pid', 40), s(f, 'method', 40) || 'Card', s(f, 'txn', 80));
   revalidatePath(`/admin/applications/${s(f, 'app', 40)}/`);
@@ -197,6 +216,7 @@ export async function removePayment(f: FormData) {
 export async function uploadTeamDoc(_: FormState, f: FormData): Promise<FormState> {
   await requireAdmin();
   const id = s(f, 'app', 40);
+  await guardApp(id);
   try {
     const doc = await saveUpload(id, f.get('file') as File, 'team', !!f.get('shared'), s(f, 'label', 120));
     const app = await edit(f, (a) => {
@@ -298,7 +318,8 @@ export async function saveFeesJson(_: FormState, f: FormData): Promise<FormState
 
 export async function getAppOrNull(id: string) {
   await requireAdmin();
-  return getApplication(id);
+  const { scopedApp } = await import('@/lib/server/scope');
+  return scopedApp(id);
 }
 
 /* ---------- two-step login ---------- */
@@ -356,3 +377,30 @@ export async function setDecision(_: FormState, f: FormData): Promise<FormState>
   return { ok: `Decision saved: ${D.title}.` };
 }
 const STAGE_NEXT_DEFAULT_6 = 'We are arranging your entry permit or change of status. We will share the details with you.';
+
+/* ---------- assigning files and enquiries to team members (owners and admins) ---------- */
+export async function assignApp(f: FormData) {
+  await requireAny(FULL);
+  const id = s(f, 'app', 40), to = s(f, 'assignee', 160).toLowerCase();
+  const a = await updateApplication(id, (x) => { if (to) x.assignee = to; else delete x.assignee; });
+  if (a?.leadId) await updateLead(a.leadId, { assignee: to || undefined });
+  if (a && to) {
+    const { notify } = await import('@/lib/server/collections');
+    await notify('request', `Assigned to you: ${a.ref} ${a.client.name} (${a.route})`, `/admin/applications/${a.id}/`, to);
+  }
+  revalidatePath(`/admin/applications/${id}/`);
+  revalidatePath('/admin/', 'layout');
+}
+export async function assignLead(f: FormData) {
+  await requireAny(FULL);
+  const id = s(f, 'id', 40), to = s(f, 'assignee', 160).toLowerCase();
+  const lead = (await listLeads()).find((l) => l.id === id);
+  if (!lead) return;
+  await updateLead(id, { assignee: to || undefined });
+  if (lead.applicationId) await updateApplication(lead.applicationId, (x) => { if (to) x.assignee = to; else delete x.assignee; });
+  if (to) {
+    const { notify } = await import('@/lib/server/collections');
+    await notify('lead', `Enquiry assigned to you: ${lead.name}${lead.service ? ` (${lead.service})` : ''}`, '/admin/leads/', to);
+  }
+  revalidatePath('/admin/', 'layout');
+}

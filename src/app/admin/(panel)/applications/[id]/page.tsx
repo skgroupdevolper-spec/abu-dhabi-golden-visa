@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ActionForm, CopyButton, Submit } from '@/components/dash/ActionForm';
 import { sizeLabel } from '@/lib/server/files';
-import { getApplication } from '@/lib/server/store';
 import { mergeCatalog } from '@/content/services-catalog';
 import { getServiceOverrides } from '@/lib/server/content';
 import { list, type TeamUser } from '@/lib/server/collections';
@@ -13,18 +12,22 @@ import { saveStageDefaults, setAdvisor } from '../../../settings-actions';
 import { StageFields } from '@/components/dash/StageFields';
 import { getBlock } from '@/lib/server/settings';
 import { portalUrl, waTo } from '@/lib/site';
+import { myScope, scopedApp } from '@/lib/server/scope';
+import { list, type TeamUser } from '@/lib/server/collections';
 import { DECISION_PILL, DECISION_TEXT } from '@/lib/decision';
 import { ROUTE_LABELS, STAGES, STAGE_NEXT_DEFAULT, day, money, when } from '@/lib/stages';
 import {
-  addPayment, archiveApplication, fillQuote, markPaid, newPortalLink, removePayment, saveClient, saveQuote, setDecision, setRequests, setStage, teamMessage, toggleShare, uploadTeamDoc,
+  addPayment, archiveApplication, fillQuote, markPaid, newPortalLink, assignApp, removePayment, saveClient, saveQuote, setDecision, setRequests, setStage, teamMessage, toggleShare, uploadTeamDoc,
 } from '../../../actions';
 
 export const metadata: Metadata = { title: 'Application' };
 
 export default async function AppPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const a = await getApplication(id);
+  const a = await scopedApp(id);
   if (!a) notFound();
+  const sc = await myScope();
+  const team = sc.full ? (await list<TeamUser>('team')).filter((u) => u.active) : [];
   const link = portalUrl(a.token);
   const gov = a.quote.lines.reduce((s, l) => s + l.amount, 0);
   const quoteTotal = gov + a.quote.serviceFee + a.quote.vat;
@@ -76,6 +79,22 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
               ))}
             </ol>
           </section>
+
+          {/* ASSIGNED TEAM MEMBER (owners and admins) */}
+          {sc.full && (
+            <section className="panel" id="assign">
+              <div className="panel-h"><h2>Assigned to</h2><span className="pill">{a.assignee ? (team.find((u) => u.email === a.assignee)?.name || a.assignee) : 'Not assigned'}</span></div>
+              <form action={assignApp} className="row">
+                <input type="hidden" name="app" value={a.id} />
+                <select name="assignee" defaultValue={a.assignee ?? ''} aria-label="Team member" style={{ minWidth: 240 }}>
+                  <option value="">Not assigned (owners and admins only)</option>
+                  {team.map((u) => <option key={u.id} value={u.email}>{u.name} · {u.role}</option>)}
+                </select>
+                <button className="btn btn-gold btn-sm" type="submit">Save</button>
+              </form>
+              <p className="help">Staff see only the files and enquiries assigned to them, with their messages and documents. They get a notification when you assign one.</p>
+            </section>
+          )}
 
           {/* DECISION */}
           <section className="panel" id="decision">

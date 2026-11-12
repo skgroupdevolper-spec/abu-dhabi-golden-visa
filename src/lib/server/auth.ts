@@ -106,13 +106,16 @@ export async function currentAdmin(): Promise<Admin | null> {
 export async function requireAdmin(roles?: Role[]) {
   const a = await currentAdmin();
   if (!a) redirect('/admin/login/');
-  // Custom permissions: only the chosen sections (and their actions) open; the role decides otherwise.
-  if (a.perms?.length) {
+  // Owners and admins: the role decides. Everyone else: only the ticked sections (and their actions);
+  // staff and viewers with nothing ticked get their assigned applications and enquiries only.
+  const secs = a.perms?.length ? a.perms : a.role === 'owner' || a.role === 'admin' ? null : ['/admin/applications/', '/admin/leads/'];
+  if (secs) {
     const p = (await headers()).get('x-admin-path') || '';
     const sec = p.match(/^\/admin\/[^/]+\//)?.[0] ?? '/admin/';
     const free = ['/admin/', '/admin/profile/', '/admin/notifications/', '/admin/login/'];
-    if (p && !free.includes(sec) && !a.perms.includes(sec)) redirect('/admin/?denied=1');
-    if (!p && roles && !roles.includes(a.role)) redirect('/admin/?denied=1');
+    if (p && !free.includes(sec) && !secs.includes(sec)) redirect('/admin/?denied=1');
+    // A ticked section opens its own actions; outside it (dashboard, profile, unknown path) the role still decides.
+    if (roles && !roles.includes(a.role) && (!p || free.includes(sec))) redirect('/admin/?denied=1');
     return a;
   }
   if (roles && !roles.includes(a.role)) redirect('/admin/?denied=1');

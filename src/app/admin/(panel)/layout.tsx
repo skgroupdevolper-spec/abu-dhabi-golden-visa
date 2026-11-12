@@ -8,6 +8,7 @@ import { Icon } from '@/components/Icon';
 import { logout } from '../actions';
 import { AdminNav, AdminSearch } from './nav';
 import { AdminBell } from '@/components/dash/AdminBell';
+import { scopeOf } from '@/lib/server/scope';
 import { coinImg, fullLogo } from '@/components/BrandLogo';
 
 export const dynamic = 'force-dynamic';
@@ -15,7 +16,10 @@ export const dynamic = 'force-dynamic';
 export default async function Panel({ children }: { children: ReactNode }) {
   const who = await requireAdmin();
   applyRuntimeSync();
-  const [leads, apps, notes] = await Promise.all([listLeads(), listApplications(), list<Note>('notifications')]);
+  const [allLeads, allApps, allNotes] = await Promise.all([listLeads(), listApplications(), list<Note>('notifications')]);
+  // Counters show only what this team member may see.
+  const sc = scopeOf(who, allApps);
+  const leads = allLeads.filter(sc.lead), apps = allApps.filter(sc.app), notes = allNotes.filter(sc.note);
   const counts = {
     leads: leads.filter((l) => l.status === 'new').length,
     apps: apps.filter((a) => !a.archived).length,
@@ -42,7 +46,7 @@ export default async function Panel({ children }: { children: ReactNode }) {
               <div className="ab-menu">
                 <p className="small muted" style={{ padding: '4px 10px' }}>{who.email}</p>
                 <Link href="/admin/profile/"><Icon name="user" size={16} /> My profile</Link>
-                <Link href="/admin/settings/"><Icon name="settings" size={16} /> Site settings</Link>
+                {sc.full && <Link href="/admin/settings/"><Icon name="settings" size={16} /> Site settings</Link>}
                 <form action={logout}><button type="submit"><Icon name="close" size={16} /> Sign out</button></form>
               </div>
             </details>

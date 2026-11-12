@@ -5,19 +5,22 @@ import Link from 'next/link';
 import { listApplications } from '@/lib/server/store';
 import { STAGES, day, money } from '@/lib/stages';
 import { DECISION_PILL, DECISION_TEXT } from '@/lib/decision';
+import { myScope } from '@/lib/server/scope';
 
 export const metadata: Metadata = { title: 'Applications' };
 
 export default async function Apps({ searchParams }: { searchParams: Promise<{ q?: string; a?: string; d?: string }> }) {
   const { q = '', a, d } = await searchParams;
   const needle = q.toLowerCase();
-  const all = await listApplications();
+  const sc = await myScope();
+  // Staff see only their own files.
+  const all = (await listApplications()).filter(sc.app);
   const count = (r: string) => all.filter((x) => !x.archived && (r === 'none' ? !x.decision : x.decision?.result === r)).length;
   const apps = all.filter((x) => (a ? x.archived : !x.archived) && (!d || (d === 'none' ? !x.decision : x.decision?.result === d)) && (!needle || `${x.ref} ${x.client.name} ${x.client.phone} ${x.route}`.toLowerCase().includes(needle)));
   return (
     <>
       <div className="topbar">
-        <div><p className="eyebrow">Applications</p><h1>Client files, <span className="gold">start to finish.</span></h1></div>
+        <div><p className="eyebrow">Applications</p><h1>{sc.full ? <>Client files, <span className="gold">start to finish.</span></> : <>My files, <span className="gold">assigned to me.</span></>}</h1></div>
         <div className="row">
           <form className="row" action="/admin/applications/">{a && <input type="hidden" name="a" value="1" />}<input name="q" defaultValue={q} placeholder="Search ref, name, phone" style={{ width: 240 }} /><button className="btn" type="submit">Search</button></form>
           <Link className="btn btn-gold" href="/admin/applications/new/">New application</Link>
@@ -42,7 +45,7 @@ export default async function Apps({ searchParams }: { searchParams: Promise<{ q
                 <tr key={x.id}>
                   <td><Link href={`/admin/applications/${x.id}/`}>{x.ref}</Link></td>
                   <td><b>{x.client.name}</b><div className="small muted">{x.client.phone}</div></td>
-                  <td>{x.route}<div className="small muted">{x.location === 'in' ? 'Inside UAE' : 'Outside UAE'} · {1 + x.adults + x.kids} people</div></td>
+                  <td>{x.route}{sc.full && <div className="small">{x.assignee ? `→ ${x.assignee}` : <span className="muted">Not assigned</span>}</div>}<div className="small muted">{x.location === 'in' ? 'Inside UAE' : 'Outside UAE'} · {1 + x.adults + x.kids} people</div></td>
                   <td style={{ minWidth: 180 }}><div className="small">{STAGES[x.stage]}{x.decision && <> <span className={`pill ${DECISION_PILL[x.decision.result]}`}>{DECISION_TEXT[x.decision.result].title}</span></>}</div><div className="bar" style={{ marginTop: 6 }}><i style={{ width: `${((x.stage + 1) / STAGES.length) * 100}%` }} /></div></td>
                   <td className="num">{due ? <span className="pill due">{money(due)}</span> : '—'}</td>
                   <td>{unread ? <span className="pill new">{unread} new</span> : <span className="muted small">{x.messages.length}</span>}</td>

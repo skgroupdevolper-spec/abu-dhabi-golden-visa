@@ -15,12 +15,12 @@ function Perms({ u }: { u?: TeamUser }) {
   const custom = !!u?.perms?.length;
   return (
     <div className="full">
-      <Toggle name="custom" label="Choose exactly which sections this user can open" help="Off: the role decides. On: only the ticked sections show in their menu and open for them (Dashboard, Notifications and My profile always open)." on={custom} />
+      <Toggle name="custom" label="Choose exactly which sections this user can open" help="Owners and admins see everything. Staff and viewers see only the client files and enquiries assigned to them (assign them on each application or enquiry). Off: staff get Applications and Enquiries only. On: tick exactly which sections they can open; inside each section they still see only their own clients." on={custom} />
       <div className="perm-grid">
         {ADMIN_MENU.map((g) => (
           <fieldset key={g.title}><legend>{g.title}</legend>
             {g.items.filter((i) => !ALWAYS.includes(i.href)).map((i) => (
-              <label key={i.href} className="row small"><input type="checkbox" name="perm" value={i.href} defaultChecked={custom ? u!.perms!.includes(i.href) : !i.roles || i.roles.includes(u?.role ?? 'staff')} /> {i.label}</label>))}
+              <label key={i.href} className="row small"><input type="checkbox" name="perm" value={i.href} defaultChecked={custom ? u!.perms!.includes(i.href) : u?.role === 'owner' || u?.role === 'admin' ? !i.roles || i.roles.includes(u.role) : ['/admin/applications/', '/admin/leads/'].includes(i.href)} /> {i.label}</label>))}
           </fieldset>))}
       </div>
     </div>

@@ -5,14 +5,19 @@ import Link from 'next/link';
 import { listLeads, type LeadStatus } from '@/lib/server/store';
 import { when } from '@/lib/stages';
 import { waTo } from '@/lib/site';
-import { convertLead, setLeadStatus } from '../../actions';
+import { assignLead, convertLead, setLeadStatus } from '../../actions';
+import { myScope } from '@/lib/server/scope';
+import { list, type TeamUser } from '@/lib/server/collections';
 
 export const metadata: Metadata = { title: 'Enquiries' };
 const TABS: (LeadStatus | 'all')[] = ['all', 'new', 'contacted', 'converted', 'closed'];
 
 export default async function Leads({ searchParams }: { searchParams: Promise<{ s?: string; q?: string }> }) {
   const { s = 'all', q = '' } = await searchParams;
-  const all = await listLeads();
+  const sc = await myScope();
+  // Staff see only enquiries assigned to them.
+  const all = (await listLeads()).filter(sc.lead);
+  const team = sc.full ? (await list<TeamUser>('team')).filter((u) => u.active) : [];
   const needle = q.toLowerCase();
   const leads = all.filter((l) => (s === 'all' || l.status === s) && (!needle || `${l.name} ${l.phone} ${l.email} ${l.service} ${l.message}`.toLowerCase().includes(needle)));
   const details = (d: string) => { try { return Object.entries(JSON.parse(d || '{}')).map(([k, v]) => `${k}: ${v}`).join(' · '); } catch { return ''; } };
@@ -24,7 +29,7 @@ export default async function Leads({ searchParams }: { searchParams: Promise<{ 
       </div>
       <div className="row" style={{ marginBottom: 14 }}>
         {TABS.map((t) => <Link key={t} href={`/admin/leads/?s=${t}`} className={`btn btn-sm${s === t ? ' btn-gold' : ''}`}>{t[0].toUpperCase() + t.slice(1)} ({t === 'all' ? all.length : all.filter((l) => l.status === t).length})</Link>)}
-        {s !== 'all' && leads.length > 0 && <form action={clearItems} style={{ marginInlineStart: 'auto' }}><input type="hidden" name="kind" value="leads" /><input type="hidden" name="scope" value={`status:${s}`} /><DeleteButton label={`Delete all ${s} (${leads.length})`} /></form>}
+        {sc.full && s !== 'all' && leads.length > 0 && <form action={clearItems} style={{ marginInlineStart: 'auto' }}><input type="hidden" name="kind" value="leads" /><input type="hidden" name="scope" value={`status:${s}`} /><DeleteButton label={`Delete all ${s} (${leads.length})`} /></form>}
       </div>
       {leads.length === 0 ? <p className="empty">Nothing here yet.</p> : (
         <div className="stack">
@@ -36,7 +41,17 @@ export default async function Leads({ searchParams }: { searchParams: Promise<{ 
                   <a className="btn btn-sm btn-wa" href={waTo(l.phone, `Hello ${l.name}, thank you for your Golden Visa enquiry. `)} target="_blank" rel="noopener">WhatsApp</a>
                   {l.email && <a className="btn btn-sm" href={`mailto:${l.email}`}>Email</a>}
                   <form action={convertLead}><input type="hidden" name="id" value={l.id} /><button className="btn btn-sm btn-gold" type="submit">{l.applicationId ? 'Open application' : 'Create application'}</button></form>
-                  <form action={deleteItems}><input type="hidden" name="kind" value="leads" /><input type="hidden" name="id" value={l.id} /><DeleteButton /></form>
+                  {sc.full && (
+                    <form action={assignLead} className="row" style={{ gap: 6 }}>
+                      <input type="hidden" name="id" value={l.id} />
+                      <select name="assignee" defaultValue={l.assignee ?? ''} aria-label="Assign to" style={{ minWidth: 150, padding: '6px 10px' }}>
+                        <option value="">Not assigned</option>
+                        {team.map((u) => <option key={u.id} value={u.email}>{u.name}</option>)}
+                      </select>
+                      <button className="btn btn-sm" type="submit">Assign</button>
+                    </form>
+                  )}
+                  {sc.full && <form action={deleteItems}><input type="hidden" name="kind" value="leads" /><input type="hidden" name="id" value={l.id} /><DeleteButton /></form>}
                 </div>
               </div>
               <div className="grid3 small">

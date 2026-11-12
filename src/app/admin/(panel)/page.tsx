@@ -2,11 +2,14 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { listApplications, listLeads } from '@/lib/server/store';
 import { STAGES, day, money, when } from '@/lib/stages';
+import { myScope } from '@/lib/server/scope';
 
 export const metadata: Metadata = { title: 'Overview' };
 
 export default async function Overview() {
-  const [leads, all] = await Promise.all([listLeads(), listApplications()]);
+  const sc = await myScope();
+  // Staff: only their own files and enquiries, and no business totals (like the customer dashboard).
+  const [leads, all] = await Promise.all([listLeads().then((l) => l.filter(sc.lead)), listApplications().then((l) => l.filter(sc.app))]);
   const apps = all.filter((a) => !a.archived);
   const week = Date.now() - 7 * 864e5;
   const due = apps.flatMap((a) => a.payments.filter((p) => p.status === 'due')).reduce((s, p) => s + p.amount, 0);
@@ -18,14 +21,19 @@ export default async function Overview() {
   return (
     <>
       <div className="topbar">
-        <div><p className="eyebrow">Overview</p><h1>Good to see you. <span className="gold">Here is today.</span></h1></div>
-        <div className="row"><Link className="btn" href="/admin/leads/">Enquiries</Link><Link className="btn btn-gold" href="/admin/applications/new/">New application</Link></div>
+        <div><p className="eyebrow">{sc.full ? 'Overview' : 'My work'}</p><h1>{sc.full ? <>Good to see you. <span className="gold">Here is today.</span></> : <>Hello {sc.me.name.split(' ')[0]}. <span className="gold">Your files today.</span></>}</h1></div>
+        <div className="row"><Link className="btn" href="/admin/leads/">{sc.full ? 'Enquiries' : 'My enquiries'}</Link><Link className="btn btn-gold" href={sc.full ? '/admin/applications/new/' : '/admin/applications/'}>{sc.full ? 'New application' : 'My files'}</Link></div>
       </div>
       <div className="grid4">
         <div className="kpi reveal"><small>New enquiries (7 days)</small><b>{leads.filter((l) => new Date(l.at).getTime() > week).length}</b><small>{leads.filter((l) => l.status === 'new').length} waiting for a reply</small></div>
         <div className="kpi reveal"><small>Active applications</small><b>{apps.length - done}</b><small>{done} completed</small></div>
-        <div className="kpi reveal"><small>Awaiting payment</small><b style={{ fontSize: 30 }}>{money(due)}</b><small>{apps.flatMap((a) => a.payments).filter((p) => p.status === 'due').length} requests</small></div>
-        <div className="kpi goldbg reveal"><small>Payments received</small><b style={{ fontSize: 30 }}>{money(paid)}</b><small>All time</small></div>
+        {sc.full ? <>
+          <div className="kpi reveal"><small>Awaiting payment</small><b style={{ fontSize: 30 }}>{money(due)}</b><small>{apps.flatMap((a) => a.payments).filter((p) => p.status === 'due').length} requests</small></div>
+          <div className="kpi goldbg reveal"><small>Payments received</small><b style={{ fontSize: 30 }}>{money(paid)}</b><small>All time</small></div>
+        </> : <>
+          <div className="kpi reveal"><small>Unread client messages</small><b>{unread.reduce((n, a) => n + a.messages.filter((m) => m.by === 'client' && !m.read).length, 0)}</b><small>in {unread.length} files</small></div>
+          <div className="kpi goldbg reveal"><small>Client documents (7 days)</small><b>{apps.reduce((n, a) => n + a.documents.filter((d) => d.by === 'client' && new Date(d.at).getTime() > week).length, 0)}</b><small>uploaded to your files</small></div>
+        </>}
       </div>
       <div className="grid4" style={{ marginTop: 16 }}>
         {([['approved', 'Approved visas'], ['rejected', 'Not approved'], ['on_hold', 'On hold'], ['none', 'Awaiting decision']] as const).map(([r, t]) => {

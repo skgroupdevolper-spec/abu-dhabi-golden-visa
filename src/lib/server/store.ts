@@ -15,6 +15,8 @@ export type LeadStatus = 'new' | 'contacted' | 'converted' | 'closed';
 export type Lead = {
   id: string; at: string; name: string; phone: string; email: string; service: string; message: string;
   source: string; details: string; status: LeadStatus; note: string; applicationId?: string;
+  /** Team member (email) this enquiry is assigned to. Staff only see their own. */
+  assignee?: string;
 };
 
 export type QuoteLine = { label: string; amount: number; qty?: number; unit?: number };
@@ -24,6 +26,8 @@ export type Message = { id: string; by: 'client' | 'team'; text: string; at: str
 
 export type Application = {
   id: string; ref: string; token: string; createdAt: string; updatedAt: string; archived?: boolean;
+  /** Team member (email) this file is assigned to. Staff only see their own files. */
+  assignee?: string;
   client: { name: string; phone: string; email: string; nationality: string; language: string };
   route: string; location: 'in' | 'out'; adults: number; kids: number;
   stage: number; stageDates: Record<string, string>; nextStep: string; expected: string; notes: string;
@@ -113,7 +117,7 @@ export async function getApplicationByToken(token: string) {
   if (!/^[a-f0-9]{32}$/.test(token)) return null;
   return (await listApplications()).find((a) => a.token === token && !a.archived) ?? null;
 }
-export function createApplication(data: Pick<Application, 'client' | 'route' | 'location' | 'adults' | 'kids'> & { leadId?: string; notes?: string }) {
+export function createApplication(data: Pick<Application, 'client' | 'route' | 'location' | 'adults' | 'kids'> & { leadId?: string; notes?: string; assignee?: string }) {
   return withLock('apps', async () => {
     const all = await listApplications();
     const n = all.reduce((m, a) => Math.max(m, Number(a.ref.split('-')[1]) || 0), 0) + 1;
@@ -124,6 +128,7 @@ export function createApplication(data: Pick<Application, 'client' | 'route' | '
       stage: 0, stageDates: { '0': t }, nextStep: 'We review your documents and confirm your route.', expected: '', notes: data.notes ?? '',
       quote: { lines: [], serviceFee: 0, vat: 0, insurance: 'Quoted separately' },
       payments: [], documents: [], requests: [], messages: [], leadId: data.leadId,
+      ...(data.assignee ? { assignee: data.assignee } : {}),
     };
     all.unshift(app);
     await writeJson('applications.json', all);

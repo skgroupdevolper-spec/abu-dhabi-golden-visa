@@ -50,5 +50,11 @@ export const ADMIN_MENU: { title: string; items: Item[] }[] = [
 
 /** Sections every signed-in user can open. */
 export const ALWAYS = ['/admin/', '/admin/profile/', '/admin/notifications/'];
-/** With custom permissions only the chosen sections show; otherwise the role decides. */
-export const allowed = (i: Item, role: Role, perms?: string[]) => (perms && perms.length ? ALWAYS.includes(i.href) || perms.includes(i.href) : !i.roles || i.roles.includes(role));
+/** Staff and viewers without ticked sections: only their assigned files and enquiries. */
+export const STAFF_DEFAULT = ['/admin/applications/', '/admin/leads/'];
+/** Sections a team member may open: owners and admins by role; everyone else only what was ticked for them. */
+export const sectionsFor = (role: Role, perms?: string[]) => (perms && perms.length ? perms : role === 'owner' || role === 'admin' ? null : STAFF_DEFAULT);
+export const allowed = (i: Item, role: Role, perms?: string[]) => {
+  const p = sectionsFor(role, perms);
+  return p ? ALWAYS.includes(i.href) || p.includes(i.href) : !i.roles || i.roles.includes(role);
+};

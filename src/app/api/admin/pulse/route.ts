@@ -9,7 +9,10 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   const me = await currentAdmin();
   if (!me) return NextResponse.json({ ok: false }, { status: 401 });
-  const [notes, leads, apps] = await Promise.all([list<Note>('notifications'), listLeads(), listApplications()]);
+  const [allNotes, allLeads, allApps] = await Promise.all([list<Note>('notifications'), listLeads(), listApplications()]);
+  const { scopeOf } = await import('@/lib/server/scope');
+  const sc = scopeOf(me, allApps);
+  const notes = allNotes.filter(sc.note), leads = allLeads.filter(sc.lead), apps = allApps.filter(sc.app);
   const unread = notes.filter((n) => !n.read);
   return NextResponse.json({
     ok: true,

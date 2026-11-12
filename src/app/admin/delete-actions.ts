@@ -11,7 +11,7 @@ import { UPLOAD_DIR, updateJsonFile } from '@/lib/server/store';
 
 type Item = { id: string; read?: boolean; status?: string; archived?: boolean; kind?: string };
 const KINDS: Record<string, { file: string; page: string; roles: Role[] }> = {
-  notifications: { file: 'notifications.json', page: '/admin/notifications/', roles: ['owner', 'admin', 'staff', 'viewer'] },
+  notifications: { file: 'notifications.json', page: '/admin/notifications/', roles: ['owner', 'admin'] },
   leads: { file: 'leads.json', page: '/admin/leads/', roles: EDIT },
   applications: { file: 'applications.json', page: '/admin/applications/', roles: FULL },
   subscribers: { file: 'subscribers.json', page: '/admin/subscribers/', roles: FULL },
