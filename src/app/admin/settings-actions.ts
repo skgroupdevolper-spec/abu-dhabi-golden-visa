@@ -375,3 +375,28 @@ export async function saveHomeHero(_: St, f: FormData): Promise<St> {
   });
   return done();
 }
+
+/* ---------- emails & PDFs ---------- */
+export async function saveDocCfg(_: St, f: FormData): Promise<St> {
+  await requireAdmin(FULL);
+  const { docCfg, hexOk, DOC0 } = await import('@/lib/server/doccfg');
+  const cur = await docCfg();
+  const which = s(f, 'which', 10);
+  if (which === 'pdf') {
+    cur.pdf = {
+      accent: hexOk(s(f, 'accent', 7), DOC0.pdf.accent), showLogo: b(f, 'showLogo'), showDate: b(f, 'showDate'),
+      quoteTitle: s(f, 'quoteTitle', 120), quoteLabel: s(f, 'quoteLabel', 40), receiptTitle: s(f, 'receiptTitle', 120), receiptLabel: s(f, 'receiptLabel', 40),
+      intro: s(f, 'intro', 1500), notes: s(f, 'notes', 3000),
+      showTimeline: b(f, 'showTimeline'), showChecklist: b(f, 'showChecklist'), showAssumptions: b(f, 'showAssumptions'), showDisclaimer: b(f, 'showDisclaimer'),
+      signName: s(f, 'signName', 80), signTitle: s(f, 'signTitle', 120), footer: s(f, 'footer', 600), pageNumbers: b(f, 'pageNumbers'),
+    };
+  } else {
+    cur.mail = {
+      accent: hexOk(s(f, 'accent', 7), DOC0.mail.accent), headerTitle: s(f, 'headerTitle', 60), buttonLabel: s(f, 'buttonLabel', 40) || DOC0.mail.buttonLabel,
+      showWhatsApp: b(f, 'showWhatsApp'), whatsAppLabel: s(f, 'whatsAppLabel', 40) || DOC0.mail.whatsAppLabel, helpText: s(f, 'helpText', 120),
+      signOff: s(f, 'signOff', 200), footer: s(f, 'footer', 300), showSocial: b(f, 'showSocial'), showContact: b(f, 'showContact'),
+    };
+  }
+  await saveBlock('doccfg', cur);
+  return { ok: 'Saved. New emails and PDFs use it now.' };
+}

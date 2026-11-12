@@ -14,7 +14,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ token: str
   if (!a || !p) return new NextResponse('Not found', { status: 404 });
   const paid = p.paidAt ? new Date(p.paidAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Dubai' }) : '';
   const pdf = await quotePdf({
-    title: 'Payment receipt', label: 'PAYMENT RECEIPT', name: a.client.name, ref: `${p.receiptNo} · Application ${a.ref}`,
+    kind: 'receipt', title: 'Payment receipt', label: 'PAYMENT RECEIPT', name: a.client.name, ref: `${p.receiptNo} · Application ${a.ref}`,
     desc: `${a.route}. Received with thanks. All amounts in AED.`,
     lines: [[p.label, p.amount.toFixed(2)], ['Payment method', p.method || 'Card'], ['Transaction', p.txn || '-'], ['Date (UAE time)', paid]],
     total: `${money(p.amount)} PAID`, date: paid,

@@ -20,7 +20,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ token: str
   ];
   const route = ROUTES.find((r) => r.label === a.route)?.id ?? 'property';
   const pdf = await quotePdf({
-    title: 'Abu Dhabi Golden Visa quotation', name: a.client.name, ref: a.ref,
+    kind: 'quote', title: 'Abu Dhabi Golden Visa quotation', name: a.client.name, ref: a.ref,
     desc: `${a.route} - ${a.location === 'in' ? 'Inside the UAE' : 'Outside the UAE'} - ${1 + a.adults + a.kids} people`,
     lines, total: money(gov + a.quote.serviceFee + a.quote.vat), checklist: CHECKLISTS[route], timeline: TIMELINE, date: fees.date, assumptions: fees.assumptions,
   });
