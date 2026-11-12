@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { ClientShell } from '@/components/dash/ClientShell';
+import { DeleteButton } from '@/components/dash/DeleteButton';
+import { clearUpdates } from './actions';
 import { Icon } from '@/components/Icon';
 import { clientArea } from '@/lib/server/portal';
 import { feed, filePct, fileStatus, freshCount } from '@/lib/client-status';
@@ -13,7 +15,8 @@ export const dynamic = 'force-dynamic';
 export default async function Home() {
   const area = await clientArea();
   const { base, me, t, mine, requests, live, quotePay } = area;
-  const items = feed(mine, t);
+  const cleared = area.me.updatesClearedAt || '';
+  const items = feed(mine, t).filter((x) => x.kind === 'due' || !cleared || x.at > cleared);
   const dueAll = mine.flatMap((a) => a.payments).filter((p) => p.status === 'due').reduce((s, p) => s + p.amount, 0) + mine.reduce((s, a) => s + quotePay(a), 0);
   const paidAll = mine.flatMap((a) => a.payments).filter((p) => p.status === 'paid').reduce((s, p) => s + p.amount, 0);
   const st = mine.map((a) => fileStatus(a, t).key);
@@ -97,7 +100,10 @@ export default async function Home() {
       </section>
 
       <section className="dsec" id="updates">
-        <p className="eyebrow">{t.recentUpdates}</p>
+        <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <p className="eyebrow" style={{ margin: 0 }}>{t.recentUpdates}</p>
+          {items.some((x) => x.kind !== 'due') && <form action={clearUpdates}><DeleteButton label="Clear all" confirm="Clear all updates? Your files and documents stay as they are." className="btn btn-sm" /></form>}
+        </div>
         {items.length === 0 ? <p className="empty">{t.nothingYet}</p> : (
           <div className="feed">
             {items.slice(0, 12).map((x, i) => (

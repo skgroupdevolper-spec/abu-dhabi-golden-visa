@@ -413,3 +413,8 @@ export async function assignLead(f: FormData) {
   }
   revalidatePath('/admin/', 'layout');
 }
+
+/** Deletes every message in one file (client and team). */
+export async function clearMessages(f: FormData) {
+  await edit(f, (a) => { a.messages = []; });
+}

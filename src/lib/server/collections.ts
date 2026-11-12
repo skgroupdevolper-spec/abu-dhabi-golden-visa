@@ -37,7 +37,7 @@ export type TeamUser = { id: string; email: string; name: string; role: Role; pa
 export const ROLE_LABEL: Record<Role, string> = { owner: 'Owner (all access)', admin: 'Admin (all access)', staff: 'Staff (only files assigned to them)', viewer: 'Viewer (read only, assigned files)' };
 
 /* ---------- customers ---------- */
-export type Customer = { id: string; name: string; email: string; phone: string; pass: string; lang: string; active: boolean; createdAt: string; lastLogin?: string; reset?: { code: string; exp: number; tries: number } };
+export type Customer = { id: string; name: string; email: string; phone: string; pass: string; lang: string; active: boolean; createdAt: string; lastLogin?: string; updatesClearedAt?: string; reset?: { code: string; exp: number; tries: number } };
 
 /* ---------- subscribers ---------- */
 export type Subscriber = { id: string; email: string; lang: string; at: string };

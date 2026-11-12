@@ -196,3 +196,11 @@ export async function clientUpload(_: State, f: FormData): Promise<State> {
     return { error: (e as Error).message };
   }
 }
+
+/** Clears the client's update list and bell count (files, messages and documents are not touched). */
+export async function clearUpdates() {
+  const me = await currentCustomer();
+  if (!me) return;
+  await patch<Customer>('customers', me.id, (c) => { c.updatesClearedAt = now(); });
+  revalidatePath('/portal/', 'layout');
+}

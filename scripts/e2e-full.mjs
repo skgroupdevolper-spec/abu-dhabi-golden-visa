@@ -189,7 +189,7 @@ for (const [name, vp] of Object.entries(VP)) {
     const before = await page.locator('.files .row-del').count();
     if (before) {
       const b = page.locator('.files .row-del button').first();
-      await b.click(); await b.click(); await page.waitForTimeout(1200);
+      await b.click(); await page.locator('.cdlg button:has-text("Yes, delete")').click(); await page.waitForTimeout(1200);
       await page.goto(base + '/admin/notifications/');
       if ((await page.locator('.files .row-del').count()) !== before - 1) fail('owner', 'deleting a notification did not work');
     } else warn('owner', 'no notifications to test delete');

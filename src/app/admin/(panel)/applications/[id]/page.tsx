@@ -16,7 +16,7 @@ import { myScope, scopedApp } from '@/lib/server/scope';
 import { DECISION_PILL, DECISION_TEXT } from '@/lib/decision';
 import { ROUTE_LABELS, STAGES, STAGE_NEXT_DEFAULT, day, money, when } from '@/lib/stages';
 import {
-  addPayment, archiveApplication, fillQuote, markPaid, newPortalLink, assignApp, removePayment, saveClient, saveQuote, setDecision, setRequests, setStage, teamMessage, toggleShare, uploadTeamDoc,
+  addPayment, archiveApplication, clearMessages, fillQuote, markPaid, newPortalLink, assignApp, removePayment, saveClient, saveQuote, setDecision, setRequests, setStage, teamMessage, toggleShare, uploadTeamDoc,
 } from '../../../actions';
 
 export const metadata: Metadata = { title: 'Application' };
@@ -247,7 +247,7 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
         <div className="stack">
           {/* MESSAGES */}
           <section className="panel" id="messages">
-            <div className="panel-h"><h2>Messages</h2><a className="btn btn-sm btn-wa" href={waTo(a.client.phone, `Hello ${first}, `)} target="_blank" rel="noopener">WhatsApp</a></div>
+            <div className="panel-h"><h2>Messages</h2><div className="row" style={{ gap: 8 }}>{a.messages.length > 0 && <form action={clearMessages}><input type="hidden" name="app" value={a.id} /><DeleteButton label="Clear chat" confirm={`Delete all ${a.messages.length} messages in this file? The client will no longer see them.`} /></form>}<a className="btn btn-sm btn-wa" href={waTo(a.client.phone, `Hello ${first}, `)} target="_blank" rel="noopener">WhatsApp</a></div></div>
             <div className="thread">
               {a.messages.length === 0 ? <p className="muted small" style={{ margin: 0 }}>No messages yet.</p> : a.messages.map((m) => (
                 <div key={m.id} className={`msg${m.by === 'team' ? ' mine' : ''}`}>{m.by === 'client' && !m.read && <span className="pill new" style={{ marginBottom: 4 }}>New</span>} {m.text}<span className="meta">{m.by === 'team' ? 'Team' : first} · {when(m.at)}</span></div>
