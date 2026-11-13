@@ -1619,3 +1619,8 @@ body.c-view .cur-dot { opacity: 0; }
   /* apply form: the sticky buttons take the bottom, so the chat bubble steps out of the way */
   body:has(.apply-nav) .chatw:not(.open) { display: none; }
 }
+@media (max-width: 760px) {
+  /* apply form: the bottom menu steps aside and Continue / Submit sit at the very bottom with room around them */
+  body:has(.apply-nav) .mnav, body:has(.apply-nav) .dock { display: none !important; }
+  .apply-nav { bottom: calc(10px + env(safe-area-inset-bottom, 0px)); margin-top: 18px; padding: 12px 14px; }
+}
