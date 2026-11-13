@@ -35,7 +35,7 @@ export async function createMetaTemplates() {
       body: JSON.stringify({ name: t.name, language: 'en', category: 'UTILITY', components: [{ type: 'BODY', text: t.text, example: { body_text: [t.ex] } }] }),
     });
     if (r.ok) done.push(t.name);
-    else if (/already exists|duplicate/i.test(r.err)) had.push(t.name);
+    else if (/already exists|duplicate|already (has |)?\w* ?content/i.test(r.err)) had.push(t.name);
     else failed.push(`${t.name}: ${r.err}`);
   }
   const msg = [done.length ? `Sent to Meta for approval: ${done.length}.` : '', had.length ? `Already there: ${had.length}.` : '', failed.length ? `Not accepted: ${failed.join(' | ')}` : '', 'Approval usually takes a few minutes; then press “Check approval”.'].filter(Boolean).join(' ');
