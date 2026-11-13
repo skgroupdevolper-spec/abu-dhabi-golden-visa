@@ -105,6 +105,7 @@ export function webhookToken(w: { verifyToken?: string; phoneNumberId?: string; 
 export function waAdvice(msg: string, code?: number) {
   if (/Object with ID .* does not exist|missing permissions/i.test(msg)) return `The access token cannot use this phone number. In Business settings → System users, give the user full control of your WhatsApp account, generate a new token, and check the Phone number ID (Setup → “Check connection”). (${msg.slice(0, 120)})`;
   if (code === 131047 || /re-engagement|24 hours/i.test(msg)) return 'Not delivered: more than 24 hours since the client last wrote. An approved template is needed for this message (Setup → templates).';
+  if (code === 131042 || /payment method/i.test(msg)) return 'Not delivered: Meta needs a valid payment method on your WhatsApp account. Add a card in Meta Business Settings → Billing & payments (WhatsApp Business account → Payment settings), then try again.';
   if (code === 131026 || /undeliverable/i.test(msg)) return 'Not delivered: this number is not on WhatsApp or cannot receive messages.';
   if (code === 132001 || /template name does not exist/i.test(msg)) return 'The template name is not approved in this language. Press “Check approval” in Setup.';
   if (code === 190 || /access token/i.test(msg)) return 'The access token expired or is wrong. Generate a permanent System user token and save it in Setup.';
