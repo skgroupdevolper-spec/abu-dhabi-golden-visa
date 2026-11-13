@@ -86,6 +86,13 @@ export async function checkConnection() {
     else { ok = false; out.push(`Phone number ID ${w.phoneNumberId} cannot be used with this token: ${p.err}`); }
   }
   if (w.businessId) {
+    // Billing: business-started messages (templates) need a payment method on THIS WhatsApp account.
+    const a = await graph(`${encodeURIComponent(w.businessId)}?fields=name,currency,account_review_status,business_verification_status,primary_funding_id,ownership_type`, w.accessToken);
+    if (a.ok) {
+      const fund = a.j.primary_funding_id;
+      out.push(`WhatsApp account “${a.j.name}”: review ${String(a.j.account_review_status ?? '-').toLowerCase()}, business verification ${String(a.j.business_verification_status ?? '-').toLowerCase().replace(/_/g, ' ')}, currency ${a.j.currency ?? '-'}, payment method ${fund ? `linked (${fund})` : 'NOT LINKED'}.`);
+      if (!fund) { ok = false; out.push('No payment method is linked to this WhatsApp account, so messages to new clients are blocked. Open WhatsApp Manager → Overview → Payment settings for THIS account (not your ads account) and add a card.'); }
+    } else out.push(`Billing details could not be read: ${a.err}`);
     const n = await graph(`${encodeURIComponent(w.businessId)}/phone_numbers?fields=id,display_phone_number,verified_name`, w.accessToken);
     if (n.ok) {
       const rows = (n.j.data as { id: string; display_phone_number: string; verified_name: string }[]) ?? [];
