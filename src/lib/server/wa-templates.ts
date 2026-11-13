@@ -8,7 +8,7 @@ const GRAPH = 'https://graph.facebook.com/v21.0';
 
 export const META_TPLS: { event: WaEvent; name: string; text: string; ex: string[] }[] = [
   { event: 'leadTeam', name: 'adgv_new_enquiry', text: 'New website enquiry from {{1}} ({{2}}). Service: {{3}}. Message: {{4}}. Please reply soon.', ex: ['Ahmed', '+971501234567', 'Golden Visa property investor', 'I would like to know the fees'] },
-  { event: 'welcome', name: 'adgv_file_opened', text: 'Hello {{1}}, your Golden Visa file {{2}} is now open. Follow every step and upload your documents here: {{3}} Thank you for choosing us.', ex: ['Ahmed', 'ADGV-0001', 'https://app.abudhabigoldenvisa.com/'] },
+  { event: 'welcome', name: 'adgv_file_opened_v2', text: 'Hello {{1}}, your Golden Visa file {{2}} has been opened. You can follow its status and upload your documents here: {{3}} Reply to this message if you have a question.', ex: ['Ahmed', 'ADGV-0001', 'https://app.abudhabigoldenvisa.com/'] },
   { event: 'status', name: 'adgv_status_update', text: 'Hello {{1}}, there is an update on your file {{2}}. Current step: {{3}}. Next: {{4}}. See the details here: {{5}} Thank you.', ex: ['Ahmed', 'ADGV-0001', 'Eligibility confirmed', 'We send your written quote', 'https://app.abudhabigoldenvisa.com/'] },
   { event: 'quote', name: 'adgv_quote_ready', text: 'Hello {{1}}, your quote for file {{2}} is ready. Total: {{3}}. Review and accept it here: {{4}} Thank you.', ex: ['Ahmed', 'ADGV-0001', 'AED 6,795.00', 'https://app.abudhabigoldenvisa.com/'] },
   { event: 'confirmed', name: 'adgv_order_confirmed', text: 'Hello {{1}}, your order {{2}} is confirmed. Service: {{3}}. Total: {{4}}. Date: {{5}}. Track your file here: {{6}} Thank you.', ex: ['Ahmed', 'ADGV-0001', 'Golden Visa property investor', 'AED 6,795.00', '12 Nov 2026', 'https://app.abudhabigoldenvisa.com/'] },
@@ -46,18 +46,29 @@ export async function createMetaTemplates() {
 export async function syncMetaTemplates() {
   const w = (await getSecrets()).whatsapp;
   if (!w.businessId || !w.accessToken) return { ok: false, msg: 'Add the WhatsApp Business account ID and the access token first.' };
-  const r = await graph(`${encodeURIComponent(w.businessId)}/message_templates?fields=name,status,language&limit=250`, w.accessToken);
+  const r = await graph(`${encodeURIComponent(w.businessId)}/message_templates?fields=name,status,language,category&limit=250`, w.accessToken);
   if (!r.ok) return { ok: false, msg: `Meta said: ${r.err}` };
-  const rows = ((r.j.data as { name: string; status: string; language: string }[]) ?? []);
+  const rows = ((r.j.data as { name: string; status: string; language: string; category?: string }[]) ?? []);
   const names = { ...(w.templateNames ?? {}) };
   const report: string[] = [];
   for (const t of META_TPLS) {
     const m = rows.find((x) => x.name === t.name);
     const st = m?.status ?? 'NOT CREATED';
     if (st === 'APPROVED') names[t.event] = t.name;
-    report.push(`${t.name}: ${st.toLowerCase().replace('_', ' ')}`);
+    report.push(`${t.name}: ${st.toLowerCase().replace('_', ' ')}${m?.category && m.category !== 'UTILITY' ? ` (moved to ${m.category.toLowerCase()} by Meta)` : ''}`);
   }
   await saveSecrets({ whatsapp: { ...w, templateNames: names, templateLang: 'en' } });
   const ok = report.filter((x) => x.endsWith('approved')).length;
   return { ok: true, msg: `${ok} of ${META_TPLS.length} approved and filled in. ${report.join(' · ')}` };
+}
+
+/** Connects your app to the WhatsApp Business account so client replies reach the website (needed once). */
+export async function subscribeWebhooks() {
+  const w = (await getSecrets()).whatsapp;
+  if (!w.businessId || !w.accessToken) return { ok: false, msg: 'Add the WhatsApp Business account ID and the access token first.' };
+  const r = await graph(`${encodeURIComponent(w.businessId)}/subscribed_apps`, w.accessToken, { method: 'POST', body: '{}' });
+  if (!r.ok) return { ok: false, msg: `Meta said: ${r.err}` };
+  const chk = await graph(`${encodeURIComponent(w.businessId)}/subscribed_apps`, w.accessToken);
+  const n = ((chk.j.data as unknown[]) ?? []).length;
+  return { ok: true, msg: `Incoming messages connected (${n} app${n === 1 ? '' : 's'} subscribed). Send a WhatsApp message to your business number to test: it appears in the Message log.` };
 }

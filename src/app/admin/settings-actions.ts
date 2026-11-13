@@ -449,7 +449,8 @@ export async function saveDocCfg(_: St, f: FormData): Promise<St> {
 export async function waTemplates(_: St, f: FormData): Promise<St> {
   await requireAdmin(FULL);
   const m = await import('@/lib/server/wa-templates');
-  const r = s(f, 'do', 10) === 'sync' ? await m.syncMetaTemplates() : await m.createMetaTemplates();
+  const d = s(f, 'do', 10);
+  const r = d === 'sync' ? await m.syncMetaTemplates() : d === 'subscribe' ? await m.subscribeWebhooks() : await m.createMetaTemplates();
   revalidatePath('/admin/whatsapp/');
   return r.ok ? { ok: r.msg } : { error: r.msg };
 }
