@@ -37,8 +37,14 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   const open = await wroteLast24h(number);
   const name = open ? '' : custom ? custom.name : w.templateNames[event];
   const keys = (WA_EVENTS.find((e) => e.key === event)?.vars.match(/\{(\w+)\}/g) ?? []).map((k) => k.slice(1, -1));
-  const body = name && (custom || !opts.text)
-    ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name, language: { code: w.templateLang || 'en' }, components: [{ type: 'body', parameters: keys.map((k) => ({ type: 'text', text: String(vars[k] ?? '-').slice(0, 900) || '-' })) }] } }
+  // Outside the 24-hour window with no approved template for this message: send it inside the approved
+  // "new message" template ({{1}} name, {{2}} file, {{3}} text, {{4}} link), so it still reaches the client.
+  const viaMsg = !open && !name && !custom && event !== 'message' && event !== 'leadTeam' && w.templateNames.message;
+  const flat = (v: unknown) => String(v ?? '').replace(/https?:\/\/\S+/g, '').replace(/[\r\n\t]+/g, ' ').replace(/ {2,}/g, ' ').trim();
+  const body = viaMsg
+    ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name: w.templateNames.message, language: { code: w.templateLang || 'en' }, components: [{ type: 'body', parameters: [vars.name, vars.ref || '-', flat(text).slice(0, 900) || '-', vars.link || SITE_URL()].map((x) => ({ type: 'text', text: String(x ?? '-') || '-' })) }] } }
+    : name && (custom || !opts.text)
+    ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name, language: { code: w.templateLang || 'en' }, components: [{ type: 'body', parameters: keys.map((k) => ({ type: 'text', text: flat(vars[k]).slice(0, 900) || String(vars[k] ?? '-').slice(0, 900) || '-' })) }] } }
     : { messaging_product: 'whatsapp', to: number, type: 'text', text: { body: text.slice(0, 4000), preview_url: true } };
   let ok = false, error = '', mid = '';
   try {
@@ -55,7 +61,7 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   } catch (e) {
     error = (e as Error).message;
   }
-  await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: number, event, text: `${body.type === 'template' ? `[template ${name}] ` : ''}${text}`.slice(0, 500), ok, error: error || undefined, dir: 'out', ...(mid ? { mid } : {}) }, 2000);
+  await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: number, event, text: `${body.type === 'template' ? `[template ${viaMsg ? w.templateNames.message : name}] ` : ''}${text}`.slice(0, 500), ok, error: error || undefined, dir: 'out', ...(mid ? { mid } : {}) }, 2000);
   return { ok, error };
 }
 
@@ -111,3 +117,5 @@ async function wroteLast24h(number: string) {
     return (await list<WaLog>('whatsapp-log')).some((l) => l.dir === 'in' && l.at >= since && digits(l.to).endsWith(tail));
   } catch { return false; }
 }
+
+const SITE_URL = () => (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.abudhabigoldenvisa.com').replace(/\/$/, '') + '/';
