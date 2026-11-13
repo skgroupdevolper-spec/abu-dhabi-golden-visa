@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { insert, list, notify, type Customer, type WaLog } from '@/lib/server/collections';
-import { getSecrets } from '@/lib/server/settings';
+import { getSecrets, saveSecrets } from '@/lib/server/settings';
 import { listApplications, listLeads, newId, now, updateApplication } from '@/lib/server/store';
 import { digits, webhookToken } from '@/lib/server/whatsapp';
 
@@ -10,7 +10,10 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams;
   const w = (await getSecrets()).whatsapp;
-  if (q.get('hub.mode') === 'subscribe' && (q.get('hub.verify_token') ?? '').trim() === webhookToken(w)) return new NextResponse(q.get('hub.challenge') ?? '', { status: 200, headers: { 'Content-Type': 'text/plain' } });
+  if (q.get('hub.mode') === 'subscribe' && (q.get('hub.verify_token') ?? '').trim() === webhookToken(w)) {
+    if (!q.get('hub.challenge')?.startsWith('selftest')) await saveSecrets({ whatsapp: { ...w, verifyToken: webhookToken(w), webhookVerifiedAt: new Date().toISOString() } });
+    return new NextResponse(q.get('hub.challenge') ?? '', { status: 200, headers: { 'Content-Type': 'text/plain' } });
+  }
   return new NextResponse('Forbidden', { status: 403 });
 }
 
@@ -19,6 +22,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const msgs: { from: string; text?: { body?: string }; type?: string }[] = body?.entry?.flatMap((e: { changes?: { value?: { messages?: unknown[] } }[] }) => e.changes?.flatMap((c) => c.value?.messages ?? []) ?? []) ?? [];
   if (!msgs.length) return NextResponse.json({ ok: true });
+  void getSecrets().then((s) => saveSecrets({ whatsapp: { ...s.whatsapp, lastIncomingAt: new Date().toISOString() } })).catch(() => {});
   const apps = await listApplications();
   for (const m of msgs.slice(0, 20)) {
     const from = digits(m.from || '');

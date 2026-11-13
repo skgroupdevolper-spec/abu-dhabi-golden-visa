@@ -454,3 +454,11 @@ export async function waTemplates(_: St, f: FormData): Promise<St> {
   revalidatePath('/admin/whatsapp/');
   return r.ok ? { ok: r.msg } : { error: r.msg };
 }
+
+/* ---------- email copy of admin notifications ---------- */
+export async function saveNoteMail(_: St, f: FormData): Promise<St> {
+  await requireAdmin(FULL);
+  const kinds = ['message', 'upload', 'quote', 'customer', 'request', 'whatsapp', 'chat', 'payment'] as const;
+  await saveBlock('note-mail', { on: b(f, 'on'), kinds: Object.fromEntries(kinds.map((k) => [k, b(f, `k_${k}`)])) });
+  return { ok: 'Saved.' };
+}

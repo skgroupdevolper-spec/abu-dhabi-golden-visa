@@ -31,9 +31,11 @@ export const STAGES0: StageDef[] = [
 /** Old 9-step list (position) -> new step id, used once to move existing files over. */
 export const LEGACY_IDS = ['enquiry', 'elig-ok', 'paid', 'paid', 'paid', 'submitted', 'entry-permit', 'medical', 'approved'];
 
-/** State of one step in a file: a hand-set state wins, otherwise steps before the current one are done. */
-export function stageState(i: number, cur: number, id: string, overrides?: Record<string, StageState>): StageState {
+/** State of one step in a file: a hand-set state wins. Otherwise the chosen step and all before it are
+ *  Completed and the next step is In progress (choosing "Payment received" ticks it and moves the file on). */
+export function stageState(i: number, cur: number, id: string, overrides?: Record<string, StageState>, total = Infinity): StageState {
   const o = overrides?.[id];
   if (o) return o;
-  return i < cur ? 'done' : i === cur ? 'progress' : 'pending';
+  if (i <= cur) return 'done';
+  return i === cur + 1 && i < total ? 'progress' : 'pending';
 }

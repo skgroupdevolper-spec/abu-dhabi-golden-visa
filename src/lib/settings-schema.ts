@@ -34,6 +34,8 @@ export type Secrets = {
     autos: Record<WaEvent, boolean>; templates: Record<WaEvent, string>; templateNames: Partial<Record<WaEvent, string>>; templateLang: string;
     /** Extra messages the team adds: each one is sent too when its trigger happens. */
     customs?: WaCustom[];
+    /** Set by the website: when Meta verified the webhook, when incoming messages were connected, last incoming message. */
+    webhookVerifiedAt?: string; webhookSubscribedAt?: string; lastIncomingAt?: string;
   };
   smtp: { host: string; port: number; secure: boolean; user: string; pass: string; from: string; notify: string };
   seo: { homeTitle: string; homeMeta: string; googleVerify: string; bingVerify: string; headCode: string; bodyCode: string };

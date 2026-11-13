@@ -68,6 +68,7 @@ export async function subscribeWebhooks() {
   if (!w.businessId || !w.accessToken) return { ok: false, msg: 'Add the WhatsApp Business account ID and the access token first.' };
   const r = await graph(`${encodeURIComponent(w.businessId)}/subscribed_apps`, w.accessToken, { method: 'POST', body: '{}' });
   if (!r.ok) return { ok: false, msg: `Meta said: ${r.err}` };
+  await saveSecrets({ whatsapp: { ...w, webhookSubscribedAt: new Date().toISOString() } });
   const chk = await graph(`${encodeURIComponent(w.businessId)}/subscribed_apps`, w.accessToken);
   const n = ((chk.j.data as unknown[]) ?? []).length;
   return { ok: true, msg: `Incoming messages connected (${n} app${n === 1 ? '' : 's'} subscribed). Send a WhatsApp message to your business number to test: it appears in the Message log.` };

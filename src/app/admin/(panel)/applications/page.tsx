@@ -4,7 +4,7 @@ import { DeleteButton } from '@/components/dash/DeleteButton';
 import { clearItems, deleteItems } from '@/app/admin/delete-actions';
 import Link from 'next/link';
 import { listApplications } from '@/lib/server/store';
-import { day, money } from '@/lib/stages';
+import { day, money, payState } from '@/lib/stages';
 import { DECISION_PILL, DECISION_TEXT } from '@/lib/decision';
 import { myScope } from '@/lib/server/scope';
 
@@ -38,7 +38,7 @@ export default async function Apps({ searchParams }: { searchParams: Promise<{ q
       </div>
       {apps.length === 0 ? <p className="empty">No applications here.</p> : (
         <div className="tbl-wrap"><table className="tbl">
-          <thead><tr><th>Ref</th><th>Client</th><th>Route</th><th>Progress</th><th className="num">Due</th><th>Messages</th><th>Updated</th><th /></tr></thead>
+          <thead><tr><th>Ref</th><th>Client</th><th>Route</th><th>Progress</th><th>Payment</th><th>Messages</th><th>Updated</th><th /></tr></thead>
           <tbody>
             {apps.map((x) => {
               const due = x.payments.filter((p) => p.status === 'due').reduce((s, p) => s + p.amount, 0);
@@ -49,7 +49,7 @@ export default async function Apps({ searchParams }: { searchParams: Promise<{ q
                   <td><b>{x.client.name}</b><div className="small muted">{x.client.phone}</div></td>
                   <td>{x.route}{sc.full && <div className="small">{x.assignee ? `→ ${x.assignee}` : <span className="muted">Not assigned</span>}</div>}<div className="small muted">{x.location === 'in' ? 'Inside UAE' : 'Outside UAE'} · {1 + x.adults + x.kids} people</div></td>
                   <td style={{ minWidth: 180 }}><div className="small">{STAGES[x.stage]}{x.decision && <> <span className={`pill ${DECISION_PILL[x.decision.result]}`}>{DECISION_TEXT[x.decision.result].title}</span></>}</div><div className="bar" style={{ marginTop: 6 }}><i style={{ width: `${((x.stage + 1) / STAGES.length) * 100}%` }} /></div></td>
-                  <td className="num">{due ? <span className="pill due">{money(due)}</span> : '—'}</td>
+                  <td style={{ minWidth: 150 }}>{(() => { const ps = payState(x); return ps.state === 'none' ? <span className="muted small">No quote yet</span> : ps.state === 'paid' ? <span className="pill ok">Paid in full · {money(ps.paid)}</span> : <><span className={`pill ${ps.state === 'partial' ? 'new' : 'due'}`}>{ps.state === 'partial' ? 'Part paid' : 'Not paid'}</span><div className="small">Paid {money(ps.paid)} · <b>Remaining {money(ps.remaining)}</b></div>{due > 0 && <div className="small muted">{money(due)} requested</div>}</>; })()}</td>
                   <td>{unread ? <span className="pill new">{unread} new</span> : <span className="muted small">{x.messages.length}</span>}</td>
                   <td>{day(x.updatedAt)}</td>
                   <td><form action={deleteItems}><input type="hidden" name="kind" value="applications" /><input type="hidden" name="id" value={x.id} /><DeleteButton label="Delete" confirm="Delete file + documents?" /></form></td>

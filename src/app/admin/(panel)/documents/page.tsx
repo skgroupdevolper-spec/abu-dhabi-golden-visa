@@ -6,7 +6,8 @@ import { docCfg } from '@/lib/server/doccfg';
 import { list } from '@/lib/server/collections';
 import type { MailLog } from '@/lib/server/mail';
 import { when } from '@/lib/stages';
-import { saveDocCfg } from '../../settings-actions';
+import { saveDocCfg, saveNoteMail } from '../../settings-actions';
+import { getBlock } from '@/lib/server/settings';
 import { MAIL_EVENTS } from '@/lib/mail-events';
 
 export const metadata: Metadata = { title: 'Emails & PDFs' };
@@ -16,6 +17,8 @@ export default async function Documents() {
   await requireAdmin(FULL);
   const { pdf, mail } = await docCfg();
   const log = (await list<MailLog>('mail-log')).slice(0, 40);
+  const nm = await getBlock<{ on?: boolean; kinds?: Record<string, boolean> }>('note-mail', {});
+  const NK: [string, string][] = [['message', 'Client messages'], ['upload', 'Documents uploaded'], ['payment', 'Payments'], ['quote', 'Quote accepted'], ['request', 'Client requests'], ['customer', 'New client accounts'], ['whatsapp', 'WhatsApp from clients and website contacts'], ['chat', 'Website chat']];
   return (
     <>
       <div className="topbar"><div><p className="eyebrow">Emails &amp; PDFs</p><h1>Your quotes, receipts and emails, <span className="gold">your way.</span></h1></div></div>
@@ -97,6 +100,16 @@ export default async function Documents() {
           <div className="full"><Submit>Save email messages</Submit></div>
         </ActionForm>
       </div>
+      <div className="panel" style={{ maxWidth: 900, marginTop: 18 }} id="notify">
+        <h2 style={{ margin: 0 }}>Email me the admin notifications</h2>
+        <p className="help">Every notification in the admin also arrives by email: to the staff member it is for, otherwise to “Send website notifications to” (Settings → Email). New enquiries, applications and bookings always send their detailed email.</p>
+        <ActionForm action={saveNoteMail} className="form">
+          <div className="full"><Toggle name="on" label="Send notifications by email" on={nm.on !== false} /></div>
+          {NK.map(([k, l]) => <div key={k}><Toggle name={`k_${k}`} label={l} on={nm.kinds?.[k] !== false} /></div>)}
+          <div className="full"><Submit>Save</Submit></div>
+        </ActionForm>
+      </div>
+
       <div className="panel" style={{ maxWidth: 900, marginTop: 18 }} id="log">
         <h2 style={{ margin: 0 }}>Email log</h2>
         <p className="help">The last emails the website tried to send. A red line shows why one failed.</p>

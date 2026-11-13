@@ -14,7 +14,7 @@ import { StageFields } from '@/components/dash/StageFields';
 import { portalUrl, waTo } from '@/lib/site';
 import { myScope, scopedApp } from '@/lib/server/scope';
 import { DECISION_PILL, DECISION_TEXT } from '@/lib/decision';
-import { ROUTE_LABELS, day, money, when } from '@/lib/stages';
+import { ROUTE_LABELS, day, money, payState, when } from '@/lib/stages';
 import { getStages } from '@/lib/server/stages';
 import { STATE_LABEL, stageState } from '@/lib/stage-defs';
 import {
@@ -78,7 +78,7 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
                     </Fragment>
                   ))}
                 </div>
-                <p className="help">Auto: steps before the current one are Completed, the current one is In progress. Change single steps here, e.g. “Change of status: Not applicable”. Internal notes stay in Notes and are never shown to the client.</p>
+                <p className="help">Auto: the chosen step and all before it are Completed, the next one is In progress. Change single steps here, e.g. “Change of status: Not applicable”. Internal notes stay in Notes and are never shown to the client.</p>
               </details>
               <label className="row full small"><input type="checkbox" name="notify" defaultChecked /> Tell the client (portal message, WhatsApp and email)</label>
               <div className="full row" style={{ gap: 10 }}><Submit>Update status</Submit><Link className="btn btn-sm" href="/admin/steps/">Edit the step list</Link></div>
@@ -196,6 +196,14 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
           </section>
           <section className="panel" id="payments">
             <div className="panel-h"><h2>Payments</h2><Link className="btn btn-sm" href="/admin/payments/">Online payment settings</Link></div>
+            {(() => { const ps = payState(a); return ps.state !== 'none' && (
+              <div className={`paystate ps-${ps.state}`}>
+                <div><small>Total</small><b>{money(ps.total)}</b></div>
+                <div><small>Paid</small><b>{money(ps.paid)}</b></div>
+                <div><small>Remaining</small><b>{money(ps.remaining)}</b></div>
+                <span className={`pill ${ps.state === 'paid' ? 'ok' : ps.state === 'partial' ? 'new' : 'due'}`}>{ps.state === 'paid' ? 'Paid in full' : ps.state === 'partial' ? 'Part paid' : 'Not paid yet'}</span>
+              </div>
+            ); })()}
             {a.payments.length === 0 ? <p className="empty">No payment requests yet.</p> : (
               <div className="files">
                 {a.payments.map((p) => (

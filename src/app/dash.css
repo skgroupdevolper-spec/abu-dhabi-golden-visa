@@ -900,3 +900,10 @@ code.k { overflow-wrap: anywhere; word-break: break-all; }
 .timeline .st-pill { margin-inline-start: 6px; font-size: 11px; }
 .ss-grid { display: grid; grid-template-columns: 1fr 170px; gap: 6px 10px; align-items: center; font-size: 14px; }
 .ss-grid select { padding: 6px 8px; }
+
+/* Payment state of a file */
+.paystate { display: grid; grid-template-columns: repeat(3, 1fr) auto; gap: 10px; align-items: center; padding: 12px 14px; margin: 4px 0 14px; border-radius: 12px; border: 1px solid #efe6cf; background: #fffaf0; }
+.paystate small { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #8a7a55; }
+.paystate b { font-size: 16px; }
+.paystate.ps-paid { background: #f1f8f2; border-color: #cfe6d3; }
+@media (max-width: 560px) { .paystate { grid-template-columns: 1fr 1fr; } }

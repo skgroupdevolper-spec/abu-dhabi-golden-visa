@@ -44,8 +44,25 @@ export type Subscriber = { id: string; email: string; lang: string; at: string }
 
 /* ---------- notifications ---------- */
 export type Note = { id: string; at: string; kind: 'lead' | 'message' | 'upload' | 'quote' | 'customer' | 'request' | 'whatsapp' | 'chat' | 'booking' | 'payment'; text: string; href: string; read: boolean; to?: string };
-export function notify(kind: Note['kind'], text: string, href: string, to?: string) {
-  return insert<Note>('notifications', { id: newId(6), at: now(), kind, text: text.slice(0, 200), href, read: false, ...(to ? { to } : {}) }, 500);
+export async function notify(kind: Note['kind'], text: string, href: string, to?: string) {
+  const r = await insert<Note>('notifications', { id: newId(6), at: now(), kind, text: text.slice(0, 200), href, read: false, ...(to ? { to } : {}) }, 500);
+  void emailNote(kind, text, href, to);
+  return r;
+}
+
+const NOTE_LABEL: Record<Note['kind'], string> = { lead: 'New enquiry', message: 'New message', upload: 'New document', quote: 'Quote', customer: 'New client', request: 'Client request', whatsapp: 'WhatsApp message', chat: 'Website chat', booking: 'New booking', payment: 'Payment' };
+/** Email copy of each notification: to the staff member it is for, otherwise to the team notification address. */
+async function emailNote(kind: Note['kind'], text: string, href: string, to?: string) {
+  try {
+    const [{ getBlock, getSecrets }, { sendMail }, { SITE }] = await Promise.all([import('./settings'), import('./mail'), import('@/lib/site')]);
+    const cfg = await getBlock<{ on?: boolean; kinds?: Partial<Record<Note['kind'], boolean>> }>('note-mail', {});
+    if (cfg.on === false || cfg.kinds?.[kind] === false) return;
+    if (kind === 'lead' || kind === 'booking') return; // these already send a detailed team email
+    const addr = to || (await getSecrets()).smtp.notify;
+    if (!addr) return;
+    const url = `${(SITE.url || '').replace(/\/$/, '')}${href.startsWith('/') ? href : `/${href}`}`;
+    await sendMail(addr, `${NOTE_LABEL[kind]}: ${text}`.slice(0, 150), `${text}\n\nOpen it in the admin:\n${url}`, { title: 'Team notice', badge: NOTE_LABEL[kind] });
+  } catch {}
 }
 
 /* ---------- WhatsApp log ---------- */

@@ -49,3 +49,14 @@ export function governmentLines(f: Fees, o: { route: string; location: 'in' | 'o
 export const money = (n: number) => 'AED ' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 export const when = (iso?: string) => (iso ? new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Dubai' }) : '');
 export const day = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Dubai' }) : '');
+
+/** Money state of a file: quote total, paid so far and what is still open. */
+export function payState(a: { quote: { lines: { amount: number }[]; serviceFee: number; vat: number; sentAt?: string }; payments: { amount: number; status: 'due' | 'paid' }[] }) {
+  const quote = a.quote.lines.reduce((s, l) => s + l.amount, 0) + a.quote.serviceFee + a.quote.vat;
+  const paid = a.payments.filter((p) => p.status === 'paid').reduce((s, p) => s + p.amount, 0);
+  const requested = a.payments.filter((p) => p.status === 'due').reduce((s, p) => s + p.amount, 0);
+  const total = Math.max(quote, paid + requested);
+  const remaining = Math.max(0, Math.round((total - paid) * 100) / 100);
+  const state: 'none' | 'unpaid' | 'partial' | 'paid' = total <= 0 ? 'none' : paid <= 0 ? 'unpaid' : remaining > 0.009 ? 'partial' : 'paid';
+  return { quote, paid, requested, total, remaining, state };
+}
