@@ -23,6 +23,7 @@ function limited(ip: string) {
   hits.set(ip, recent);
   return recent.length > 5;
 }
+const digitsOf = (x: string) => x.replace(/\D/g, '');
 const s = (f: FormData, k: string, max = 300) => String(f.get(k) ?? '').trim().slice(0, max);
 
 /** Online application from /apply/: creates an enquiry and a client file with the uploaded documents. */
@@ -108,6 +109,8 @@ export async function POST(req: NextRequest) {
       mailEventTeam('teamLead', { name, phone, email, service: `${svc.label} · ${app.ref}`, message: notes, link: `${SITE.url}/admin/applications/${app.id}/` }),
       mailEvent(email, 'welcome', { name: name.split(' ')[0], ref: app.ref, service: svc.label, link }),
       account === 'created' ? mailEvent(email, 'account', { name: name.split(' ')[0], email, link: portalUrl('').replace(/t\/\/$/, '') }) : Promise.resolve(),
+      // signed-in client: WhatsApp goes to the number saved in their account if it differs
+      me?.phone && digitsOf(me.phone) !== digitsOf(phone) ? sendWa(me.phone, 'welcome', { name: name.split(' ')[0], ref: app.ref, link }) : Promise.resolve(),
     ]);
     return NextResponse.json({ ok: true, ref: app.ref, link, account });
   } catch (e) {

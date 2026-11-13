@@ -48,6 +48,7 @@ export async function register(_: State, f: FormData): Promise<State> {
   const c: Customer = { id: newId(8), name, email, phone, pass: await hashPassword(pass), lang: await portalLang(), active: true, createdAt: now(), lastLogin: now() };
   await insert<Customer>('customers', c);
   await notify('customer', `New client account: ${name} (${email})`, '/admin/customers/');
+  void notifyAccount(c);
   await startClientSession(c.id);
   redirect(`${await portalBase()}/`);
 }
@@ -111,7 +112,13 @@ export async function saveProfile(_: State, f: FormData): Promise<State> {
     if (!(await verifyPassword(s(f, 'current', 200), me.pass))) return { error: d.wrongLogin };
     h = await hashPassword(next);
   }
-  await patch<Customer>('customers', me.id, (c) => { c.name = s(f, 'name', 100) || c.name; c.phone = s(f, 'phone', 40) || c.phone; if (h) c.pass = h; });
+  const phone = s(f, 'phone', 40);
+  await patch<Customer>('customers', me.id, (c) => { c.name = s(f, 'name', 100) || c.name; c.phone = phone || c.phone; if (h) c.pass = h; });
+  // The WhatsApp number in the account is used for every file of this client, so WhatsApp updates
+  // go to the same person as the emails.
+  if (phone.replace(/\D/g, '').length >= 8) {
+    for (const a of await listApplications()) if (a.client.email?.toLowerCase() === me.email.toLowerCase() && a.client.phone !== phone) await updateApplication(a.id, (x) => { x.client.phone = phone; });
+  }
   return { ok: d.saved };
 }
 
@@ -203,4 +210,16 @@ export async function clearUpdates() {
   if (!me) return;
   await patch<Customer>('customers', me.id, (c) => { c.updatesClearedAt = now(); });
   revalidatePath('/portal/', 'layout');
+}
+
+/** "Your account is ready": by email and on WhatsApp. */
+async function notifyAccount(c: Customer) {
+  const { portalHome } = await import('@/lib/portal-links');
+  const { SITE } = await import('@/lib/site');
+  const home = portalHome();
+  const link = home.startsWith('http') ? home : `${SITE.url}${home}`;
+  await Promise.allSettled([
+    mailEvent(c.email, 'account', { name: c.name.split(' ')[0], email: c.email, link }),
+    sendWa(c.phone, 'message', { name: c.name.split(' ')[0], ref: '-', text: `Your client account is ready. Sign in with ${c.email} to follow your application, pay securely and download your documents.`, link }),
+  ]);
 }

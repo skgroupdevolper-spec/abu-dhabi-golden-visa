@@ -191,7 +191,10 @@ export async function addCustomer(_: St, f: FormData): Promise<St> {
     const { mailEvent } = await import('@/lib/server/mail');
     const { portalHome } = await import('@/lib/portal-links');
     const home = portalHome();
-    void mailEvent(email, 'account', { name: name.split(' ')[0], email, link: home.startsWith('http') ? home : `${(await getSite()).url}${home}` });
+    const link = home.startsWith('http') ? home : `${(await getSite()).url}${home}`;
+    void mailEvent(email, 'account', { name: name.split(' ')[0], email, link });
+    const ph = s(f, 'phone', 30);
+    if (ph) { const { sendWa } = await import('@/lib/server/whatsapp'); void sendWa(ph, 'message', { name: name.split(' ')[0], ref: '-', text: `Your client account is ready. Sign in with ${email} to follow your application, pay securely and download your documents.`, link }); }
   }
   revalidatePath('/admin/customers/');
   redirect(`/admin/customers/?edit=${id}&created=1`);
