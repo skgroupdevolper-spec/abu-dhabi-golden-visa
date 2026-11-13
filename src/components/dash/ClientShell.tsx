@@ -24,7 +24,7 @@ export function ClientShell({ area, active, title, children, back, updates = 0 }
       <input type="checkbox" id="cs-nav" className="cs-tg" aria-hidden="true" tabIndex={-1} autoComplete="off" suppressHydrationWarning />
       <aside className="cs-side" aria-label={t.menu}>
         <a className="cs-logo" href={`${base}/`}><img src={fullLogo()} alt="Abu Dhabi Golden Visa" /></a>
-        <a className="btn btn-dark cs-new" href={`${base}/services/`}><Icon name="plus" size={16} /> {t.newRequest}</a>
+        <a className="btn btn-gold cs-new cs-new-app" href={`${base}/apply/`}><Icon name="plus" size={16} /> {t.newApp ?? 'New application'}</a>
         <nav>
           <p>{t.gTrack}</p>
           {L('home', '/', 'home', t.home)}
@@ -36,7 +36,7 @@ export function ClientShell({ area, active, title, children, back, updates = 0 }
           {L('invoices', '/invoices/', 'card', t.invoices, due || undefined)}
           {L('statement', '/statement/', 'chart', t.statement)}
           <p>{t.gRequests}</p>
-          {L('apply', '/apply/', 'folder', 'New application')}
+          {L('apply', '/apply/', 'folder', t.newApp ?? 'New application')}
           {L('request', '/services/', 'plus', t.newRequest)}
           {L('requests', '/requests/', 'inbox', t.myRequests)}
           <a href={waLink(`Hello, this is ${me.name}. `)} target="_blank" rel="noopener"><Icon name="wa" size={17} /><span>{t.whatsappUs}</span></a>

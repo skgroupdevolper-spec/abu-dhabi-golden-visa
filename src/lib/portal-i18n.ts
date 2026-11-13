@@ -10,7 +10,7 @@ export const EN = {
   leftEyebrow: 'Welcome to Abu Dhabi Golden Visa', leftTitle: 'Sign in to continue.', leftText: 'One place for your residency: quotes, documents, payments and every status update, in your language.',
   tick1: 'Real-time progress and dates', tick2: 'Secure documents and payments', tick3: 'Updates on WhatsApp',
   resetTitle: 'Reset your password', resetText: 'Enter your email. We send a 6-digit code to your WhatsApp or email.', sendCode: 'Send code', code: '6-digit code', newPassword: 'New password', setPassword: 'Set new password', backToLogin: 'Back to sign in',
-  myFiles: 'My applications', newRequest: 'Request a new service', chooseService: 'Choose a service', details: 'Anything we should know?', sendRequest: 'Send request',
+  myFiles: 'My applications', newRequest: 'Request a new service', newApp: 'New application', chooseService: 'Choose a service', details: 'Anything we should know?', sendRequest: 'Send request',
   requestSent: 'Request sent. An advisor will contact you on WhatsApp.', myRequests: 'My requests', noFiles: 'No applications yet. Request a service to get started.',
   signOut: 'Sign out', hello: 'Hello', step: 'Step', of: 'of', next: 'Next', expected: 'expected',
   status: 'Status', quote: 'Quote', payments: 'Payments', documents: 'Documents', messages: 'Messages', progress: 'Progress',

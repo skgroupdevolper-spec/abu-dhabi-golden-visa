@@ -907,3 +907,9 @@ code.k { overflow-wrap: anywhere; word-break: break-all; }
 .paystate b { font-size: 16px; }
 .paystate.ps-paid { background: #f1f8f2; border-color: #cfe6d3; }
 @media (max-width: 560px) { .paystate { grid-template-columns: 1fr 1fr; } }
+
+/* Client dashboard: "New application" stands out */
+.cs-new-app { justify-content: center; font-weight: 700; color: #111 !important; background: linear-gradient(135deg, #f3d77e, #c9961a) !important; border: 0; box-shadow: 0 12px 26px -14px rgba(184, 144, 31, .95); animation: csGlow 2.6s ease-in-out infinite; }
+.cs-new-app:hover { transform: translateY(-1px); box-shadow: 0 16px 30px -12px rgba(184, 144, 31, 1); }
+@keyframes csGlow { 50% { box-shadow: 0 12px 32px -8px rgba(184, 144, 31, 1); } }
+@media (prefers-reduced-motion: reduce) { .cs-new-app { animation: none; } }
