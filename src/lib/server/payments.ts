@@ -97,7 +97,7 @@ export async function startCheckout(a: Application, p: Payment, file: string): P
     }
     case 'ziina': {
       const j = await jfetch('https://api-v2.ziina.com/api/payment_intent', {
-        method: 'POST', headers: { Authorization: `Bearer ${c.ziinaToken}`, 'Content-Type': 'application/json' },
+        method: 'POST', headers: { Authorization: `Bearer ${c.ziinaToken.trim().replace(/^Bearer\s+/i, "")}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: fils(p.amount), currency_code: cur, message: desc, success_url: ret, cancel_url: back, failure_url: `${ret}?failed=1`, test: c.test }),
       });
       return { url: j.redirect_url, gw: gw(j.id) };
@@ -144,7 +144,7 @@ export async function checkStatus(gw: Gw, hint: Record<string, string> = {}): Pr
         return j.payment_status === 'paid' ? { state: 'paid', txn: j.payment_intent || j.id } : j.status === 'expired' ? { state: 'failed' } : { state: 'pending' };
       }
       case 'ziina': {
-        const j = await jfetch(`https://api-v2.ziina.com/api/payment_intent/${encodeURIComponent(gw.id)}`, { headers: { Authorization: `Bearer ${c.ziinaToken}` } });
+        const j = await jfetch(`https://api-v2.ziina.com/api/payment_intent/${encodeURIComponent(gw.id)}`, { headers: { Authorization: `Bearer ${c.ziinaToken.trim().replace(/^Bearer\s+/i, "")}` } });
         return j.status === 'completed' ? { state: 'paid', txn: j.id } : ['failed', 'canceled'].includes(j.status) ? { state: 'failed' } : { state: 'pending' };
       }
       case 'ngenius': {

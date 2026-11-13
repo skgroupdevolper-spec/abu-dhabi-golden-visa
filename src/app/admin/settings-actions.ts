@@ -342,7 +342,14 @@ export async function testPayments(_: St): Promise<St> {
   if (!online(c)) return { error: 'Choose a provider and fill in its keys first.' };
   try {
     if (c.provider === 'stripe') { const r = await fetch('https://api.stripe.com/v1/balance', { headers: { Authorization: `Bearer ${c.stripeSecret}` } }); if (!r.ok) throw new Error(`Stripe answered ${r.status}`); }
-    else if (c.provider === 'ziina') { const r = await fetch('https://api-v2.ziina.com/api/account', { headers: { Authorization: `Bearer ${c.ziinaToken}` } }); if (r.status === 401) throw new Error('Ziina rejected the token'); }
+    else if (c.provider === 'ziina') {
+      // Checks the token the way payments use it (payment intents). The old check read the account profile,
+      // which needs the extra "read_account" permission that normal Ziina business tokens do not have.
+      const tok = c.ziinaToken.trim().replace(/^Bearer\s+/i, '');
+      const r = await fetch('https://api-v2.ziina.com/api/payment_intent/00000000-0000-0000-0000-000000000000', { headers: { Authorization: `Bearer ${tok}` }, signal: AbortSignal.timeout(15000) });
+      if (r.status === 401) throw new Error('Ziina did not accept this token. Copy it again from ziina.com/business/connect (the whole token, no spaces) and make sure it can create payments.');
+      if (r.status === 403) throw new Error('This Ziina token cannot create payments. Create a token with the “write_payment_intents” permission at ziina.com/business/connect.');
+    }
     else if (c.provider === 'ngenius') { const r = await fetch(`${c.test ? 'https://api-gateway.sandbox.ngenius-payments.com' : 'https://api-gateway.ngenius-payments.com'}/identity/auth/access-token`, { method: 'POST', headers: { Authorization: `Basic ${c.ngeniusKey}`, 'Content-Type': 'application/vnd.ni-identity.v1+json' } }); if (!r.ok) throw new Error(`N-Genius answered ${r.status}`); }
     else return { ok: `${PROVIDERS.find((p) => p.id === c.provider)?.name} keys saved. Make a small test payment from a client file to confirm.` };
     return { ok: 'Connected. Online payments are live.' };
