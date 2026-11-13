@@ -32,7 +32,10 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   if (w.mode !== 'cloud' || !w.phoneNumberId || !w.accessToken) {
     return { ok: false, error: 'WhatsApp Cloud API is not connected (link mode)' };
   }
-  const name = custom ? custom.name : w.templateNames[event];
+  // Inside the 24-hour window (the client wrote to us in the last 24 h) a normal message always arrives and is free,
+  // so the template is only used outside it. This also avoids templates Meta moved to "marketing".
+  const open = await wroteLast24h(number);
+  const name = open ? '' : custom ? custom.name : w.templateNames[event];
   const keys = (WA_EVENTS.find((e) => e.key === event)?.vars.match(/\{(\w+)\}/g) ?? []).map((k) => k.slice(1, -1));
   const body = name && (custom || !opts.text)
     ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name, language: { code: w.templateLang || 'en' }, components: [{ type: 'body', parameters: keys.map((k) => ({ type: 'text', text: String(vars[k] ?? '-').slice(0, 900) || '-' })) }] } }
@@ -97,4 +100,14 @@ export function waAdvice(msg: string, code?: number) {
   if (code === 132001 || /template name does not exist/i.test(msg)) return 'The template name is not approved in this language. Press “Check approval” in Setup.';
   if (code === 190 || /access token/i.test(msg)) return 'The access token expired or is wrong. Generate a permanent System user token and save it in Setup.';
   return msg;
+}
+
+/** True when this number sent us a WhatsApp in the last 24 hours (Meta's customer service window). */
+async function wroteLast24h(number: string) {
+  try {
+    const { list } = await import('./collections');
+    const since = new Date(Date.now() - 23.5 * 3600_000).toISOString();
+    const tail = number.slice(-9);
+    return (await list<WaLog>('whatsapp-log')).some((l) => l.dir === 'in' && l.at >= since && digits(l.to).endsWith(tail));
+  } catch { return false; }
 }
