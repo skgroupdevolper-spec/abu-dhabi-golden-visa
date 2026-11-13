@@ -1615,3 +1615,7 @@ body.c-view .cur-dot { opacity: 0; }
 @media (max-width: 760px) {
   .apply-nav { position: sticky; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); z-index: 30; margin-inline: -14px; padding: 10px 14px; background: rgba(255, 252, 244, .96); backdrop-filter: blur(8px); border-top: 1px solid #efe6cf; border-radius: 14px; box-shadow: 0 -10px 24px -18px rgba(0, 0, 0, .35); }
 }
+@media (max-width: 760px) {
+  /* apply form: the sticky buttons take the bottom, so the chat bubble steps out of the way */
+  body:has(.apply-nav) .chatw:not(.open) { display: none; }
+}
