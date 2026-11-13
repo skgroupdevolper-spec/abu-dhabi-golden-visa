@@ -3,6 +3,9 @@ import { ActionForm, Submit } from '@/components/dash/ActionForm';
 import { F, Toggle } from '@/components/dash/Fields';
 import { FULL, requireAdmin } from '@/lib/server/auth';
 import { docCfg } from '@/lib/server/doccfg';
+import { list } from '@/lib/server/collections';
+import type { MailLog } from '@/lib/server/mail';
+import { when } from '@/lib/stages';
 import { saveDocCfg } from '../../settings-actions';
 import { MAIL_EVENTS } from '@/lib/mail-events';
 
@@ -12,6 +15,7 @@ export const dynamic = 'force-dynamic';
 export default async function Documents() {
   await requireAdmin(FULL);
   const { pdf, mail } = await docCfg();
+  const log = (await list<MailLog>('mail-log')).slice(0, 40);
   return (
     <>
       <div className="topbar"><div><p className="eyebrow">Emails &amp; PDFs</p><h1>Your quotes, receipts and emails, <span className="gold">your way.</span></h1></div></div>
@@ -92,6 +96,16 @@ export default async function Documents() {
           })}
           <div className="full"><Submit>Save email messages</Submit></div>
         </ActionForm>
+      </div>
+      <div className="panel" style={{ maxWidth: 900, marginTop: 18 }} id="log">
+        <h2 style={{ margin: 0 }}>Email log</h2>
+        <p className="help">The last emails the website tried to send. A red line shows why one failed.</p>
+        {log.length === 0 ? <p className="empty">No emails yet.</p> : (
+          <div className="tbl-wrap"><table className="tbl">
+            <thead><tr><th>When</th><th>To</th><th>Subject</th><th>Result</th></tr></thead>
+            <tbody>{log.map((x) => <tr key={x.id}><td className="small">{when(x.at)}</td><td className="small">{x.to}</td><td className="small">{x.subject}</td><td className="small">{x.ok ? <span className="pill ok">Sent</span> : <span className="pill due" title={x.error}>Failed</span>}{!x.ok && x.error && <div className="small" style={{ color: '#b42318', maxWidth: 320 }}>{x.error}</div>}</td></tr>)}</tbody>
+          </table></div>
+        )}
       </div>
     </>
   );

@@ -26,6 +26,8 @@ export async function GET(req: Request) {
   await check('actionKnown', async () => { const m = JSON.parse(await (await import('node:fs/promises')).readFile(path.join(process.cwd(), '.next/server/server-reference-manifest.json'), 'utf8')); const e = m.node?.[aid]; return aid ? (e ? 'yes ' + JSON.stringify(e).slice(0, 300) : 'NO (of ' + Object.keys(m.node || {}).length + ')') : 'no aid'; });
   await check('pm2', async () => `pid ${process.pid} instance ${process.env.NODE_APP_INSTANCE ?? '-'} build ${(await (await import('node:fs/promises')).readFile(path.join(process.cwd(), '.next/BUILD_ID'), 'utf8')).trim()}`);
   const trace = (globalThis as unknown as { __ADGV_TRACE?: unknown[] }).__ADGV_TRACE; out.trace = trace ?? [];
+  await check('smtp', async () => { const r = await (await import('@/lib/server/mail')).verifySmtp(); return r.ok ? 'login ok' : 'FAIL ' + r.error; });
+  out.mails = ((await (await import('@/lib/server/collections')).list<{ at: string; to: string; subject: string; ok: boolean; error?: string }>('mail-log')) ?? []).slice(0, 8);
   out.errors = (globalThis as unknown as { __ADGV_ERR?: unknown[] }).__ADGV_ERR ?? [];
   return NextResponse.json(out, { headers: { 'Cache-Control': 'no-store' } });
 }

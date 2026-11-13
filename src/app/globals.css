@@ -1575,3 +1575,20 @@ body.c-view .cur-ring { background: linear-gradient(135deg, #f3d77e, #c9961a); b
 body.c-view .cur-ring span { display: flex; flex-direction: column; align-items: center; gap: 6px; color: #111; font: 800 13px/1 var(--body); letter-spacing: .16em; padding-left: .16em; }
 body.c-view .cur-ring span::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #111; }
 body.c-view .cur-dot { opacity: 0; }
+
+/* Mobile menu: Apply now first, currency right there */
+.mobile-panel .mp-quick { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin: 4px 0 14px; padding-bottom: 14px; border-bottom: 1px solid #efe6cf; }
+.mobile-panel .mp-apply { justify-content: center; font-size: 16px; padding: 14px 18px; box-shadow: 0 14px 28px -16px rgba(184, 144, 31, .9); animation: mpGlow 2.4s ease-in-out infinite; }
+@keyframes mpGlow { 50% { box-shadow: 0 14px 34px -10px rgba(184, 144, 31, 1); } }
+@media (prefers-reduced-motion: reduce) { .mobile-panel .mp-apply { animation: none; } }
+.mobile-panel .mp-cur { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #e6d6a8; border-radius: 999px; padding: 0 10px; background: #fffaf0; height: 48px; }
+.mobile-panel .mp-cur select { border: 0; background: transparent; font: 600 14px/1 var(--body); color: #111; max-width: 92px; appearance: none; padding: 0 4px; }
+
+/* Apply form buttons on phones: never cut off */
+@media (max-width: 640px) {
+  .apply-nav { gap: 8px; }
+  .apply-nav .btn { min-width: 0; white-space: normal; text-align: center; justify-content: center; padding-inline: 14px; line-height: 1.2; }
+  .apply-nav .btn-glass { flex: 0 0 auto; }
+  .apply-nav .btn-red { flex: 1 1 auto; font-size: 15px; }
+}
+.sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

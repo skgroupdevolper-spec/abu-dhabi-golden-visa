@@ -282,6 +282,18 @@ export function Header({ locale }: { locale: Locale }) {
               <Icon name="close" />
             </button>
           </div>
+          <div className="mp-quick">
+            <ApplyA className="btn btn-gold mp-apply">
+              {u('Apply Now', locale)} <Icon name="arrow" size={18} />
+            </ApplyA>
+            <label className="mp-cur">
+              <Icon name="cash" size={16} />
+              <span className="sr-only">{u('Choose currency', locale)}</span>
+              <select value={cur} onChange={(e) => pickCurrency(e.target.value)} aria-label={u('Choose currency', locale)}>
+                {Object.entries(siteFx() ?? RATES).map(([code, r]) => <option key={code} value={code}>{code} · {r.name}</option>)}
+              </select>
+            </label>
+          </div>
           {MENU().map((item) =>
             item.groups ? (
               <details key={item.label}>

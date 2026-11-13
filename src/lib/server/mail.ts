@@ -11,16 +11,37 @@ export type MailOpts = { badge?: string; title?: string };
  *  Every email goes out as a branded card (white, gold and black) with the plain text kept for simple mail apps. */
 export async function sendMail(to: string, subject: string, text: string, opts: MailOpts = {}) {
   const m = (await getSecrets()).smtp;
-  if (!m.host || !m.user || !m.pass || !to) return { ok: false, error: 'Email is not set up' };
+  if (!m.host || !m.user || !m.pass || !to) { void logMail(to, subject, false, 'Email is not set up (Admin > Settings > Email)'); return { ok: false, error: 'Email is not set up' }; }
   try {
     const t = await transport(m);
     const html = renderMail(subject, text, (await docCfg()).mail, opts);
     await t.sendMail({ from: m.from || m.user, to, subject, text: cleanText(text), html });
+    void logMail(to, subject, true);
     return { ok: true };
   } catch (e) {
     cached?.t.close(); cached = null; // next email connects fresh
-    return { ok: false, error: friendly((e as Error).message) };
+    const error = friendly((e as Error).message);
+    void logMail(to, subject, false, `${error} [${(e as Error).message.slice(0, 160)}]`);
+    return { ok: false, error };
   }
+}
+
+/** Last 300 emails (sent or failed), shown in Admin > Emails & PDFs > Email log. */
+export type MailLog = { id: string; at: string; to: string; subject: string; ok: boolean; error?: string };
+async function logMail(to: string, subject: string, ok: boolean, error?: string) {
+  try {
+    const { insert } = await import('./collections');
+    const { newId, now } = await import('./store');
+    await insert<MailLog>('mail-log', { id: newId(5), at: now(), to: to || '(no address)', subject: subject.slice(0, 160), ok, ...(error ? { error } : {}) }, 300);
+  } catch {}
+}
+
+/** Checks the login to the mail server without sending anything. */
+export async function verifySmtp() {
+  const m = (await getSecrets()).smtp;
+  if (!m.host || !m.user || !m.pass) return { ok: false, error: 'Email is not set up' };
+  try { cached?.t.close(); cached = null; await (await transport(m)).verify(); return { ok: true }; }
+  catch (e) { cached = null; return { ok: false, error: `${friendly((e as Error).message)} [${(e as Error).message.slice(0, 160)}]` }; }
 }
 
 /** Turns mail server errors into plain advice. */
