@@ -1,4 +1,5 @@
 import 'server-only';
+import { createHash } from 'node:crypto';
 import { WA_EVENTS, type WaEvent } from '@/lib/settings-schema';
 import { insert, type WaLog } from './collections';
 import { getSecrets } from './settings';
@@ -79,4 +80,10 @@ export async function sendWaDoc(to: string, link: string, filename: string, capt
   } catch (e) { error = (e as Error).message; }
   await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: number, event: 'paid', text: `[PDF] ${filename} · ${caption}`.slice(0, 500), ok, error: error || undefined, dir: 'out' }, 2000);
   return { ok, error };
+}
+
+/** Webhook verify word: the one saved in Admin > WhatsApp, or a fixed word made from your IDs (same every time). */
+export function webhookToken(w: { verifyToken?: string; phoneNumberId?: string; businessId?: string }) {
+  if (w.verifyToken?.trim()) return w.verifyToken.trim();
+  return 'adgv-' + createHash('sha256').update(`adgv|${w.businessId || ''}|${w.phoneNumberId || ''}`).digest('hex').slice(0, 10);
 }

@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { insert, notify, type WaLog } from '@/lib/server/collections';
 import { getSecrets } from '@/lib/server/settings';
 import { listApplications, newId, now, updateApplication } from '@/lib/server/store';
-import { digits } from '@/lib/server/whatsapp';
+import { digits, webhookToken } from '@/lib/server/whatsapp';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams;
   const w = (await getSecrets()).whatsapp;
-  if (q.get('hub.mode') === 'subscribe' && w.verifyToken && q.get('hub.verify_token') === w.verifyToken) return new NextResponse(q.get('hub.challenge') ?? '', { status: 200 });
+  if (q.get('hub.mode') === 'subscribe' && (q.get('hub.verify_token') ?? '').trim() === webhookToken(w)) return new NextResponse(q.get('hub.challenge') ?? '', { status: 200, headers: { 'Content-Type': 'text/plain' } });
   return new NextResponse('Forbidden', { status: 403 });
 }
 

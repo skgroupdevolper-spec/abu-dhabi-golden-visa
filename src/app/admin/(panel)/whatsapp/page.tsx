@@ -3,7 +3,7 @@ import { DeleteButton } from '@/components/dash/DeleteButton';
 import { clearItems, deleteItems } from '@/app/admin/delete-actions';
 import { ActionForm, CopyButton as CopyBtn, Submit } from '@/components/dash/ActionForm';
 import type { ReactNode } from 'react';
-import { randomBytes } from 'node:crypto';
+import { webhookToken } from '@/lib/server/whatsapp';
 import { F, Tabs, Toggle } from '@/components/dash/Fields';
 import { FULL, requireAdmin } from '@/lib/server/auth';
 import { list, type WaLog } from '@/lib/server/collections';
@@ -37,7 +37,7 @@ export default async function WhatsApp({ searchParams }: { searchParams: Promise
           [!!w.phoneNumberId && !!w.businessId, 'Phone number ID and Business account ID', 'Meta for Developers → your app → WhatsApp → API setup.', L('https://developers.facebook.com/apps/', 'Open my Meta apps')],
           [!!w.accessToken, 'Permanent access token', 'Business settings → System users → Add (Admin) → assign your app → Generate token with whatsapp_business_messaging and whatsapp_business_management, “Never expires”. The 24-hour test token stops working the next day.', L('https://business.facebook.com/settings/system-users', 'Open System users')],
           [w.mode === 'cloud', 'Mode set to “Cloud API”', 'Choose “Cloud API: send automatic messages” below and press Save.'],
-          [!!w.verifyToken, 'Webhook connected', 'Below, “Webhook verify token” already has a word filled in: press Save. Then open your app → WhatsApp → Configuration → Webhook → Edit, paste the Webhook URL and the same word, press “Verify and save”, then Subscribe to “messages”.', <><CopyBtn text={`${SITE.url}/api/whatsapp/webhook`} label="Copy webhook URL" /> {L('https://developers.facebook.com/apps/', 'Open my Meta apps')}</>],
+          [!!w.verifyToken, 'Webhook connected', `Webhook URL: ${SITE.url}/api/whatsapp/webhook/ (with the / at the end) · Verify token: ${webhookToken(w)}. Then open your app → WhatsApp → Configuration → Webhook → Edit, paste both, press “Verify and save”, then Subscribe to “messages”. Press Save here too.`, <><CopyBtn text={`${SITE.url}/api/whatsapp/webhook/`} label="Copy webhook URL" /> {L('https://developers.facebook.com/apps/', 'Open my Meta apps')}</>],
           [names > 0, `Approved message templates (${names} of 9 filled in)`, 'One click sends all 9 ready-made templates (Utility, English) to Meta. Approval usually takes minutes; then press “Check approval” and the names fill in by themselves.', <><ActionForm action={waTemplates} className="wa-inline"><input type="hidden" name="do" value="create" /><Submit className="btn btn-sm btn-gold">Create all templates in Meta</Submit></ActionForm> <ActionForm action={waTemplates} className="wa-inline"><input type="hidden" name="do" value="sync" /><Submit className="btn btn-sm">Check approval</Submit></ActionForm> {w.businessId && L(`https://business.facebook.com/wa/manage/message-templates/?waba_id=${waba}`, 'Open templates in Meta')}</>],
         ];
         const doneN = steps.filter((x) => x[0]).length;
@@ -66,8 +66,8 @@ export default async function WhatsApp({ searchParams }: { searchParams: Promise
               <F name="phoneNumberId" label="Phone number ID" value={w.phoneNumberId} help="Meta Business → WhatsApp → API setup" />
               <F name="businessId" label="WhatsApp Business account ID" value={w.businessId} />
               <F name="accessToken" label="Permanent access token" type="password" help={w.accessToken ? `Saved (…${w.accessToken.slice(-4)}). Leave empty to keep it.` : 'Create a system-user token with whatsapp_business_messaging permission.'} full />
-              <F name="verifyToken" label="Webhook verify token (any text you choose)" value={w.verifyToken || `adgv-${randomBytes(4).toString('hex')}`} help={w.verifyToken ? undefined : 'A word is suggested; press Save to keep it, then use the same word in Meta.'} />
-              <div className="field"><label>Webhook URL (paste in Meta)</label><code className="k" style={{ padding: 12, display: 'block', overflowWrap: 'anywhere' }}>{SITE.url}/api/whatsapp/webhook</code><p className="help">Subscribe to “messages”. Client replies then appear in their application.</p></div>
+              <F name="verifyToken" label="Webhook verify token (any text you choose)" value={webhookToken(w)} help={w.verifyToken ? 'Use exactly this word in Meta.' : 'Ready to use: put exactly this word in Meta (it works even before you press Save).'} />
+              <div className="field"><label>Webhook URL (paste in Meta)</label><code className="k" style={{ padding: 12, display: 'block', overflowWrap: 'anywhere' }}>{SITE.url}/api/whatsapp/webhook/</code><p className="help">Subscribe to “messages”. Client replies then appear in their application.</p></div>
               <F name="teamNumbers" label="Team numbers for new-enquiry alerts" value={w.teamNumbers} type="textarea" rows={2} help="One per line, with country code" full />
               <F name="templateLang" label="Template language code" value={w.templateLang} help="For approved templates, e.g. en, ar" />
             </div>
