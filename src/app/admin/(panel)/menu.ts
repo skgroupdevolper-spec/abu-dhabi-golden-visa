@@ -10,6 +10,7 @@ export const ADMIN_MENU: { title: string; items: Item[] }[] = [
     { href: '/admin/leads/', label: 'Leads & enquiries', ic: 'inbox', badge: 'leads' },
     { href: '/admin/visitors/', label: 'Visitors', ic: 'chart' },
     { href: '/admin/applications/', label: 'Applications', ic: 'folder', badge: 'unread' },
+    { href: '/admin/steps/', label: 'Application steps', ic: 'check', roles: FULL },
     { href: '/admin/customers/', label: 'Customers', ic: 'users' },
     { href: '/admin/bookings/', label: 'Appointments', ic: 'calendar' },
     { href: '/admin/payments/', label: 'Online payments', ic: 'card' },

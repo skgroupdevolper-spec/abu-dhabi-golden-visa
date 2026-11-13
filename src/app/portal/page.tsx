@@ -6,7 +6,7 @@ import { Icon } from '@/components/Icon';
 import { clientArea } from '@/lib/server/portal';
 import { feed, filePct, fileStatus, freshCount } from '@/lib/client-status';
 import { SITE } from '@/lib/site';
-import { STAGES, day, money } from '@/lib/stages';
+import { day, money } from '@/lib/stages';
 
 export const metadata: Metadata = { title: 'My dashboard' };
 export const dynamic = 'force-dynamic';
@@ -86,11 +86,11 @@ export default async function Home() {
       <section className="dsec">
         <div className="panel-h"><p className="eyebrow">{t.liveFiles}</p><a className="small" href={`${base}/files/`}>{t.allFiles} ›</a></div>
         {active.length === 0 ? <p className="empty">{mine.length ? t.nothingYet : t.noFiles}</p> : active.slice(0, 5).map((a) => {
-          const s = fileStatus(a, t), pct = filePct(a), qp = quotePay(a), dueP = a.payments.find((p) => p.status === 'due');
+          const s = fileStatus(a, t), pct = filePct(a, t.stages.length), qp = quotePay(a), dueP = a.payments.find((p) => p.status === 'due');
           return (
             <a key={a.id} className="jrow" href={`${base}/t/${a.token}/`}>
               <span className="ring" style={{ ['--p' as string]: pct }}><i>{pct}%</i></span>
-              <span className="jr-m"><b>{a.route}</b><small>{a.ref} · {t.step} {a.stage + 1} {t.of} {STAGES.length}: {t.stages[a.stage]}</small>
+              <span className="jr-m"><b>{a.route}</b><small>{a.ref} · {t.step} {a.stage + 1} {t.of} {t.stages.length}: {t.stages[a.stage]}</small>
                 <span className="row" style={{ gap: 6, marginTop: 6 }}><em className={`stc-pill st-${s.key}`}>{s.label}</em>{a.expected && <em className="stc-pill">{t.expected} {a.expected}</em>}{(dueP || qp > 0) && <em className="stc-pill st-quote">{t.due}: {money(dueP ? dueP.amount : qp)}</em>}</span>
               </span>
               <Icon name="chev" size={18} />

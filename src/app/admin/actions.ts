@@ -10,7 +10,9 @@ const requireAdmin = () => requireAny(EDIT);
 const requireFull = () => requireAny(FULL);
 import { saveUpload } from '@/lib/server/files';
 import { createApplication, getApplication, getFees, newId, now, saveFees, updateApplication, type Fees, updateLead, listLeads, type Application, type LeadStatus } from '@/lib/server/store';
-import { STAGES, governmentLines, money } from '@/lib/stages';
+import { governmentLines, money } from '@/lib/stages';
+import { getStages, saveStages } from '@/lib/server/stages';
+import type { StageState } from '@/lib/stage-defs';
 import { portalUrl } from '@/lib/site';
 import { sendWa } from '@/lib/server/whatsapp';
 import { DECISION_TEXT } from '@/lib/decision';
@@ -132,28 +134,29 @@ export async function saveClient(_: FormState, f: FormData): Promise<FormState> 
 /** Email copy of a client update (only when the client has an email and SMTP is set up). */
 
 export async function setStage(_: FormState, f: FormData): Promise<FormState> {
-  const stage = Math.max(0, Math.min(STAGES.length - 1, n(f, 'stage')));
+  const list = await getStages();
+  const stage = Math.max(0, Math.min(list.length - 1, n(f, 'stage')));
+  const STATES: StageState[] = ['done', 'progress', 'pending', 'hold', 'action', 'na'];
   const app = await edit(f, (a) => {
-    a.stage = stage;
-    // The chosen stage and every step before it count as done, so the client sees each earlier step ticked.
+    a.stage = stage; a.stageId = list[stage].id;
+    // Every step up to this one gets a date (first time it was reached); moving back clears later dates.
     for (let i = 0; i <= stage; i++) a.stageDates[String(i)] = a.stageDates[String(i)] || now();
-    // Moving back: later steps are no longer done, so their dates go.
     for (const k of Object.keys(a.stageDates)) if (Number(k) > stage) delete a.stageDates[k];
-    a.nextStep = s(f, 'nextStep', 400);
+    // Hand-set state of single steps (On hold, Action required, Not applicable…); "Auto" clears it.
+    const st: Record<string, StageState> = {};
+    for (const x of list) { const v = s(f, `ss_${x.id}`, 12) as StageState; if (STATES.includes(v)) st[x.id] = v; }
+    if (f.has(`ss_${list[0].id}`)) a.stageStatus = st;
+    a.nextStep = s(f, 'nextStep', 600);
     a.expected = s(f, 'expected', 60);
-    if (f.get('notify')) a.messages.push({ id: newId(6), by: 'team', at: now(), text: `Status update: ${STAGES[stage]}.${a.nextStep ? `\nNext: ${a.nextStep}` : ''}` });
+    if (f.get('notify')) a.messages.push({ id: newId(6), by: 'team', at: now(), text: `Status update: ${list[stage].name}.${a.nextStep ? `\nNext: ${a.nextStep}` : ''}` });
   });
-  // "Save as the default text for this stage": used for every client from now on.
+  // "Save as the default text for this step": used for every client from now on.
   if (app && f.get('saveDefault') && app.nextStep) {
-    const { getBlock, saveBlock } = await import('@/lib/server/settings');
-    const cur = await getBlock<string[]>('stage-next', []);
-    const list = STAGES.map((_, i) => cur[i] ?? '');
-    list[stage] = app.nextStep;
-    await saveBlock('stage-next', list);
+    await saveStages(list.map((x, i) => (i === stage ? { ...x, next: app.nextStep } : x)));
   }
   if (app && f.get('notify')) {
-    const r = await sendWa(app.client.phone, 'status', V(app, { status: STAGES[stage], next: app.nextStep }));
-    void mailEvent(app.client.email, 'status', V(app, { status: STAGES[stage], next: app.nextStep, expected: app.expected }));
+    const r = await sendWa(app.client.phone, 'status', V(app, { status: list[stage].name, next: app.nextStep }));
+    void mailEvent(app.client.email, 'status', V(app, { status: list[stage].name, next: app.nextStep, expected: app.expected }));
     return { ok: `Status updated.${r.ok ? ' WhatsApp sent.' : ''}` };
   }
   return { ok: 'Status updated.' };
@@ -372,10 +375,12 @@ export async function setDecision(_: FormState, f: FormData): Promise<FormState>
   if (result === 'rejected' && !reason) return { error: 'Please add the reason the authority gave, so the client understands what happened.' };
   const me = await import('@/lib/server/auth').then((m) => m.currentAdmin());
   const D = DECISION_TEXT[result];
+  const steps = await getStages();
+  const ep = Math.max(0, steps.findIndex((x) => x.id === 'entry-permit'));
   const app = await edit(f, (a) => {
     const prev = a.decision ? [...(a.decision.history ?? []), { result: a.decision.result, reason: a.decision.reason, at: a.decision.at }] : [];
     a.decision = { result: result as 'approved', reason, at: now(), by: me?.name || me?.email, refNo: s(f, 'refNo', 80) || undefined, validTo: s(f, 'validTo', 20) || undefined, nextAction: nextAction || undefined, history: prev };
-    if (result === 'approved' && f.get('advance') && a.stage < 6) { a.stage = 6; a.stageDates['6'] = a.stageDates['6'] || now(); a.nextStep = STAGE_NEXT_DEFAULT_6; }
+    if (result === 'approved' && f.get('advance') && ep > 0 && a.stage < ep) { for (let i = 0; i <= ep; i++) a.stageDates[String(i)] = a.stageDates[String(i)] || now(); a.stage = ep; a.stageId = steps[ep].id; a.nextStep = steps[ep].next; }
     if (f.get('notify')) a.messages.push({ id: newId(6), by: 'team', at: now(), text: `${D.client}${reason ? `\nReason: ${reason}` : ''}${nextAction ? `\nNext: ${nextAction}` : ''}` });
   });
   if (app && f.get('notify')) {
@@ -385,7 +390,6 @@ export async function setDecision(_: FormState, f: FormData): Promise<FormState>
   }
   return { ok: `Decision saved: ${D.title}.` };
 }
-const STAGE_NEXT_DEFAULT_6 = 'We are arranging your entry permit or change of status. We will share the details with you.';
 
 /* ---------- assigning files and enquiries to team members (owners and admins) ---------- */
 export async function assignApp(f: FormData) {

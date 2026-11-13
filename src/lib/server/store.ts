@@ -30,7 +30,9 @@ export type Application = {
   assignee?: string;
   client: { name: string; phone: string; email: string; nationality: string; language: string };
   route: string; location: 'in' | 'out'; adults: number; kids: number;
-  stage: number; stageDates: Record<string, string>; nextStep: string; expected: string; notes: string;
+  stage: number; stageDates: Record<string, string>;
+  /** Id of the current step (see Admin > Application steps) and hand-set states of single steps. */
+  stageId?: string; stageStatus?: Record<string, import('@/lib/stage-defs').StageState>; nextStep: string; expected: string; notes: string;
   quote: { lines: QuoteLine[]; serviceFee: number; vat: number; insurance: string; sentAt?: string; acceptedAt?: string };
   payments: Payment[]; documents: Doc[]; requests: string[]; messages: Message[]; leadId?: string;
   /** Advisor shown to the client, terms and quote validity. */

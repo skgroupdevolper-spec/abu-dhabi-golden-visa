@@ -1,15 +1,17 @@
+import { getStages } from '@/lib/server/stages';
 import type { Metadata } from 'next';
 import { DeleteButton } from '@/components/dash/DeleteButton';
 import { clearItems, deleteItems } from '@/app/admin/delete-actions';
 import Link from 'next/link';
 import { listApplications } from '@/lib/server/store';
-import { STAGES, day, money } from '@/lib/stages';
+import { day, money } from '@/lib/stages';
 import { DECISION_PILL, DECISION_TEXT } from '@/lib/decision';
 import { myScope } from '@/lib/server/scope';
 
 export const metadata: Metadata = { title: 'Applications' };
 
 export default async function Apps({ searchParams }: { searchParams: Promise<{ q?: string; a?: string; d?: string }> }) {
+  const STAGES = (await getStages()).map((x) => x.name);
   const { q = '', a, d } = await searchParams;
   const needle = q.toLowerCase();
   const sc = await myScope();

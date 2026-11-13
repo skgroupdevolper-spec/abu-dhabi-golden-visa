@@ -1,24 +1,24 @@
 // Status of a client file as shown in the client dashboard (Quotation → Confirmed → In progress → Completed).
 import type { Dict } from './portal-i18n';
-import { STAGES } from './stages';
 
 type A = { decision?: { result: string }; stage: number; quote: { sentAt?: string; acceptedAt?: string; lines: { amount: number }[]; serviceFee: number; vat: number }; payments: { status: string; amount: number }[] };
 
 export function fileStatus(a: A, t: Dict): { key: 'prep' | 'quote' | 'conf' | 'prog' | 'done' | 'appr' | 'rej' | 'hold'; label: string } {
   const d = a.decision?.result;
-  if (d === 'approved' && a.stage < STAGES.length - 1) return { key: 'appr', label: 'Approved ✓' };
+  if (d === 'approved' && a.stage < t.stages.length - 1) return { key: 'appr', label: 'Approved ✓' };
   if (d === 'rejected') return { key: 'rej', label: 'Not approved' };
   if (d === 'on_hold') return { key: 'hold', label: 'On hold' };
   if (d === 'withdrawn') return { key: 'rej', label: 'Withdrawn' };
   const paid = a.payments.some((p) => p.status === 'paid'), due = a.payments.some((p) => p.status === 'due');
-  if (a.stage >= STAGES.length - 1) return { key: 'done', label: t.stCompleted };
+  if (a.stage >= t.stages.length - 1) return { key: 'done', label: t.stCompleted };
   if (!a.quote.sentAt) return { key: 'prep', label: t.stPreparing };
   if (!a.quote.acceptedAt && !paid) return { key: 'quote', label: t.stQuotation };
   if (due) return { key: 'conf', label: t.stConfirmed };
   return { key: 'prog', label: t.inProgress };
 }
 export const fileTotal = (a: A) => a.quote.lines.reduce((s, l) => s + l.amount, 0) + a.quote.serviceFee + a.quote.vat;
-export const filePct = (a: A) => Math.round(((a.stage + 1) / STAGES.length) * 100);
+/** Progress in %, from the number of steps in the list (t.stages). */
+export const filePct = (a: A, n = 17) => Math.round(((a.stage + 1) / Math.max(1, n)) * 100);
 
 export type FeedItem = { at: string; kind: 'stage' | 'paid' | 'due' | 'quote' | 'msg' | 'doc'; title: string; text: string; token: string; ref: string; amount?: number };
 type F = A & { ref: string; token: string; route: string; stageDates: Record<string, string>; quote: A['quote'] & { sentAt?: string }; payments: { status: string; amount: number; label: string; createdAt: string; paidAt?: string }[]; messages: { by: string; text: string; at: string }[]; documents: { by: string; shared: boolean; name: string; at: string }[] };

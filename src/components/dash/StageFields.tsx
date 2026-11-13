@@ -4,7 +4,7 @@
 // has its own), unless the advisor already typed something different. The text stays editable.
 import { useState } from 'react';
 
-export function StageFields({ stages, defaults, stage, next, expected }: { stages: string[]; defaults: string[]; stage: number; next: string; expected?: string }) {
+export function StageFields({ stages, defaults, stage, next, expected, groups }: { stages: string[]; defaults: string[]; stage: number; next: string; expected?: string; groups?: string[] }) {
   const [cur, setCur] = useState(stage);
   const [text, setText] = useState(next || defaults[stage] || '');
   const change = (i: number) => {
@@ -15,7 +15,11 @@ export function StageFields({ stages, defaults, stage, next, expected }: { stage
   return (
     <>
       <div className="field"><label htmlFor="stage">Current stage</label>
-        <select id="stage" name="stage" value={cur} onChange={(e) => change(Number(e.target.value))}>{stages.map((t, i) => <option key={t} value={i}>{i + 1}. {t}</option>)}</select>
+        <select id="stage" name="stage" value={cur} onChange={(e) => change(Number(e.target.value))}>
+          {groups?.some(Boolean)
+            ? [...new Set(groups)].map((g) => <optgroup key={g} label={g || 'Other'}>{stages.map((t, i) => (groups[i] === g ? <option key={i} value={i}>{i + 1}. {t}</option> : null))}</optgroup>)
+            : stages.map((t, i) => <option key={i} value={i}>{i + 1}. {t}</option>)}
+        </select>
       </div>
       <div className="field"><label htmlFor="expected">Expected next date</label><input id="expected" name="expected" defaultValue={expected} placeholder="e.g. 14 Nov 2026" /></div>
       <div className="field full">

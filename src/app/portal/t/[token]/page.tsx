@@ -7,7 +7,9 @@ import { SITE, waLink, waTo } from '@/lib/site';
 import { getPayCfg, online, orderBalance } from '@/lib/server/payments';
 import { LiveRefresh } from '@/components/dash/LiveRefresh';
 import { DECISION_TEXT } from '@/lib/decision';
-import { STAGES, day, money, when } from '@/lib/stages';
+import { day, money, when } from '@/lib/stages';
+import { STATE_LABEL, stageState } from '@/lib/stage-defs';
+import { getStages } from '@/lib/server/stages';
 import { PortalTop } from '@/components/dash/PortalTop';
 import { ClientShell } from '@/components/dash/ClientShell';
 import { clientArea, currentCustomer, portalBase, T } from '@/lib/server/portal';
@@ -20,6 +22,7 @@ export const dynamic = 'force-dynamic';
 export default async function ClientFile({ params, searchParams }: { params: Promise<{ token: string }>; searchParams: Promise<Record<string, string>> }) {
   const { token } = await params;
   const sp = await searchParams;
+  const steps = await getStages(); // first, so files are on the current step list
   const a = await getApplicationByToken(token);
   if (!a) notFound();
   const { t, lang } = await T();
@@ -31,7 +34,7 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
   const total = gov + a.quote.serviceFee + a.quote.vat;
   const due = a.payments.filter((p) => p.status === 'due');
   const paid = a.payments.filter((p) => p.status === 'paid');
-  const pct = Math.round(((a.stage + 1) / STAGES.length) * 100);
+  const pct = Math.round(((a.stage + 1) / t.stages.length) * 100);
   const mine = a.documents.filter((d) => d.by === 'client');
   const fromTeam = a.documents.filter((d) => d.by === 'team' && d.shared);
   const TK = <input type="hidden" name="token" value={a.token} />;
@@ -44,7 +47,7 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
   const payHref = due[0] ? `pay/${due[0].id}/` : canOrderPay ? (live ? 'pay/order/' : '#bank') : '';
   const toPay = due.length ? due.reduce((s2, p) => s2 + p.amount, 0) : canOrderPay ? balance : 0;
   const showBank = pay.bankOn && toPay > 0 && !!(pay.bankIban || pay.bankAccount);
-  const last = STAGES.length - 1;
+  const last = t.stages.length - 1;
   const st = a.stage >= last ? t.stCompleted : !a.quote.sentAt ? t.stPreparing : !a.quote.acceptedAt && !paid.length ? t.stQuotation : due.length ? t.stConfirmed : t.inProgress;
   const dec = a.decision, decT = dec ? DECISION_TEXT[dec.result] : undefined;
   const stKey0 = a.stage >= last ? 'done' : !a.quote.sentAt ? 'prep' : !a.quote.acceptedAt && !paid.length ? 'quote' : due.length ? 'conf' : 'prog';
@@ -65,7 +68,7 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
             <p className="oh-k">{t.orderLabel}</p>
             <h1 className="oh-ref">{a.ref}</h1>
             <div className="oh-chips"><span className="chip st">● {decT && stKey !== 'done' ? decT.title : st}</span><span className="chip"><Icon name="calendar" size={14} className="ei" /> {fmtD(a.createdAt)}</span><span className="chip"><Icon name="user" size={14} className="ei" /> {adv.name}</span></div>
-            <p className="oh-step">{t.step} {a.stage + 1} {t.of} {STAGES.length}: <b>{t.stages[a.stage]}</b></p>
+            <p className="oh-step">{t.step} {a.stage + 1} {t.of} {t.stages.length}: <b>{t.stages[a.stage]}</b></p>
             <div className="bar oh-bar"><i style={{ width: `${pct}%` }} /></div>
           </div>
           <div className="oh-r">
@@ -128,9 +131,12 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
             <section className="panel reveal" id="status">
               <h2>{t.progress}</h2>
               <ol className="timeline" style={{ marginTop: 14 }}>
-                {STAGES.map((st, i) => (
-                  <li key={st} className={i <= a.stage ? 'done' : i === a.stage + 1 ? 'now' : ''}><span className="dot">{i <= a.stage ? '✓' : i + 1}</span><div><b>{t.stages[i]}</b>{i <= a.stage && a.stageDates[String(i)] && <small>{day(a.stageDates[String(i)])}</small>}</div></li>
-                ))}
+                {steps.map((x, i) => {
+                  const st = stageState(i, a.stage, x.id, a.stageStatus);
+                  return (
+                    <li key={x.id} className={`st-${st} ${st === 'done' ? 'done' : st === 'progress' ? 'now' : ''}`}><span className="dot">{st === 'done' ? '✓' : st === 'na' ? '–' : st === 'hold' || st === 'action' ? '!' : i + 1}</span><div><b>{t.stages[i] ?? x.name}</b>{(st === 'hold' || st === 'action' || st === 'progress' || st === 'na') && <span className={`pill st-pill ${st === 'progress' ? 'new' : 'due'}`}>{STATE_LABEL[st]}</span>}{st !== 'pending' && st !== 'na' && a.stageDates[String(i)] && <small>{day(a.stageDates[String(i)])}</small>}</div></li>
+                  );
+                })}
               </ol>
             </section>
 

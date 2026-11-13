@@ -175,6 +175,7 @@ export async function checkStatus(gw: Gw, hint: Record<string, string> = {}): Pr
 export async function settle(appId: string, pid: string, method: string, txn: string): Promise<boolean> {
   const c = await getPayCfg();
   let changed = false, confirmed = false;
+  const paidIdx = (await (await import('./stages')).getStages()).findIndex((x) => x.id === 'paid');
   const app = await updateApplication(appId, (a) => {
     const p = a.payments.find((x) => x.id === pid);
     if (!p || p.status === 'paid') return;
@@ -184,7 +185,7 @@ export async function settle(appId: string, pid: string, method: string, txn: st
     // Paying a quotation confirms the order (no separate "accept" needed).
     if (a.quote.sentAt && !a.quote.acceptedAt) { a.quote.acceptedAt = now(); confirmed = true; }
     if (!a.confirmedAt && a.quote.sentAt) { a.confirmedAt = now(); confirmed = true; }
-    if (c.autoStage && a.stage < 2 && a.payments.every((x) => x.status === 'paid')) { a.stage = 2; a.stageDates['2'] = now(); }
+    if (c.autoStage && paidIdx > 0 && a.stage < paidIdx && a.payments.every((x) => x.status === 'paid')) { for (let i = 0; i <= paidIdx; i++) a.stageDates[String(i)] = a.stageDates[String(i)] || now(); a.stage = paidIdx; a.stageId = 'paid'; }
     a.updatedAt = now();
     changed = true;
   });

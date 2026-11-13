@@ -356,13 +356,31 @@ export async function setAdvisor(f: FormData) {
   revalidatePath(`/admin/applications/${s(f, 'app', 40)}/`);
 }
 
-/* ---------- default "next step" text per application stage ---------- */
-export async function saveStageDefaults(_: St, f: FormData): Promise<St> {
+/* ---------- application steps (add, remove, rename, reorder, client message) ---------- */
+export async function saveStageList(_: St, f: FormData): Promise<St> {
   await requireAdmin(FULL);
-  const { STAGES } = await import('@/lib/stages');
-  await saveBlock('stage-next', STAGES.map((_, i) => s(f, `sd_${i}`, 400)));
-  revalidatePath('/admin/applications/', 'layout');
-  return { ok: 'Default texts saved. They are used when you choose a stage.' };
+  const { saveStages } = await import('@/lib/server/stages');
+  let rows: { id?: string; name?: string; group?: string; next?: string }[] = [];
+  try { rows = JSON.parse(String(f.get('list') || '[]')); } catch { return { error: 'Could not read the list.' }; }
+  const seen = new Set<string>();
+  const list = rows.map((r) => {
+    const name = String(r.name ?? '').trim().slice(0, 80);
+    let id = String(r.id ?? '').trim().slice(0, 40) || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 30) || 'step';
+    while (seen.has(id)) id += '-2';
+    seen.add(id);
+    return { id, name, group: String(r.group ?? '').trim().slice(0, 60), next: String(r.next ?? '').trim().slice(0, 600) };
+  }).filter((x) => x.name);
+  if (list.length < 2) return { error: 'Keep at least two steps.' };
+  await saveStages(list);
+  revalidatePath('/admin/', 'layout');
+  return { ok: `Saved ${list.length} steps. Every file was moved to the same step in the new list.` };
+}
+export async function resetStageList(_: St): Promise<St> {
+  await requireAdmin(FULL);
+  const [{ saveStages }, { STAGES0 }] = await Promise.all([import('@/lib/server/stages'), import('@/lib/stage-defs')]);
+  await saveStages(STAGES0);
+  revalidatePath('/admin/', 'layout');
+  return { ok: 'The standard 17 steps are back.' };
 }
 
 /* ---------- logo & brand ---------- */

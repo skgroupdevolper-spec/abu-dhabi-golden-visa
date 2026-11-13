@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import type { Metadata } from 'next';
 import { DeleteButton } from '@/components/dash/DeleteButton';
 import { clearItems, deleteItems } from '@/app/admin/delete-actions';
@@ -8,13 +9,14 @@ import { sizeLabel } from '@/lib/server/files';
 import { mergeCatalog } from '@/content/services-catalog';
 import { getServiceOverrides } from '@/lib/server/content';
 import { list, type TeamUser } from '@/lib/server/collections';
-import { saveStageDefaults, setAdvisor } from '../../../settings-actions';
+import { setAdvisor } from '../../../settings-actions';
 import { StageFields } from '@/components/dash/StageFields';
-import { getBlock } from '@/lib/server/settings';
 import { portalUrl, waTo } from '@/lib/site';
 import { myScope, scopedApp } from '@/lib/server/scope';
 import { DECISION_PILL, DECISION_TEXT } from '@/lib/decision';
-import { ROUTE_LABELS, STAGES, STAGE_NEXT_DEFAULT, day, money, when } from '@/lib/stages';
+import { ROUTE_LABELS, day, money, when } from '@/lib/stages';
+import { getStages } from '@/lib/server/stages';
+import { STATE_LABEL, stageState } from '@/lib/stage-defs';
 import {
   addPayment, archiveApplication, clearMessages, fillQuote, markPaid, newPortalLink, assignApp, removePayment, saveClient, saveQuote, setDecision, setRequests, setStage, teamMessage, toggleShare, uploadTeamDoc,
 } from '../../../actions';
@@ -34,8 +36,9 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
   const H = <input type="hidden" name="app" value={a.id} />;
   const first = a.client.name.split(' ')[0];
   const team = await list<TeamUser>('team');
-  const saved = await getBlock<string[]>('stage-next', []);
-  const nextDefaults = STAGES.map((_, i) => saved[i]?.trim() || STAGE_NEXT_DEFAULT[i] || '');
+  const steps = await getStages();
+  const STAGES = steps.map((x) => x.name);
+  const nextDefaults = steps.map((x) => x.next);
   const svc = mergeCatalog(await getServiceOverrides()).flatMap((g) => g.items);
 
   return (
@@ -61,21 +64,36 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
             <div className="bar" style={{ marginBottom: 16 }}><i style={{ width: `${((a.stage + 1) / STAGES.length) * 100}%` }} /></div>
             <ActionForm action={setStage} className="form">
               {H}
-              <StageFields stages={STAGES} defaults={nextDefaults} stage={a.stage} next={a.nextStep} expected={a.expected} />
+              <StageFields stages={STAGES} groups={steps.map((x) => x.group)} defaults={nextDefaults} stage={a.stage} next={a.nextStep} expected={a.expected} />
+              <details className="more full">
+                <summary>State of single steps (On hold, Action required, Not applicable…)</summary>
+                <div className="ss-grid" style={{ marginTop: 10 }}>
+                  {steps.map((x, i) => (
+                    <Fragment key={x.id}>
+                      <label htmlFor={`ss_${x.id}`}>{i + 1}. {x.name}</label>
+                      <select id={`ss_${x.id}`} name={`ss_${x.id}`} defaultValue={a.stageStatus?.[x.id] ?? ''}>
+                        <option value="">Auto ({STATE_LABEL[stageState(i, a.stage, x.id)]})</option>
+                        {(Object.keys(STATE_LABEL) as (keyof typeof STATE_LABEL)[]).map((k) => <option key={k} value={k}>{STATE_LABEL[k]}</option>)}
+                      </select>
+                    </Fragment>
+                  ))}
+                </div>
+                <p className="help">Auto: steps before the current one are Completed, the current one is In progress. Change single steps here, e.g. “Change of status: Not applicable”. Internal notes stay in Notes and are never shown to the client.</p>
+              </details>
               <label className="row full small"><input type="checkbox" name="notify" defaultChecked /> Tell the client (portal message, WhatsApp and email)</label>
-              <div className="full"><Submit>Update status</Submit></div>
+              <div className="full row" style={{ gap: 10 }}><Submit>Update status</Submit><Link className="btn btn-sm" href="/admin/steps/">Edit the step list</Link></div>
             </ActionForm>
-            <details className="more" style={{ marginTop: 12 }}>
-              <summary>Default next-step text for each stage</summary>
-              <ActionForm action={saveStageDefaults} className="form" >
-                {STAGES.map((t, i) => <div key={t} className="field full"><label htmlFor={`sd_${i}`}>{i + 1}. {t}</label><textarea id={`sd_${i}`} name={`sd_${i}`} rows={2} defaultValue={nextDefaults[i]} /></div>)}
-                <div className="full"><Submit>Save default texts</Submit></div>
-              </ActionForm>
-            </details>
             <ol className="timeline" style={{ marginTop: 18 }}>
-              {STAGES.map((t, i) => (
-                <li key={t} className={i <= a.stage ? 'done' : i === a.stage + 1 ? 'now' : ''}><span className="dot">{i <= a.stage ? '✓' : i + 1}</span><div><b>{t}</b>{i <= a.stage && a.stageDates[String(i)] && <small>{day(a.stageDates[String(i)])}</small>}</div></li>
-              ))}
+              {steps.map((x, i) => {
+                const st = stageState(i, a.stage, x.id, a.stageStatus);
+                const head = x.group && (i === 0 || steps[i - 1].group !== x.group);
+                return (
+                  <Fragment key={x.id}>
+                    {head && <li className="tl-g">{x.group}</li>}
+                    <li className={`st-${st} ${st === 'done' ? 'done' : st === 'progress' ? 'now' : ''}`}><span className="dot">{st === 'done' ? '✓' : st === 'na' ? '–' : st === 'hold' || st === 'action' ? '!' : i + 1}</span><div><b>{x.name}</b>{st !== 'done' && st !== 'pending' && <span className={`pill st-pill ${st === 'progress' ? 'new' : 'due'}`}>{STATE_LABEL[st]}</span>}{a.stageDates[String(i)] && st !== 'pending' && st !== 'na' && <small>{day(a.stageDates[String(i)])}</small>}</div></li>
+                  </Fragment>
+                );
+              })}
             </ol>
           </section>
 

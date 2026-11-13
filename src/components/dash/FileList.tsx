@@ -23,7 +23,7 @@ export function FileList({ area, path, q = '', tab = 'all', tabs = true, only, e
       {rows.length === 0 ? (
         <div className="emptyc"><Icon name="briefcase" size={28} /><b>{empty}</b><a className="btn" href={`${base}/services/`}><Icon name="plus" size={14} className="ei" /> {t.newRequest}</a></div>
       ) : rows.map(({ a, s }) => {
-        const total = fileTotal(a), pct = filePct(a), dueP = a.payments.find((p) => p.status === 'due'), qp = quotePay(a);
+        const total = fileTotal(a), pct = filePct(a, t.stages.length), dueP = a.payments.find((p) => p.status === 'due'), qp = quotePay(a);
         return (
           <div key={a.id} className="orow">
             <a href={`${base}/t/${a.token}/`} className="orow-a">

@@ -1,12 +1,14 @@
+import { getStages } from '@/lib/server/stages';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { listApplications, listLeads } from '@/lib/server/store';
-import { STAGES, day, money, when } from '@/lib/stages';
+import { day, money, when } from '@/lib/stages';
 import { myScope } from '@/lib/server/scope';
 
 export const metadata: Metadata = { title: 'Overview' };
 
 export default async function Overview() {
+  const STAGES = (await getStages()).map((x) => x.name);
   const sc = await myScope();
   // Staff: only their own files and enquiries, and no business totals (like the customer dashboard).
   const [leads, all] = await Promise.all([listLeads().then((l) => l.filter(sc.lead)), listApplications().then((l) => l.filter(sc.app))]);

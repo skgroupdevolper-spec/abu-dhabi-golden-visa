@@ -24,7 +24,21 @@ export async function portalLang() {
 }
 export async function T() {
   const code = await portalLang();
-  return { t: dict(code), lang: langInfo(code) };
+  return { t: { ...dict(code), stages: await stageNames(code) }, lang: langInfo(code) };
+}
+
+/** Step names from Admin > Application steps, in the client's language (translated once, then cached). */
+async function stageNames(code: string): Promise<string[]> {
+  const { getStages } = await import('./stages');
+  const names = (await getStages()).map((x) => x.name);
+  if (code === 'en' || process.env.CI) return names;
+  try {
+    const { translateTexts } = await import('./mt');
+    const tr = await Promise.race([translateTexts(code, names, { onSave: true, engine: 'google' }), new Promise<Record<string, string>>((r) => setTimeout(() => r({}), 2500))]);
+    return names.map((n) => tr[n] || n);
+  } catch {
+    return names;
+  }
 }
 
 /* ---------- signed-in client area (Wordcraft-style dashboard) ---------- */
