@@ -75,6 +75,10 @@ export default async function WhatsApp({ searchParams }: { searchParams: Promise
           <div className="panel" style={{ display: tab === 'messages' ? 'block' : 'none' }}>
             <h2>Automatic messages</h2>
             <p className="help">Free text works within 24 hours of the client’s last message. Outside that window Meta needs an approved template: enter its name and the variables are sent in the order shown.</p>
+            <div className="notice ok" style={{ marginTop: 12 }}>
+              <input type="hidden" name="useMailText_present" value="1" />
+              <Toggle name="useMailText" label="Use the email text for client messages" help="On: WhatsApp sends the same friendly message as the email (Admin > Emails & PDFs > Email messages), e.g. “Hello Muhammad, Thank you for choosing us. We have received your application…”. Off: the short texts below are used." on={w.useMailText !== false} />
+            </div>
             <div className="stack" style={{ marginTop: 14 }}>
               {WA_EVENTS.map((e) => (
                 <div key={e.key} className="notice">

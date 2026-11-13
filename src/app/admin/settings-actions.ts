@@ -107,7 +107,7 @@ export async function saveWhatsApp(_: St, f: FormData): Promise<St> {
     if (!text || !WA_EVENTS.some((e) => e.key === when)) continue;
     customs.push({ id: s(f, `c_id_${i}`, 20) || newId(5), label: s(f, `c_label_${i}`, 80) || 'Extra message', on: b(f, `c_on_${i}`), when, text, templateName: s(f, `c_name_${i}`, 80) || undefined });
   }
-  await saveSecrets({ whatsapp: { ...cur, mode: s(f, 'mode') === 'cloud' ? 'cloud' : 'link', phoneNumberId: s(f, 'phoneNumberId', 60), accessToken: s(f, 'accessToken', 800) || cur.accessToken, businessId: s(f, 'businessId', 60), verifyToken: s(f, 'verifyToken', 120), teamNumbers: s(f, 'teamNumbers', 400), templateLang: s(f, 'templateLang', 10) || 'en', autos, templates, templateNames, customs } });
+  await saveSecrets({ whatsapp: { ...cur, mode: s(f, 'mode') === 'cloud' ? 'cloud' : 'link', phoneNumberId: s(f, 'phoneNumberId', 60), accessToken: s(f, 'accessToken', 800) || cur.accessToken, businessId: s(f, 'businessId', 60), verifyToken: s(f, 'verifyToken', 120), teamNumbers: s(f, 'teamNumbers', 400), templateLang: s(f, 'templateLang', 10) || 'en', autos, templates, templateNames, customs, useMailText: f.has('useMailText_present') ? b(f, 'useMailText') : cur.useMailText } });
   return { ok: 'WhatsApp settings saved.' };
 }
 export async function testWhatsApp(_: St, f: FormData): Promise<St> {

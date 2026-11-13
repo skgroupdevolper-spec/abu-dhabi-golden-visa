@@ -114,8 +114,17 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
     for (const [label, f] of Object.entries(files)) if (f) { fd.append('files', f); fd.append('labels', label); }
     for (const f of extra) { fd.append('files', f); fd.append('labels', f.name); }
     try {
-      const r = await fetch('/api/apply/', { method: 'POST', body: fd });
-      const j = await r.json().catch(() => ({}));
+      // The server can be busy for a moment (for example while it restarts): try again up to 3 times.
+      let r: Response | null = null, j: { ok?: boolean; error?: string; ref?: string; link?: string; account?: string } = {};
+      for (let i = 0; i < 3; i++) {
+        try {
+          r = await fetch('/api/apply/', { method: 'POST', body: fd });
+          j = await r.json().catch(() => ({}));
+          if (r.ok || (r.status >= 400 && r.status < 500)) break;
+        } catch { r = null; }
+        await new Promise((res) => setTimeout(res, 2500 * (i + 1)));
+      }
+      if (!r) throw new Error('We could not reach the server. Please check your internet and press Submit again.');
       if (!r.ok || !j.ok) throw new Error(j.error || 'We could not submit your application. Please send it on WhatsApp.');
       setDone({ ref: j.ref, link: j.link, account: j.account });
       // Account created (or the right password for an existing one): open the dashboard right away.

@@ -88,7 +88,7 @@ export async function convertLead(f: FormData) {
     assignee: lead.assignee || (sc.full ? undefined : sc.me.email),
   });
   await updateLead(lead.id, { status: 'converted', applicationId: app.id });
-  await sendWa(app.client.phone, 'welcome', V(app));
+  await sendWa(app.client.phone, 'welcome', V(app, { service: app.route }));
   void mailEvent(app.client.email, 'welcome', V(app, { service: app.route }));
   redirect(`/admin/applications/${app.id}/`);
 }
@@ -155,7 +155,7 @@ export async function setStage(_: FormState, f: FormData): Promise<FormState> {
     await saveStages(list.map((x, i) => (i === stage ? { ...x, next: app.nextStep } : x)));
   }
   if (app && f.get('notify')) {
-    const r = await sendWa(app.client.phone, 'status', V(app, { status: list[stage].name, next: app.nextStep }));
+    const r = await sendWa(app.client.phone, 'status', V(app, { status: list[stage].name, next: app.nextStep, expected: app.expected }));
     void mailEvent(app.client.email, 'status', V(app, { status: list[stage].name, next: app.nextStep, expected: app.expected }));
     const pay = list[stage].id === 'pay-wait' ? await payNowLink(app.id) : '';
     return { ok: `Status updated.${r.ok ? ' WhatsApp sent.' : ''}${pay}` };

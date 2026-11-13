@@ -25,7 +25,10 @@ export async function sendWa(to: string, event: WaEvent, vars: Record<string, st
 
 async function sendOne(to: string, event: WaEvent, vars: Record<string, string | number | undefined>, opts: { force?: boolean; text?: string } = {}, custom?: { text: string; name?: string }) {
   const w = (await getSecrets()).whatsapp;
-  const text = custom ? fill(custom.text, vars) : opts.text ?? fill(w.templates[event] || '', vars);
+  // Client messages use the same friendly text as the email (Admin > Emails & PDFs > Email messages),
+  // so WhatsApp and email say the same thing. Turn off with "Use the email text" in WhatsApp settings.
+  const mailText = !custom && !opts.text && w.useMailText !== false ? await mailTextFor(event, vars) : '';
+  const text = custom ? fill(custom.text, vars) : opts.text ?? (mailText || fill(w.templates[event] || '', vars));
   const number = digits(to);
   if (!number || number.length < 8) return { ok: false, error: 'No valid number' };
   if (!custom && !opts.force && !w.autos[event]) return { ok: false, error: 'Automatic message is off' };
@@ -119,3 +122,21 @@ async function wroteLast24h(number: string) {
 }
 
 const SITE_URL = () => (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.abudhabigoldenvisa.com').replace(/\/$/, '') + '/';
+
+/** The email text of this event, formatted for WhatsApp (bold labels, no sign-off). */
+async function mailTextFor(event: WaEvent, vars: Record<string, string | number | undefined>) {
+  const map: Partial<Record<WaEvent, string>> = { welcome: 'welcome', status: 'status', quote: 'quote', confirmed: 'confirmed', payment: 'payment', paid: 'paid', message: 'message', document: 'document', reset: 'reset' };
+  const key = map[event];
+  if (!key) return '';
+  try {
+    const [{ docCfg }, { fillTpl }] = await Promise.all([import('./doccfg'), import('@/lib/mail-events')]);
+    const tpl = (await docCfg()).mail.events[key as keyof Awaited<ReturnType<typeof docCfg>>['mail']['events']];
+    if (!tpl?.on || !tpl.body.trim()) return '';
+    return fillTpl(tpl.body, vars)
+      .split('\n')
+      .map((l) => { const m = l.match(/^([A-Z][A-Za-z0-9 ()/.&'-]{1,32}):\s+(.+)$/); return m && !/^https?$/i.test(m[1]) ? `*${m[1]}:* ${m[2]}` : l; })
+      .join('\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  } catch { return ''; }
+}

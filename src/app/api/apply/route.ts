@@ -61,6 +61,11 @@ export async function POST(req: NextRequest) {
   ].filter(Boolean).join('\n');
 
   try {
+    // Same application sent twice within 2 minutes (a retry after a slow connection): answer with the first one.
+    const { listLeads, listApplications } = await import('@/lib/server/store');
+    const since = new Date(Date.now() - 120_000).toISOString();
+    const dup = (await listLeads()).find((l) => l.at >= since && l.source === 'apply' && l.phone === phone && l.service === svc.label && l.applicationId);
+    if (dup) { const a0 = (await listApplications()).find((a) => a.id === dup.applicationId); if (a0) return NextResponse.json({ ok: true, ref: a0.ref, link: portalUrl(a0.token), account: me ? 'signed-in' : 'none' }); }
     const lead = await addLead({ name, phone, email, service: svc.label, message: notes, source: 'apply', details: JSON.stringify({ language: lang?.name ?? 'English', service: svc.id }) });
     const app = await createApplication({
       client: { name, phone, email, nationality: s(f, 'nationality', 80), language: lang?.name ?? 'English' },
@@ -105,7 +110,7 @@ export async function POST(req: NextRequest) {
     void notify('lead', `New online application ${app.ref}: ${name} (${svc.label}), ${docs.length} document(s)`, `/admin/applications/${app.id}/`);
     void Promise.allSettled([
       sendTeam('leadTeam', { name, phone, service: `${svc.label} · ${app.ref}`, message: notes.slice(0, 300) }),
-      sendWa(phone, 'welcome', { name: name.split(' ')[0], ref: app.ref, link }),
+      sendWa(phone, 'welcome', { name: name.split(' ')[0], ref: app.ref, service: svc.label, link }),
       mailEventTeam('teamLead', { name, phone, email, service: `${svc.label} · ${app.ref}`, message: notes, link: `${SITE.url}/admin/applications/${app.id}/` }),
       mailEvent(email, 'welcome', { name: name.split(' ')[0], ref: app.ref, service: svc.label, link }),
       account === 'created' ? mailEvent(email, 'account', { name: name.split(' ')[0], email, link: portalUrl('').replace(/t\/\/$/, '') }) : Promise.resolve(),

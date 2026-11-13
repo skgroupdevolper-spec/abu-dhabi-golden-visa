@@ -30,7 +30,7 @@ export type MenuItem = { label: string; href: string; groups?: MenuGroup[] };
 
 export type Secrets = {
   whatsapp: {
-    mode: 'link' | 'cloud'; phoneNumberId: string; accessToken: string; businessId: string; verifyToken: string; teamNumbers: string;
+    mode: 'link' | 'cloud'; phoneNumberId: string; accessToken: string; businessId: string; verifyToken: string; useMailText?: boolean; teamNumbers: string;
     autos: Record<WaEvent, boolean>; templates: Record<WaEvent, string>; templateNames: Partial<Record<WaEvent, string>>; templateLang: string;
     /** Extra messages the team adds: each one is sent too when its trigger happens. */
     customs?: WaCustom[];
