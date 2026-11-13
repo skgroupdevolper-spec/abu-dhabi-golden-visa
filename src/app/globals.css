@@ -1598,3 +1598,20 @@ body.c-view .cur-dot { opacity: 0; }
 .ch-wa { color: #7a5a0f; background: #fff8e6; border-top: 1px solid #f1e3b8; }
 .ch-msg[dir="auto"] { unicode-bidi: plaintext; text-align: start; }
 .help.err-t { color: #b42318; } #ap-phone + small { display: block; margin-top: 6px; }
+
+/* Phones: the floating chat and back-to-top buttons are smaller and step aside while you scroll,
+   so they never cover the text or buttons underneath. */
+@media (max-width: 760px) {
+  .ch-btn { width: 46px; height: 46px; font-size: 17px; box-shadow: 0 10px 22px -10px rgba(138, 106, 18, .7); }
+  .chatw { bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+  .chatw.left { inset-inline-start: 10px; } .chatw.right { inset-inline-end: 10px; }
+  .dock { bottom: calc(92px + env(safe-area-inset-bottom, 0px)) !important; inset-inline-end: 10px !important; }
+  .dock .dock-top .ic { width: 40px !important; height: 40px !important; }
+  body.is-scrolling .chatw:not(.open), body.is-scrolling .dock .dock-top { opacity: 0 !important; transform: translateY(12px) scale(.9) !important; pointer-events: none !important; transition: opacity .2s, transform .2s; }
+  .chatw, .dock .dock-top { transition: opacity .3s, transform .3s; }
+}
+
+/* Apply form on phones: Back / Continue / Submit stay in view at the bottom, above the menu bar */
+@media (max-width: 760px) {
+  .apply-nav { position: sticky; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); z-index: 30; margin-inline: -14px; padding: 10px 14px; background: rgba(255, 252, 244, .96); backdrop-filter: blur(8px); border-top: 1px solid #efe6cf; border-radius: 14px; box-shadow: 0 -10px 24px -18px rgba(0, 0, 0, .35); }
+}

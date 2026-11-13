@@ -53,11 +53,16 @@ export function HScroll() {
       }
       drag = null;
     };
+    // phones: hide the floating buttons while the page is moving, show them again when it stops
+    let t: ReturnType<typeof setTimeout> | undefined;
+    const onScroll = () => { document.body.classList.add('is-scrolling'); clearTimeout(t); t = setTimeout(() => document.body.classList.remove('is-scrolling'), 700); };
+    window.addEventListener('scroll', onScroll, { passive: true });
     document.addEventListener('wheel', onWheel, { passive: false });
     document.addEventListener('mousedown', onDown);
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
     return () => {
+      window.removeEventListener('scroll', onScroll);
       document.removeEventListener('wheel', onWheel);
       document.removeEventListener('mousedown', onDown);
       document.removeEventListener('mousemove', onMove);
