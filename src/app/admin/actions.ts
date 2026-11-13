@@ -157,7 +157,8 @@ export async function setStage(_: FormState, f: FormData): Promise<FormState> {
   if (app && f.get('notify')) {
     const r = await sendWa(app.client.phone, 'status', V(app, { status: list[stage].name, next: app.nextStep }));
     void mailEvent(app.client.email, 'status', V(app, { status: list[stage].name, next: app.nextStep, expected: app.expected }));
-    return { ok: `Status updated.${r.ok ? ' WhatsApp sent.' : ''}` };
+    const pay = list[stage].id === 'pay-wait' ? await payNowLink(app.id) : '';
+    return { ok: `Status updated.${r.ok ? ' WhatsApp sent.' : ''}${pay}` };
   }
   return { ok: 'Status updated.' };
 }
@@ -421,4 +422,27 @@ export async function assignLead(f: FormData) {
 /** Deletes every message in one file (client and team). */
 export async function clearMessages(f: FormData) {
   await edit(f, (a) => { a.messages = []; });
+}
+
+/** Payment step: sends the client a "Pay now" link on WhatsApp and email. Uses the open payment request,
+ *  or creates one for the amount still to pay on the accepted quote. */
+async function payNowLink(appId: string): Promise<string> {
+  const { payState } = await import('@/lib/stages');
+  const { getPayCfg, online } = await import('@/lib/server/payments');
+  let pid = '', label = '', amount = 0;
+  const app = await updateApplication(appId, (a) => {
+    const due = a.payments.find((p) => p.status === 'due');
+    if (due) { pid = due.id; label = due.label; amount = due.amount; return; }
+    const ps = payState(a);
+    if (ps.remaining <= 0) return;
+    pid = newId(6); label = ps.paid > 0 ? 'Balance as per your quote' : 'Payment as per your quote'; amount = ps.remaining;
+    a.payments.push({ id: pid, label, amount, status: 'due', link: '', createdAt: now() });
+    a.messages.push({ id: newId(6), by: 'team', at: now(), text: `💳 Payment request: ${label} (${money(amount)}). Press “Pay now” to pay securely by card.` });
+  });
+  if (!app || !pid) return ' No amount to pay yet: add the quote or a payment request first.';
+  const live = online(await getPayCfg());
+  const link = live ? `${portalUrl(app.token)}pay/${pid}/` : portalUrl(app.token);
+  const r = await sendWa(app.client.phone, 'payment', V(app, { item: label, amount: money(amount), link }));
+  void mailEvent(app.client.email, 'payment', V(app, { item: label, amount: money(amount), link }));
+  return ` Pay now link sent (${money(amount)})${r.ok ? '' : ' by email; WhatsApp failed, see the Message log'}.`;
 }

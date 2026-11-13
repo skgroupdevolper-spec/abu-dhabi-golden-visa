@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { insert, list, notify, type Customer, type WaLog } from '@/lib/server/collections';
 import { getSecrets, saveSecrets } from '@/lib/server/settings';
-import { listApplications, listLeads, newId, now, updateApplication } from '@/lib/server/store';
-import { digits, webhookToken } from '@/lib/server/whatsapp';
+import { listApplications, listLeads, newId, now, updateApplication, updateJsonFile } from '@/lib/server/store';
+import { digits, waAdvice, webhookToken } from '@/lib/server/whatsapp';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +21,17 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const msgs: { from: string; text?: { body?: string }; type?: string }[] = body?.entry?.flatMap((e: { changes?: { value?: { messages?: unknown[] } }[] }) => e.changes?.flatMap((c) => c.value?.messages ?? []) ?? []) ?? [];
+  // Delivery reports: mark each sent message as delivered / read / failed (with the reason) in the Message log.
+  const sts: { id: string; status: string; errors?: { code?: number; title?: string; message?: string; error_data?: { details?: string } }[] }[] = body?.entry?.flatMap((e: { changes?: { value?: { statuses?: unknown[] } }[] }) => e.changes?.flatMap((c) => c.value?.statuses ?? []) ?? []) ?? [];
+  if (sts.length) {
+    await updateJsonFile<WaLog[]>('whatsapp-log.json', [], (all) => all.map((x) => {
+      const u = x.mid && sts.find((z) => z.id === x.mid);
+      if (!u) return x;
+      const st = u.status as WaLog['st'];
+      if (st === 'failed') { const er = u.errors?.[0]; return { ...x, st, ok: false, error: waAdvice(er?.error_data?.details || er?.message || er?.title || 'Not delivered', er?.code) }; }
+      return x.st === 'read' ? x : { ...x, st };
+    }));
+  }
   if (!msgs.length) return NextResponse.json({ ok: true });
   void getSecrets().then((s) => saveSecrets({ whatsapp: { ...s.whatsapp, lastIncomingAt: new Date().toISOString() } })).catch(() => {});
   const apps = await listApplications();

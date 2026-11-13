@@ -73,3 +73,25 @@ export async function subscribeWebhooks() {
   const n = ((chk.j.data as unknown[]) ?? []).length;
   return { ok: true, msg: `Incoming messages connected (${n} app${n === 1 ? '' : 's'} subscribed). Send a WhatsApp message to your business number to test: it appears in the Message log.` };
 }
+
+/** Checks the token, the phone number and the business account, and lists the numbers this token can use. */
+export async function checkConnection() {
+  const w = (await getSecrets()).whatsapp;
+  if (!w.accessToken) return { ok: false, msg: 'Add the access token first.' };
+  const out: string[] = [];
+  let ok = true;
+  if (w.phoneNumberId) {
+    const p = await graph(`${encodeURIComponent(w.phoneNumberId)}?fields=display_phone_number,verified_name,quality_rating,name_status`, w.accessToken);
+    if (p.ok) out.push(`Phone number ID works: ${p.j.display_phone_number} (${p.j.verified_name}), quality ${String(p.j.quality_rating ?? '-').toLowerCase()}, name ${String(p.j.name_status ?? '-').toLowerCase().replace(/_/g, ' ')}.`);
+    else { ok = false; out.push(`Phone number ID ${w.phoneNumberId} cannot be used with this token: ${p.err}`); }
+  }
+  if (w.businessId) {
+    const n = await graph(`${encodeURIComponent(w.businessId)}/phone_numbers?fields=id,display_phone_number,verified_name`, w.accessToken);
+    if (n.ok) {
+      const rows = (n.j.data as { id: string; display_phone_number: string; verified_name: string }[]) ?? [];
+      out.push(rows.length ? `Numbers this token can use: ${rows.map((r) => `${r.display_phone_number} (${r.verified_name}) → ID ${r.id}`).join(' · ')}` : 'This token sees no phone numbers in the business account.');
+      if (w.phoneNumberId && rows.length && !rows.some((r) => r.id === w.phoneNumberId)) { ok = false; out.push('Your saved Phone number ID is not in that list: copy the right ID from above into Setup and Save.'); }
+    } else { ok = false; out.push(`Business account ID ${w.businessId} cannot be read with this token: ${n.err}. In Business settings → System users → your user → Assign assets, give it Full control of the WhatsApp account, then generate a new token.`); }
+  }
+  return { ok, msg: out.join(' ') };
+}

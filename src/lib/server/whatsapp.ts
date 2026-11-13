@@ -37,7 +37,7 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   const body = name && (custom || !opts.text)
     ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name, language: { code: w.templateLang || 'en' }, components: [{ type: 'body', parameters: keys.map((k) => ({ type: 'text', text: String(vars[k] ?? '-').slice(0, 900) || '-' })) }] } }
     : { messaging_product: 'whatsapp', to: number, type: 'text', text: { body: text.slice(0, 4000), preview_url: true } };
-  let ok = false, error = '';
+  let ok = false, error = '', mid = '';
   try {
     const r = await fetch(`${GRAPH}/${encodeURIComponent(w.phoneNumberId)}/messages`, {
       method: 'POST',
@@ -47,11 +47,12 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
     });
     const j = await r.json().catch(() => ({}));
     ok = r.ok;
-    if (!r.ok) error = j?.error?.message || `HTTP ${r.status}`;
+    mid = j?.messages?.[0]?.id || '';
+    if (!r.ok) error = waAdvice(j?.error?.message || `HTTP ${r.status}`, j?.error?.code);
   } catch (e) {
     error = (e as Error).message;
   }
-  await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: number, event, text: text.slice(0, 500), ok, error: error || undefined, dir: 'out' }, 2000);
+  await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: number, event, text: `${body.type === 'template' ? `[template ${name}] ` : ''}${text}`.slice(0, 500), ok, error: error || undefined, dir: 'out', ...(mid ? { mid } : {}) }, 2000);
   return { ok, error };
 }
 
@@ -86,4 +87,14 @@ export async function sendWaDoc(to: string, link: string, filename: string, capt
 export function webhookToken(w: { verifyToken?: string; phoneNumberId?: string; businessId?: string }) {
   if (w.verifyToken?.trim()) return w.verifyToken.trim();
   return 'adgv-' + createHash('sha256').update(`adgv|${w.businessId || ''}|${w.phoneNumberId || ''}`).digest('hex').slice(0, 10);
+}
+
+/** Plain advice for the WhatsApp errors seen most often. */
+export function waAdvice(msg: string, code?: number) {
+  if (/Object with ID .* does not exist|missing permissions/i.test(msg)) return `The access token cannot use this phone number. In Business settings → System users, give the user full control of your WhatsApp account, generate a new token, and check the Phone number ID (Setup → “Check connection”). (${msg.slice(0, 120)})`;
+  if (code === 131047 || /re-engagement|24 hours/i.test(msg)) return 'Not delivered: more than 24 hours since the client last wrote. An approved template is needed for this message (Setup → templates).';
+  if (code === 131026 || /undeliverable/i.test(msg)) return 'Not delivered: this number is not on WhatsApp or cannot receive messages.';
+  if (code === 132001 || /template name does not exist/i.test(msg)) return 'The template name is not approved in this language. Press “Check approval” in Setup.';
+  if (code === 190 || /access token/i.test(msg)) return 'The access token expired or is wrong. Generate a permanent System user token and save it in Setup.';
+  return msg;
 }

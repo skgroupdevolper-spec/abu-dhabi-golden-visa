@@ -66,4 +66,4 @@ async function emailNote(kind: Note['kind'], text: string, href: string, to?: st
 }
 
 /* ---------- WhatsApp log ---------- */
-export type WaLog = { id: string; at: string; to: string; event: string; text: string; ok: boolean; error?: string; dir: 'out' | 'in' };
+export type WaLog = { id: string; at: string; to: string; event: string; text: string; ok: boolean; error?: string; dir: 'out' | 'in'; mid?: string; st?: 'sent' | 'delivered' | 'read' | 'failed' };
