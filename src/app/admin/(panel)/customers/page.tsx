@@ -8,7 +8,7 @@ import { list, type Customer } from '@/lib/server/collections';
 import { listApplications } from '@/lib/server/store';
 import { LOCALES } from '@/lib/i18n';
 import { waTo } from '@/lib/site';
-import { day, when } from '@/lib/stages';
+import { day, money, payState, when } from '@/lib/stages';
 import { addCustomer, customerAction, saveCustomer } from '../../settings-actions';
 import { PwInput } from '@/components/dash/PwInput';
 
@@ -56,6 +56,11 @@ export default async function Customers({ searchParams }: { searchParams: Promis
                     <span className="fi">{c.name.slice(0, 1).toUpperCase()}</span>
                     <span className="fn"><b>{c.name}</b><small>{c.email} · <a href={waTo(c.phone, `Hello ${c.name.split(' ')[0]}, `)} target="_blank" rel="noopener">{c.phone}</a> · {c.lang.toUpperCase()} · joined {day(c.createdAt)}{c.lastLogin ? ` · last login ${when(c.lastLogin)}` : ''}</small>
                       {mine.length > 0 && <small>{mine.map((a) => <Link key={a.id} href={`/admin/applications/${a.id}/`} style={{ marginInlineEnd: 8 }}>{a.ref}</Link>)}</small>}</span>
+                    {mine.length > 0 && (() => {
+                      const st = mine.map((a) => payState(a));
+                      const paid = st.reduce((s, x) => s + x.paid, 0), rem = st.reduce((s, x) => s + x.remaining, 0);
+                      return st.every((x) => x.state === 'none') ? <span className="pill">No payment yet</span> : rem <= 0.009 ? <span className="pill ok">Paid · {money(paid)}</span> : <span className={`pill ${paid > 0 ? 'new' : 'due'}`}>{paid > 0 ? `Paid ${money(paid)} · ` : ''}{money(rem)} remaining</span>;
+                    })()}
                     <span className={`pill ${c.active ? 'ok' : 'closed'}`}>{c.active ? 'Active' : 'Disabled'}</span>
                     {full && (
                       <div className="row">

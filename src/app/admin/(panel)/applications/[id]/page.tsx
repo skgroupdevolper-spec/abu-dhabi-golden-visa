@@ -47,7 +47,7 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
         <div>
           <p className="eyebrow"><Link href="/admin/applications/" style={{ textDecoration: 'none' }}>Applications</Link> / {a.ref}</p>
           <h1>{a.client.name} <span className="gold">· {a.route}</span></h1>
-          <p className="muted small" style={{ margin: '6px 0 0' }}>Opened {day(a.createdAt)} · updated {when(a.updatedAt)} {a.archived && <span className="pill closed">Archived</span>}</p>
+          <p className="muted small" style={{ margin: '6px 0 0' }}>Opened {day(a.createdAt)} · updated {when(a.updatedAt)} {a.archived && <span className="pill closed">Archived</span>}{' '}{(() => { const ps = payState(a); return ps.state === 'none' ? <span className="pill">No payment yet</span> : ps.state === 'paid' ? <span className="pill ok">Paid in full · {money(ps.paid)}</span> : <span className={`pill ${ps.state === 'partial' ? 'new' : 'due'}`}>{ps.state === 'partial' ? 'Part paid' : 'Not paid'} · {money(ps.remaining)} remaining</span>; })()}</p>
         </div>
         <div className="row">
           <a className="btn btn-wa" href={waTo(a.client.phone, `Hello ${first}, here is your secure Golden Visa portal for ${a.ref}: ${link}`)} target="_blank" rel="noopener">Send portal link on WhatsApp</a>
