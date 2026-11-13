@@ -116,17 +116,19 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
     try {
       // The server can be busy for a moment (for example while it restarts): try again up to 3 times.
       let r: Response | null = null, j: { ok?: boolean; error?: string; ref?: string; link?: string; account?: string } = {};
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 6; i++) {
         try {
           r = await fetch('/api/apply/', { method: 'POST', body: fd });
           j = await r.json().catch(() => ({}));
           if (r.ok || (r.status >= 400 && r.status < 500)) break;
         } catch { r = null; }
-        await new Promise((res) => setTimeout(res, 2500 * (i + 1)));
+        if (i === 1) setErr('The server is updating for a moment. Sending again…');
+        await new Promise((res) => setTimeout(res, 3000 * (i + 1)));
       }
       if (!r) throw new Error('We could not reach the server. Please check your internet and press Submit again.');
-      if (!r.ok || !j.ok) throw new Error(j.error || 'We could not submit your application. Please send it on WhatsApp.');
-      setDone({ ref: j.ref, link: j.link, account: j.account });
+      if (!r.ok || !j.ok) throw new Error(j.error || 'We could not submit your application just now. Please press Submit again in a minute, or send it on WhatsApp.');
+      setErr('');
+      setDone({ ref: j.ref ?? '', link: j.link ?? '', account: j.account });
       // Account created (or the right password for an existing one): open the dashboard right away.
       if (j.account === 'created' || j.account === 'signed-in') setTimeout(() => { window.location.href = portalHome(); }, 1200);
     } catch (e) {
