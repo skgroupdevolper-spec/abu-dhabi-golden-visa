@@ -205,7 +205,7 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
               ) : <p className="muted" style={{ margin: '6px 0 16px' }}><T>{"As written in your passport. We use WhatsApp for updates."}</T></p>}
               <div className="form">
                 <div className="field"><label htmlFor="ap-name"><T>{"Full name"}</T></label><input id="ap-name" autoComplete="name" value={d.name} onChange={set('name')} /></div>
-                <div className="field"><label htmlFor="ap-phone"><T>{"WhatsApp number"}</T></label><input id="ap-phone" type="tel" autoComplete="tel" placeholder="+971" value={d.phone} onChange={set('phone')} /></div>
+                <div className="field"><label htmlFor="ap-phone"><T>{"WhatsApp number"}</T></label><input id="ap-phone" type="tel" autoComplete="tel" placeholder="+971 50 123 4567" value={d.phone} onChange={set('phone')} />{(() => { const c = dialCountry(d.phone); return d.phone.replace(/\D/g, '').length >= 3 ? <small className={`help ${c ? '' : 'err-t'}`}>{c ? <>Country: <b>{c}</b>. Please check this is right, we send your updates to this WhatsApp.</> : 'Start with + and your country code, e.g. +971 for the UAE, +92 for Pakistan.'}</small> : null; })()}</div>
                 <div className="field"><label htmlFor="ap-email"><T>{"Email"}</T>{!me && ' *'}</label><input id="ap-email" type="email" autoComplete="email" value={d.email} onChange={set('email')} readOnly={!!me} required={!me} /></div>
                 <div className="field"><label htmlFor="ap-nat"><T>{"Nationality"}</T></label><input id="ap-nat" autoComplete="country-name" value={d.nationality} onChange={set('nationality')} /></div>
                 <div className="field full">
@@ -364,3 +364,14 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
     </div>
   );
 }
+
+/** Country of a phone number from its dial code (common ones), so a wrong code (e.g. +91 instead of +92) is easy to spot. */
+const DIAL: [string, string][] = [['971', 'United Arab Emirates'], ['966', 'Saudi Arabia'], ['974', 'Qatar'], ['973', 'Bahrain'], ['968', 'Oman'], ['965', 'Kuwait'], ['962', 'Jordan'], ['961', 'Lebanon'], ['963', 'Syria'], ['964', 'Iraq'], ['970', 'Palestine'], ['972', 'Israel'], ['98', 'Iran'], ['90', 'Turkey'], ['20', 'Egypt'], ['212', 'Morocco'], ['213', 'Algeria'], ['216', 'Tunisia'], ['92', 'Pakistan'], ['91', 'India'], ['880', 'Bangladesh'], ['94', 'Sri Lanka'], ['977', 'Nepal'], ['93', 'Afghanistan'], ['86', 'China'], ['852', 'Hong Kong'], ['81', 'Japan'], ['82', 'South Korea'], ['63', 'Philippines'], ['62', 'Indonesia'], ['60', 'Malaysia'], ['65', 'Singapore'], ['66', 'Thailand'], ['84', 'Vietnam'], ['7', 'Russia / Kazakhstan'], ['380', 'Ukraine'], ['44', 'United Kingdom'], ['49', 'Germany'], ['43', 'Austria'], ['41', 'Switzerland'], ['33', 'France'], ['39', 'Italy'], ['34', 'Spain'], ['351', 'Portugal'], ['31', 'Netherlands'], ['32', 'Belgium'], ['48', 'Poland'], ['40', 'Romania'], ['36', 'Hungary'], ['420', 'Czechia'], ['421', 'Slovakia'], ['385', 'Croatia'], ['30', 'Greece'], ['46', 'Sweden'], ['47', 'Norway'], ['45', 'Denmark'], ['353', 'Ireland'], ['1', 'USA / Canada'], ['55', 'Brazil'], ['52', 'Mexico'], ['61', 'Australia'], ['64', 'New Zealand'], ['27', 'South Africa'], ['234', 'Nigeria'], ['254', 'Kenya'], ['251', 'Ethiopia'], ['249', 'Sudan'], ['233', 'Ghana']];
+function dialCountry(p: string): string {
+  const t = p.trim();
+  if (!t.startsWith('+') && !t.startsWith('00')) return '';
+  const d = t.replace(/\D/g, '').replace(/^00/, '');
+  const hit = DIAL.filter(([c]) => d.startsWith(c)).sort((a, b) => b[0].length - a[0].length)[0];
+  return hit ? `${hit[1]} (+${hit[0]})` : '';
+}
+

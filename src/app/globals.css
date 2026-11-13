@@ -1597,3 +1597,4 @@ body.c-view .cur-dot { opacity: 0; }
 @media (max-width: 760px) { .chatbox { height: min(560px, calc(100dvh - 250px)); bottom: 68px; } }
 .ch-wa { color: #7a5a0f; background: #fff8e6; border-top: 1px solid #f1e3b8; }
 .ch-msg[dir="auto"] { unicode-bidi: plaintext; text-align: start; }
+.help.err-t { color: #b42318; } #ap-phone + small { display: block; margin-top: 6px; }
