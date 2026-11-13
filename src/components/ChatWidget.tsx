@@ -53,7 +53,7 @@ export function ChatWidget({ lang }: { lang: string }) {
           <div className="ch-head"><img decoding="async" src={coinImg()} alt="" width={34} height={34} /><div><b>{cfg.name}</b><small><T>{"AI assistant · answers may need checking"}</T></small></div><button type="button" onClick={() => setOpen(false)} aria-label="Close chat">✕</button></div>
           <div className="ch-body" ref={box} data-lenis-prevent>
             <div className="ch-msg bot">{cfg.greeting}</div>
-            {msgs.map((m, i) => <div key={i} className={`ch-msg ${m.role === 'user' ? 'me' : 'bot'}`}>{m.role === 'assistant' ? linkify(m.content) : m.content}</div>)}
+            {msgs.map((m, i) => <div key={i} dir="auto" className={`ch-msg ${m.role === 'user' ? 'me' : 'bot'}`}>{m.role === 'assistant' ? linkify(m.content) : m.content}</div>)}
             {busy && <div className="ch-msg bot typing"><i /><i /><i /></div>}
           </div>
           <a className="ch-wa" href={`https://wa.me/${cfg.whatsapp}?text=${encodeURIComponent('Hello, I was chatting on your website and need help with my Golden Visa.')}`} target="_blank" rel="noopener">{cfg.handover} → WhatsApp</a>

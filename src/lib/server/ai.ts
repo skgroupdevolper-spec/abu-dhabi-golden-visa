@@ -43,7 +43,7 @@ export async function complete(system: string, messages: Msg[], o: { json?: bool
     if (!a.openaiKey) throw new Error('OpenAI key missing');
     const r = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST', headers: { Authorization: `Bearer ${a.openaiKey}`, 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(90000),
-      body: JSON.stringify({ model, max_completion_tokens: max, messages: [{ role: 'system', content: system }, ...messages], ...(o.json ? { response_format: { type: 'json_object' } } : {}) }),
+      body: JSON.stringify({ model, max_completion_tokens: /^(gpt-5|o\d)/.test(model) ? max + 2000 : max, ...(/^gpt-5/.test(model) ? { reasoning_effort: 'minimal' } : /^o\d/.test(model) ? { reasoning_effort: 'low' } : {}), messages: [{ role: 'system', content: system }, ...messages], ...(o.json ? { response_format: { type: 'json_object' } } : {}) }),
     });
     const j = await r.json();
     if (!r.ok) throw new Error(j?.error?.message || `OpenAI error ${r.status}`);
@@ -57,7 +57,7 @@ export async function complete(system: string, messages: Msg[], o: { json?: bool
     for (const m of tryModels) {
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(m)}:generateContent`, {
         method: 'POST', headers: { 'x-goog-api-key': a.geminiKey, 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(90000),
-        body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: messages.map((x) => ({ role: x.role === 'assistant' ? 'model' : 'user', parts: [{ text: x.content }] })), generationConfig: { maxOutputTokens: max, ...(o.json ? { responseMimeType: 'application/json' } : {}) } }),
+        body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: messages.map((x) => ({ role: x.role === 'assistant' ? 'model' : 'user', parts: [{ text: x.content }] })), generationConfig: { maxOutputTokens: /2\.5|3/.test(m) ? max + 1500 : max, ...(/2\.5|3/.test(m) ? { thinkingConfig: { thinkingBudget: /pro/i.test(m) ? 128 : 0 } } : {}), ...(o.json ? { responseMimeType: 'application/json' } : {}) } }),
       });
       const j = await r.json().catch(() => ({}));
       if (r.ok) { text = j.candidates?.[0]?.content?.parts?.map((x: { text?: string }) => x.text ?? '').join('') ?? ''; lastErr = ''; break; }

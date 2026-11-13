@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   }
   let reply = '';
   try {
-    reply = await complete(await chatSystemPrompt(lang), msgs, { maxTokens: 500, kind: 'chat', use: 'chat' });
+    reply = await complete(await chatSystemPrompt(lang), msgs, { maxTokens: 1100, kind: 'chat', use: 'chat' });
   } catch {
     return NextResponse.json({ reply: `Sorry, I can’t answer right now. Please message us on WhatsApp: https://wa.me/${site.whatsapp}` });
   }
