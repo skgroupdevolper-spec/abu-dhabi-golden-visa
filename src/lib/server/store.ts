@@ -36,7 +36,7 @@ export type Application = {
   quote: { lines: QuoteLine[]; serviceFee: number; vat: number; insurance: string; sentAt?: string; acceptedAt?: string };
   payments: Payment[]; documents: Doc[]; requests: string[]; messages: Message[]; leadId?: string;
   /** Advisor shown to the client, terms and quote validity. */
-  advisor?: { name: string; phone: string }; validUntil?: string; confirmedAt?: string;
+  advisor?: { name: string; phone: string; title?: string }; validUntil?: string; confirmedAt?: string;
   /** Authority decision on the file: approved, rejected (with reason), on hold or withdrawn. */
   decision?: Decision;
 };

@@ -396,7 +396,13 @@ export async function setDecision(_: FormState, f: FormData): Promise<FormState>
 export async function assignApp(f: FormData) {
   await requireAny(FULL);
   const id = s(f, 'app', 40), to = s(f, 'assignee', 160).toLowerCase();
-  const a = await updateApplication(id, (x) => { if (to) x.assignee = to; else delete x.assignee; });
+  // The assigned team member becomes the advisor the client sees (name, title, WhatsApp) in their dashboard.
+  const { list } = await import('@/lib/server/collections');
+  const u = to ? (await list<{ email: string; name: string; phone?: string; title?: string }>('team')).find((x) => x.email.toLowerCase() === to) : undefined;
+  const a = await updateApplication(id, (x) => {
+    if (to) x.assignee = to; else delete x.assignee;
+    if (u) x.advisor = { name: u.name, phone: u.phone || x.advisor?.phone || '', ...(u.title ? { title: u.title } : {}) };
+  });
   if (a?.leadId) await updateLead(a.leadId, { assignee: to || undefined });
   if (a && to) {
     const { notify } = await import('@/lib/server/collections');

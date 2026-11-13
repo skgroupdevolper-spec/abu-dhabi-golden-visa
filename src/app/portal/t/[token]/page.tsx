@@ -1,3 +1,4 @@
+import { list, type TeamUser } from '@/lib/server/collections';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ActionForm, Submit } from '@/components/dash/ActionForm';
@@ -54,7 +55,9 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
   const stKey = dec?.result === 'rejected' || dec?.result === 'withdrawn' ? 'rej' : dec?.result === 'on_hold' ? 'hold' : dec?.result === 'approved' && a.stage < last ? 'appr' : stKey0;
   const dueSum = due.reduce((s, p) => s + p.amount, 0), paidSum = paid.reduce((s, p) => s + p.amount, 0);
   const valid = a.validUntil || (a.quote.sentAt ? new Date(new Date(a.quote.sentAt).getTime() + pay.validDays * 864e5).toISOString().slice(0, 10) : '');
-  const adv = a.advisor ?? { name: t.yourAdvisor, phone: SITE.whatsappDisplay };
+  // Advisor shown to the client: set on the file, otherwise the team member it is assigned to.
+  const staff = !a.advisor && a.assignee ? (await list<TeamUser>('team')).find((x) => x.email.toLowerCase() === a.assignee!.toLowerCase()) : undefined;
+  const adv: { name: string; phone: string; title?: string } = a.advisor ?? (staff ? { name: staff.name, phone: staff.phone || '', title: staff.title } : { name: t.yourAdvisor, phone: SITE.whatsappDisplay });
   const advWa = waTo(adv.phone || SITE.whatsapp, `Hello ${adv.name.split(' ')[0]}, this is ${a.client.name} (${a.ref}). `);
   const f2 = (x: number) => x.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const fmtD = (d?: string) => (d ? new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—');
@@ -239,7 +242,7 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
           <div className="stack">
             <section className="panel reveal">
               <h2><Icon name="user" size={14} className="ei" /> {t.yourContact}</h2>
-              <div className="advc"><span className="adv-av">{adv.name.slice(0, 1).toUpperCase()}</span><span><b>{adv.name}</b><small><Icon name="phone" size={14} className="ei" /> {adv.phone || SITE.whatsappDisplay}</small></span><a className="btn btn-sm btn-wa" href={advWa} target="_blank" rel="noopener">WhatsApp</a></div>
+              <div className="advc"><span className="adv-av">{adv.name.slice(0, 1).toUpperCase()}</span><span><b>{adv.name}</b>{adv.title && <small>{adv.title}</small>}<small><Icon name="phone" size={14} className="ei" /> {adv.phone || SITE.whatsappDisplay}</small></span><a className="btn btn-sm btn-wa" href={advWa} target="_blank" rel="noopener">WhatsApp</a></div>
             </section>
             <section className="panel reveal qa">
               <h2><Icon name="bolt" size={14} className="ei" /> {t.quickActions}</h2>
