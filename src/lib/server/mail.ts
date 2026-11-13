@@ -15,7 +15,17 @@ export async function sendMail(to: string, subject: string, text: string, opts: 
   try {
     const t = await transport(m);
     const html = renderMail(subject, text, (await docCfg()).mail, opts);
-    await t.sendMail({ from: m.from || m.user, to, subject, text: cleanText(text), html });
+    // Better inbox placement: the From address is the account that signs in (Gmail/Outlook rewrite anything else,
+    // which looks like spoofing), replies go to your office address, and the mail says it is an automatic service email.
+    const addr = (m.from.match(/<([^>]+)>/)?.[1] || m.from || m.user).trim();
+    const fromAddr = addr.toLowerCase() === m.user.toLowerCase() || !/@/.test(addr) ? m.user : addr;
+    const fromName = (m.from.match(/^\s*"?([^"<]+?)"?\s*</)?.[1] || SITE.name).trim();
+    await t.sendMail({
+      from: { name: fromName, address: fromAddr }, to, subject, text: cleanText(text), html,
+      replyTo: SITE.email || undefined,
+      messageId: `<${Date.now().toString(36)}.${Math.random().toString(36).slice(2, 10)}@${fromAddr.split('@')[1]}>`,
+      headers: { 'Auto-Submitted': 'auto-generated', 'X-Auto-Response-Suppress': 'OOF, AutoReply' },
+    });
     void logMail(to, subject, true);
     return { ok: true };
   } catch (e) {

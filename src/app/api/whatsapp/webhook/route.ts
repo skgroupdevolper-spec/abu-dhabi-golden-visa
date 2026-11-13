@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { insert, notify, type WaLog } from '@/lib/server/collections';
+import { insert, list, notify, type Customer, type WaLog } from '@/lib/server/collections';
 import { getSecrets } from '@/lib/server/settings';
-import { listApplications, newId, now, updateApplication } from '@/lib/server/store';
+import { listApplications, listLeads, newId, now, updateApplication } from '@/lib/server/store';
 import { digits, webhookToken } from '@/lib/server/whatsapp';
 
 export const dynamic = 'force-dynamic';
@@ -29,7 +29,13 @@ export async function POST(req: NextRequest) {
       await updateApplication(app.id, (a) => { a.messages.push({ id: newId(6), by: 'client', at: now(), text: `WhatsApp: ${text}` }); });
       await notify('whatsapp', `WhatsApp from ${app.client.name} (${app.ref}): ${text}`, `/admin/applications/${app.id}/#messages`);
     } else {
-      await notify('whatsapp', `WhatsApp from +${from}: ${text}`, '/admin/whatsapp/');
+      // Only people who contacted us through the website (enquiry, chat, booking) or have a client account
+      // create a notification. Other WhatsApp chats stay in the Message log only.
+      const tail = from.slice(-9);
+      const lead = (await listLeads()).find((l) => digits(l.phone).endsWith(tail));
+      const cust = lead ? null : (await list<Customer>('customers')).find((c) => digits(c.phone || '').endsWith(tail));
+      if (lead) await notify('whatsapp', `WhatsApp from ${lead.name} (website enquiry): ${text}`, '/admin/leads/');
+      else if (cust) await notify('whatsapp', `WhatsApp from ${cust.name} (client account): ${text}`, '/admin/customers/');
     }
   }
   return NextResponse.json({ ok: true });
