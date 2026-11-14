@@ -86,20 +86,26 @@ async function autoReply(from: string, question: string, main: string, app?: { r
   if (!question.trim() || question.length < 2 || aiToday >= 15 || !(await aiReady('chat'))) return redirect();
   // Short history of this WhatsApp chat (oldest first) so follow-up questions make sense.
   const hist = mine.filter((x) => x.event === 'incoming' || x.event === 'ai-reply').sort((a, b) => a.at.localeCompare(b.at)).slice(-8)
-    .map((x) => ({ role: x.dir === 'in' ? 'user' as const : 'assistant' as const, content: (x.full || x.text).slice(0, 800) }));
+    .map((x) => ({ role: x.dir === 'in' ? 'user' as const : 'assistant' as const, content: stripFooter(x.full || x.text).slice(0, 800) }));
   if (!hist.length || hist[hist.length - 1].content !== question.slice(0, 800)) hist.push({ role: 'user', content: question.slice(0, 800) });
   while (hist.length && hist[0].role !== 'user') hist.shift();
   const steps = app ? await getStages() : [];
   const file = app ? `\nThis client has file ${app.ref} (${app.client.name})${app.route ? `, service ${app.route}` : ''}. Current step: ${steps[app.stage]?.name ?? '-'}. Next: ${app.nextStep || steps[app.stage]?.next || '-'}.` : '';
   const system = `${await chatSystemPrompt('en')}
 
-You are answering on WhatsApp for the company, from its automatic-updates number. Reply in the client's language, short (under 700 characters), plain text, no markdown. Answer general questions (requirements, documents, fees, steps, timelines) from the information above.${file}
+You are answering on WhatsApp for the company, from its automatic-updates number. Reply in the client's language, short (under 700 characters), plain text, no markdown. Do not add contact numbers, links or a sign-off: the main WhatsApp line is added automatically. Answer general questions (requirements, documents, fees, steps, timelines) from the information above.${file}
 If the client asks for a person, wants to pay or change something, has a complaint, asks about a decision on their own case that you cannot see, or you are not sure, reply with exactly: HANDOVER`;
   let reply = '';
   try { reply = (await complete(system, hist, { maxTokens: 600, kind: 'chat', use: 'chat' })).trim(); } catch { return redirect(); }
+  reply = stripFooter(reply);
   if (!reply || /HANDOVER/i.test(reply)) {
     await sendWa(from, 'message', {}, { force: true, text: `Thank you. An advisor will help you with this. Please message us on our main WhatsApp: +${main}\nTap to chat: https://wa.me/${main}`, event: 'redirect' });
     return;
   }
   await sendWa(from, 'message', {}, { force: true, text: `${reply.slice(0, 1200)}\n\n${handover}`, event: 'ai-reply' });
+}
+
+/** Removes the "chat with your advisor on our main WhatsApp" lines, so they are never repeated. */
+function stripFooter(t: string) {
+  return t.replace(/(For anything else, )?chat with your advisor on our main WhatsApp:[^\n]*\n?/gi, '').replace(/Tap to chat:[^\n]*\n?/gi, '').replace(/https?:\/\/wa\.me\/\d+/gi, '').replace(/\n{3,}/g, '\n\n').trim();
 }
