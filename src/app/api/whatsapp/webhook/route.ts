@@ -43,10 +43,11 @@ export async function POST(req: NextRequest) {
     await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: from, event: 'incoming', text, ok: true, dir: 'in' }, 2000);
     const app = apps.find((a) => !a.archived && digits(a.client.phone).endsWith(from.slice(-9)));
     // A client answered the automatic-messages number: reply once a day with a tap-to-chat link to the main WhatsApp,
-    // so the conversation continues on the phone. Messages from our own main number are ignored.
+    // so the conversation continues on the phone. Messages from our main number and team numbers get no auto-reply.
     const w = (await getSecrets()).whatsapp;
     const main = digits((await getSite()).whatsapp || '');
-    if (m.to && m.to === w.phoneNumberId && main && !main.endsWith(from.slice(-9)) && m.type !== 'reaction') {
+    const teamNums = (w.teamNumbers || '').split(/[,\n]/).map((x) => digits(x)).filter((x) => x.length >= 8);
+    if (m.to && m.to === w.phoneNumberId && main && !main.endsWith(from.slice(-9)) && !teamNums.some((t) => t.endsWith(from.slice(-9))) && m.type !== 'reaction') {
       const recent = (await list<WaLog>('whatsapp-log')).some((x) => x.dir === 'out' && x.event === 'redirect' && digits(x.to).endsWith(from.slice(-9)) && Date.now() - Date.parse(x.at) < 864e5);
       if (!recent) await sendWa(from, 'message', {}, { force: true, text: `Thank you for your message. For chat with your advisor, please message us on our main WhatsApp: +${main}\n\nTap to chat: https://wa.me/${main}`, event: 'redirect' }).catch(() => null);
     }
