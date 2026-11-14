@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { insert, list, notify, type Customer, type WaLog } from '@/lib/server/collections';
-import { getSecrets, saveSecrets } from '@/lib/server/settings';
+import { getSecrets, getSite, saveSecrets } from '@/lib/server/settings';
 import { listApplications, listLeads, newId, now, updateApplication, updateJsonFile } from '@/lib/server/store';
-import { digits, resendFailed, waAdvice, webhookToken } from '@/lib/server/whatsapp';
+import { digits, resendFailed, sendWa, waAdvice, webhookToken } from '@/lib/server/whatsapp';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +20,9 @@ export async function GET(req: NextRequest) {
 /** Incoming client messages are added to their application thread and the team is notified. */
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
-  const msgs: { from: string; text?: { body?: string }; type?: string }[] = body?.entry?.flatMap((e: { changes?: { value?: { messages?: unknown[] } }[] }) => e.changes?.flatMap((c) => c.value?.messages ?? []) ?? []) ?? [];
+  // Each message remembers which of our numbers received it (the automatic-messages number or the main phone number).
+  type InMsg = { from: string; text?: { body?: string }; type?: string; to?: string };
+  const msgs: InMsg[] = body?.entry?.flatMap((e: { changes?: { value?: { messages?: InMsg[]; metadata?: { phone_number_id?: string } } }[] }) => e.changes?.flatMap((c) => (c.value?.messages ?? []).map((m) => ({ ...m, to: c.value?.metadata?.phone_number_id }))) ?? []) ?? [];
   // Delivery reports: mark each sent message as delivered / read / failed (with the reason) in the Message log.
   const sts: { id: string; status: string; errors?: { code?: number; title?: string; message?: string; error_data?: { details?: string } }[] }[] = body?.entry?.flatMap((e: { changes?: { value?: { statuses?: unknown[] } }[] }) => e.changes?.flatMap((c) => c.value?.statuses ?? []) ?? []) ?? [];
   if (sts.length) {
@@ -40,6 +42,14 @@ export async function POST(req: NextRequest) {
     const text = (m.text?.body || `[${m.type || 'message'}]`).slice(0, 3000);
     await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: from, event: 'incoming', text, ok: true, dir: 'in' }, 2000);
     const app = apps.find((a) => !a.archived && digits(a.client.phone).endsWith(from.slice(-9)));
+    // A client answered the automatic-messages number: reply once a day with a tap-to-chat link to the main WhatsApp,
+    // so the conversation continues on the phone. Messages from our own main number are ignored.
+    const w = (await getSecrets()).whatsapp;
+    const main = digits((await getSite()).whatsapp || '');
+    if (m.to && m.to === w.phoneNumberId && main && !main.endsWith(from.slice(-9)) && m.type !== 'reaction') {
+      const recent = (await list<WaLog>('whatsapp-log')).some((x) => x.dir === 'out' && x.event === 'redirect' && digits(x.to).endsWith(from.slice(-9)) && Date.now() - Date.parse(x.at) < 864e5);
+      if (!recent) await sendWa(from, 'message', {}, { force: true, text: `Thank you for your message. For chat with your advisor, please message us on our main WhatsApp: +${main}\n\nTap to chat: https://wa.me/${main}`, event: 'redirect' }).catch(() => null);
+    }
     // The client wrote, so the free 24-hour window is open: deliver anything that failed to reach them.
     if (m.type !== 'reaction') await resendFailed(from).catch(() => 0);
     if (app) {

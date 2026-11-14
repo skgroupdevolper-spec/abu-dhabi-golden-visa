@@ -13,7 +13,7 @@ export function fill(tpl: string, vars: Record<string, string | number | undefin
 }
 
 /** Sends one WhatsApp message through the Cloud API when it is set up; otherwise records it only. */
-export async function sendWa(to: string, event: WaEvent, vars: Record<string, string | number | undefined>, opts: { force?: boolean; text?: string } = {}) {
+export async function sendWa(to: string, event: WaEvent, vars: Record<string, string | number | undefined>, opts: { force?: boolean; text?: string; event?: string } = {}) {
   const r = await sendOne(to, event, vars, opts);
   // Extra messages the team added for this trigger go out right after the main one.
   if (!opts.text && !opts.force) {
@@ -23,7 +23,7 @@ export async function sendWa(to: string, event: WaEvent, vars: Record<string, st
   return r;
 }
 
-async function sendOne(to: string, event: WaEvent, vars: Record<string, string | number | undefined>, opts: { force?: boolean; text?: string } = {}, custom?: { text: string; name?: string }) {
+async function sendOne(to: string, event: WaEvent, vars: Record<string, string | number | undefined>, opts: { force?: boolean; text?: string; event?: string } = {}, custom?: { text: string; name?: string }) {
   const w = (await getSecrets()).whatsapp;
   // Client messages use the same friendly text as the email (Admin > Emails & PDFs > Email messages),
   // so WhatsApp and email say the same thing. Turn off with "Use the email text" in WhatsApp settings.
@@ -64,7 +64,7 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   } catch (e) {
     error = (e as Error).message;
   }
-  await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: number, event, text: `${body.type === 'template' ? `[template ${viaMsg ? w.templateNames.message : name}] ` : ''}${text}`.slice(0, 500), ok, error: error || undefined, dir: 'out', ...(mid ? { mid } : {}), ...(event !== 'leadTeam' && !(opts.force && event === 'message') ? { full: text.slice(0, 1500) } : {}) }, 2000);
+  await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: number, event: opts.event || event, text: `${body.type === 'template' ? `[template ${viaMsg ? w.templateNames.message : name}] ` : ''}${text}`.slice(0, 500), ok, error: error || undefined, dir: 'out', ...(mid ? { mid } : {}), ...(event !== 'leadTeam' && !(opts.force && event === 'message') ? { full: text.slice(0, 1500) } : {}) }, 2000);
   return { ok, error };
 }
 
@@ -78,7 +78,7 @@ export async function resendFailed(from: string) {
   if (w.mode !== 'cloud' || !w.phoneNumberId || !w.accessToken) return 0;
   const tail = digits(from).slice(-9);
   const since = Date.now() - 7 * 864e5;
-  const logs = (await list<WaLog>('whatsapp-log')).filter((x) => x.dir === 'out' && !x.ok && !x.resent && x.event !== 'leadTeam' && x.event !== 'paid' && !/^Test /.test(x.full || x.text) && digits(x.to).endsWith(tail) && Date.parse(x.at) > since);
+  const logs = (await list<WaLog>('whatsapp-log')).filter((x) => x.dir === 'out' && !x.ok && !x.resent && x.event !== 'leadTeam' && x.event !== 'paid' && x.event !== 'redirect' && !/^Test /.test(x.full || x.text) && digits(x.to).endsWith(tail) && Date.parse(x.at) > since);
   // Oldest first, one per event (the latest of each), at most 5.
   const latest = new Map<string, WaLog>();
   for (const x of logs) { const k = x.event; const cur = latest.get(k); if (!cur || cur.at < x.at) latest.set(k, x); }
