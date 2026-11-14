@@ -62,6 +62,17 @@ export async function syncMetaTemplates() {
   return { ok: true, msg: `${ok} of ${META_TPLS.length} approved and filled in. ${report.join(' · ')}` };
 }
 
+/** Registers the phone number for sending (needed once for a new number, after its SMS verification).
+ *  The 6-digit PIN becomes the number's two-step verification PIN; keep it safe. */
+export async function registerNumber(pin: string) {
+  const w = (await getSecrets()).whatsapp;
+  if (!w.phoneNumberId || !w.accessToken) return { ok: false, msg: 'Add the Phone number ID and the access token first.' };
+  if (!/^\d{6}$/.test(pin)) return { ok: false, msg: 'Enter a 6-digit PIN.' };
+  const r = await graph(`${encodeURIComponent(w.phoneNumberId)}/register`, w.accessToken, { method: 'POST', body: JSON.stringify({ messaging_product: 'whatsapp', pin }) });
+  if (!r.ok) return { ok: false, msg: `Meta said: ${r.err}` };
+  return { ok: true, msg: 'Number registered. It can now send messages. Keep this PIN: it is the two-step verification PIN of the number.' };
+}
+
 /** Connects your app to the WhatsApp Business account so client replies reach the website (needed once). */
 export async function subscribeWebhooks() {
   const w = (await getSecrets()).whatsapp;
