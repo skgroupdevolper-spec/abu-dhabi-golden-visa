@@ -3,6 +3,9 @@ import { insert, list, notify, type Customer, type WaLog } from '@/lib/server/co
 import { getSecrets, getSite, saveSecrets } from '@/lib/server/settings';
 import { listApplications, listLeads, newId, now, updateApplication, updateJsonFile } from '@/lib/server/store';
 import { digits, resendFailed, sendWa, waAdvice, webhookToken } from '@/lib/server/whatsapp';
+import { aiReady, complete } from '@/lib/server/ai';
+import { chatSystemPrompt } from '@/lib/server/chatbot';
+import { getStages } from '@/lib/server/stages';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,14 +45,14 @@ export async function POST(req: NextRequest) {
     const text = (m.text?.body || `[${m.type || 'message'}]`).slice(0, 3000);
     await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: from, event: 'incoming', text, ok: true, dir: 'in' }, 2000);
     const app = apps.find((a) => !a.archived && digits(a.client.phone).endsWith(from.slice(-9)));
-    // A client answered the automatic-messages number: reply once a day with a tap-to-chat link to the main WhatsApp,
-    // so the conversation continues on the phone. Messages from our main number and team numbers get no auto-reply.
+    // A client wrote to the automatic-messages number. The AI assistant answers their question right here
+    // (with their file status when we know them). Anything it cannot answer, or a request for a person,
+    // is sent on to the main WhatsApp with a tap-to-chat link. Our own main and team numbers get no reply.
     const w = (await getSecrets()).whatsapp;
     const main = digits((await getSite()).whatsapp || '');
     const teamNums = (w.teamNumbers || '').split(/[,\n]/).map((x) => digits(x)).filter((x) => x.length >= 8);
     if (m.to && m.to === w.phoneNumberId && main && !main.endsWith(from.slice(-9)) && !teamNums.some((t) => t.endsWith(from.slice(-9))) && m.type !== 'reaction') {
-      const recent = (await list<WaLog>('whatsapp-log')).some((x) => x.dir === 'out' && x.event === 'redirect' && digits(x.to).endsWith(from.slice(-9)) && Date.now() - Date.parse(x.at) < 864e5);
-      if (!recent) await sendWa(from, 'message', {}, { force: true, text: `Thank you for your message. For chat with your advisor, please message us on our main WhatsApp: +${main}\n\nTap to chat: https://wa.me/${main}`, event: 'redirect' }).catch(() => null);
+      await autoReply(from, m.type === 'text' ? text : '', main, app).catch(() => null);
     }
     // The client wrote, so the free 24-hour window is open: deliver anything that failed to reach them.
     if (m.type !== 'reaction') await resendFailed(from).catch(() => 0);
@@ -67,4 +70,36 @@ export async function POST(req: NextRequest) {
     }
   }
   return NextResponse.json({ ok: true });
+}
+
+/** Answers a client on the automatic number with the website AI assistant, or hands over to the main WhatsApp. */
+async function autoReply(from: string, question: string, main: string, app?: { ref: string; client: { name: string }; stage: number; nextStep?: string; route?: string }) {
+  const tail = from.slice(-9);
+  const log = await list<WaLog>('whatsapp-log');
+  const mine = log.filter((x) => digits(x.to).endsWith(tail) && Date.now() - Date.parse(x.at) < 864e5);
+  const handover = `For anything else, chat with your advisor on our main WhatsApp: +${main}\nTap to chat: https://wa.me/${main}`;
+  const redirect = async () => {
+    if (mine.some((x) => x.dir === 'out' && x.event === 'redirect')) return; // once a day
+    await sendWa(from, 'message', {}, { force: true, text: `Thank you for your message. ${handover}`, event: 'redirect' });
+  };
+  const aiToday = mine.filter((x) => x.dir === 'out' && x.event === 'ai-reply').length;
+  if (!question.trim() || question.length < 2 || aiToday >= 15 || !(await aiReady('chat'))) return redirect();
+  // Short history of this WhatsApp chat (oldest first) so follow-up questions make sense.
+  const hist = mine.filter((x) => x.event === 'incoming' || x.event === 'ai-reply').sort((a, b) => a.at.localeCompare(b.at)).slice(-8)
+    .map((x) => ({ role: x.dir === 'in' ? 'user' as const : 'assistant' as const, content: (x.full || x.text).slice(0, 800) }));
+  if (!hist.length || hist[hist.length - 1].content !== question.slice(0, 800)) hist.push({ role: 'user', content: question.slice(0, 800) });
+  while (hist.length && hist[0].role !== 'user') hist.shift();
+  const steps = app ? await getStages() : [];
+  const file = app ? `\nThis client has file ${app.ref} (${app.client.name})${app.route ? `, service ${app.route}` : ''}. Current step: ${steps[app.stage]?.name ?? '-'}. Next: ${app.nextStep || steps[app.stage]?.next || '-'}.` : '';
+  const system = `${await chatSystemPrompt('en')}
+
+You are answering on WhatsApp for the company, from its automatic-updates number. Reply in the client's language, short (under 700 characters), plain text, no markdown. Answer general questions (requirements, documents, fees, steps, timelines) from the information above.${file}
+If the client asks for a person, wants to pay or change something, has a complaint, asks about a decision on their own case that you cannot see, or you are not sure, reply with exactly: HANDOVER`;
+  let reply = '';
+  try { reply = (await complete(system, hist, { maxTokens: 600, kind: 'chat', use: 'chat' })).trim(); } catch { return redirect(); }
+  if (!reply || /HANDOVER/i.test(reply)) {
+    await sendWa(from, 'message', {}, { force: true, text: `Thank you. An advisor will help you with this. Please message us on our main WhatsApp: +${main}\nTap to chat: https://wa.me/${main}`, event: 'redirect' });
+    return;
+  }
+  await sendWa(from, 'message', {}, { force: true, text: `${reply.slice(0, 1200)}\n\n${handover}`, event: 'ai-reply' });
 }

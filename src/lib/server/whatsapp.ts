@@ -86,7 +86,7 @@ export async function resendFailed(from: string) {
   if (w.mode !== 'cloud' || !w.phoneNumberId || !w.accessToken) return 0;
   const tail = digits(from).slice(-9);
   const since = Date.now() - 7 * 864e5;
-  const logs = (await list<WaLog>('whatsapp-log')).filter((x) => x.dir === 'out' && !x.ok && !x.resent && x.event !== 'leadTeam' && x.event !== 'paid' && x.event !== 'redirect' && !x.event.startsWith('copy:') && !/^Test /.test(x.full || x.text) && digits(x.to).endsWith(tail) && Date.parse(x.at) > since);
+  const logs = (await list<WaLog>('whatsapp-log')).filter((x) => x.dir === 'out' && !x.ok && !x.resent && x.event !== 'leadTeam' && x.event !== 'paid' && x.event !== 'redirect' && x.event !== 'ai-reply' && !x.event.startsWith('copy:') && !/^Test /.test(x.full || x.text) && digits(x.to).endsWith(tail) && Date.parse(x.at) > since);
   // Oldest first, one per event (the latest of each), at most 5.
   const latest = new Map<string, WaLog>();
   for (const x of logs) { const k = x.event; const cur = latest.get(k); if (!cur || cur.at < x.at) latest.set(k, x); }
