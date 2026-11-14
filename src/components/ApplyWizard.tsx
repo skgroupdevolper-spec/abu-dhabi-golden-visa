@@ -149,6 +149,7 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
         <div className="wa-optin">
           <p><b><T>{"Get every update on WhatsApp"}</T></b><br /><T>{"Tap below and press Send in WhatsApp. Your welcome message, quote and payment link then arrive in the same chat."}</T></p>
           <a className="btn btn-wa" href={waLink(`Hello, this is ${d.name} (${done.ref}). Please send my application updates here.`)} target="_blank" rel="noopener"><Icon name="wa" size={18} /> <T>{"Get my updates on WhatsApp"}</T></a>
+          <a className="btn btn-glass btn-sm" href="/contact.vcf" download><T>{"Save our contact (shows our name on WhatsApp)"}</T></a>
         </div>
         <div className="row-actions" style={{ justifyContent: 'center' }}>
           <a className="btn btn-red" href={done.account === 'created' || done.account === 'signed-in' ? portalHome() : done.link}><T>{"Open my client dashboard"}</T> <Icon name="arrow" size={18} /></a>
