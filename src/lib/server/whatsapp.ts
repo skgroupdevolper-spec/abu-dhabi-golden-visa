@@ -15,6 +15,14 @@ export function fill(tpl: string, vars: Record<string, string | number | undefin
 /** Sends one WhatsApp message through the Cloud API when it is set up; otherwise records it only. */
 export async function sendWa(to: string, event: WaEvent, vars: Record<string, string | number | undefined>, opts: { force?: boolean; text?: string; event?: string } = {}) {
   const r = await sendOne(to, event, vars, opts);
+  // The company gets the very same message the client received (same text, same template), so the team
+  // sees each update exactly as the client does (tests and resends are not copied). Off with "Copy client messages to team numbers".
+  const w0 = (await getSecrets()).whatsapp;
+  const team = (w0.teamNumbers || '').split(/[,\n]/).map((x) => digits(x)).filter((x) => x.length >= 8);
+  const me = digits(to);
+  if (w0.copyTeam !== false && event !== 'leadTeam' && !opts.event && !opts.force && !team.some((t) => t.endsWith(me.slice(-9)))) {
+    for (const t of team) await sendOne(t, event, vars, { ...opts, force: true, event: `copy:${event}` }).catch(() => null);
+  }
   // Extra messages the team added for this trigger go out right after the main one.
   if (!opts.text && !opts.force) {
     const extra = ((await getSecrets()).whatsapp.customs ?? []).filter((c) => c.on && c.when === event && c.text.trim());
@@ -78,7 +86,7 @@ export async function resendFailed(from: string) {
   if (w.mode !== 'cloud' || !w.phoneNumberId || !w.accessToken) return 0;
   const tail = digits(from).slice(-9);
   const since = Date.now() - 7 * 864e5;
-  const logs = (await list<WaLog>('whatsapp-log')).filter((x) => x.dir === 'out' && !x.ok && !x.resent && x.event !== 'leadTeam' && x.event !== 'paid' && x.event !== 'redirect' && !/^Test /.test(x.full || x.text) && digits(x.to).endsWith(tail) && Date.parse(x.at) > since);
+  const logs = (await list<WaLog>('whatsapp-log')).filter((x) => x.dir === 'out' && !x.ok && !x.resent && x.event !== 'leadTeam' && x.event !== 'paid' && x.event !== 'redirect' && !x.event.startsWith('copy:') && !/^Test /.test(x.full || x.text) && digits(x.to).endsWith(tail) && Date.parse(x.at) > since);
   // Oldest first, one per event (the latest of each), at most 5.
   const latest = new Map<string, WaLog>();
   for (const x of logs) { const k = x.event; const cur = latest.get(k); if (!cur || cur.at < x.at) latest.set(k, x); }
