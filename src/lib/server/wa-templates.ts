@@ -54,7 +54,10 @@ export async function syncMetaTemplates() {
   for (const t of META_TPLS) {
     const m = rows.find((x) => x.name === t.name);
     const st = m?.status ?? 'NOT CREATED';
-    if (st === 'APPROVED') names[t.event] = t.name;
+    // Templates Meta moved to MARKETING are throttled for repeat updates, so they are not used: those
+    // messages go out through the approved "new message" utility template instead.
+    if (st === 'APPROVED' && (!m?.category || m.category === 'UTILITY')) names[t.event] = t.name;
+    else if (m?.category && m.category !== 'UTILITY' && names[t.event] === t.name) delete names[t.event];
     report.push(`${t.name}: ${st.toLowerCase().replace('_', ' ')}${m?.category && m.category !== 'UTILITY' ? ` (moved to ${m.category.toLowerCase()} by Meta)` : ''}`);
   }
   await saveSecrets({ whatsapp: { ...w, templateNames: names, templateLang: 'en' } });
