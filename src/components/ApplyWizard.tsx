@@ -130,7 +130,6 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
       setErr('');
       setDone({ ref: j.ref ?? '', link: j.link ?? '', account: j.account });
       // Account created (or the right password for an existing one): open the dashboard right away.
-      if (j.account === 'created' || j.account === 'signed-in') setTimeout(() => { window.location.href = portalHome(); }, 1200);
     } catch (e) {
       setErr((e as Error).message);
     } finally { setBusy(false); }
@@ -144,9 +143,13 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
         <span className="ad-ic"><Icon name="check" size={30} /></span>
         <p className="eyebrow"><T>{"Application received"}</T></p>
         <h2>Thank you, {d.name.split(' ')[0]}. Your reference is {done.ref}.</h2>
-        {(done.account === 'created' || done.account === 'signed-in') && <p className="signed-in-note" style={{ justifyContent: 'center' }}><Icon name="check" size={18} /> <span><T>{"Your account is ready and you are signed in. Opening your dashboard…"}</T></span></p>}
+        {(done.account === 'created' || done.account === 'signed-in') && <p className="signed-in-note" style={{ justifyContent: 'center' }}><Icon name="check" size={18} /> <span><T>{"Your account is ready and you are signed in."}</T></span></p>}
         {done.account === 'exists' && <p className="notice" style={{ textAlign: 'start' }}><T>{"You already have an account with this email, so we did not create a new one. Your application is added to that account: sign in with your existing password to see it."}</T> <a href={portalLogin()}><T>{"Sign in"}</T></a></p>}
         <p className="lead">Your advisor checks your file and sends the written quote on WhatsApp{d.email ? ' and by email' : ''}. Follow every step, upload documents and message us in your client dashboard.</p>
+        <div className="wa-optin">
+          <p><b><T>{"Get every update on WhatsApp"}</T></b><br /><T>{"Tap below and press Send in WhatsApp. Your welcome message, quote and payment link then arrive in the same chat."}</T></p>
+          <a className="btn btn-wa" href={waLink(`Hello, this is ${d.name} (${done.ref}). Please send my application updates here.`)} target="_blank" rel="noopener"><Icon name="wa" size={18} /> <T>{"Get my updates on WhatsApp"}</T></a>
+        </div>
         <div className="row-actions" style={{ justifyContent: 'center' }}>
           <a className="btn btn-red" href={done.account === 'created' || done.account === 'signed-in' ? portalHome() : done.link}><T>{"Open my client dashboard"}</T> <Icon name="arrow" size={18} /></a>
           <a className="btn btn-glass" href={waLink(waText)} target="_blank" rel="noopener"><Icon name="wa" size={18} /> WhatsApp {SITE.whatsappDisplay}</a>

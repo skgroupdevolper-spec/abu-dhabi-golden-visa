@@ -1,9 +1,9 @@
 import 'server-only';
 import { createHash } from 'node:crypto';
 import { WA_EVENTS, type WaEvent } from '@/lib/settings-schema';
-import { insert, type WaLog } from './collections';
+import { insert, list, type WaLog } from './collections';
 import { getSecrets } from './settings';
-import { newId, now } from './store';
+import { newId, now, updateJsonFile } from './store';
 
 const GRAPH = 'https://graph.facebook.com/v21.0';
 export const digits = (p: string) => p.replace(/\D/g, '').replace(/^00/, '');
@@ -64,8 +64,34 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   } catch (e) {
     error = (e as Error).message;
   }
-  await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: number, event, text: `${body.type === 'template' ? `[template ${viaMsg ? w.templateNames.message : name}] ` : ''}${text}`.slice(0, 500), ok, error: error || undefined, dir: 'out', ...(mid ? { mid } : {}) }, 2000);
+  await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: number, event, text: `${body.type === 'template' ? `[template ${viaMsg ? w.templateNames.message : name}] ` : ''}${text}`.slice(0, 500), ok, error: error || undefined, dir: 'out', ...(mid ? { mid } : {}), ...(event !== 'leadTeam' && !(opts.force && event === 'message') ? { full: text.slice(0, 1500) } : {}) }, 2000);
   return { ok, error };
+}
+
+/**
+ * When a client writes to us, the free 24-hour window opens. Client messages that could not be delivered
+ * in the last 7 days (e.g. Meta billing or template problems) are sent again right away as normal text,
+ * so the client still gets their welcome, updates and payment link.
+ */
+export async function resendFailed(from: string) {
+  const w = (await getSecrets()).whatsapp;
+  if (w.mode !== 'cloud' || !w.phoneNumberId || !w.accessToken) return 0;
+  const tail = digits(from).slice(-9);
+  const since = Date.now() - 7 * 864e5;
+  const logs = (await list<WaLog>('whatsapp-log')).filter((x) => x.dir === 'out' && !x.ok && !x.resent && x.event !== 'leadTeam' && x.event !== 'paid' && !/^Test /.test(x.full || x.text) && digits(x.to).endsWith(tail) && Date.parse(x.at) > since);
+  // Oldest first, one per event (the latest of each), at most 5.
+  const latest = new Map<string, WaLog>();
+  for (const x of logs) { const k = x.event; const cur = latest.get(k); if (!cur || cur.at < x.at) latest.set(k, x); }
+  const pick = [...latest.values()].sort((a, b) => a.at.localeCompare(b.at)).slice(-5);
+  // Mark first, so two quick client messages never send the same update twice.
+  const ids = new Set(logs.map((x) => x.id));
+  if (ids.size) await updateJsonFile<WaLog[]>('whatsapp-log.json', [], (all) => all.map((x) => (ids.has(x.id) ? { ...x, resent: true } : x)));
+  let n = 0;
+  for (const x of pick) {
+    const r = await sendWa(x.to, x.event as WaEvent, {}, { force: true, text: x.full || x.text.replace(/^\[template [^\]]*\] /, '') });
+    if (r.ok) n++;
+  }
+  return n;
 }
 
 /** Sends to every team number set in WhatsApp settings. */

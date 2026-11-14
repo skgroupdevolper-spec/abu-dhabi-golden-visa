@@ -586,6 +586,11 @@ html[dir='rtl'] .mega.wide { left: 50%; right: auto; }
 .apply-done { text-align: center; padding: clamp(28px, 5vw, 56px); border-radius: 30px; background: linear-gradient(140deg, #fffaf0, #f4e4b0); border: 1px solid rgba(212, 175, 55, 0.5); display: grid; justify-items: center; gap: 12px; }
 .apply-done .ad-ic { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--navy); color: var(--gold-light); }
 .apply-done h2 { font-size: clamp(26px, 3vw, 40px); max-width: 24ch; }
+.apply-done .wa-optin { width: min(520px, 100%); background: #fff; border: 1px solid rgba(212, 175, 55, 0.55); border-radius: 18px; padding: 16px 18px; display: grid; gap: 12px; justify-items: center; box-shadow: 0 10px 30px rgba(20, 16, 6, 0.08); }
+.apply-done .wa-optin p { margin: 0; font-size: 15px; line-height: 1.5; }
+.apply-done .btn-wa { background: #111; color: #f4d77a; border: 1px solid #111; font-weight: 700; width: 100%; justify-content: center; animation: waPulse 2.4s ease-in-out infinite; }
+.apply-done .btn-wa svg { color: #25d366; }
+@keyframes waPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.5); } 50% { box-shadow: 0 0 0 8px rgba(212, 175, 55, 0); } }
 .msg-ok h3, .msg-ok .eyebrow { color: var(--navy) !important; }
 .msg-ok .btn[style] { background: var(--navy) !important; color: var(--gold-light) !important; }
 

@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { insert, list, notify, type Customer, type WaLog } from '@/lib/server/collections';
 import { getSecrets, saveSecrets } from '@/lib/server/settings';
 import { listApplications, listLeads, newId, now, updateApplication, updateJsonFile } from '@/lib/server/store';
-import { digits, waAdvice, webhookToken } from '@/lib/server/whatsapp';
+import { digits, resendFailed, waAdvice, webhookToken } from '@/lib/server/whatsapp';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,6 +40,8 @@ export async function POST(req: NextRequest) {
     const text = (m.text?.body || `[${m.type || 'message'}]`).slice(0, 3000);
     await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: from, event: 'incoming', text, ok: true, dir: 'in' }, 2000);
     const app = apps.find((a) => !a.archived && digits(a.client.phone).endsWith(from.slice(-9)));
+    // The client wrote, so the free 24-hour window is open: deliver anything that failed to reach them.
+    if (m.type !== 'reaction') await resendFailed(from).catch(() => 0);
     if (app) {
       await updateApplication(app.id, (a) => { a.messages.push({ id: newId(6), by: 'client', at: now(), text: `WhatsApp: ${text}` }); });
       await notify('whatsapp', `WhatsApp from ${app.client.name} (${app.ref}): ${text}`, `/admin/applications/${app.id}/#messages`);
