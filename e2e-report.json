@@ -1,0 +1,25 @@
+{
+  "ok": false,
+  "fails": [
+    "[apply-account] existing email with wrong password: {\"ok\":true,\"ref\":\"ADGV-0004\",\"link\":\"https://app.abudhabigoldenvisa.com/t/b2cafcc5e857842050734e542e851577/\",\"account\":\"none\"}",
+    "[apply-account] existing account with the right password not signed in: {\"ok\":true,\"ref\":\"ADGV-0004\",\"link\":\"https://app.abudhabigoldenvisa.com/t/b2cafcc5e857842050734e542e851577/\",\"account\":\"none\"}"
+  ],
+  "warns": [],
+  "stats": {
+    "sitemapUrls": 2320,
+    "sitemapLanguages": "ar at cs de en es fr hi hr hu id it pl pt ro ru sk tr ur zh",
+    "sitemapOk": 2320,
+    "visitorPages": 80,
+    "currency": {
+      "before": {
+        "aed": 16,
+        "inr": 0
+      },
+      "after": {
+        "aed": 0,
+        "inr": 16
+      }
+    },
+    "adminSections": 64
+  }
+}
