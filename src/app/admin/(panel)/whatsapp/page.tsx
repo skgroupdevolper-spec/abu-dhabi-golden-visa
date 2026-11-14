@@ -100,6 +100,7 @@ export default async function WhatsApp({ searchParams }: { searchParams: Promise
           <ActionForm action={testWhatsApp} className="stack">
             <F name="to" label="Send to (with country code)" placeholder="+9715…" />
             <F name="text" label="Message" type="textarea" rows={3} value="Test message from your Abu Dhabi Golden Visa website." />
+            <div className="field"><label htmlFor="mode">Send as</label><select id="mode" name="mode" defaultValue="template"><option value="template">Approved template (works any time, like real client updates)</option><option value="text">Plain text (only if they wrote to you in the last 24 h)</option></select></div>
             <Submit>Send test</Submit>
           </ActionForm>
         </div>

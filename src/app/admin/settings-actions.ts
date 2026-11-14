@@ -113,8 +113,14 @@ export async function saveWhatsApp(_: St, f: FormData): Promise<St> {
 export async function testWhatsApp(_: St, f: FormData): Promise<St> {
   await requireAdmin(FULL);
   const to = s(f, 'to', 30);
-  const r = await sendWa(to, 'message', {}, { force: true, text: s(f, 'text', 500) || 'Test message from your Abu Dhabi Golden Visa website.' });
-  return r.ok ? { ok: `Sent to ${to}.` } : { error: `Not sent: ${r.error}` };
+  const text = s(f, 'text', 500) || 'Test message from your Abu Dhabi Golden Visa website.';
+  // Outside the 24-hour window a plain text never arrives, so the test goes out as the approved
+  // "new message" template, exactly like a real client update (this also tests billing on Meta).
+  const tpl = f.get('mode') === 'template';
+  const r = tpl
+    ? await sendWa(to, 'message', { name: 'there', ref: 'TEST', text, link: 'https://app.abudhabigoldenvisa.com/' }, { force: true })
+    : await sendWa(to, 'message', {}, { force: true, text });
+  return r.ok ? { ok: `Sent to ${to}${tpl ? ' (template)' : ''}. Check the Message log for “Delivered”.` } : { error: `Not sent: ${r.error}` };
 }
 
 /* ---------- team users ---------- */
