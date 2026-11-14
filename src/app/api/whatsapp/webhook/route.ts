@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   for (const m of msgs.slice(0, 20)) {
     const from = digits(m.from || '');
     const text = (m.text?.body || `[${m.type || 'message'}]`).slice(0, 3000);
-    await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: from, event: 'incoming', text, ok: true, dir: 'in' }, 2000);
+    await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: from, event: 'incoming', text, ok: true, dir: 'in', ...(m.to ? { biz: m.to } : {}) }, 2000);
     const app = apps.find((a) => !a.archived && digits(a.client.phone).endsWith(from.slice(-9)));
     // A client wrote to the automatic-messages number. The AI assistant answers their question right here
     // (with their file status when we know them). Anything it cannot answer, or a request for a person,

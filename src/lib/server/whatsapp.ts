@@ -152,7 +152,10 @@ async function wroteLast24h(number: string) {
     const { list } = await import('./collections');
     const since = new Date(Date.now() - 23.5 * 3600_000).toISOString();
     const tail = number.slice(-9);
-    return (await list<WaLog>('whatsapp-log')).some((l) => l.dir === 'in' && l.at >= since && digits(l.to).endsWith(tail));
+    // The free 24-hour window belongs to one business number: only messages the client wrote to the
+    // number we send from count (older log lines without that info do not).
+    const biz = (await getSecrets()).whatsapp.phoneNumberId;
+    return (await list<WaLog>('whatsapp-log')).some((l) => l.dir === 'in' && l.at >= since && l.biz === biz && digits(l.to).endsWith(tail));
   } catch { return false; }
 }
 
