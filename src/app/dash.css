@@ -928,3 +928,9 @@ code.k { overflow-wrap: anywhere; word-break: break-all; }
 .wa-steps { margin: 12px 0; padding-inline-start: 22px; display: grid; gap: 10px; }
 .wa-steps li b { font-size: 14px; }
 .wa-steps li p { margin: 4px 0 0; font-size: 13px; color: #5a5242; line-height: 1.5; }
+
+/* Selected service, highlighted in the file header */
+.svc-hl { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0 2px; padding: 8px 10px 8px 12px; border-radius: 14px; background: linear-gradient(135deg, #fff6dc, #f4e2a6); border: 1px solid rgba(212, 175, 55, .55); box-shadow: 0 6px 18px -12px rgba(150, 110, 10, .6); width: fit-content; max-width: 100%; }
+.svc-hl-k { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #8a6a12; }
+.svc-hl b { font-size: 15px; color: #14110a; }
+.svc-hl-g { font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: #14110a; color: #f4d77a; }

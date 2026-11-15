@@ -15,7 +15,9 @@ import { portalUrl, waTo } from '@/lib/site';
 import { myScope, scopedApp } from '@/lib/server/scope';
 import { DECISION_PILL, DECISION_TEXT } from '@/lib/decision';
 import { ROUTE_LABELS, day, money, payState, when } from '@/lib/stages';
-import { stepsFor } from '@/lib/server/stages';
+import { stepGroupOf, stepsFor } from '@/lib/server/stages';
+import { applyService } from '@/content/apply';
+import { listLeads } from '@/lib/server/store';
 import { STATE_LABEL, stageState } from '@/lib/stage-defs';
 import {
   addPayment, archiveApplication, clearMessages, fillQuote, markPaid, newPortalLink, assignApp, removePayment, saveClient, saveQuote, setDecision, setRequests, setStage, teamMessage, toggleShare, uploadTeamDoc,
@@ -40,6 +42,10 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
   const STAGES = steps.map((x) => x.name);
   const nextDefaults = steps.map((x) => x.next);
   const svc = mergeCatalog(await getServiceOverrides()).flatMap((g) => g.items);
+  // The service the client chose in the apply form (or the enquiry), shown as a highlight in the header.
+  const lead = a.leadId ? (await listLeads()).find((l) => l.id === a.leadId) : undefined;
+  const chosen = applyService(a.service)?.label || lead?.service || a.route;
+  const stepGroup = stepGroupOf(a);
 
   return (
     <>
@@ -47,6 +53,7 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
         <div>
           <p className="eyebrow"><Link href="/admin/applications/" style={{ textDecoration: 'none' }}>Applications</Link> / {a.ref}</p>
           <h1>{a.client.name} <span className="gold">· {a.route}</span></h1>
+          <div className="svc-hl"><span className="svc-hl-k">Service selected</span><b>{chosen}</b><span className="svc-hl-g">{stepGroup} · {steps.length} steps</span>{(a.adults + a.kids) > 1 && <span className="svc-hl-g">{a.adults} adult{a.adults === 1 ? '' : 's'}{a.kids ? ` + ${a.kids} child${a.kids === 1 ? '' : 'ren'}` : ''}</span>}<span className="svc-hl-g">{a.location === 'out' ? 'Outside the UAE' : 'Inside the UAE'}</span></div>
           <p className="muted small" style={{ margin: '6px 0 0' }}>Opened {day(a.createdAt)} · updated {when(a.updatedAt)} {a.archived && <span className="pill closed">Archived</span>}{' '}{(() => { const ps = payState(a); return ps.state === 'none' ? <span className="pill">No payment yet</span> : ps.state === 'paid' ? <span className="pill ok">Paid in full · {money(ps.paid)}</span> : <span className={`pill ${ps.state === 'partial' ? 'new' : 'due'}`}>{ps.state === 'partial' ? 'Part paid' : 'Not paid'} · {money(ps.remaining)} remaining</span>; })()}</p>
         </div>
         <div className="row">
