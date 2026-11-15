@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
       mailEvent(email, 'welcome', { name: name.split(' ')[0], ref: app.ref, service: svc.label, link }),
       account === 'created' ? mailEvent(email, 'account', { name: name.split(' ')[0], email, link: portalUrl('').replace(/t\/\/$/, '') }) : Promise.resolve(),
       // signed-in client: WhatsApp goes to the number saved in their account if it differs
-      me?.phone && digitsOf(me.phone) !== digitsOf(phone) ? sendWa(me.phone, 'welcome', { name: name.split(' ')[0], ref: app.ref, link }) : Promise.resolve(),
+      me?.phone && digitsOf(me.phone) !== digitsOf(phone) ? sendWa(me.phone, 'welcome', { name: name.split(' ')[0], ref: app.ref, service: svc.label, link }) : Promise.resolve(),
     ]);
     return NextResponse.json({ ok: true, ref: app.ref, link, account });
   } catch (e) {
