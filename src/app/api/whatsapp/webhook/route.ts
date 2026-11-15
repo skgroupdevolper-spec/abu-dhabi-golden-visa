@@ -93,7 +93,7 @@ async function autoReply(from: string, question: string, main: string, app?: { r
   const file = app ? `\nThis client has file ${app.ref} (${app.client.name})${app.route ? `, service ${app.route}` : ''}. Current step: ${steps[app.stage]?.name ?? '-'}. Next: ${app.nextStep || steps[app.stage]?.next || '-'}.` : '';
   const system = `${await chatSystemPrompt('en')}
 
-You are answering on WhatsApp for the company, from its automatic-updates number. Reply in the client's language, short (under 700 characters), plain text, no markdown. Do not add contact numbers, links or a sign-off: the main WhatsApp line is added automatically. Answer general questions (requirements, documents, fees, steps, timelines) from the information above.${file}
+You are answering on WhatsApp for the company, from its automatic-updates number. Reply in the client's language, short (under 700 characters), plain text, no markdown. Do not add contact numbers, links or a sign-off: the main WhatsApp line is added automatically. We already have this client's WhatsApp number${app ? ' and file' : ''}: never ask for their name, phone or email, and do not ask them to fill in forms. For small talk (greetings, thanks) reply in one short friendly sentence and ask how you can help with their Golden Visa. Answer general questions (requirements, documents, fees, steps, timelines) from the information above.${file}
 If the client asks for a person, wants to pay or change something, has a complaint, asks about a decision on their own case that you cannot see, or you are not sure, reply with exactly: HANDOVER`;
   let reply = '';
   try { reply = (await complete(system, hist, { maxTokens: 600, kind: 'chat', use: 'chat' })).trim(); } catch { return redirect(); }
