@@ -1,4 +1,4 @@
-import { getStages } from '@/lib/server/stages';
+import { allStepNames, stepGroupOf } from '@/lib/server/stages';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { listApplications, listLeads } from '@/lib/server/store';
@@ -8,7 +8,8 @@ import { myScope } from '@/lib/server/scope';
 export const metadata: Metadata = { title: 'Overview' };
 
 export default async function Overview() {
-  const STAGES = (await getStages()).map((x) => x.name);
+  const NAMES = await allStepNames();
+  const namesOf = (x: { stepGroup?: string; route: string }) => NAMES[stepGroupOf(x)] ?? NAMES['Golden Visa'];
   const sc = await myScope();
   // Staff: only their own files and enquiries, and no business totals (like the customer dashboard).
   const [leads, all] = await Promise.all([listLeads().then((l) => l.filter(sc.lead)), listApplications().then((l) => l.filter(sc.app))]);
@@ -16,9 +17,13 @@ export default async function Overview() {
   const week = Date.now() - 7 * 864e5;
   const due = apps.flatMap((a) => a.payments.filter((p) => p.status === 'due')).reduce((s, p) => s + p.amount, 0);
   const paid = apps.flatMap((a) => a.payments.filter((p) => p.status === 'paid')).reduce((s, p) => s + p.amount, 0);
-  const done = apps.filter((a) => a.stage === STAGES.length - 1).length;
+  const done = apps.filter((a) => a.stage === namesOf(a).length - 1).length;
   const unread = apps.filter((a) => a.messages.some((m) => m.by === 'client' && !m.read));
-  const byStage = STAGES.map((t, i) => ({ t, c: apps.filter((a) => a.stage === i).length }));
+  // Files per step name across every service's step list (first-seen order).
+  const counts = new Map<string, number>();
+  for (const names of Object.values(NAMES)) for (const t of names) if (!counts.has(t)) counts.set(t, 0);
+  for (const a of apps) { const t = namesOf(a)[a.stage]; if (t) counts.set(t, (counts.get(t) ?? 0) + 1); }
+  const byStage = [...counts].map(([t, c]) => ({ t, c })).filter((x, i) => x.c > 0 || i < 17);
   const max = Math.max(1, ...byStage.map((x) => x.c));
   return (
     <>
@@ -78,7 +83,7 @@ export default async function Overview() {
         {apps.length === 0 ? <p className="empty">No applications yet. Convert an enquiry or create one.</p> : (
           <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Ref</th><th>Client</th><th>Route</th><th>Stage</th><th>Updated</th></tr></thead><tbody>
             {[...apps].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 6).map((a) => (
-              <tr key={a.id}><td><Link href={`/admin/applications/${a.id}/`}>{a.ref}</Link></td><td>{a.client.name}</td><td>{a.route}</td><td>{STAGES[a.stage]}</td><td>{day(a.updatedAt)}</td></tr>
+              <tr key={a.id}><td><Link href={`/admin/applications/${a.id}/`}>{a.ref}</Link></td><td>{a.client.name}</td><td>{a.route}</td><td>{namesOf(a)[a.stage]}</td><td>{day(a.updatedAt)}</td></tr>
             ))}
           </tbody></table></div>
         )}

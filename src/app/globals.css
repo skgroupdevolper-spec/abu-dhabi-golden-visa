@@ -1629,3 +1629,32 @@ body.c-view .cur-dot { opacity: 0; }
   body:has(.apply-nav) .mnav, body:has(.apply-nav) .dock { display: none !important; }
   .apply-nav { bottom: calc(10px + env(safe-area-inset-bottom, 0px)); margin-top: 18px; padding: 12px 14px; }
 }
+
+/* ---------- Polish: apply page (sticky Continue bar, success screen, category chips) ---------- */
+/* Sticky Continue/Submit bar: one clean floating card, no notch or dashed line. */
+@media (min-width: 761px) {
+  .apply-nav { position: sticky; bottom: 14px; margin: 22px 0 0; padding: 12px 14px; border: 1px solid rgba(212, 175, 55, .35); border-radius: 18px; background: rgba(255, 255, 255, .94); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 14px 34px -18px rgba(20, 16, 6, .35); }
+}
+@media (min-width: 761px) and (max-width: 980px) { .apply-nav { bottom: 84px; } }
+.apply-nav { border-top-style: solid; }
+
+/* Service categories: wrap on wide screens, scroll with a soft edge on phones. */
+@media (min-width: 761px) { .aw-cats { flex-wrap: wrap; overflow: visible; padding-bottom: 0; } }
+@media (max-width: 760px) {
+  .aw-cats { -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); padding-inline-end: 28px; }
+}
+
+/* Success screen: every button fits, wraps its text and never overflows the card. */
+.apply-done { overflow: hidden; }
+.apply-done .wa-optin { padding: 18px; gap: 12px; }
+.apply-done .wa-optin p { font-size: 15px; }
+.apply-done .wa-optin .btn, .apply-done .row-actions .btn { width: 100%; max-width: 100%; min-width: 0; white-space: normal; text-align: center; justify-content: center; line-height: 1.25; padding: 12px 18px; min-height: 52px; height: auto; font-size: 15px; box-sizing: border-box; }
+.apply-done .wa-optin .btn-glass { background: #fffaf0; border: 1px solid rgba(212, 175, 55, .45); color: var(--navy); font-weight: 600; font-size: 14px; min-height: 44px; }
+.apply-done .row-actions { width: min(520px, 100%); display: grid; gap: 10px; }
+.apply-done .row-actions .btn-glass { background: #fff; border: 1px solid rgba(212, 175, 55, .45); color: var(--navy); }
+@media (max-width: 760px) {
+  .apply-done { padding: 26px 16px 30px; border-radius: 24px; }
+  .apply-done h2 { font-size: 26px; }
+  .apply-done > p { font-size: 16px; line-height: 1.55; }
+  .apply-done .btn-wa { font-size: 15px; }
+}

@@ -35,7 +35,10 @@ export function StageListEditor({ initial, counts }: { initial: StageDef[]; coun
                     <input aria-label="Section" list="stage-groups" value={r.group} placeholder="Section" onChange={(e) => upd(r.key, { group: e.target.value })} className="sle-grp" />
                   </div>
                   <textarea aria-label="Message the client sees" rows={2} value={r.next} placeholder="Message the client sees at this step" onChange={(e) => upd(r.key, { next: e.target.value })} />
-                  {r.id && counts[r.id] ? <small className="muted">{counts[r.id]} file(s) on this step now</small> : null}
+                  <div className="sle-bot">
+                    <label className="sle-notify"><input type="checkbox" checked={r.notify !== false} onChange={(e) => upd(r.key, { notify: e.target.checked })} /> Send this message on WhatsApp &amp; email</label>
+                    {r.id && counts[r.id] ? <small className="muted">{counts[r.id]} file(s) on this step now</small> : null}
+                  </div>
                 </div>
                 <div className="sle-a">
                   <button type="button" className="btn btn-sm" onClick={() => move(i, -1)} disabled={i === 0} aria-label="Move up" title="Move up">↑</button>

@@ -376,7 +376,9 @@ export async function setAdvisor(f: FormData) {
 export async function saveStageList(_: St, f: FormData): Promise<St> {
   await requireAdmin(FULL);
   const { saveStages } = await import('@/lib/server/stages');
-  let rows: { id?: string; name?: string; group?: string; next?: string }[] = [];
+  let rows: { id?: string; name?: string; group?: string; next?: string; notify?: boolean }[] = [];
+  const { STEP_SERVICES, DEFAULT_SERVICE } = await import('@/lib/stage-defs');
+  const svc = (STEP_SERVICES as readonly string[]).includes(s(f, 'svc', 40)) ? s(f, 'svc', 40) : DEFAULT_SERVICE;
   try { rows = JSON.parse(String(f.get('list') || '[]')); } catch { return { error: 'Could not read the list.' }; }
   const seen = new Set<string>();
   const list = rows.map((r) => {
@@ -384,19 +386,20 @@ export async function saveStageList(_: St, f: FormData): Promise<St> {
     let id = String(r.id ?? '').trim().slice(0, 40) || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 30) || 'step';
     while (seen.has(id)) id += '-2';
     seen.add(id);
-    return { id, name, group: String(r.group ?? '').trim().slice(0, 60), next: String(r.next ?? '').trim().slice(0, 600) };
+    return { id, name, group: String(r.group ?? '').trim().slice(0, 60), next: String(r.next ?? '').trim().slice(0, 600), ...(r.notify === false ? { notify: false } : {}) };
   }).filter((x) => x.name);
   if (list.length < 2) return { error: 'Keep at least two steps.' };
-  await saveStages(list);
+  await saveStages(list, svc);
   revalidatePath('/admin/', 'layout');
-  return { ok: `Saved ${list.length} steps. Every file was moved to the same step in the new list.` };
+  return { ok: `Saved ${list.length} ${svc} steps. Its files were moved to the same step in the new list.` };
 }
-export async function resetStageList(_: St): Promise<St> {
+export async function resetStageList(_: St, f: FormData): Promise<St> {
   await requireAdmin(FULL);
-  const [{ saveStages }, { STAGES0 }] = await Promise.all([import('@/lib/server/stages'), import('@/lib/stage-defs')]);
-  await saveStages(STAGES0);
+  const [{ saveStages }, { STAGES0, SERVICE_STEPS0, DEFAULT_SERVICE }] = await Promise.all([import('@/lib/server/stages'), import('@/lib/stage-defs')]);
+  const svc = s(f, 'svc', 40) || DEFAULT_SERVICE;
+  await saveStages(svc === DEFAULT_SERVICE ? STAGES0 : SERVICE_STEPS0[svc] ?? STAGES0, svc);
   revalidatePath('/admin/', 'layout');
-  return { ok: 'The standard 17 steps are back.' };
+  return { ok: `The standard ${svc} steps are back.` };
 }
 
 /* ---------- logo & brand ---------- */

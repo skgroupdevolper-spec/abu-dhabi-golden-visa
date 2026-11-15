@@ -913,3 +913,18 @@ code.k { overflow-wrap: anywhere; word-break: break-all; }
 .cs-new-app:hover { transform: translateY(-1px); box-shadow: 0 16px 30px -12px rgba(184, 144, 31, 1); }
 @keyframes csGlow { 50% { box-shadow: 0 12px 32px -8px rgba(184, 144, 31, 1); } }
 @media (prefers-reduced-motion: reduce) { .cs-new-app { animation: none; } }
+
+/* ---------- Application steps: service tabs, per-step WhatsApp switch ---------- */
+.svc-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+.svc-tabs a { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line, #efe6cf); background: #fff; color: #14110a; font-weight: 600; font-size: 14px; text-decoration: none; transition: border-color .15s, background .15s; }
+.svc-tabs a:hover { border-color: #d4af37; }
+.svc-tabs a.on { background: #14110a; color: #f4d77a; border-color: #14110a; }
+.svc-tabs a em { font-style: normal; font-size: 12px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; display: inline-grid; place-items: center; background: #f6eed6; color: #6b5310; }
+.svc-tabs a.on em { background: #d4af37; color: #14110a; }
+@media (max-width: 760px) { .svc-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -4px; padding: 2px 4px 6px; } .svc-tabs a { flex: none; } }
+.sle-bot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.sle-notify { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #4a4231; cursor: pointer; }
+.sle-notify input { width: 16px; height: 16px; accent-color: #b8901f; }
+.wa-steps { margin: 12px 0; padding-inline-start: 22px; display: grid; gap: 10px; }
+.wa-steps li b { font-size: 14px; }
+.wa-steps li p { margin: 4px 0 0; font-size: 13px; color: #5a5242; line-height: 1.5; }

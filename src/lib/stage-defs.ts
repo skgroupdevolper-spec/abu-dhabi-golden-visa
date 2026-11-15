@@ -1,6 +1,6 @@
 // Application steps: the list is edited in Admin > Application steps (add, remove, rename, reorder,
 // change the message the client sees). These are the defaults.
-export type StageDef = { id: string; name: string; group: string; next: string };
+export type StageDef = { id: string; name: string; group: string; next: string; /** false: changing to this step does not message the client */ notify?: boolean };
 export type StageState = 'done' | 'progress' | 'pending' | 'hold' | 'action' | 'na';
 
 export const STATE_LABEL: Record<StageState, string> = {
@@ -38,4 +38,88 @@ export function stageState(i: number, cur: number, id: string, overrides?: Recor
   if (o) return o;
   if (i <= cur) return 'done';
   return i === cur + 1 && i < total ? 'progress' : 'pending';
+}
+
+/* ---------- Separate step lists per service group ----------
+ * "Golden Visa" uses the 17 steps above. Every other service group starts with its own list below;
+ * all lists are edited in Admin > Application steps (choose the service at the top). */
+export const DEFAULT_SERVICE = 'Golden Visa';
+export const STEP_SERVICES = ['Golden Visa', 'Family & residency', 'Visas', 'Employment', 'Property & documents', 'Visa services', 'Other services'] as const;
+
+const S1 = 'Enquiry, quotation & payment', S2 = 'Processing', S3 = 'Completion';
+const start = (what: string): StageDef[] => [
+  { id: 'enquiry', group: S1, name: 'Enquiry received', next: `Thank you for your enquiry. Our team has received your ${what} request and will contact you to review the required documents.` },
+  { id: 'docs-check', group: S1, name: 'Documents check', next: 'Our team is checking your documents. We will tell you if anything is missing or needs to be corrected.' },
+  { id: 'quote-sent', group: S1, name: 'Quote sent', next: 'Your quotation is ready. Please review the government fees, our service charge and the estimated timeline in your dashboard.' },
+  { id: 'quote-ok', group: S1, name: 'Quote accepted', next: 'Thank you for accepting our quotation. We will now arrange payment and prepare your application.' },
+  { id: 'pay-wait', group: S1, name: 'Waiting for payment', next: 'Your application is waiting for payment. Please use the payment link we sent so we can continue.' },
+  { id: 'paid', group: S1, name: 'Payment received', next: 'Your payment has been received and recorded. Our team will now prepare and submit your application.' },
+];
+
+export const SERVICE_STEPS0: Record<string, StageDef[]> = {
+  'Family & residency': [
+    ...start('residence visa'),
+    { id: 'submitted', group: S2, name: 'Application submitted', next: 'Your application has been submitted to the authority. We are following it and will update you as soon as there is news.' },
+    { id: 'entry-permit', group: S2, name: 'Entry permit issued', next: 'The entry permit has been issued. We will guide you on entering the UAE or changing status, where this applies.' },
+    { id: 'cos', group: S2, name: 'Change of status', next: 'The status change inside the UAE is being processed. We will tell you when it is completed.' },
+    { id: 'medical', group: S2, name: 'Medical test', next: 'The medical fitness test is the next step. We will share the appointment details and instructions.' },
+    { id: 'insurance', group: S2, name: 'Health insurance', next: 'We are arranging the required health insurance. Please send any details the insurer asks for.' },
+    { id: 'biometrics', group: S2, name: 'Emirates ID biometrics', next: 'Emirates ID biometrics is the next step, where it applies. Please attend at the scheduled time with your passport.' },
+    { id: 'approved', group: S3, name: 'Residence visa issued', next: 'The residence visa has been issued. We are now following the Emirates ID printing and delivery.' },
+    { id: 'eid-delivered', group: S3, name: 'Emirates ID delivered', next: 'The Emirates ID has been delivered and your file is complete. Thank you for choosing us.' },
+  ],
+  Visas: [
+    ...start('visa'),
+    { id: 'submitted', group: S2, name: 'Application submitted', next: 'Your visa application has been submitted. We are following it and will update you as soon as there is news.' },
+    { id: 'entry-permit', group: S2, name: 'Entry permit / e-visa issued', next: 'The entry permit or e-visa has been issued. We have shared it with you. Please check the dates and details.' },
+    { id: 'medical', group: S2, name: 'Medical & biometrics', next: 'The medical test and biometrics are the next step, where they apply. We will send the appointment details.' },
+    { id: 'approved', group: S3, name: 'Visa issued', next: 'Your visa has been issued. Please keep a copy with your passport.' },
+    { id: 'completed', group: S3, name: 'Completed', next: 'Your file is complete. Thank you for choosing us.' },
+  ],
+  Employment: [
+    ...start('employment visa'),
+    { id: 'work-permit', group: S2, name: 'Work permit application', next: 'The work permit application has been submitted. We will update you when it is approved.' },
+    { id: 'wp-approved', group: S2, name: 'Work permit approved', next: 'The work permit has been approved. We are now preparing the entry permit or status change.' },
+    { id: 'entry-permit', group: S2, name: 'Entry permit issued', next: 'The entry permit has been issued. We will guide you on the next step.' },
+    { id: 'medical', group: S2, name: 'Medical test', next: 'The medical fitness test is the next step. We will share the appointment details.' },
+    { id: 'biometrics', group: S2, name: 'Emirates ID biometrics', next: 'Emirates ID biometrics is the next step, where it applies. Please attend at the scheduled time.' },
+    { id: 'contract', group: S2, name: 'Labour contract signed', next: 'The labour contract is ready for signature. Please sign it so the residence visa can be issued.' },
+    { id: 'approved', group: S3, name: 'Residence visa issued', next: 'The residence visa has been issued. We are following the Emirates ID delivery.' },
+    { id: 'completed', group: S3, name: 'Completed', next: 'Your file is complete. Thank you for choosing us.' },
+  ],
+  'Property & documents': [
+    ...start('document'),
+    { id: 'in-process', group: S2, name: 'In process', next: 'Your request is being processed with the relevant authority. We will update you as soon as there is news.' },
+    { id: 'ready', group: S3, name: 'Document ready', next: 'Your document is ready. You can download it from your dashboard.' },
+    { id: 'completed', group: S3, name: 'Completed', next: 'Your request is complete. Thank you for choosing us.' },
+  ],
+  'Visa services': [
+    ...start('service'),
+    { id: 'in-process', group: S2, name: 'In process', next: 'Your request is being processed. We will update you as soon as there is news.' },
+    { id: 'appointment', group: S2, name: 'Appointment', next: 'An appointment is the next step, where it applies. We will share the date, time and place.' },
+    { id: 'completed', group: S3, name: 'Completed', next: 'Your request is complete. Thank you for choosing us.' },
+  ],
+  'Other services': [
+    ...start('service'),
+    { id: 'in-process', group: S2, name: 'In process', next: 'Your request is being processed. We will update you as soon as there is news.' },
+    { id: 'completed', group: S3, name: 'Completed', next: 'Your request is complete. Thank you for choosing us.' },
+  ],
+};
+
+/** Which step list a service (its group in the apply form) uses. */
+export function stepServiceOf(group?: string): string {
+  if (!group) return DEFAULT_SERVICE;
+  if ((STEP_SERVICES as readonly string[]).includes(group)) return group;
+  if (/golden/i.test(group)) return DEFAULT_SERVICE;
+  if (/family|residen/i.test(group)) return 'Family & residency';
+  if (/employ|work/i.test(group)) return 'Employment';
+  if (/visa service/i.test(group)) return 'Visa services';
+  if (/visa/i.test(group)) return 'Visas';
+  if (/property|document|attest|legal/i.test(group)) return 'Property & documents';
+  return 'Other services';
+}
+
+/** Step names a file shows, from the translated map (falls back to the Golden Visa list). */
+export function namesFor(t: { stages: string[]; stageMap?: Record<string, string[]> }, a: { stepGroup?: string }): string[] {
+  return (a.stepGroup && t.stageMap?.[a.stepGroup]) || t.stages;
 }

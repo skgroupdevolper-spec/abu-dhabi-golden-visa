@@ -24,20 +24,22 @@ export async function portalLang() {
 }
 export async function T() {
   const code = await portalLang();
-  return { t: { ...dict(code), stages: await stageNames(code) }, lang: langInfo(code) };
+  const stageMap = await stageNames(code);
+  return { t: { ...dict(code), stages: stageMap['Golden Visa'] ?? [], stageMap }, lang: langInfo(code) };
 }
 
-/** Step names from Admin > Application steps, in the client's language (translated once, then cached). */
-async function stageNames(code: string): Promise<string[]> {
-  const { getStages } = await import('./stages');
-  const names = (await getStages()).map((x) => x.name);
-  if (code === 'en' || process.env.CI) return names;
+/** Step names of every service group (Admin > Application steps), in the client's language (translated once, then cached). */
+async function stageNames(code: string): Promise<Record<string, string[]>> {
+  const { allStepNames } = await import('./stages');
+  const map = await allStepNames();
+  if (code === 'en' || process.env.CI) return map;
   try {
     const { translateTexts } = await import('./mt');
-    const tr = await Promise.race([translateTexts(code, names, { onSave: true, engine: 'google' }), new Promise<Record<string, string>>((r) => setTimeout(() => r({}), 2500))]);
-    return names.map((n) => tr[n] || n);
+    const all = [...new Set(Object.values(map).flat())];
+    const tr = await Promise.race([translateTexts(code, all, { onSave: true, engine: 'google' }), new Promise<Record<string, string>>((r) => setTimeout(() => r({}), 2500))]);
+    return Object.fromEntries(Object.entries(map).map(([g, names]) => [g, names.map((n) => tr[n] || n)]));
   } catch {
-    return names;
+    return map;
   }
 }
 

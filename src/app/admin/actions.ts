@@ -11,7 +11,7 @@ const requireFull = () => requireAny(FULL);
 import { saveUpload } from '@/lib/server/files';
 import { createApplication, getApplication, getFees, newId, now, saveFees, updateApplication, type Fees, updateLead, listLeads, type Application, type LeadStatus } from '@/lib/server/store';
 import { governmentLines, money } from '@/lib/stages';
-import { getStages, saveStages } from '@/lib/server/stages';
+import { saveStages, stepGroupOf, stepsFor } from '@/lib/server/stages';
 import type { StageState } from '@/lib/stage-defs';
 import { portalUrl } from '@/lib/site';
 import { sendWa } from '@/lib/server/whatsapp';
@@ -134,7 +134,9 @@ export async function saveClient(_: FormState, f: FormData): Promise<FormState> 
 /** Email copy of a client update (only when the client has an email and SMTP is set up). */
 
 export async function setStage(_: FormState, f: FormData): Promise<FormState> {
-  const list = await getStages();
+  const cur0 = await getApplication(s(f, 'app', 40));
+  if (!cur0) return { error: 'File not found.' };
+  const list = await stepsFor(cur0);
   const stage = Math.max(0, Math.min(list.length - 1, n(f, 'stage')));
   const STATES: StageState[] = ['done', 'progress', 'pending', 'hold', 'action', 'na'];
   const app = await edit(f, (a) => {
@@ -152,9 +154,10 @@ export async function setStage(_: FormState, f: FormData): Promise<FormState> {
   });
   // "Save as the default text for this step": used for every client from now on.
   if (app && f.get('saveDefault') && app.nextStep) {
-    await saveStages(list.map((x, i) => (i === stage ? { ...x, next: app.nextStep } : x)));
+    await saveStages(list.map((x, i) => (i === stage ? { ...x, next: app.nextStep } : x)), stepGroupOf(app));
   }
-  if (app && f.get('notify')) {
+  // Steps switched off in Admin > Application steps ("Message the client") only update the portal.
+  if (app && f.get('notify') && list[stage].notify !== false) {
     const r = await sendWa(app.client.phone, 'status', V(app, { status: list[stage].name, next: app.nextStep, expected: app.expected }));
     void mailEvent(app.client.email, 'status', V(app, { status: list[stage].name, next: app.nextStep, expected: app.expected }));
     const pay = list[stage].id === 'pay-wait' ? await payNowLink(app.id) : '';
@@ -376,7 +379,8 @@ export async function setDecision(_: FormState, f: FormData): Promise<FormState>
   if (result === 'rejected' && !reason) return { error: 'Please add the reason the authority gave, so the client understands what happened.' };
   const me = await import('@/lib/server/auth').then((m) => m.currentAdmin());
   const D = DECISION_TEXT[result];
-  const steps = await getStages();
+  const cur0 = await getApplication(s(f, 'app', 40));
+  const steps = cur0 ? await stepsFor(cur0) : [];
   const ep = Math.max(0, steps.findIndex((x) => x.id === 'entry-permit'));
   const app = await edit(f, (a) => {
     const prev = a.decision ? [...(a.decision.history ?? []), { result: a.decision.result, reason: a.decision.reason, at: a.decision.at }] : [];

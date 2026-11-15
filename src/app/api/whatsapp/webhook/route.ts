@@ -5,7 +5,7 @@ import { listApplications, listLeads, newId, now, updateApplication, updateJsonF
 import { digits, resendFailed, sendWa, waAdvice, webhookToken } from '@/lib/server/whatsapp';
 import { aiReady, complete } from '@/lib/server/ai';
 import { chatSystemPrompt } from '@/lib/server/chatbot';
-import { getStages } from '@/lib/server/stages';
+import { stepsFor } from '@/lib/server/stages';
 
 export const dynamic = 'force-dynamic';
 
@@ -89,7 +89,7 @@ async function autoReply(from: string, question: string, main: string, app?: { r
     .map((x) => ({ role: x.dir === 'in' ? 'user' as const : 'assistant' as const, content: stripFooter(x.full || x.text).slice(0, 800) }));
   if (!hist.length || hist[hist.length - 1].content !== question.slice(0, 800)) hist.push({ role: 'user', content: question.slice(0, 800) });
   while (hist.length && hist[0].role !== 'user') hist.shift();
-  const steps = app ? await getStages() : [];
+  const steps = app ? await stepsFor(app as Parameters<typeof stepsFor>[0]) : [];
   const file = app ? `\nThis client has file ${app.ref} (${app.client.name})${app.route ? `, service ${app.route}` : ''}. Current step: ${steps[app.stage]?.name ?? '-'}. Next: ${app.nextStep || steps[app.stage]?.next || '-'}.` : '';
   const system = `${await chatSystemPrompt('en')}
 

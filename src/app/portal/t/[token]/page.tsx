@@ -10,7 +10,8 @@ import { LiveRefresh } from '@/components/dash/LiveRefresh';
 import { DECISION_TEXT } from '@/lib/decision';
 import { day, money, when } from '@/lib/stages';
 import { STATE_LABEL, stageState } from '@/lib/stage-defs';
-import { getStages } from '@/lib/server/stages';
+import { getStages, stepGroupOf, stepsFor } from '@/lib/server/stages';
+import { namesFor } from '@/lib/stage-defs';
 import { PortalTop } from '@/components/dash/PortalTop';
 import { ClientShell } from '@/components/dash/ClientShell';
 import { clientArea, currentCustomer, portalBase, T } from '@/lib/server/portal';
@@ -23,10 +24,13 @@ export const dynamic = 'force-dynamic';
 export default async function ClientFile({ params, searchParams }: { params: Promise<{ token: string }>; searchParams: Promise<Record<string, string>> }) {
   const { token } = await params;
   const sp = await searchParams;
-  const steps = await getStages(); // first, so files are on the current step list
+  await getStages(); // first, so files are on the current step lists
   const a = await getApplicationByToken(token);
   if (!a) notFound();
-  const { t, lang } = await T();
+  const steps = await stepsFor(a);
+  const { t: t0, lang } = await T();
+  // This file's own step list (its service group), translated.
+  const t = { ...t0, stages: namesFor(t0, { stepGroup: stepGroupOf(a) }) };
   const base = await portalBase();
   const signedIn = !!(await currentCustomer());
   const area = signedIn ? await clientArea() : null;

@@ -15,7 +15,7 @@ import { portalUrl, waTo } from '@/lib/site';
 import { myScope, scopedApp } from '@/lib/server/scope';
 import { DECISION_PILL, DECISION_TEXT } from '@/lib/decision';
 import { ROUTE_LABELS, day, money, payState, when } from '@/lib/stages';
-import { getStages } from '@/lib/server/stages';
+import { stepsFor } from '@/lib/server/stages';
 import { STATE_LABEL, stageState } from '@/lib/stage-defs';
 import {
   addPayment, archiveApplication, clearMessages, fillQuote, markPaid, newPortalLink, assignApp, removePayment, saveClient, saveQuote, setDecision, setRequests, setStage, teamMessage, toggleShare, uploadTeamDoc,
@@ -36,7 +36,7 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
   const H = <input type="hidden" name="app" value={a.id} />;
   const first = a.client.name.split(' ')[0];
   const team = await list<TeamUser>('team');
-  const steps = await getStages();
+  const steps = await stepsFor(a);
   const STAGES = steps.map((x) => x.name);
   const nextDefaults = steps.map((x) => x.next);
   const svc = mergeCatalog(await getServiceOverrides()).flatMap((g) => g.items);

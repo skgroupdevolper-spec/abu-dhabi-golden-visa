@@ -10,6 +10,7 @@ import { sendTeam, sendWa } from '@/lib/server/whatsapp';
 import { mailEvent, mailEventTeam } from '@/lib/server/mail';
 import { applyService } from '@/content/apply';
 import { getStages } from '@/lib/server/stages';
+import { stepServiceOf } from '@/lib/stage-defs';
 import { SITE, portalUrl } from '@/lib/site';
 import { LOCALES } from '@/lib/i18n';
 
@@ -82,8 +83,10 @@ export async function POST(req: NextRequest) {
       try { docs.push(await saveUpload(app.id, files[i], 'client', true, labels[i])); } catch { failed.push(files[i].name); }
     }
     const have = new Set(labels.slice(0, files.length));
-    const firstNext = (await getStages())[0]?.next || 'Your advisor reviews your documents and sends the written quote.';
+    const stepGroup = stepServiceOf(svc.group);
+    const firstNext = (await getStages(stepGroup))[0]?.next || 'Your advisor reviews your documents and sends the written quote.';
     await updateApplication(app.id, (a) => {
+      a.service = svc.id; a.stepGroup = stepGroup;
       a.documents.push(...docs);
       a.requests = svc.docs.filter((d) => !have.has(d));
       a.nextStep = firstNext;

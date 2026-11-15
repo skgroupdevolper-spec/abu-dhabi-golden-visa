@@ -12,6 +12,8 @@ import { SITE } from '@/lib/site';
 import { WaCustomList } from '@/components/dash/WaCustomList';
 import { WA_EVENTS } from '@/lib/settings-schema';
 import { when } from '@/lib/stages';
+import { getStages } from '@/lib/server/stages';
+import { STEP_SERVICES } from '@/lib/stage-defs';
 import { saveWhatsApp, testWhatsApp, waTemplates } from '../../settings-actions';
 
 export const metadata: Metadata = { title: 'WhatsApp' };
@@ -21,6 +23,7 @@ export default async function WhatsApp({ searchParams }: { searchParams: Promise
   const { tab = 'setup' } = await searchParams;
   const w = (await getSecrets()).whatsapp;
   const log = tab === 'log' ? await list<WaLog>('whatsapp-log') : [];
+  const stepSets = tab === 'messages' ? await Promise.all(STEP_SERVICES.map(async (g) => [g, await getStages(g)] as const)) : [];
   const connected = w.mode === 'cloud' && !!w.phoneNumberId && !!w.accessToken;
   return (
     <>
@@ -95,6 +98,23 @@ export default async function WhatsApp({ searchParams }: { searchParams: Promise
           </div>
           <div><Submit>Save WhatsApp settings</Submit></div>
         </ActionForm>
+      )}
+      {tab === 'messages' && (
+        <div className="panel" style={{ marginTop: 18 }} id="steps">
+          <h2 style={{ marginTop: 0 }}>Step messages, one for every step of every service</h2>
+          <p className="help">When you change a file&rsquo;s step (with &ldquo;Tell the client&rdquo; ticked), the client gets that step&rsquo;s message on WhatsApp and by email: &ldquo;Hello &#123;name&#125;, update on &#123;ref&#125;: &#123;step&#125;. Next: &#123;message&#125;&rdquo;. Steps marked <span className="pill closed">off</span> only update the client dashboard. Change the texts and the on/off in Application steps.</p>
+          {stepSets.map(([svc, steps]) => (
+            <details key={svc} className="mail-ev" style={{ border: '1px solid var(--line, #eee3c8)', borderRadius: 12, padding: '10px 14px', marginTop: 10 }}>
+              <summary style={{ cursor: 'pointer', fontWeight: 600 }}>{svc} <small className="muted">· {steps.length} steps · {steps.filter((x) => x.notify !== false).length} send WhatsApp</small></summary>
+              <ol className="wa-steps">
+                {steps.map((x) => (
+                  <li key={x.id}><b>{x.name}</b> <span className={`pill ${x.notify !== false ? 'ok' : 'closed'}`}>{x.notify !== false ? 'WhatsApp + email' : 'off'}</span><p>{x.next}</p></li>
+                ))}
+              </ol>
+              <a className="btn btn-sm" href={`/admin/steps/?svc=${encodeURIComponent(svc)}`}>Edit {svc} steps and messages</a>
+            </details>
+          ))}
+        </div>
       )}
       {tab === 'test' && (
         <div className="panel" style={{ maxWidth: 640 }}>

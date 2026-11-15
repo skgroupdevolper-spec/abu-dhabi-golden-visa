@@ -175,7 +175,8 @@ export async function checkStatus(gw: Gw, hint: Record<string, string> = {}): Pr
 export async function settle(appId: string, pid: string, method: string, txn: string): Promise<boolean> {
   const c = await getPayCfg();
   let changed = false, confirmed = false;
-  const stepList = await (await import('./stages')).getStages();
+  const a0 = await (await import('./store')).getApplication(appId);
+  const stepList = a0 ? await (await import('./stages')).stepsFor(a0) : await (await import('./stages')).getStages();
   const paidIdx = stepList.findIndex((x) => x.id === 'paid');
   const app = await updateApplication(appId, (a) => {
     const p = a.payments.find((x) => x.id === pid);
