@@ -19,11 +19,17 @@ export default async function Overview() {
   const paid = apps.flatMap((a) => a.payments.filter((p) => p.status === 'paid')).reduce((s, p) => s + p.amount, 0);
   const done = apps.filter((a) => a.stage === namesOf(a).length - 1).length;
   const unread = apps.filter((a) => a.messages.some((m) => m.by === 'client' && !m.read));
-  // Files per step name across every service's step list (first-seen order).
-  const counts = new Map<string, number>();
-  for (const names of Object.values(NAMES)) for (const t of names) if (!counts.has(t)) counts.set(t, 0);
-  for (const a of apps) { const t = namesOf(a)[a.stage]; if (t) counts.set(t, (counts.get(t) ?? 0) + 1); }
-  const byStage = [...counts].map(([t, c]) => ({ t, c })).filter((x, i) => x.c > 0 || i < 17);
+  // Open files per service, then per step of that service (only steps that have files).
+  const bySvc = new Map<string, { i: number; t: string; c: number }[]>();
+  for (const a of apps.filter((x) => !x.archived)) {
+    const g = stepGroupOf(a), names = NAMES[g] ?? NAMES['Golden Visa'];
+    const rows = bySvc.get(g) ?? [];
+    const r = rows.find((x) => x.i === a.stage) ?? (rows.push({ i: a.stage, t: names[a.stage] ?? '-', c: 0 }), rows[rows.length - 1]);
+    r.c++;
+    bySvc.set(g, rows);
+  }
+  const svcRows = [...bySvc].map(([g, rows]) => ({ g, total: NAMES[g]?.length ?? 0, rows: rows.sort((a, b) => a.i - b.i) }));
+  const byStage = svcRows.flatMap((x) => x.rows);
   const max = Math.max(1, ...byStage.map((x) => x.c));
   return (
     <>
@@ -62,11 +68,21 @@ export default async function Overview() {
         <div className="stack">
           <div className="panel">
             <h2>Applications by stage</h2>
-            <div style={{ display: 'grid', gap: 10, marginTop: 14 }}>
-              {byStage.map((x, i) => (
-                <div key={x.t}><div className="row" style={{ justifyContent: 'space-between', fontSize: 13.5 }}><span>{i + 1}. {x.t}</span><b>{x.c}</b></div><div className="bar"><i style={{ width: `${(x.c / max) * 100}%` }} /></div></div>
-              ))}
-            </div>
+            {svcRows.length === 0 ? <p className="empty">No open applications yet.</p> : (
+              <div className="abs">
+                {svcRows.map((x) => (
+                  <div key={x.g} className="abs-svc">
+                    <div className="abs-h"><b>{x.g}</b><span>{x.rows.reduce((n, r) => n + r.c, 0)} file{x.rows.reduce((n, r) => n + r.c, 0) === 1 ? '' : 's'}</span></div>
+                    {x.rows.map((r) => (
+                      <Link key={r.i} href="/admin/applications/" className="abs-row">
+                        <span className="abs-n">{r.i + 1}/{x.total}</span><span className="abs-t">{r.t}</span><b>{r.c}</b>
+                        <span className="bar"><i style={{ width: `${(r.c / max) * 100}%` }} /></span>
+                      </Link>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           <div className="panel">
             <h2>Client messages</h2>

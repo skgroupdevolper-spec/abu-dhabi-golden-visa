@@ -2,7 +2,7 @@
 
 import { T as Tx } from './T';
 import { useEffect, useState, type MouseEvent, type ReactNode } from 'react';
-import { FEE_SCHEDULE, aed, convert } from '@/lib/fees';
+import { FEE_SCHEDULE, RATES, aed, convert, siteFx } from '@/lib/fees';
 
 // Live fee schedule from the admin dashboard (falls back to the built-in schedule).
 let F: typeof FEE_SCHEDULE = FEE_SCHEDULE;
@@ -45,6 +45,10 @@ export function Calculator({ initialRoute = null, bare = false }: { initialRoute
   const [s, setS] = useState<State>(() => start(initialRoute));
   const [hist, setHist] = useState<State[]>(initialRoute === null ? [] : [start()]);
   const [cur, setCur] = useState('AED');
+  // Amounts in the currency picked in the header (AED stays the official amount).
+  const fx = cur !== 'AED' ? ((siteFx() ?? (F.rates && Object.keys(F.rates).length ? F.rates : RATES)) as Record<string, { rate: number; symbol: string }>)[cur] : undefined;
+  const money = (n: number) => (fx ? `≈ ${fx.symbol}${Math.round(n * fx.rate).toLocaleString('en-US')}` : aed(n));
+  const num = (n: number) => (fx ? Math.round(n * fx.rate).toLocaleString('en-US') : n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
   const [copied, setCopied] = useState('');
   const [pdfName, setPdfName] = useState('');
 
@@ -253,8 +257,8 @@ export function Calculator({ initialRoute = null, bare = false }: { initialRoute
     ].filter(Boolean).join('\n');
     const Card = ({ title, lines, mult = 1 }: { title: string; lines: Line[]; mult?: number }) => (
       <div className="pc">
-        <div className="h"><span>{title}{mult > 1 ? ` × ${mult}` : ''}</span><span>{aed(sum(lines) * mult)}</span></div>
-        {lines.map(([l, v]) => <div className="ln" key={l}><span>{l}</span><em /><b>{v.toLocaleString('en-US', { minimumFractionDigits: 2 })}</b></div>)}
+        <div className="h"><span>{title}{mult > 1 ? ` × ${mult}` : ''}</span><span>{money(sum(lines) * mult)}</span></div>
+        {lines.map(([l, v]) => <div className="ln" key={l}><span>{l}</span><em /><b>{num(v)}</b></div>)}
       </div>
     );
     body = (
@@ -264,19 +268,19 @@ export function Calculator({ initialRoute = null, bare = false }: { initialRoute
         <Card title="Main applicant" lines={main} />
         {s.adults > 0 && <Card title="Adult family member" lines={ad} mult={s.adults} />}
         {s.kids > 0 && <Card title="Child under 18" lines={ch} mult={s.kids} />}
-        {file > 0 && <div className="pc"><div className="h"><span>{F.sponsorFile.label}</span><span>{aed(file)}</span></div></div>}
-        {onceFees.map(([l, v]) => <div className="pc" key={l}><div className="h"><span>{l}</span><span>{aed(v)}</span></div></div>)}
+        {file > 0 && <div className="pc"><div className="h"><span>{F.sponsorFile.label}</span><span>{money(file)}</span></div></div>}
+        {onceFees.map(([l, v]) => <div className="pc" key={l}><div className="h"><span>{l}</span><span>{money(v)}</span></div></div>)}
         {(pk || chosen.length > 0 || vat > 0) && (
-          <div className="pc"><div className="h"><span>{pk ? pk.label : T('extrasH', 'Extras')}</span><span>{pk ? (fee ? aed(fee) : T('quoted', 'Quoted in writing')) : ''}</span></div>
-            {addLines.map(([l, v]) => <div className="ln" key={l}><span>{l}</span><em /><b>{v.toFixed(2)}</b></div>)}
-            {vat > 0 && <div className="ln"><span>VAT {Math.round(vatRate * 100)}%</span><em /><b>{vat.toFixed(2)}</b></div>}
+          <div className="pc"><div className="h"><span>{pk ? pk.label : T('extrasH', 'Extras')}</span><span>{pk ? (fee ? money(fee) : T('quoted', 'Quoted in writing')) : ''}</span></div>
+            {addLines.map(([l, v]) => <div className="ln" key={l}><span>{l}</span><em /><b>{num(v)}</b></div>)}
+            {vat > 0 && <div className="ln"><span>VAT {Math.round(vatRate * 100)}%</span><em /><b>{num(vat)}</b></div>}
             {chosen.filter((a) => !a.aed).map((a) => <div className="ln" key={a.id}><span>{a.label.replace(/^Add /, '')}</span><em /><b>{T('separate', 'Quoted separately')}</b></div>)}
           </div>
         )}
         <div className="total">
-          <small>Estimated total for {people} {people > 1 ? 'people' : 'person'} (government fees {aed(gov)})</small>
-          <div className="t">{aed(total)}</div>
-          {o.convert && convert(total, cur, F.rates) && <div style={{ fontSize: 14, opacity: 0.85 }}>{convert(total, cur, F.rates)} (approximate)</div>}
+          <small>Estimated total for {people} {people > 1 ? 'people' : 'person'} (government fees {money(gov)})</small>
+          <div className="t">{money(total)}</div>
+          {cur !== 'AED' && fx && <div style={{ fontSize: 14, opacity: 0.85 }}>{aed(total)} · {cur} amounts are approximate</div>}
         </div>
         <ul className="ticks" style={{ fontSize: 14 }}>
           {F.assumptions.map((a) => <li key={a}>{a}</li>)}

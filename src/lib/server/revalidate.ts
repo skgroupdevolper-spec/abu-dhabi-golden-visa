@@ -9,7 +9,7 @@ import { revalidatePath as nextRevalidate } from 'next/cache';
  */
 export function revalidatePath(path: string, type?: 'layout' | 'page') {
   // Admin and dashboard pages: refreshing them sends the updated page straight back after a save.
-  const own = path.startsWith('/admin/') || path.startsWith('/portal/');
+  const own = path === '/admin' || path === '/portal' || path.startsWith('/admin/') || path.startsWith('/portal/');
   if (!own && process.env.NODE_ENV === 'production' && process.env.ADGV_REVALIDATE !== '1') return;
   try {
     nextRevalidate(path, type);

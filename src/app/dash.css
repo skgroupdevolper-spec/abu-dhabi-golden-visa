@@ -934,3 +934,15 @@ code.k { overflow-wrap: anywhere; word-break: break-all; }
 .svc-hl-k { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #8a6a12; }
 .svc-hl b { font-size: 15px; color: #14110a; }
 .svc-hl-g { font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: #14110a; color: #f4d77a; }
+
+/* Dashboard: applications by stage, grouped per service */
+.abs { display: grid; gap: 14px; margin-top: 12px; }
+.abs-svc { border: 1px solid var(--line, #efe6cf); border-radius: 14px; padding: 10px 12px; background: #fffdf8; }
+.abs-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.abs-h b { font-size: 14px; }
+.abs-h span { font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; background: #14110a; color: #f4d77a; }
+.abs-row { display: grid; grid-template-columns: 42px 1fr auto; gap: 4px 10px; align-items: center; padding: 6px 0; color: inherit; text-decoration: none; font-size: 13.5px; border-top: 1px dashed #efe6cf; }
+.abs-row:first-of-type { border-top: 0; }
+.abs-row:hover .abs-t { color: #8a6a12; }
+.abs-n { font-size: 11.5px; font-weight: 700; color: #8a6a12; }
+.abs-row .bar { grid-column: 1 / -1; }
