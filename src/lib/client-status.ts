@@ -2,7 +2,7 @@
 import { namesFor } from '@/lib/stage-defs';
 import type { Dict } from './portal-i18n';
 
-type A = { decision?: { result: string }; stage: number; quote: { sentAt?: string; acceptedAt?: string; lines: { amount: number }[]; serviceFee: number; vat: number }; payments: { status: string; amount: number }[] };
+type A = { decision?: { result: string }; stage: number; stepGroup?: string; quote: { sentAt?: string; acceptedAt?: string; lines: { amount: number }[]; serviceFee: number; vat: number }; payments: { status: string; amount: number }[] };
 
 export function fileStatus(a: A, t: Dict): { key: 'prep' | 'quote' | 'conf' | 'prog' | 'done' | 'appr' | 'rej' | 'hold'; label: string } {
   const d = a.decision?.result;
