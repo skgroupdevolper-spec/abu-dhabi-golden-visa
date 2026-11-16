@@ -69,7 +69,8 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   if (team && name === 'adgv_new_enquiry') keys = ['name', 'phone', 'service', 'message'];
   // The company alert template carries your whole text as one value (lines with links are left out, the buttons do that).
   const teamTpl = !!name && /_team_alert_v\d+$/.test(name);
-  const teamValue = teamTpl ? toWa(fill(own.split('\n').filter((l) => !/\{(chat|link)\}/.test(l)).join('\n'), vars)) : '';
+  // {chat} becomes a short wa.me/971… link (tappable on WhatsApp); the admin link is on the button.
+  const teamValue = teamTpl ? toWa(fill(own.split('\n').filter((l) => !/\{link\}/.test(l)).join('\n'), { ...vars, chat: vars.chatId ? `wa.me/${vars.chatId}` : '' })) : '';
   // A file to send with the message (document shared by the team): a link Meta can download.
   const fileLink = typeof vars.fileLink === 'string' ? vars.fileLink : '', fileName = String(vars.fileName || vars.document || 'document');
   // Outside the 24-hour window with no approved template for this message: send it inside the approved
