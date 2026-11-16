@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { PayConfirm } from '@/components/dash/PayConfirm';
-import { byToken } from '@/lib/server/payments';
+import { byToken, charged } from '@/lib/server/payments';
 
 export const metadata: Metadata = { title: 'Confirming your payment', robots: { index: false } };
 export const dynamic = 'force-dynamic';
@@ -14,7 +14,7 @@ export default async function PayReturn({ params, searchParams }: { params: Prom
   const { a, p } = hit;
   return (
     <PayConfirm token={token} pid={pid} sid={sp.sid || sp.session_id || ''} gwRef={sp.ref || ''} failed={!!sp.failed}
-      initial={p.status === 'paid' ? 'paid' : 'pending'} customer={a.client.name} amount={p.amount} label={p.label} appRef={a.ref}
+      initial={p.status === 'paid' ? 'paid' : 'pending'} customer={a.client.name} amount={charged(p)} label={p.label} appRef={a.ref}
       receipt={p.receiptNo} paidAt={p.paidAt} reference={p.gw?.ref || `${a.ref}-${p.id}`} />
   );
 }

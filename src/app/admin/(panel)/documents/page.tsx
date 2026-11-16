@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { ActionForm, Submit } from '@/components/dash/ActionForm';
 import { F, Toggle } from '@/components/dash/Fields';
 import { FULL, requireAdmin } from '@/lib/server/auth';
-import { docCfg } from '@/lib/server/doccfg';
+import { docCfg, footerDefaults } from '@/lib/server/doccfg';
+import { SITE } from '@/lib/site';
 import { list } from '@/lib/server/collections';
 import type { MailLog } from '@/lib/server/mail';
 import { when } from '@/lib/stages';
@@ -16,6 +17,7 @@ export const dynamic = 'force-dynamic';
 export default async function Documents() {
   await requireAdmin(FULL);
   const { pdf, mail } = await docCfg();
+  const fd = footerDefaults(SITE);
   const log = (await list<MailLog>('mail-log')).slice(0, 40);
   const nm = await getBlock<{ on?: boolean; kinds?: Record<string, boolean> }>('note-mail', {});
   const NK: [string, string][] = [['message', 'Client messages'], ['upload', 'Documents uploaded'], ['payment', 'Payments'], ['quote', 'Quote accepted'], ['request', 'Client requests'], ['customer', 'New client accounts'], ['whatsapp', 'WhatsApp from clients and website contacts'], ['chat', 'Website chat']];
@@ -44,7 +46,7 @@ export default async function Documents() {
           <F name="notes" label="Notes / terms section" value={pdf.notes} type="textarea" rows={4} full placeholder="e.g. Quote valid for 7 days. 50% payable to start, balance before submission." />
           <F name="signName" label="Signature name" value={pdf.signName} placeholder="e.g. Muhammad Naveed" />
           <F name="signTitle" label="Signature title" value={pdf.signTitle} placeholder="e.g. Senior Visa Advisor" />
-          <F name="footer" label="Footer text (every page)" value={pdf.footer} type="textarea" rows={2} full help="Centred at the bottom of every page, up to 3 lines. Empty = company name, licence, office, WhatsApp and email." />
+          <F name="footer" label="Footer text (every page)" value={pdf.footer || fd.pdf} type="textarea" rows={4} full help="Centred at the bottom of every page, up to 6 lines. Write anything: company, licence, address, bank, phone, website. “ | ” separates items on one line. Clear the box to go back to the standard footer." />
           <div className="full"><Toggle name="showLogo" label="Show the logo" on={pdf.showLogo} /></div>
           <div className="full"><Toggle name="showDate" label="Show the date" on={pdf.showDate} /></div>
           <div className="full"><Toggle name="showTimeline" label="Show the timeline (quote)" on={pdf.showTimeline} /></div>
@@ -70,9 +72,10 @@ export default async function Documents() {
           <F name="whatsAppLabel" label="WhatsApp button text" value={mail.whatsAppLabel} />
           <F name="helpText" label="Text above the WhatsApp button" value={mail.helpText} full />
           <F name="signOff" label="Sign-off" value={mail.signOff} type="textarea" rows={2} />
-          <F name="footer" label="Bottom bar text" value={mail.footer} type="textarea" rows={2} help="Empty = © year, company name and office" />
+          <F name="contactText" label="Company block at the bottom (one line each)" value={mail.contactText || fd.contact} type="textarea" rows={5} full help="First line shows in bold. Links, emails and numbers become clickable. Add or remove any line: address, phone, email, website, licence, opening hours. Clear the box to go back to the standard block." />
+          <F name="footer" label="Bottom bar text (dark bar)" value={mail.footer || fd.bar} type="textarea" rows={2} full help="Several lines allowed. Clear the box to go back to © year, company name and office." />
           <div className="full"><Toggle name="showWhatsApp" label="Show the WhatsApp button and phone" on={mail.showWhatsApp} /></div>
-          <div className="full"><Toggle name="showContact" label="Show office, WhatsApp and email" on={mail.showContact} /></div>
+          <div className="full"><Toggle name="showContact" label="Show the company block" on={mail.showContact} /></div>
           <div className="full"><Toggle name="showSocial" label="Show social links" on={mail.showSocial} /></div>
           <div className="full"><Submit>Save email settings</Submit></div>
         </ActionForm>

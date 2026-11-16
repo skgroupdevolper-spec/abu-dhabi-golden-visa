@@ -55,7 +55,7 @@ export async function quotePdf(q: QuotePdf): Promise<Uint8Array> {
     for (const part of parts) { const nx = cur ? `${cur}  |  ${part}` : part; if (cur && reg.widthOfTextAtSize(nx, 7.5) > CW) { out.push(cur); cur = part; } else cur = nx; }
     if (cur) out.push(cur);
     return out.flatMap((x) => wrap(x, reg, 7.5, CW));
-  }).slice(0, 3);
+  }).slice(0, 6);
   const FOOT = 30 + flines.length * 11; // space kept free at the bottom of every page
   const BOTTOM = FOOT + 18;
 

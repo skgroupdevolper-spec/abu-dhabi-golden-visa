@@ -16,8 +16,8 @@ export async function GET(_: Request, { params }: { params: Promise<{ token: str
   const pdf = await quotePdf({
     kind: 'receipt', title: 'Payment receipt', label: 'PAYMENT RECEIPT', name: a.client.name, ref: `${p.receiptNo} · Application ${a.ref}`,
     desc: `${a.route}. Received with thanks. All amounts in AED.`,
-    lines: [[p.label, p.amount.toFixed(2)], ['Payment method', p.method || 'Card'], ['Transaction', p.txn || '-'], ['Date (UAE time)', paid]],
-    total: `${money(p.amount)} PAID`, date: paid,
+    lines: [[p.label, p.amount.toFixed(2)], ...(p.fee ? [[`Card fee (${p.card === 'intl' ? 'international card' : 'UAE card'})`, p.fee.toFixed(2)] as [string, string]] : []), ['Payment method', p.method || 'Card'], ['Transaction', p.txn || '-'], ['Date (UAE time)', paid]],
+    total: `${money(p.amount + (p.fee || 0))} PAID`, date: paid,
     assumptions: [`${SITE.operator} - Trade Licence ${SITE.licence} - ${SITE.office}`, `${SITE.email} - ${SITE.whatsappDisplay}`, 'This receipt confirms payment received. Visa issuance is decided by the UAE authorities.'],
   });
   return new NextResponse(Buffer.from(pdf), { headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': `inline; filename="Payment-Receipt-${p.receiptNo}.pdf"`, 'Cache-Control': 'private, no-store' } });

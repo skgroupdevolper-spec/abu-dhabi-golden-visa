@@ -216,7 +216,7 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
                 {a.payments.map((p) => (
                   <div className="file" key={p.id}>
                     <span className="fi">AED</span>
-                    <span className="fn"><b>{p.label}</b><small>{money(p.amount)} · {p.status === 'paid' ? `Paid ${day(p.paidAt)} · ${p.method} · ${p.receiptNo}` : `Requested ${day(p.createdAt)}`}{p.link && p.status === 'due' ? ' · payment link set' : ''}</small></span>
+                    <span className="fn"><b>{p.label}</b><small>{money(p.amount)}{p.fee ? ` + card fee ${money(p.fee)} (${p.card === 'intl' ? 'intl.' : 'UAE'} card)` : ''} · {p.status === 'paid' ? `Paid ${day(p.paidAt)} · ${p.method} · ${p.receiptNo}` : `Requested ${day(p.createdAt)}`}{p.link && p.status === 'due' ? ' · payment link set' : ''}</small></span>
                     <span className={`pill ${p.status}`}>{p.status}</span>
                     {p.status === 'paid' && <a className="btn btn-sm" href={`${link}receipt/${p.id}/pdf/`} target="_blank" rel="noopener">Receipt PDF</a>}
                     {p.status === 'due' && (

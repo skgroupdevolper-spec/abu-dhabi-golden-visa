@@ -6,7 +6,8 @@ import { clearUpdates } from './actions';
 import { Icon } from '@/components/Icon';
 import { clientArea } from '@/lib/server/portal';
 import { feed, filePct, fileStatus, freshCount } from '@/lib/client-status';
-import { SITE } from '@/lib/site';
+import { SITE, waLink } from '@/lib/site';
+import { getPayCfg } from '@/lib/server/payments';
 import { day, money } from '@/lib/stages';
 
 export const metadata: Metadata = { title: 'My dashboard' };
@@ -16,6 +17,7 @@ export const dynamic = 'force-dynamic';
 export default async function Home() {
   const area = await clientArea();
   const { base, me, t, mine, requests, live, quotePay } = area;
+  const bankWa = (await getPayCfg()).bankWa;
   const cleared = area.me.updatesClearedAt || '';
   const items = feed(mine, t).filter((x) => x.kind === 'due' || !cleared || x.at > cleared);
   const dueAll = mine.flatMap((a) => a.payments).filter((p) => p.status === 'due').reduce((s, p) => s + p.amount, 0) + mine.reduce((s, a) => s + quotePay(a), 0);
@@ -71,6 +73,7 @@ export default async function Home() {
             <span>{dueAll > 0 ? `${dueN} × ${t.openPayments}` : `✓ ${t.allPaid}`}</span>
             <div className="row">
               {dueAll > 0 && <a className="btn btn-gold btn-sm" href={payHref}>{t.payNow}</a>}
+              {dueAll > 0 && bankWa && <a className="btn btn-sm btn-wa" href={waLink(`Hello, I would like to pay ${money(dueAll)}${firstPay ? ` for my file ${firstPay.ref}` : ''} by bank transfer. Please send me your bank details.`)} target="_blank" rel="noopener" title="Pay by bank transfer">+ Bank transfer</a>}
               <a className="btn btn-sm balc-b" href={`${base}/statement/`}>{t.statement}</a>
             </div>
           </div>

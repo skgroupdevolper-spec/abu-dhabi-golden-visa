@@ -981,3 +981,18 @@ tr.bulk-on > td, li.bulk-on { background: #fff8e6; }
 .tbl td.bulk-td, .tbl th.bulk-td { width: 34px; padding-inline-end: 0; }
 .bulk-row.bulk-on, .bulk-row.bulk-on > .file { background: #fff8e6 !important; }
 .bulk-row > .bulk-ck { align-self: center; flex: none; }
+
+/* card choice before paying (UAE / international card fee) */
+.paytext { background: #fffaf0; border: 1px solid #efe2bf; border-radius: 14px; padding: 12px 14px; font-size: 14px; line-height: 1.55; color: #333; margin: 14px 0; }
+.cardopts { display: grid; gap: 10px; margin: 6px 0 14px; }
+.cardopt { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 16px; border: 1.5px solid #e6d6a8; border-radius: 14px; text-decoration: none; color: inherit; background: #fff; transition: border-color .15s, box-shadow .15s, transform .15s; }
+.cardopt:hover, .cardopt:focus-visible { border-color: #b8892b; box-shadow: 0 10px 24px -16px rgba(0, 0, 0, .4); transform: translateY(-1px); }
+.cardopt b { display: block; font-size: 16px; } .cardopt small { display: block; color: #777; font-size: 12.5px; margin-top: 2px; }
+.cardopt-amt { text-align: end; flex: none; } .cardopt-amt b { font-size: 17px; } .cardopt-amt em { display: block; font-style: normal; font-size: 12px; font-weight: 700; color: #8a6a12; margin-top: 2px; }
+.cardalt { display: grid; gap: 8px; }
+.cardalt .btn { width: 100%; justify-content: center; }
+.paynote { font-size: 13.5px; line-height: 1.55; margin: 8px 0 0; color: #444; }
+.paynote p { margin: 0 0 6px; }
+.paybox.paybox-note { background: #fff; color: #333; border: 1px solid #ece4d0; box-shadow: none; align-items: flex-start; }
+.paybox.paybox-note .paynote { flex: 1 1 340px; color: #333; margin: 0; }
+.paybox.paybox-note .paynote b { color: #111; }

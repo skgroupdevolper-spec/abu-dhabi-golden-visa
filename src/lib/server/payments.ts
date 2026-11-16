@@ -20,6 +20,12 @@ export type PayCfg = {
   payOnQuote: boolean;
   /** Bank transfer shown on the order page as a second way to pay (client uploads the transfer slip). */
   bankOn: boolean; bankName: string; bankHolder: string; bankIban: string; bankAccount: string; bankSwift: string; bankNote: string;
+  /** Card fee added on top (the client picks a UAE or an international card before paying). */
+  feeOn: boolean; feeLocalPct: number; feeIntlPct: number; feeFixed: number;
+  /** Text shown above the payment buttons (WhatsApp marks allowed: *bold*, _italic_). */
+  payText: string;
+  /** "Pay by bank transfer" WhatsApp button on the client dashboard. */
+  bankWa: boolean;
 };
 export const PAY0: PayCfg = {
   provider: 'none', test: true, currency: 'AED',
@@ -27,7 +33,20 @@ export const PAY0: PayCfg = {
   totalpayKey: '', totalpayPass: '', totalpayHost: 'https://checkout.totalpay.global',
   termsUrl: '/terms/', validDays: 7, autoStage: true, receiptWa: true,
   payOnQuote: true, bankOn: false, bankName: '', bankHolder: '', bankIban: '', bankAccount: '', bankSwift: '', bankNote: '',
+  feeOn: true, feeLocalPct: 2.99, feeIntlPct: 3.99, feeFixed: 1,
+  payText: '*Secure Online Payment (Ziina)*\n\nPay conveniently using our secure online payment link.\n\n*Payment Gateway Fee:* For local UAE bank cards, 2.99% + AED 1. For international bank cards, 3.99% + AED 1. The fee is shown before you confirm the payment.\n\nAlternatively, you may pay by bank transfer to our official company account.',
+  bankWa: true,
 };
+
+export type CardKind = 'local' | 'intl';
+/** Card fee for an amount: percentage + fixed, rounded to fils. */
+export function cardFee(c: PayCfg, amount: number, card: CardKind) {
+  if (!c.feeOn) return 0;
+  const pct = card === 'intl' ? c.feeIntlPct : c.feeLocalPct;
+  return Math.round((amount * (pct || 0) / 100 + (c.feeFixed || 0)) * 100) / 100;
+}
+/** What the card is charged: the requested amount plus the card fee chosen for it. */
+export const charged = (p: Payment) => Math.round((p.amount + (p.fee || 0)) * 100) / 100;
 export const PROVIDERS: { id: Provider; name: string; note: string }[] = [
   { id: 'none', name: 'Manual (payment links)', note: 'Paste a payment link on each request and press “Mark paid” yourself.' },
   { id: 'totalpay', name: 'TotalPay', note: 'Checkout API. Merchant key and password from your TotalPay dashboard.' },
@@ -81,14 +100,15 @@ export async function startCheckout(a: Application, p: Payment, file: string): P
   const ret = `${file}pay/${p.id}/return/`;
   const back = `${file}?cancelled=1#payments`;
   const ref = `ADGV-${a.ref}-${p.id}`.replace(/[^\w-]/g, '').slice(0, 40);
-  const desc = `${p.label} (${a.ref})`.slice(0, 120);
+  const desc = `${p.label} (${a.ref})${p.fee ? ` + card fee ${p.fee.toFixed(2)}` : ''}`.slice(0, 120);
+  const total = charged(p);
   const cur = c.currency || 'AED';
   const gw = (id: string): Gw => ({ provider: c.provider, id, at: now(), ref });
   switch (c.provider) {
     case 'stripe': {
       const body = new URLSearchParams({
         mode: 'payment', client_reference_id: ref, success_url: `${ret}?sid={CHECKOUT_SESSION_ID}`, cancel_url: back,
-        'line_items[0][quantity]': '1', 'line_items[0][price_data][currency]': cur.toLowerCase(), 'line_items[0][price_data][unit_amount]': String(fils(p.amount)),
+        'line_items[0][quantity]': '1', 'line_items[0][price_data][currency]': cur.toLowerCase(), 'line_items[0][price_data][unit_amount]': String(fils(total)),
         'line_items[0][price_data][product_data][name]': desc, 'metadata[token]': a.token, 'metadata[pid]': p.id, 'metadata[app]': a.id,
         ...(a.client.email ? { customer_email: a.client.email } : {}),
       });
@@ -98,7 +118,7 @@ export async function startCheckout(a: Application, p: Payment, file: string): P
     case 'ziina': {
       const j = await jfetch('https://api-v2.ziina.com/api/payment_intent', {
         method: 'POST', headers: { Authorization: `Bearer ${c.ziinaToken.trim().replace(/^Bearer\s+/i, "")}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: fils(p.amount), currency_code: cur, message: desc, success_url: ret, cancel_url: back, failure_url: `${ret}?failed=1`, test: c.test }),
+        body: JSON.stringify({ amount: fils(total), currency_code: cur, message: desc, success_url: ret, cancel_url: back, failure_url: `${ret}?failed=1`, test: c.test }),
       });
       return { url: j.redirect_url, gw: gw(j.id) };
     }
@@ -106,7 +126,7 @@ export async function startCheckout(a: Application, p: Payment, file: string): P
       const tok = await ngToken(c);
       const j = await jfetch(`${ngBase(c)}/transactions/outlets/${encodeURIComponent(c.ngeniusOutlet)}/orders`, {
         method: 'POST', headers: { Authorization: `Bearer ${tok}`, 'Content-Type': 'application/vnd.ni-payment.v2+json', Accept: 'application/vnd.ni-payment.v2+json' },
-        body: JSON.stringify({ action: 'SALE', amount: { currencyCode: cur, value: fils(p.amount) }, merchantOrderReference: ref, emailAddress: a.client.email || undefined, merchantAttributes: { redirectUrl: ret, cancelUrl: back, skipConfirmationPage: true } }),
+        body: JSON.stringify({ action: 'SALE', amount: { currencyCode: cur, value: fils(total) }, merchantOrderReference: ref, emailAddress: a.client.email || undefined, merchantAttributes: { redirectUrl: ret, cancelUrl: back, skipConfirmationPage: true } }),
       });
       return { url: j?._links?.payment?.href, gw: gw(j.reference) };
     }
@@ -114,14 +134,14 @@ export async function startCheckout(a: Application, p: Payment, file: string): P
       const cart = `${ref}-${newId(3)}`;
       const j = await jfetch('https://secure.telr.com/gateway/order.json', {
         method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ method: 'create', store: Number(c.telrStore) || c.telrStore, authkey: c.telrKey, framed: 0, order: { cartid: cart, test: c.test ? '1' : '0', amount: amt2(p.amount), currency: cur, description: desc }, return: { authorised: ret, declined: `${ret}?failed=1`, cancelled: back }, customer: { email: a.client.email || undefined, name: { forenames: a.client.name.split(' ')[0], surname: a.client.name.split(' ').slice(1).join(' ') || '-' } } }),
+        body: JSON.stringify({ method: 'create', store: Number(c.telrStore) || c.telrStore, authkey: c.telrKey, framed: 0, order: { cartid: cart, test: c.test ? '1' : '0', amount: amt2(total), currency: cur, description: desc }, return: { authorised: ret, declined: `${ret}?failed=1`, cancelled: back }, customer: { email: a.client.email || undefined, name: { forenames: a.client.name.split(' ')[0], surname: a.client.name.split(' ').slice(1).join(' ') || '-' } } }),
       });
       if (!j?.order?.url) throw new Error(j?.error?.message || 'Telr did not return a payment page.');
       return { url: j.order.url, gw: gw(j.order.ref) };
     }
     case 'totalpay': {
       const number = `${ref}-${newId(3)}`.slice(0, 50);
-      const order = { number, amount: amt2(p.amount), currency: cur, description: desc };
+      const order = { number, amount: amt2(total), currency: cur, description: desc };
       const hash = tpHash(order.number + order.amount + order.currency + order.description + c.totalpayPass);
       const j = await jfetch(`${c.totalpayHost.replace(/\/$/, '')}/api/v1/session`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -183,7 +203,7 @@ export async function settle(appId: string, pid: string, method: string, txn: st
     if (!p || p.status === 'paid') return;
     const count = a.payments.filter((x) => x.receiptNo).length + 1;
     p.status = 'paid'; p.paidAt = now(); p.method = method; p.txn = txn; p.receiptNo = `${a.ref}-R${count}`;
-    a.messages.push({ id: newId(6), by: 'team', at: now(), text: `✅ Payment received, thank you! ${p.label}: AED ${p.amount.toFixed(2)}. Receipt ${p.receiptNo} is ready to download.` });
+    a.messages.push({ id: newId(6), by: 'team', at: now(), text: `✅ Payment received, thank you! ${p.label}: AED ${p.amount.toFixed(2)}${p.fee ? ` (+ card fee AED ${p.fee.toFixed(2)})` : ''}. Receipt ${p.receiptNo} is ready to download.` });
     // Paying a quotation confirms the order (no separate "accept" needed).
     if (a.quote.sentAt && !a.quote.acceptedAt) { a.quote.acceptedAt = now(); confirmed = true; }
     if (!a.confirmedAt && a.quote.sentAt) { a.confirmedAt = now(); confirmed = true; }
@@ -199,16 +219,16 @@ export async function settle(appId: string, pid: string, method: string, txn: st
 
 async function afterPaid(a: Application, p: Payment, confirmed = false) {
   const [{ notify }, { sendWa, sendWaDoc }, { money }, { portalUrl }, { mailEvent }] = await Promise.all([import('./collections'), import('./whatsapp'), import('@/lib/stages'), import('@/lib/site'), import('./mail')]);
-  await notify('payment', `Payment received: ${a.client.name}, AED ${p.amount.toFixed(2)} (${a.ref})`, `/admin/applications/${a.id}/#payments`);
+  await notify('payment', `Payment received: ${a.client.name}, AED ${charged(p).toFixed(2)}${p.fee ? ` incl. card fee ${p.fee.toFixed(2)}` : ''} (${a.ref})`, `/admin/applications/${a.id}/#payments`);
   const link = portalUrl(a.token);
   if (confirmed) {
     const total = orderTotal(a);
     await sendWa(a.client.phone, 'confirmed', { name: a.client.name, ref: a.ref, route: a.route, total: `AED ${total.toFixed(2)}`, date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), link }).catch(() => {});
     void mailEvent(a.client.email, 'confirmed', { name: a.client.name.split(' ')[0], ref: a.ref, route: a.route, total: `AED ${total.toFixed(2)}`, date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), link });
   }
-  await sendWa(a.client.phone, 'paid', { name: a.client.name.split(' ')[0], ref: a.ref, item: p.label, amount: money(p.amount), receipt: p.receiptNo, link });
-  if ((await getPayCfg()).receiptWa) await sendWaDoc(a.client.phone, `${link}receipt/${p.id}/pdf/`, `Payment Receipt - ${p.receiptNo}.pdf`, `✅ Payment Received, thank you! 🙏\nAmount: AED ${p.amount.toFixed(2)}\nRef: ${a.ref} | ${p.receiptNo}\nYour official receipt is attached.`);
-  void mailEvent(a.client.email, 'paid', { name: a.client.name.split(' ')[0], ref: a.ref, item: p.label, amount: money(p.amount), receipt: p.receiptNo, link: `${link}receipt/${p.id}/pdf/` });
+  await sendWa(a.client.phone, 'paid', { name: a.client.name.split(' ')[0], ref: a.ref, item: p.label, amount: money(charged(p)), receipt: p.receiptNo, link });
+  if ((await getPayCfg()).receiptWa) await sendWaDoc(a.client.phone, `${link}receipt/${p.id}/pdf/`, `Payment Receipt - ${p.receiptNo}.pdf`, `✅ Payment Received, thank you! 🙏\nAmount: AED ${charged(p).toFixed(2)}\nRef: ${a.ref} | ${p.receiptNo}\nYour official receipt is attached.`);
+  void mailEvent(a.client.email, 'paid', { name: a.client.name.split(' ')[0], ref: a.ref, item: p.label, amount: money(charged(p)), receipt: p.receiptNo, link: `${link}receipt/${p.id}/pdf/` });
 }
 
 /** Finds a payment from a provider reference (webhooks). */
@@ -255,7 +275,7 @@ export async function recheckPending(provider?: string) {
 }
 
 /** Absolute link of a client's file page as the client sees it (main site or portal subdomain). */
-export function fileUrl(headers: Headers, token: string) {
+export function fileUrl(headers: { get(name: string): string | null }, token: string) {
   const host = headers.get('x-forwarded-host') || headers.get('host') || 'localhost:3000';
   const proto = headers.get('x-forwarded-proto') || (host.startsWith('localhost') ? 'http' : 'https');
   return host === process.env.PORTAL_HOST ? `${proto}://${host}/t/${token}/` : `${proto}://${host}/portal/t/${token}/`;

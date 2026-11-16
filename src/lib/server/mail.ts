@@ -186,7 +186,12 @@ export function renderMail(subject: string, text: string, c: MailCfg, o: MailOpt
     </td></tr>` : '';
   const soc = SITE.social || ({} as Record<string, string>);
   const socials = c.showSocial ? (['facebook', 'instagram', 'linkedin', 'x', 'youtube', 'tiktok'] as const).filter((k) => (soc as Record<string, string>)[k]).map((k) => `<a href="${esc((soc as Record<string, string>)[k])}" style="color:${gold};text-decoration:none;font-size:13px;font-weight:600;margin-right:14px">${({ x: 'X', linkedin: 'LinkedIn', youtube: 'YouTube', tiktok: 'TikTok' } as Record<string, string>)[k] ?? k[0].toUpperCase() + k.slice(1)}</a>`).join('') : '';
-  const contact = c.showContact ? `<tr><td style="padding:22px 32px;border-top:1px solid ${line}">
+  // Own company block (Admin > Emails & PDFs): each line as written, links, emails and numbers clickable.
+  const own = (c.contactText || '').trim();
+  const ownHtml = own ? own.split('\n').map((l, i) => { const h = linkify(l, gold).replace(/([\w.+-]+@[\w-]+\.[\w.-]+)/g, `<a href="mailto:$1" style="color:${gold};text-decoration:none">$1</a>`); return i === 0 ? `<b style="font-size:15px;color:${ink}">${h}</b>` : h; }).join('<br>') : '';
+  const contact = c.showContact && own ? `<tr><td style="padding:22px 32px;border-top:1px solid ${line}">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td valign="bottom" style="font-size:13px;line-height:1.7;color:${soft}">${ownHtml}</td></tr>${socials ? `<tr><td style="padding-top:10px">${socials}</td></tr>` : ''}</table>
+    </td></tr>` : c.showContact ? `<tr><td style="padding:22px 32px;border-top:1px solid ${line}">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td valign="bottom" style="font-size:13px;line-height:1.7;color:${soft}">
         <b style="font-size:15px;color:${ink}">${esc(c.signOff.split('\n').slice(-1)[0] || SITE.name)}</b><br>
         ${SITE.office ? `${esc(SITE.office)}<br>` : ''}
@@ -212,7 +217,7 @@ export function renderMail(subject: string, text: string, c: MailCfg, o: MailOpt
   <tr><td style="padding:30px 32px 10px">${body}${sign}</td></tr>
   ${help}
   ${contact}
-  <tr><td align="center" style="background:${ink};padding:14px 24px;font-size:12px;color:#d9cfb5">${esc(foot)}${host ? ` · <a href="${esc(SITE.url)}" style="color:${gold};font-weight:700;text-decoration:none">${esc(host)}</a>` : ''}</td></tr>
+  <tr><td align="center" style="background:${ink};padding:14px 24px;font-size:12px;line-height:1.6;color:#d9cfb5">${esc(foot).replace(/\n/g, '<br>')}${host ? ` · <a href="${esc(SITE.url)}" style="color:${gold};font-weight:700;text-decoration:none">${esc(host)}</a>` : ''}</td></tr>
 </table>
 </td></tr></table>
 </body></html>`;

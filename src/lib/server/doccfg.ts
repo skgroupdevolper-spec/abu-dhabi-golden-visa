@@ -15,6 +15,8 @@ export type PdfCfg = {
 export type MailCfg = {
   accent: string; headerTitle: string; buttonLabel: string; showWhatsApp: boolean; whatsAppLabel: string;
   helpText: string; signOff: string; footer: string; showSocial: boolean; showContact: boolean;
+  /** Company block at the bottom of every email (one line each). Empty = name, office, WhatsApp and email. */
+  contactText: string;
   events: Record<MailEvent, MailTpl>;
 };
 export type DocCfg = { pdf: PdfCfg; mail: MailCfg };
@@ -30,7 +32,7 @@ export const DOC0: DocCfg = {
   },
   mail: {
     accent: '#b8901f', headerTitle: 'Client update', buttonLabel: 'Open your dashboard', showWhatsApp: true, whatsAppLabel: 'Chat on WhatsApp',
-    helpText: 'Have a question or need help?', signOff: 'Kind regards,\nAbu Dhabi Golden Visa', footer: '', showSocial: true, showContact: true,
+    helpText: 'Have a question or need help?', signOff: 'Kind regards,\nAbu Dhabi Golden Visa', footer: '', showSocial: true, showContact: true, contactText: '',
     events: MAIL_TPL0,
   },
 };
@@ -43,3 +45,12 @@ export async function docCfg(): Promise<DocCfg> {
 }
 
 export const hexOk = (v: string, d: string) => (/^#[0-9a-f]{6}$/i.test(v.trim()) ? v.trim() : d);
+
+/** The texts used when the editable footer fields are left empty (shown pre-filled in the editor). */
+export function footerDefaults(site: { name?: string; operator?: string; licence?: string; office?: string; whatsappDisplay?: string; email?: string }) {
+  return {
+    pdf: [site.operator, site.licence ? `Trade Licence ${site.licence}` : '', site.office, site.whatsappDisplay ? `WhatsApp ${site.whatsappDisplay}` : '', site.email].filter(Boolean).join('  |  '),
+    contact: [site.name, site.office, site.whatsappDisplay ? `WhatsApp ${site.whatsappDisplay}` : '', site.email].filter(Boolean).join('\n'),
+    bar: `© ${new Date().getFullYear()} ${site.operator || site.name}${site.office ? ` · ${site.office}` : ''}`,
+  };
+}

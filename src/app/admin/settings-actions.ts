@@ -344,6 +344,7 @@ export async function saveBookingCfg(_: St, f: FormData): Promise<St> {
 }
 
 /* ---------- online payments ---------- */
+const pct = (v: string) => Math.max(0, Math.min(20, Math.round((Number(v) || 0) * 100) / 100));
 export async function savePayments(_: St, f: FormData): Promise<St> {
   await requireAdmin(FULL);
   const { getPayCfg, savePayCfg, PROVIDERS } = await import('@/lib/server/payments');
@@ -354,7 +355,9 @@ export async function savePayments(_: St, f: FormData): Promise<St> {
     autoStage: f.get('autoStage') === 'on', receiptWa: f.get('receiptWa') === 'on', validDays: Math.max(1, Math.min(90, Number(s(f, 'validDays', 3)) || 7)), termsUrl: s(f, 'termsUrl', 300) || '/terms/',
     totalpayHost: s(f, 'totalpayHost', 200) || cur.totalpayHost, ngeniusOutlet: s(f, 'ngeniusOutlet', 120), telrStore: s(f, 'telrStore', 40),
     payOnQuote: f.get('payOnQuote') === 'on', bankOn: f.get('bankOn') === 'on', bankName: s(f, 'bankName', 120), bankHolder: s(f, 'bankHolder', 160),
-    bankIban: s(f, 'bankIban', 40).replace(/\s+/g, ' ').toUpperCase(), bankAccount: s(f, 'bankAccount', 40), bankSwift: s(f, 'bankSwift', 20).toUpperCase(), bankNote: s(f, 'bankNote', 300) };
+    bankIban: s(f, 'bankIban', 40).replace(/\s+/g, ' ').toUpperCase(), bankAccount: s(f, 'bankAccount', 40), bankSwift: s(f, 'bankSwift', 20).toUpperCase(), bankNote: s(f, 'bankNote', 300),
+    feeOn: f.get('feeOn') === 'on', feeLocalPct: pct(s(f, 'feeLocalPct', 8)), feeIntlPct: pct(s(f, 'feeIntlPct', 8)), feeFixed: Math.max(0, Math.min(100, Number(s(f, 'feeFixed', 8)) || 0)),
+    payText: s(f, 'payText', 2000), bankWa: f.get('bankWa') === 'on' };
   for (const k of ['stripeSecret', 'stripeWebhook', 'ziinaToken', 'ngeniusKey', 'telrKey', 'totalpayKey', 'totalpayPass'] as const) { const v = keep(k, 600); if (v !== undefined) next[k] = v; }
   await savePayCfg(next);
   revalidatePath('/admin/payments/');
@@ -441,7 +444,10 @@ export async function saveHomeHero(_: St, f: FormData): Promise<St> {
 /* ---------- emails & PDFs ---------- */
 export async function saveDocCfg(_: St, f: FormData): Promise<St> {
   await requireAdmin(FULL);
-  const { docCfg, hexOk, DOC0 } = await import('@/lib/server/doccfg');
+  const { docCfg, hexOk, DOC0, footerDefaults } = await import('@/lib/server/doccfg');
+  // Text left as the standard footer is saved empty, so it keeps following the site settings.
+  const fd = footerDefaults(await getSite());
+  const same = (v: string, d: string) => (v.replace(/\r/g, '').trim() === d.trim() ? '' : v);
   const cur = await docCfg();
   const which = s(f, 'which', 10);
   if (which === 'events') {
@@ -459,13 +465,13 @@ export async function saveDocCfg(_: St, f: FormData): Promise<St> {
       quoteTitle: s(f, 'quoteTitle', 120), quoteLabel: s(f, 'quoteLabel', 40), receiptTitle: s(f, 'receiptTitle', 120), receiptLabel: s(f, 'receiptLabel', 40),
       intro: s(f, 'intro', 1500), notes: s(f, 'notes', 3000),
       showTimeline: b(f, 'showTimeline'), showChecklist: b(f, 'showChecklist'), showAssumptions: b(f, 'showAssumptions'), showDisclaimer: b(f, 'showDisclaimer'),
-      signName: s(f, 'signName', 80), signTitle: s(f, 'signTitle', 120), footer: s(f, 'footer', 600), pageNumbers: b(f, 'pageNumbers'),
+      signName: s(f, 'signName', 80), signTitle: s(f, 'signTitle', 120), footer: same(s(f, 'footer', 1200), fd.pdf), pageNumbers: b(f, 'pageNumbers'),
     };
   } else {
     cur.mail = {
       accent: hexOk(s(f, 'accent', 7), DOC0.mail.accent), headerTitle: s(f, 'headerTitle', 60), buttonLabel: s(f, 'buttonLabel', 40) || DOC0.mail.buttonLabel,
       showWhatsApp: b(f, 'showWhatsApp'), whatsAppLabel: s(f, 'whatsAppLabel', 40) || DOC0.mail.whatsAppLabel, helpText: s(f, 'helpText', 120),
-      signOff: s(f, 'signOff', 200), footer: s(f, 'footer', 300), showSocial: b(f, 'showSocial'), showContact: b(f, 'showContact'),
+      signOff: s(f, 'signOff', 300), footer: same(s(f, 'footer', 600), fd.bar), showSocial: b(f, 'showSocial'), showContact: b(f, 'showContact'), contactText: same(s(f, 'contactText', 1200), fd.contact),
       events: cur.mail.events,
     };
   }

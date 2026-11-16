@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 import { ActionForm, CopyButton, Submit } from '@/components/dash/ActionForm';
+import { WaText } from '@/components/dash/WaText';
 import { F, Toggle } from '@/components/dash/Fields';
 import { FULL, requireAdmin } from '@/lib/server/auth';
 import { PROVIDERS, getPayCfg, online } from '@/lib/server/payments';
@@ -55,6 +56,12 @@ export default async function Payments() {
             <div className="full"><Toggle name="autoStage" label="Move the file to “Quote accepted and paid” when everything is paid" on={c.autoStage} /></div>
             <div className="full"><Toggle name="receiptWa" label="Send the receipt PDF on WhatsApp automatically" help="Needs the WhatsApp Cloud API (Settings › WhatsApp)." on={c.receiptWa} /></div>
             <div className="full"><Toggle name="payOnQuote" label="Client can “Pay & confirm” the whole quote straight away" help="When you send a quote, the client sees Pay & confirm on the order page. Paying confirms the order. No payment request needed." on={c.payOnQuote} /></div>
+            <fieldset className="full pay-keys"><legend>Card fee (added on top of card payments)</legend>
+              <div className="full"><Toggle name="feeOn" label="Add the card fee automatically" help="Before paying, the client picks a UAE or an international card and sees the fee and the total. Bank transfer has no fee." on={c.feeOn} /></div>
+              <F name="feeLocalPct" label="UAE bank cards (%)" value={c.feeLocalPct} placeholder="2.99" /><F name="feeIntlPct" label="International bank cards (%)" value={c.feeIntlPct} placeholder="3.99" />
+              <F name="feeFixed" label="Plus a fixed amount (AED)" value={c.feeFixed} placeholder="1" />
+              <WaText name="payText" label="Text shown above the payment buttons" value={c.payText} rows={6} help="Shown on the client's file and on the card page. *bold*, _italic_ and new lines work." />
+              <div className="full"><Toggle name="bankWa" label="Show “+ WhatsApp: pay by bank transfer” on the client dashboard" on={c.bankWa} /></div></fieldset>
             <fieldset className="full pay-keys"><legend>Bank transfer (second way to pay)</legend>
               <div className="full"><Toggle name="bankOn" label="Show your bank details on the order page" help="The client transfers and uploads the slip. You get a bell alert, check your bank, then press “Mark paid” (Bank transfer)." on={c.bankOn} /></div>
               <F name="bankName" label="Bank name" value={c.bankName} /><F name="bankHolder" label="Account name" value={c.bankHolder} />

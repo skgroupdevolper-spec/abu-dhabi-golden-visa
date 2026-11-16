@@ -20,7 +20,7 @@ export type Lead = {
 };
 
 export type QuoteLine = { label: string; amount: number; qty?: number; unit?: number };
-export type Payment = { id: string; label: string; amount: number; status: 'due' | 'paid'; link: string; createdAt: string; paidAt?: string; method?: string; receiptNo?: string; txn?: string; gw?: { provider: string; id: string; at: string; ref: string }; tries?: number };
+export type Payment = { id: string; label: string; amount: number; status: 'due' | 'paid'; link: string; createdAt: string; paidAt?: string; method?: string; receiptNo?: string; txn?: string; gw?: { provider: string; id: string; at: string; ref: string }; tries?: number; fee?: number; card?: 'local' | 'intl' };
 export type Doc = { id: string; name: string; file: string; size: number; type: string; by: 'client' | 'team'; at: string; shared: boolean };
 export type Message = { id: string; by: 'client' | 'team'; text: string; at: string; read?: boolean };
 

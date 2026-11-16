@@ -6,6 +6,7 @@ import { sizeLabel } from '@/lib/server/files';
 import { getApplicationByToken } from '@/lib/server/store';
 import { SITE, waLink, waTo } from '@/lib/site';
 import { getPayCfg, online, orderBalance } from '@/lib/server/payments';
+import { waHtml } from '@/lib/wa-format';
 import { LiveRefresh } from '@/components/dash/LiveRefresh';
 import { DECISION_TEXT } from '@/lib/decision';
 import { day, money, when } from '@/lib/stages';
@@ -111,6 +112,12 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
           <section className="paybox">
             <div><b><Icon name="card" size={14} className="ei" /> {t.readyToProceed}</b><p>{t.payWhole}</p></div>
             <div className="paybox-r"><a className="btn btn-gold" href={payHref}>{t.payConfirm} · {money(balance)}</a></div>
+          </section>
+        )}
+        {(due.length > 0 || canOrderPay) && (live && pay.payText || pay.bankWa) && (
+          <section className="paybox paybox-note">
+            {live && pay.payText && <div className="paynote" dangerouslySetInnerHTML={{ __html: waHtml(pay.payText) }} />}
+            {pay.bankWa && <div className="paybox-r"><a className="btn btn-wa" href={waLink(`Hello, I would like to pay ${due[0] ? `${due[0].label} (${money(due[0].amount)})` : money(balance)} for my file ${a.ref} by bank transfer. Please send me your bank details.`)} target="_blank" rel="noopener">+ WhatsApp: pay by bank transfer</a></div>}
           </section>
         )}
 

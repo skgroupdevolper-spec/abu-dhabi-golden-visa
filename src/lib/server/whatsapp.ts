@@ -73,6 +73,24 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   if (team && name === 'adgv_new_enquiry') keys = ['name', 'phone', 'service', 'message'];
   // The company alert template carries your whole text as one value (lines with links are left out, the buttons do that).
   const teamTpl = !!name && /_team_alert_v\d+$/.test(name);
+  // Client templates with a button: the button opens the client's link; the link is not repeated in the text.
+  const portal = `https://${process.env.PORTAL_HOST || 'app.abudhabigoldenvisa.com'}/`;
+  const link = typeof vars.link === 'string' ? vars.link : '';
+  const btnTpl = !team && !!name && /_btn_v\d+$/.test(name);
+  if (btnTpl) keys = keys.filter((k) => k !== 'link');
+  const btnSuffix = link.startsWith(portal) ? link.slice(portal.length) || 'login/' : 'login/';
+  // Inside the 24-hour window: a normal message with a tappable button (WhatsApp "call to action" link).
+  const ctaLabel = ({ welcome: 'Open my file', status: 'View my application', quote: 'View my quote', confirmed: 'Track my file', payment: 'Pay now', paid: 'Track my file', message: 'Reply to advisor', document: 'Open my file' } as Partial<Record<WaEvent, string>>)[event];
+  const ctaText = (() => {
+    if (!link || !ctaLabel || !/^https:\/\//.test(link)) return '';
+    const lines = text.split('\n');
+    const i = lines.findIndex((l) => l.includes(link));
+    if (i < 0) return '';
+    lines[i] = lines[i].replace(link, '').replace(/[\s:·|-]+$/, '').trim();
+    if (!lines[i] && i > 0 && /:\s*$/.test(lines[i - 1])) lines.splice(i - 1, 2); else if (!lines[i]) lines.splice(i, 1);
+    const t = lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+    return t.length > 0 && t.length <= 1024 ? t : '';
+  })();
   // {chat} becomes a short wa.me/971… link (tappable on WhatsApp); the admin link is on the button.
   const teamValue = teamTpl ? toWa(fill(own.split('\n').filter((l) => !/\{link\}/.test(l)).join('\n'), { ...vars, chat: vars.chatId ? `wa.me/${vars.chatId}` : '' })) : '';
   // A file to send with the message (document shared by the team): a link Meta can download.
@@ -84,6 +102,11 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   const flat = (v: unknown) => String(v ?? '').replace(/<br\s*\/?>/gi, '\n').replace(/https?:\/\/\S+/g, '').replace(/[ \t]*\r?\n[ \t]*(\r?\n[ \t]*)+/g, ' — ').replace(/[ \t]*\r?\n[ \t]*/g, ' · ').replace(/\t/g, ' ').replace(/ {2,}/g, ' ').trim();
   const body = viaMsg
     ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name: w.templateNames.message, language: { code: w.templateLang || 'en' }, components: [{ type: 'body', parameters: [vars.name, vars.ref || '-', flat(text).slice(0, 900) || '-', vars.link || SITE_URL()].map((x) => ({ type: 'text', text: String(x ?? '-') || '-' })) }] } }
+    : btnTpl && (custom || !opts.text)
+    ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name, language: { code: w.templateLang || 'en' }, components: [
+        { type: 'body', parameters: keys.map((k) => ({ type: 'text', text: flat(vars[k]).slice(0, 900) || String(vars[k] ?? '-').slice(0, 900) || '-' })) },
+        { type: 'button', sub_type: 'url', index: '0', parameters: [{ type: 'text', text: btnSuffix }] },
+      ] } }
     : teamTpl && (custom || !opts.text)
     ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name, language: { code: w.templateLang || 'en' }, components: [
         { type: 'body', parameters: [{ type: 'text', text: flat(teamValue).slice(0, 900) || '-' }] },
@@ -98,6 +121,8 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
       ] } }
     : fileLink && open
     ? { messaging_product: 'whatsapp', to: number, type: 'document', document: { link: fileLink, filename: fileName, caption: text.slice(0, 1000) } }
+    : open && ctaText && !team
+    ? { messaging_product: 'whatsapp', to: number, type: 'interactive', interactive: { type: 'cta_url', body: { text: ctaText }, action: { name: 'cta_url', parameters: { display_text: ctaLabel, url: link } } } }
     : { messaging_product: 'whatsapp', to: number, type: 'text', text: { body: text.slice(0, 4000), preview_url: true } };
   let ok = false, error = '', mid = '';
   try {
