@@ -43,7 +43,11 @@ export async function sendWa(to: string, event: WaEvent, vars: Record<string, st
   return r;
 }
 
-async function sendOne(to: string, event: WaEvent, vars: Record<string, string | number | undefined>, opts: { force?: boolean; text?: string; event?: string } = {}, custom?: { text: string; name?: string }) {
+// Company alert template (your own text + Chat/Admin buttons). Meta files it as marketing, so if it is
+// ever refused the alert is sent again with the older fixed company template.
+const TEAM_TPL = 'adgv_team_alert_v1';
+
+async function sendOne(to: string, event: WaEvent, vars: Record<string, string | number | undefined>, opts: { force?: boolean; text?: string; event?: string; legacy?: boolean } = {}, custom?: { text: string; name?: string }): Promise<{ ok: boolean; error: string }> {
   const w = (await getSecrets()).whatsapp;
   // Client messages use the same friendly text as the email (Admin > Emails & PDFs > Email messages),
   // so WhatsApp and email say the same thing. Turn off with "Use the email text" in WhatsApp settings.
@@ -63,7 +67,7 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   // Inside the 24-hour window (the client wrote to us in the last 24 h) a normal message always arrives and is free,
   // so the template is only used outside it. This also avoids templates Meta moved to "marketing".
   const open = await wroteLast24h(number);
-  const name = open ? '' : custom ? custom.name : w.templateNames[event] || (team ? w.templateNames.leadTeam : undefined);
+  const name = open ? '' : custom ? custom.name : team && !opts.legacy ? TEAM_TPL : w.templateNames[event] || (team ? w.templateNames.leadTeam : undefined);
   let keys = (WA_EVENTS.find((e) => e.key === event)?.vars.match(/\{(\w+)\}/g) ?? []).map((k) => k.slice(1, -1));
   // The first company template had 4 values: name, phone, service, message.
   if (team && name === 'adgv_new_enquiry') keys = ['name', 'phone', 'service', 'message'];
@@ -111,6 +115,7 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
     error = (e as Error).message;
   }
   await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: number, event: opts.event || event, text: `${body.type === 'template' ? `[template ${viaMsg ? w.templateNames.message : name}] ` : ''}${text}`.slice(0, 500), ok, error: error || undefined, dir: 'out', ...(mid ? { mid } : {}), ...(!team && !(opts.force && event === 'message') ? { full: text.slice(0, 1500) } : {}) }, 2000);
+  if (!ok && team && name === TEAM_TPL && !custom) return sendOne(to, event, vars, { ...opts, legacy: true });
   return { ok, error };
 }
 
