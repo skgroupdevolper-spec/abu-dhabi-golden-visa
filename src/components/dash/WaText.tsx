@@ -6,13 +6,23 @@
 import { useRef, useState } from 'react';
 import { waHtml } from '@/lib/wa-format';
 
-const EMOJI = ['✅', '📄', '💳', '📅', '📍', '⏳', '🎉', '🙏', '🌹', '👉', '📞', '⚠️'];
+const EMOJI: [string, string[]][] = [
+  ['Popular', '✅ 📄 💳 📅 📍 ⏳ 🎉 🙏 🌹 👉 📞 ⚠️ ⭐ 🔔 📌 ✨ 💼 🏠 🆔 🛂'.split(' ')],
+  ['Smileys', '😀 😃 😄 😁 😆 😅 🤣 😂 🙂 🙃 😉 😊 😇 🥰 😍 🤩 😘 😗 ☺️ 😚 😙 🥲 😋 😛 😜 🤪 😝 🤑 🤗 🤭 🤫 🤔 🤐 🤨 😐 😑 😶 😏 😒 🙄 😬 😌 😔 😪 🤤 😴 😷 🤒 🤕 🤢 🥵 🥶 😵 🤯 🤠 🥳 😎 🤓 🧐 😕 😟 🙁 ☹️ 😮 😯 😲 😳 🥺 😦 😧 😨 😰 😥 😢 😭 😱 😖 😣 😞 😓 😩 😫 🥱 😤 😡 😠'.split(' ')],
+  ['Hands & people', '👋 🤚 🖐️ ✋ 🖖 👌 🤌 🤏 ✌️ 🤞 🤟 🤘 🤙 👈 👉 👆 👇 ☝️ 👍 👎 ✊ 👊 🤛 🤜 👏 🙌 👐 🤲 🤝 🙏 ✍️ 💪 👀 🧑 👨 👩 👪 👨‍👩‍👧 👨‍👩‍👧‍👦 👶 🧒 👦 👧 🧑‍💼 👨‍💼 👩‍💼 🧑‍⚕️ 👮 🕵️ 🧕 🤵 👰'.split(' ')],
+  ['Hearts & symbols', '❤️ 🧡 💛 💚 💙 💜 🖤 🤍 🤎 💔 ❣️ 💕 💞 💓 💗 💖 💘 💝 ✔️ ☑️ ✅ ❌ ❎ ➕ ➖ ➗ ✖️ ❗ ❓ ‼️ ⁉️ 💯 🔴 🟠 🟡 🟢 🔵 🟣 ⚫ ⚪ 🟥 🟧 🟨 🟩 🟦 🟪 ⬛ ⬜ 🔶 🔷 🔸 🔹 ▶️ ⏩ ⏪ 🔼 🔽 ⬆️ ⬇️ ➡️ ⬅️ ↗️ ↘️ 🔄 🆕 🆗 🆙 🆓 ℹ️ 🔟 1️⃣ 2️⃣ 3️⃣ 4️⃣ 5️⃣ ©️ ®️ ™️'.split(' ')],
+  ['Work & money', '💼 📁 📂 🗂️ 📄 📃 📑 🧾 📊 📈 📉 🗒️ 📝 ✏️ 🖊️ 🖋️ 📎 🖇️ 📌 📍 ✂️ 🗃️ 🗄️ 🗑️ 🔒 🔓 🔑 🗝️ 🏷️ 💳 💰 💵 💶 💷 💸 🪙 🏦 🧮 💹 📧 📨 📩 📤 📥 📦 📬 📮 🖨️ 💻 🖥️ ⌨️ 📱 ☎️ 📞 📠 🔔 📢 📣 ⏰ ⏱️ ⌛ ⏳ 📅 📆 🗓️'.split(' ')],
+  ['Travel & places', '✈️ 🛫 🛬 🛂 🛃 🛄 🛅 🧳 🌍 🌎 🌏 🗺️ 🧭 🏙️ 🌆 🌇 🏢 🏬 🏛️ 🕌 🏠 🏡 🏘️ 🏗️ 🏥 🏫 🏨 🏪 🚗 🚕 🚙 🚌 🚆 🚇 🚢 ⛴️ 🚀 🏝️ 🏖️ 🏜️ ⛰️ 🌅 🌄 🌙 ☀️ ⭐ 🌟 🌈 ☁️ 🌧️ ⛈️ 🔥 💧 🌊'.split(' ')],
+  ['Celebrate & nature', '🎉 🎊 🎈 🎁 🎀 🏆 🥇 🥈 🥉 🏅 🎖️ 🎗️ 🎯 ✨ 🎆 🎇 🌹 🌷 🌸 💐 🌺 🌻 🌼 🍀 🌿 🌴 🌵 🍃 🐪 🦅 🐎 ☕ 🍵 🍰 🎂 🍫 🍬 🥤 🍽️'.split(' ')],
+  ['Flags', '🇦🇪 🇸🇦 🇶🇦 🇰🇼 🇧🇭 🇴🇲 🇵🇰 🇮🇳 🇧🇩 🇱🇰 🇳🇵 🇵🇭 🇮🇩 🇪🇬 🇯🇴 🇱🇧 🇸🇾 🇮🇶 🇮🇷 🇹🇷 🇬🇧 🇺🇸 🇨🇦 🇦🇺 🇩🇪 🇫🇷 🇮🇹 🇪🇸 🇳🇱 🇷🇺 🇺🇦 🇨🇳 🇯🇵 🇰🇷 🇳🇬 🇰🇪 🇺🇬 🇿🇦 🏳️ 🏴 🏁'.split(' ')],
+];
 
 type Props = { value: string; onChange: (v: string) => void; rows?: number; placeholder?: string; name?: string; label?: string; id?: string };
 
 export function WaEditor({ value, onChange, rows = 3, placeholder, name, label, id }: Props) {
   const ta = useRef<HTMLTextAreaElement>(null);
   const [emo, setEmo] = useState(false);
+  const [cat, setCat] = useState('Popular');
   const wrap = (a: string, b = a, empty = 'text') => {
     const el = ta.current;
     if (!el) return;
@@ -47,7 +57,14 @@ export function WaEditor({ value, onChange, rows = 3, placeholder, name, label, 
         <button type="button" title="List item (- )" onClick={() => linePrefix('- ')}>•</button>
         <button type="button" title="New line (same as <br>)" onClick={() => insert('\n')}>↵</button>
         <button type="button" title="Emoji" aria-expanded={emo} onClick={() => setEmo((v) => !v)}>🙂</button>
-        {emo && <span className="wt-emo">{EMOJI.map((x) => <button type="button" key={x} onClick={() => { insert(x); setEmo(false); }}>{x}</button>)}</span>}
+        {emo && (
+          <span className="wt-emo" role="dialog" aria-label="Emojis">
+            <span className="wt-emo-tabs">{EMOJI.map(([g, list]) => <button type="button" key={g} className={g === cat ? 'on' : ''} title={g} onClick={() => setCat(g)}>{list[0]}</button>)}</span>
+            <span className="wt-emo-h">{cat}</span>
+            <span className="wt-emo-grid">{(EMOJI.find(([g]) => g === cat)?.[1] ?? []).map((x, i) => <button type="button" key={x + i} onClick={() => insert(x)}>{x}</button>)}</span>
+            <small className="wt-emo-tip">Tip: your keyboard&rsquo;s own emoji panel works too (Windows&nbsp;+&nbsp;. or Ctrl&nbsp;+&nbsp;Cmd&nbsp;+&nbsp;Space).</small>
+          </span>
+        )}
       </div>
       <textarea ref={ta} id={id} name={name} rows={rows} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
       <div className="wt-prev" aria-label="Preview on WhatsApp"><span className="wt-tag">WhatsApp preview</span><div className="wt-bub" dangerouslySetInnerHTML={{ __html: waHtml(value || placeholder || '') }} /></div>

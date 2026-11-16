@@ -962,3 +962,10 @@ code.k { overflow-wrap: anywhere; word-break: break-all; }
 .wt-bub code { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; }
 .wt-q { display: inline-block; border-inline-start: 3px solid #d4af37; padding-inline-start: 8px; color: #54656f; }
 .wt-var { background: #fff3cd; border-radius: 4px; padding: 0 3px; color: #8a6a12; font-weight: 600; }
+.wt-emo { flex-basis: 100%; display: grid; gap: 6px; padding: 8px; max-width: 420px; box-shadow: 0 10px 30px -14px rgba(20, 16, 6, .35); }
+.wt-emo-tabs { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid #f0e8d4; padding-bottom: 6px; }
+.wt-emo-tabs button.on { background: #14110a; border-color: #14110a; }
+.wt-emo-h { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #8a6a12; }
+.wt-emo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 3px; max-height: 190px; overflow-y: auto; }
+.wt-emo-grid button { font-size: 18px; border-color: transparent; }
+.wt-emo-tip { color: #8a8170; font-size: 11.5px; }
