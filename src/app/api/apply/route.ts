@@ -63,11 +63,32 @@ export async function POST(req: NextRequest) {
   ].filter(Boolean).join('\n');
 
   try {
+    // Client account: create it with the chosen password and sign the client in, so they land in their dashboard.
+    // An existing account is never changed here: with the right password the client is signed in, otherwise
+    // the application is still linked to that email and they sign in as usual.
+    const signIn = async (ref: string) => {
+      let account: 'signed-in' | 'created' | 'exists' | 'none' = me ? 'signed-in' : 'none';
+      if (!me && password && email) {
+        const found = (await list<Customer>('customers')).find((c) => c.email === email);
+        if (!found) {
+          const c: Customer = { id: newId(8), name, email, phone, pass: await hashPassword(password), lang: await portalLang(), active: true, createdAt: now(), lastLogin: now() };
+          await insert<Customer>('customers', c);
+          void notify('customer', `New client account: ${name} (${email}), from application ${ref}`, '/admin/customers/');
+          await startClientSession(c.id);
+          account = 'created';
+        } else if (found.active && (await verifyPassword(password, found.pass))) {
+          await patch<Customer>('customers', found.id, (x) => { x.lastLogin = now(); });
+          await startClientSession(found.id);
+          account = 'signed-in';
+        } else account = 'exists';
+      }
+      return account;
+    };
     // Same application sent twice within 2 minutes (a retry after a slow connection): answer with the first one.
     const { listLeads, listApplications } = await import('@/lib/server/store');
     const since = new Date(Date.now() - 120_000).toISOString();
     const dup = (await listLeads()).find((l) => l.at >= since && l.source === 'apply' && l.phone === phone && l.service === svc.label && l.applicationId);
-    if (dup) { const a0 = (await listApplications()).find((a) => a.id === dup.applicationId); if (a0) return NextResponse.json({ ok: true, ref: a0.ref, link: portalUrl(a0.token), account: me ? 'signed-in' : 'none' }); }
+    if (dup) { const a0 = (await listApplications()).find((a) => a.id === dup.applicationId); if (a0) return NextResponse.json({ ok: true, ref: a0.ref, link: portalUrl(a0.token), account: await signIn(a0.ref) }); }
     const lead = await addLead({ name, phone, email, service: svc.label, message: notes, source: 'apply', details: JSON.stringify({ language: lang?.name ?? 'English', service: svc.id }) });
     const app = await createApplication({
       client: { name, phone, email, nationality: s(f, 'nationality', 80), language: lang?.name ?? 'English' },
@@ -94,24 +115,7 @@ export async function POST(req: NextRequest) {
 
     const link = portalUrl(app.token);
 
-    // Client account: create it with the chosen password and sign the client in, so they land in their dashboard.
-    // An existing account is never changed here: with the right password the client is signed in, otherwise
-    // the application is still linked to that email and they sign in as usual.
-    let account: 'signed-in' | 'created' | 'exists' | 'none' = me ? 'signed-in' : 'none';
-    if (!me && password && email) {
-      const found = (await list<Customer>('customers')).find((c) => c.email === email);
-      if (!found) {
-        const c: Customer = { id: newId(8), name, email, phone, pass: await hashPassword(password), lang: await portalLang(), active: true, createdAt: now(), lastLogin: now() };
-        await insert<Customer>('customers', c);
-        void notify('customer', `New client account: ${name} (${email}), from application ${app.ref}`, '/admin/customers/');
-        await startClientSession(c.id);
-        account = 'created';
-      } else if (found.active && (await verifyPassword(password, found.pass))) {
-        await patch<Customer>('customers', found.id, (x) => { x.lastLogin = now(); });
-        await startClientSession(found.id);
-        account = 'signed-in';
-      } else account = 'exists';
-    }
+    const account = await signIn(app.ref);
     void notify('lead', `New online application ${app.ref}: ${name} (${svc.label}), ${docs.length} document(s)`, `/admin/applications/${app.id}/`);
     void Promise.allSettled([
       sendTeam('leadTeam', { name, phone, service: `${svc.label} · ${app.ref}`, message: notes.slice(0, 300) }),
