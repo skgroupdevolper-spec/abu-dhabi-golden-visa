@@ -1,6 +1,6 @@
 // Emails sent automatically, one per event. Text is edited in Admin > Emails & PDFs.
 // Lines written as "Label: value" show as a neat table; a line with only a link becomes a button.
-export type MailEvent = 'welcome' | 'status' | 'quote' | 'confirmed' | 'payment' | 'paid' | 'message' | 'document' | 'decision' | 'reset' | 'account' | 'teamLead';
+export type MailEvent = 'welcome' | 'status' | 'quote' | 'confirmed' | 'payment' | 'paid' | 'message' | 'document' | 'decision' | 'reset' | 'account' | 'teamLead' | 'bookingNew' | 'bookingConfirmed' | 'bookingMoved' | 'bookingCancelled';
 export type MailTpl = { on: boolean; subject: string; badge: string; body: string };
 
 export const MAIL_EVENTS: { key: MailEvent; label: string; to: 'client' | 'team'; vars: string }[] = [
@@ -15,6 +15,10 @@ export const MAIL_EVENTS: { key: MailEvent; label: string; to: 'client' | 'team'
   { key: 'document', label: 'New document shared', to: 'client', vars: '{name} {ref} {document} {link}' },
   { key: 'decision', label: 'Authority decision', to: 'client', vars: '{name} {ref} {status} {text} {reason} {next} {link}' },
   { key: 'reset', label: 'Password reset code', to: 'client', vars: '{name} {code}' },
+  { key: 'bookingNew', label: 'Appointment booked (received)', to: 'client', vars: '{name} {ref} {date} {time} {type} {place} {service}' },
+  { key: 'bookingConfirmed', label: 'Appointment confirmed', to: 'client', vars: '{name} {ref} {date} {time} {type} {place} {service}' },
+  { key: 'bookingMoved', label: 'Appointment moved to a new time', to: 'client', vars: '{name} {ref} {date} {time} {old} {type} {place} {service}' },
+  { key: 'bookingCancelled', label: 'Appointment cancelled', to: 'client', vars: '{name} {ref} {date} {time} {type} {service}' },
   { key: 'teamLead', label: 'New enquiry or application (to your team)', to: 'team', vars: '{name} {phone} {email} {service} {message} {link}' },
 ];
 
@@ -41,6 +45,14 @@ export const MAIL_TPL0: Record<MailEvent, MailTpl> = {
     body: 'Hello {name},\n\n{text}\n\nReference: {ref}\nDecision: {status}\nReason: {reason}\nNext step: {next}\n\nSee the details here:\n{link}' },
   reset: { on: true, subject: 'Your login code', badge: 'Login code',
     body: 'Hello {name},\n\nUse this code to set a new password. It expires in 15 minutes.\n\nCode: {code}\n\nIf you did not ask for this, you can ignore this email.' },
+  bookingNew: { on: true, subject: 'We received your appointment request {ref}', badge: 'Appointment booked',
+    body: 'Hello {name},\n\nThank you, we received your appointment request. Your advisor will confirm it shortly.\n\nReference: {ref}\nDate: {date}\nTime: {time} (UAE time)\nType: {type}\nWhere: {place}\nService: {service}\n\nNeed to change the time? Just reply to this email or message us on WhatsApp.' },
+  bookingConfirmed: { on: true, subject: 'Your appointment {ref} is confirmed', badge: 'Appointment confirmed',
+    body: 'Hello {name},\n\nYour appointment is confirmed. We look forward to speaking with you.\n\nReference: {ref}\nDate: {date}\nTime: {time} (UAE time)\nType: {type}\nWhere: {place}\nService: {service}\n\nNeed to change the time? Just reply to this email or message us on WhatsApp.' },
+  bookingMoved: { on: true, subject: 'New time for your appointment {ref}', badge: 'Appointment moved',
+    body: 'Hello {name},\n\nYour appointment has been moved to a new time.\n\nReference: {ref}\nNew date: {date}\nNew time: {time} (UAE time)\nBefore: {old}\nType: {type}\nWhere: {place}\n\nIf this time does not suit you, reply to this email or message us on WhatsApp.' },
+  bookingCancelled: { on: true, subject: 'Your appointment {ref} is cancelled', badge: 'Appointment cancelled',
+    body: 'Hello {name},\n\nYour appointment has been cancelled.\n\nReference: {ref}\nDate: {date}\nTime: {time} (UAE time)\n\nWould you like a new time? Reply to this email or message us on WhatsApp and we will book it for you.' },
   teamLead: { on: true, subject: 'New enquiry: {name} ({service})', badge: 'New enquiry',
     body: 'A new enquiry arrived on the website.\n\nName: {name}\nPhone: {phone}\nEmail: {email}\nService: {service}\n\n{message}\n\nOpen it in the admin:\n{link}' },
 };

@@ -6,6 +6,7 @@ import { getBlock } from '@/lib/server/settings';
 import { newId, now, withLock } from '@/lib/server/store';
 import { sendTeam } from '@/lib/server/whatsapp';
 import { mailTeam } from '@/lib/server/mail';
+import { bookingMail } from '@/lib/server/booking-mail';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -49,6 +50,7 @@ export async function POST(req: NextRequest) {
     await notify('booking', `New appointment: ${saved.name}, ${TYPE_LABEL[type]}, ${when}`, `/admin/bookings/?b=${saved.id}`);
     void Promise.allSettled([
       sendTeam('leadTeam', { name: saved.name, phone: saved.phone, service: `Appointment: ${TYPE_LABEL[type]} ${when}`, message: saved.notes.slice(0, 300) }),
+      bookingMail(saved, 'bookingNew'),
       mailTeam(`New appointment ${saved.ref}: ${saved.name}`, `${TYPE_LABEL[type]}\n${when}\n\nName: ${saved.name}\nPhone: ${saved.phone}\nEmail: ${saved.email}\nService: ${saved.service}\n\n${saved.notes}`),
     ]);
     return NextResponse.json({ ok: true, ref: saved.ref, date: saved.date, time: saved.time, type });

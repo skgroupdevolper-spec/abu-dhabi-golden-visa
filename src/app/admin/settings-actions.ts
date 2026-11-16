@@ -306,9 +306,25 @@ export async function bookingAction(f: FormData) {
   const id = s(f, 'id', 20), op = s(f, 'op', 12);
   const { patch: p2, remove: r2 } = await import('@/lib/server/collections');
   type B = import('@/lib/booking').Booking;
+  const { bookingMail } = await import('@/lib/server/booking-mail');
+  const before = (await list<B>('bookings')).find((b) => b.id === id);
+  const after = async () => (await list<B>('bookings')).find((b) => b.id === id);
   if (op === 'delete') await r2<B>('bookings', id);
-  else if (['new', 'confirmed', 'done', 'cancelled', 'noshow'].includes(op)) await p2<B>('bookings', id, (b) => { b.status = op as B['status']; });
-  else if (op === 'move') { const date = s(f, 'date', 10), time = s(f, 'time', 5); if (/^\d{4}-\d{2}-\d{2}$/.test(date) && /^\d{2}:\d{2}$/.test(time)) await p2<B>('bookings', id, (b) => { b.date = date; b.time = time; b.status = 'confirmed'; }); }
+  else if (['new', 'confirmed', 'done', 'cancelled', 'noshow'].includes(op)) {
+    await p2<B>('bookings', id, (b) => { b.status = op as B['status']; });
+    // The client gets an email when the appointment is confirmed or cancelled (not twice for the same change).
+    const b = await after();
+    if (b && before?.status !== op && (op === 'confirmed' || op === 'cancelled')) void bookingMail(b, op === 'confirmed' ? 'bookingConfirmed' : 'bookingCancelled');
+  } else if (op === 'move') {
+    const date = s(f, 'date', 10), time = s(f, 'time', 5);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date) && /^\d{2}:\d{2}$/.test(time)) {
+      await p2<B>('bookings', id, (b) => { b.date = date; b.time = time; b.status = 'confirmed'; });
+      // New time: the client is told automatically.
+      const b = await after();
+      if (b && before && (before.date !== date || before.time !== time)) void bookingMail(b, 'bookingMoved', { date: before.date, time: before.time });
+      else if (b && before?.status !== 'confirmed') void bookingMail(b, 'bookingConfirmed');
+    }
+  }
   else if (op === 'note') await p2<B>('bookings', id, (b) => { b.note = s(f, 'note', 1000); });
   revalidatePath('/admin/bookings/');
 }
