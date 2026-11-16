@@ -88,7 +88,7 @@ export async function mailEvent(to: string | undefined, event: MailEvent, vars: 
     const tpl = c.events[event];
     if (!tpl?.on) return { ok: false, error: 'This email is switched off' };
     const v = { ...vars };
-    return await sendMail(to, fillTpl(tpl.subject, v).slice(0, 200), fillTpl(tpl.body, v), { badge: fillTpl(tpl.badge, v), title: event === 'teamLead' ? 'Team notice' : undefined, attachments });
+    return await sendMail(to, fillTpl(tpl.subject, v).slice(0, 200), fillTpl(tpl.body, v), { badge: fillTpl(tpl.badge, v), title: event.startsWith('team') ? 'Team notice' : undefined, attachments });
   } catch (e) {
     return { ok: false, error: (e as Error).message };
   }
@@ -97,12 +97,22 @@ export async function mailEvent(to: string | undefined, event: MailEvent, vars: 
 /** Team copy of an event email (to the notification address in Admin > Settings > Email). */
 export async function mailEventTeam(event: MailEvent, vars: Record<string, string | number | undefined>) {
   const m = (await getSecrets()).smtp;
-  return m.notify ? mailEvent(m.notify, event, vars) : { ok: false, error: 'No notification email set' };
+  // Several company emails can be set (comma or new line); each one gets the alert.
+  const to = (m.notify || '').split(/[,;\n]/).map((x) => x.trim()).filter(Boolean);
+  if (!to.length) return { ok: false, error: 'No notification email set' };
+  const d = String(vars.phone ?? '').replace(/\D/g, '').replace(/^00/, '');
+  const id = /^0\d{9}$/.test(d) ? `971${d.slice(1)}` : d;
+  const site = (SITE.url || '').replace(/\/$/, '');
+  const v = { ...vars, chat: id ? `https://wa.me/${id}` : '', link: vars.link && String(vars.link).startsWith('/') ? site + vars.link : vars.link };
+  const r = await Promise.all(to.map((x) => mailEvent(x, event, v)));
+  return r[0];
 }
 
 export async function mailTeam(subject: string, text: string) {
   const m = (await getSecrets()).smtp;
-  return m.notify ? sendMail(m.notify, subject, text, { title: 'Team notice' }) : { ok: false, error: 'No notification email set' };
+  const to = (m.notify || '').split(/[,;\n]/).map((x) => x.trim()).filter(Boolean);
+  if (!to.length) return { ok: false, error: 'No notification email set' };
+  return (await Promise.all(to.map((x) => sendMail(x, subject, text, { title: 'Team notice' }))))[0];
 }
 
 /* ---------- branded HTML ---------- */

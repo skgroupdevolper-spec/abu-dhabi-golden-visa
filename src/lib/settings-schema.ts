@@ -49,10 +49,13 @@ export type Secrets = {
 
 export type WaCustom = { id: string; label: string; on: boolean; when: WaEvent; text: string; templateName?: string };
 export type AiUse = 'chat' | 'translate' | 'writer' | 'editor';
-export type WaEvent = 'leadTeam' | 'welcome' | 'status' | 'quote' | 'confirmed' | 'payment' | 'paid' | 'message' | 'document' | 'reset';
+export type WaEvent = 'leadTeam' | 'applyTeam' | 'bookingTeam' | 'clientTeam' | 'welcome' | 'status' | 'quote' | 'confirmed' | 'payment' | 'paid' | 'message' | 'document' | 'reset';
 
 export const WA_EVENTS: { key: WaEvent; label: string; to: 'team' | 'client'; vars: string }[] = [
-  { key: 'leadTeam', label: 'New enquiry (to your team)', to: 'team', vars: '{name} {phone} {service} {message}' },
+  { key: 'leadTeam', label: 'New website enquiry (to your company)', to: 'team', vars: '{name} {phone} {service} {message} {chat} {link}' },
+  { key: 'applyTeam', label: 'New application (to your company)', to: 'team', vars: '{name} {phone} {service} {message} {ref} {chat} {link}' },
+  { key: 'bookingTeam', label: 'New appointment (to your company)', to: 'team', vars: '{name} {phone} {service} {message} {ref} {date} {time} {type} {chat} {link}' },
+  { key: 'clientTeam', label: 'Client asked for a service in the dashboard (to your company)', to: 'team', vars: '{name} {phone} {service} {message} {chat} {link}' },
   { key: 'welcome', label: 'Application opened (to client)', to: 'client', vars: '{name} {ref} {service} {link}' },
   { key: 'status', label: 'Status update (to client)', to: 'client', vars: '{name} {ref} {status} {next} {link}' },
   { key: 'quote', label: 'Quote ready (to client)', to: 'client', vars: '{name} {ref} {total} {link}' },
@@ -97,9 +100,12 @@ export const DEFAULT_SITE: PublicSite = {
 export const DEFAULT_SECRETS: Secrets = {
   whatsapp: {
     mode: 'link', phoneNumberId: '', accessToken: '', businessId: '', verifyToken: '', teamNumbers: '',
-    autos: { leadTeam: true, welcome: true, status: true, quote: true, confirmed: true, payment: true, paid: true, message: true, document: true, reset: true },
+    autos: { leadTeam: true, applyTeam: true, bookingTeam: true, clientTeam: true, welcome: true, status: true, quote: true, confirmed: true, payment: true, paid: true, message: true, document: true, reset: true },
     templates: {
-      leadTeam: 'New enquiry from {name} ({phone}). Service: {service}. {message}',
+      leadTeam: '🔔 *New website enquiry*\n\n👤 {name}\n📞 {phone}\n📄 {service}\n\n{message}\n\n💬 Chat with client: {chat}\n🔗 Open in admin: {link}',
+      applyTeam: '🔔 *New application {ref}*\n\n👤 {name}\n📞 {phone}\n📄 {service}\n\n{message}\n\n💬 Chat with client: {chat}\n🔗 Open in admin: {link}',
+      bookingTeam: '📅 *New appointment {ref}*\n\n👤 {name}\n📞 {phone}\n🗓️ {date} at {time} ({type})\n📄 {service}\n\n{message}\n\n💬 Chat with client: {chat}\n🔗 Open in admin: {link}',
+      clientTeam: '🔔 *Client request from the dashboard*\n\n👤 {name}\n📞 {phone}\n📄 {service}\n\n{message}\n\n💬 Chat with client: {chat}\n🔗 Open in admin: {link}',
       welcome: 'Hello {name}, your {service} file {ref} is open. Follow every step here: {link}',
       status: 'Hello {name}, update on {ref}: {status}. Next: {next}. Details: {link}',
       quote: 'Hello {name}, your quote for {ref} is ready ({total}). Review and accept it here: {link}',

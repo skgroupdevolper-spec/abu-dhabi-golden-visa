@@ -15,6 +15,10 @@ export function toWa(t: string) {
 }
 
 export const digits = (p: string) => p.replace(/\D/g, '').replace(/^00/, '');
+/** Full international number (UAE numbers written as 05x… get 971 in front), for wa.me links. */
+export const intl = (p: string) => { const d = digits(p); return /^0\d{9}$/.test(d) ? `971${d.slice(1)}` : /^5\d{8}$/.test(d) ? `971${d}` : d; };
+/** Alerts that go to your company (team numbers), not to the client. */
+export const isTeamEvent = (e: string) => /Team$/.test(e);
 
 export function fill(tpl: string, vars: Record<string, string | number | undefined>) {
   return tpl.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? '')).replace(/<br\s*\/?>/gi, '\n').replace(/[ \t]+\n/g, '\n').trim();
@@ -28,7 +32,7 @@ export async function sendWa(to: string, event: WaEvent, vars: Record<string, st
   const w0 = (await getSecrets()).whatsapp;
   const team = (w0.teamNumbers || '').split(/[,\n]/).map((x) => digits(x)).filter((x) => x.length >= 8);
   const me = digits(to);
-  if (w0.copyTeam !== false && event !== 'leadTeam' && !opts.event && !opts.force && !team.some((t) => t.endsWith(me.slice(-9)))) {
+  if (w0.copyTeam !== false && !isTeamEvent(event) && !opts.event && !opts.force && !team.some((t) => t.endsWith(me.slice(-9)))) {
     for (const t of team) await sendOne(t, event, vars, { ...opts, force: true, event: `copy:${event}` }).catch(() => null);
   }
   // Extra messages the team added for this trigger go out right after the main one.
@@ -45,7 +49,11 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   // so WhatsApp and email say the same thing. Turn off with "Use the email text" in WhatsApp settings.
   const mailText = !custom && !opts.text && w.useMailText !== false ? await mailTextFor(event, vars) : '';
   // "<br>" in a message means a new line on WhatsApp.
-  const text = toWa(custom ? fill(custom.text, vars) : opts.text ?? (mailText || fill(w.templates[event] || '', vars)));
+  // Company alerts: your own text from Admin > WhatsApp; a "Chat with client" link is always added.
+  const team = isTeamEvent(event);
+  let own = w.templates[event] || (team ? w.templates.leadTeam : '') || '';
+  if (team && !own.includes('{chat}')) own += '\n\n💬 Chat with client: {chat}';
+  const text = toWa(custom ? fill(custom.text, vars) : opts.text ?? (mailText || fill(own, vars)));
   const number = digits(to);
   if (!number || number.length < 8) return { ok: false, error: 'No valid number' };
   if (!custom && !opts.force && !w.autos[event]) return { ok: false, error: 'Automatic message is off' };
@@ -55,17 +63,28 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   // Inside the 24-hour window (the client wrote to us in the last 24 h) a normal message always arrives and is free,
   // so the template is only used outside it. This also avoids templates Meta moved to "marketing".
   const open = await wroteLast24h(number);
-  const name = open ? '' : custom ? custom.name : w.templateNames[event];
-  const keys = (WA_EVENTS.find((e) => e.key === event)?.vars.match(/\{(\w+)\}/g) ?? []).map((k) => k.slice(1, -1));
+  const name = open ? '' : custom ? custom.name : w.templateNames[event] || (team ? w.templateNames.leadTeam : undefined);
+  let keys = (WA_EVENTS.find((e) => e.key === event)?.vars.match(/\{(\w+)\}/g) ?? []).map((k) => k.slice(1, -1));
+  // The first company template had 4 values: name, phone, service, message.
+  if (team && name === 'adgv_new_enquiry') keys = ['name', 'phone', 'service', 'message'];
+  // The company alert template carries your whole text as one value (lines with links are left out, the buttons do that).
+  const teamTpl = !!name && /_team_alert_v\d+$/.test(name);
+  const teamValue = teamTpl ? toWa(fill(own.split('\n').filter((l) => !/\{(chat|link)\}/.test(l)).join('\n'), vars)) : '';
   // A file to send with the message (document shared by the team): a link Meta can download.
   const fileLink = typeof vars.fileLink === 'string' ? vars.fileLink : '', fileName = String(vars.fileName || vars.document || 'document');
   // Outside the 24-hour window with no approved template for this message: send it inside the approved
   // "new message" template ({{1}} name, {{2}} file, {{3}} text, {{4}} link), so it still reaches the client.
-  const viaMsg = !open && !name && !custom && event !== 'message' && event !== 'leadTeam' && w.templateNames.message;
+  const viaMsg = !open && !name && !custom && event !== 'message' && !team && w.templateNames.message;
   // Meta does not allow new lines inside template values: a blank line (<br><br>) becomes " — ", one new line " · ".
   const flat = (v: unknown) => String(v ?? '').replace(/<br\s*\/?>/gi, '\n').replace(/https?:\/\/\S+/g, '').replace(/[ \t]*\r?\n[ \t]*(\r?\n[ \t]*)+/g, ' — ').replace(/[ \t]*\r?\n[ \t]*/g, ' · ').replace(/\t/g, ' ').replace(/ {2,}/g, ' ').trim();
   const body = viaMsg
     ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name: w.templateNames.message, language: { code: w.templateLang || 'en' }, components: [{ type: 'body', parameters: [vars.name, vars.ref || '-', flat(text).slice(0, 900) || '-', vars.link || SITE_URL()].map((x) => ({ type: 'text', text: String(x ?? '-') || '-' })) }] } }
+    : teamTpl && (custom || !opts.text)
+    ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name, language: { code: w.templateLang || 'en' }, components: [
+        { type: 'body', parameters: [{ type: 'text', text: flat(teamValue).slice(0, 900) || '-' }] },
+        { type: 'button', sub_type: 'url', index: '0', parameters: [{ type: 'text', text: String(vars.chatId || intl(String(vars.phone ?? ''))) || '971' }] },
+        { type: 'button', sub_type: 'url', index: '1', parameters: [{ type: 'text', text: String(vars.adminPath || '') || 'leads/' }] },
+      ] } }
     : name && (custom || !opts.text)
     ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name, language: { code: w.templateLang || 'en' }, components: [
         // Templates with a document header carry the file itself (e.g. a document the team uploaded).
@@ -90,7 +109,7 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   } catch (e) {
     error = (e as Error).message;
   }
-  await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: number, event: opts.event || event, text: `${body.type === 'template' ? `[template ${viaMsg ? w.templateNames.message : name}] ` : ''}${text}`.slice(0, 500), ok, error: error || undefined, dir: 'out', ...(mid ? { mid } : {}), ...(event !== 'leadTeam' && !(opts.force && event === 'message') ? { full: text.slice(0, 1500) } : {}) }, 2000);
+  await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: number, event: opts.event || event, text: `${body.type === 'template' ? `[template ${viaMsg ? w.templateNames.message : name}] ` : ''}${text}`.slice(0, 500), ok, error: error || undefined, dir: 'out', ...(mid ? { mid } : {}), ...(!team && !(opts.force && event === 'message') ? { full: text.slice(0, 1500) } : {}) }, 2000);
   return { ok, error };
 }
 
@@ -104,7 +123,7 @@ export async function resendFailed(from: string) {
   if (w.mode !== 'cloud' || !w.phoneNumberId || !w.accessToken) return 0;
   const tail = digits(from).slice(-9);
   const since = Date.now() - 7 * 864e5;
-  const logs = (await list<WaLog>('whatsapp-log')).filter((x) => x.dir === 'out' && !x.ok && !x.resent && x.event !== 'leadTeam' && x.event !== 'paid' && x.event !== 'redirect' && x.event !== 'ai-reply' && !x.event.startsWith('copy:') && !/^Test /.test(x.full || x.text) && digits(x.to).endsWith(tail) && Date.parse(x.at) > since);
+  const logs = (await list<WaLog>('whatsapp-log')).filter((x) => x.dir === 'out' && !x.ok && !x.resent && !isTeamEvent(x.event) && x.event !== 'paid' && x.event !== 'redirect' && x.event !== 'ai-reply' && !x.event.startsWith('copy:') && !/^Test /.test(x.full || x.text) && digits(x.to).endsWith(tail) && Date.parse(x.at) > since);
   // Oldest first, one per event (the latest of each), at most 5.
   const latest = new Map<string, WaLog>();
   for (const x of logs) { const k = x.event; const cur = latest.get(k); if (!cur || cur.at < x.at) latest.set(k, x); }
@@ -124,7 +143,11 @@ export async function resendFailed(from: string) {
 export async function sendTeam(event: WaEvent, vars: Record<string, string | number | undefined>) {
   const w = (await getSecrets()).whatsapp;
   const nums = w.teamNumbers.split(/[,\n]/).map((x) => x.trim()).filter(Boolean);
-  return Promise.all(nums.map((n) => sendWa(n, event, vars)));
+  // {chat} opens a WhatsApp chat with the client in one tap; {link} opens the file in the admin.
+  const phone = String(vars.phone ?? ''), chatId = intl(phone);
+  const path = String(vars.link || '/admin/leads/').replace(/^https?:\/\/[^/]+/, '');
+  const v = { ...vars, phone: chatId ? `+${chatId}` : phone, chat: chatId ? `https://wa.me/${chatId}` : '', chatId, link: SITE_URL() + path.replace(/^\//, ''), adminPath: path.replace(/^\/?admin\/?/, '') };
+  return Promise.all(nums.map((n) => sendWa(n, event, v)));
 }
 
 /** Sends a PDF (or other file) by link with a caption, e.g. the payment receipt. Cloud API only. */

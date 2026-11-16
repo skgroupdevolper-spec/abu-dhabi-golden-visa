@@ -73,7 +73,7 @@ export default async function WhatsApp({ searchParams }: { searchParams: Promise
               <F name="accessToken" label="Permanent access token" type="password" help={w.accessToken ? `Saved (…${w.accessToken.slice(-4)}). Leave empty to keep it.` : 'Create a system-user token with whatsapp_business_messaging permission.'} full />
               <F name="verifyToken" label="Webhook verify token (any text you choose)" value={webhookToken(w)} help={w.verifyToken ? 'Use exactly this word in Meta.' : 'Ready to use: put exactly this word in Meta (it works even before you press Save).'} />
               <div className="field"><label>Webhook URL (paste in Meta)</label><code className="k" style={{ padding: 12, display: 'block', overflowWrap: 'anywhere' }}>{SITE.url}/api/whatsapp/webhook/</code><p className="help">Subscribe to “messages”. Client replies then appear in their application.</p></div>
-              <F name="teamNumbers" label="Team numbers for new-enquiry alerts" value={w.teamNumbers} type="textarea" rows={2} help="One per line, with country code" full />
+              <F name="teamNumbers" label="Company numbers for alerts (enquiries, applications, appointments)" value={w.teamNumbers} type="textarea" rows={2} help="One per line, with country code" full />
               <div className="full"><input type="hidden" name="copyTeam_present" value="1" /><Toggle name="copyTeam" label="Copy client messages to team numbers" help="The team numbers above also receive every update sent to a client (welcome, status, quote, payment), exactly as the client sees it." on={w.copyTeam !== false} /></div>
               <F name="templateLang" label="Template language code" value={w.templateLang} help="For approved templates, e.g. en, ar" />
             </div>

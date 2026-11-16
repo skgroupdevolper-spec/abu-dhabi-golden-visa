@@ -1,6 +1,6 @@
 // Emails sent automatically, one per event. Text is edited in Admin > Emails & PDFs.
 // Lines written as "Label: value" show as a neat table; a line with only a link becomes a button.
-export type MailEvent = 'welcome' | 'status' | 'quote' | 'confirmed' | 'payment' | 'paid' | 'message' | 'document' | 'decision' | 'reset' | 'account' | 'teamLead' | 'bookingNew' | 'bookingConfirmed' | 'bookingMoved' | 'bookingCancelled';
+export type MailEvent = 'welcome' | 'status' | 'quote' | 'confirmed' | 'payment' | 'paid' | 'message' | 'document' | 'decision' | 'reset' | 'account' | 'teamLead' | 'bookingNew' | 'bookingConfirmed' | 'bookingMoved' | 'bookingCancelled' | 'teamEnquiry' | 'teamBooking' | 'teamClient';
 export type MailTpl = { on: boolean; subject: string; badge: string; body: string };
 
 export const MAIL_EVENTS: { key: MailEvent; label: string; to: 'client' | 'team'; vars: string }[] = [
@@ -19,7 +19,10 @@ export const MAIL_EVENTS: { key: MailEvent; label: string; to: 'client' | 'team'
   { key: 'bookingConfirmed', label: 'Appointment confirmed', to: 'client', vars: '{name} {ref} {date} {time} {type} {place} {service}' },
   { key: 'bookingMoved', label: 'Appointment moved to a new time', to: 'client', vars: '{name} {ref} {date} {time} {old} {type} {place} {service}' },
   { key: 'bookingCancelled', label: 'Appointment cancelled', to: 'client', vars: '{name} {ref} {date} {time} {type} {service}' },
-  { key: 'teamLead', label: 'New enquiry or application (to your team)', to: 'team', vars: '{name} {phone} {email} {service} {message} {link}' },
+  { key: 'teamLead', label: 'New application (to your company)', to: 'team', vars: '{name} {phone} {email} {service} {ref} {message} {chat} {link}' },
+  { key: 'teamEnquiry', label: 'New website enquiry (to your company)', to: 'team', vars: '{name} {phone} {email} {service} {message} {chat} {link}' },
+  { key: 'teamBooking', label: 'New appointment (to your company)', to: 'team', vars: '{name} {phone} {email} {service} {ref} {date} {time} {type} {message} {chat} {link}' },
+  { key: 'teamClient', label: 'Client asked for a service in the dashboard (to your company)', to: 'team', vars: '{name} {phone} {email} {service} {message} {chat} {link}' },
 ];
 
 export const MAIL_TPL0: Record<MailEvent, MailTpl> = {
@@ -53,8 +56,14 @@ export const MAIL_TPL0: Record<MailEvent, MailTpl> = {
     body: 'Hello {name},\n\nYour appointment has been moved to a new time.\n\nReference: {ref}\nNew date: {date}\nNew time: {time} (UAE time)\nBefore: {old}\nType: {type}\nWhere: {place}\n\nIf this time does not suit you, reply to this email or message us on WhatsApp.' },
   bookingCancelled: { on: true, subject: 'Your appointment {ref} is cancelled', badge: 'Appointment cancelled',
     body: 'Hello {name},\n\nYour appointment has been cancelled.\n\nReference: {ref}\nDate: {date}\nTime: {time} (UAE time)\n\nWould you like a new time? Reply to this email or message us on WhatsApp and we will book it for you.' },
-  teamLead: { on: true, subject: 'New enquiry: {name} ({service})', badge: 'New enquiry',
-    body: 'A new enquiry arrived on the website.\n\nName: {name}\nPhone: {phone}\nEmail: {email}\nService: {service}\n\n{message}\n\nOpen it in the admin:\n{link}' },
+  teamLead: { on: true, subject: 'New application: {name} ({service})', badge: 'New application',
+    body: 'A new application arrived on the website.\n\nName: {name}\nPhone: {phone}\nEmail: {email}\nService: {service}\n\n{message}\n\nChat with the client on WhatsApp:\n{chat}\n\nOpen it in the admin:\n{link}' },
+  teamEnquiry: { on: true, subject: 'New enquiry: {name} ({service})', badge: 'New enquiry',
+    body: 'A new enquiry arrived on the website.\n\nName: {name}\nPhone: {phone}\nEmail: {email}\nService: {service}\n\n{message}\n\nChat with the client on WhatsApp:\n{chat}\n\nOpen it in the admin:\n{link}' },
+  teamBooking: { on: true, subject: 'New appointment {ref}: {name}', badge: 'New appointment',
+    body: 'A client booked an appointment.\n\nReference: {ref}\nName: {name}\nPhone: {phone}\nEmail: {email}\nDate: {date}\nTime: {time} (UAE time)\nType: {type}\nService: {service}\n\n{message}\n\nChat with the client on WhatsApp:\n{chat}\n\nOpen it in the admin:\n{link}' },
+  teamClient: { on: true, subject: 'Client request: {name} ({service})', badge: 'Client request',
+    body: 'A client asked for a new service in their dashboard.\n\nName: {name}\nPhone: {phone}\nEmail: {email}\nService: {service}\n\n{message}\n\nChat with the client on WhatsApp:\n{chat}\n\nOpen it in the admin:\n{link}' },
 };
 
 /** Fills {vars}; a "Label: {var}" line whose value is empty is left out. */

@@ -6,7 +6,10 @@ import type { WaEvent } from '@/lib/settings-schema';
 
 const GRAPH = 'https://graph.facebook.com/v21.0';
 
-export const META_TPLS: { event: WaEvent; name: string; text: string; ex: string[]; header?: 'DOCUMENT' }[] = [
+export const META_TPLS: { event: WaEvent; name: string; text: string; ex: string[]; header?: 'DOCUMENT'; buttons?: { text: string; url: string; ex: string }[] }[] = [
+  // Company alert: {{1}} is your own edited text (Admin > WhatsApp), the buttons open a chat with the client and the file in the admin.
+  { event: 'leadTeam', name: 'adgv_team_alert_v1', text: 'New alert from your website: {{1}} Please follow up with the client soon.', ex: ['New application ADGV-0001 · Ahmed · +971501234567 · Golden Visa property investor'],
+    buttons: [{ text: 'Chat with client', url: 'https://wa.me/{{1}}', ex: 'https://wa.me/971501234567' }, { text: 'Open in admin', url: 'https://www.abudhabigoldenvisa.com/admin/{{1}}', ex: 'https://www.abudhabigoldenvisa.com/admin/leads/' }] },
   { event: 'leadTeam', name: 'adgv_new_enquiry', text: 'New website enquiry from {{1}} ({{2}}). Service: {{3}}. Message: {{4}}. Please reply soon.', ex: ['Ahmed', '+971501234567', 'Golden Visa property investor', 'I would like to know the fees'] },
   { event: 'welcome', name: 'adgv_file_opened_v3', text: 'Hello {{1}}, your file {{2}} for {{3}} has been opened. You can follow its status and upload your documents here: {{4}} Reply to this message if you have a question.', ex: ['Ahmed', 'ADGV-0001', 'Employment visa', 'https://app.abudhabigoldenvisa.com/'] },
   { event: 'status', name: 'adgv_status_update_v2', text: 'Hello {{1}}, the status of your application {{2}} has changed to: {{3}}. Next step: {{4}}. View your application here: {{5}} This is an automatic service update.', ex: ['Ahmed', 'ADGV-0001', 'Eligibility confirmed', 'We send your written quote', 'https://app.abudhabigoldenvisa.com/'] },
@@ -34,6 +37,7 @@ export async function createMetaTemplates() {
   let handle = '';
   for (const t of META_TPLS) {
     const comps: unknown[] = [{ type: 'BODY', text: t.text, example: { body_text: [t.ex] } }];
+    if (t.buttons) comps.push({ type: 'BUTTONS', buttons: t.buttons.map((b) => ({ type: 'URL', text: b.text, url: b.url, example: [b.ex] })) });
     if (t.header === 'DOCUMENT') {
       handle ||= await sampleDocHandle(w.accessToken).catch((e) => { failed.push(`${t.name}: sample file upload failed (${(e as Error).message})`); return ''; });
       if (!handle) continue;

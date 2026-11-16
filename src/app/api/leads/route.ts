@@ -3,7 +3,7 @@ import { clientIp } from '@/lib/server/ratelimit';
 import { addLead } from '@/lib/server/store';
 import { notify } from '@/lib/server/collections';
 import { sendTeam } from '@/lib/server/whatsapp';
-import { mailTeam } from '@/lib/server/mail';
+import { mailEventTeam } from '@/lib/server/mail';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -51,8 +51,8 @@ export async function POST(req: NextRequest) {
     await notify('lead', `New enquiry: ${lead.name} (${lead.service || lead.source})`, `/admin/leads/?q=${encodeURIComponent(lead.phone)}`);
     // Team alerts must never block the visitor.
     void Promise.allSettled([
-      sendTeam('leadTeam', { name: lead.name, phone: lead.phone, service: lead.service || lead.source, message: lead.message.slice(0, 300) }),
-      mailTeam(`New enquiry: ${lead.name}`, `Name: ${lead.name}\nPhone: ${lead.phone}\nEmail: ${lead.email}\nService: ${lead.service}\nSource: ${lead.source}\n\n${lead.message}\n\nRef: ${saved.id}`),
+      sendTeam('leadTeam', { name: lead.name, phone: lead.phone, service: lead.service || lead.source, message: lead.message.slice(0, 300), link: `/admin/leads/?q=${encodeURIComponent(lead.phone)}` }),
+      mailEventTeam('teamEnquiry', { name: lead.name, phone: lead.phone, email: lead.email, service: lead.service || lead.source, message: lead.message, link: `/admin/leads/?q=${encodeURIComponent(lead.phone)}` }),
     ]);
   } catch (e) {
     console.error('Lead not saved', e);

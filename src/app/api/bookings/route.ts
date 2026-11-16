@@ -5,7 +5,7 @@ import { insert, list, notify } from '@/lib/server/collections';
 import { getBlock } from '@/lib/server/settings';
 import { newId, now, withLock } from '@/lib/server/store';
 import { sendTeam } from '@/lib/server/whatsapp';
-import { mailTeam } from '@/lib/server/mail';
+import { mailEventTeam } from '@/lib/server/mail';
 import { bookingMail } from '@/lib/server/booking-mail';
 
 export const runtime = 'nodejs';
@@ -49,9 +49,9 @@ export async function POST(req: NextRequest) {
     const when = `${saved.date} at ${saved.time} (UAE time)`;
     await notify('booking', `New appointment: ${saved.name}, ${TYPE_LABEL[type]}, ${when}`, `/admin/bookings/?b=${saved.id}`);
     void Promise.allSettled([
-      sendTeam('leadTeam', { name: saved.name, phone: saved.phone, service: `Appointment: ${TYPE_LABEL[type]} ${when}`, message: saved.notes.slice(0, 300) }),
+      sendTeam('bookingTeam', { name: saved.name, phone: saved.phone, service: saved.service || `Appointment: ${TYPE_LABEL[type]} ${when}`, ref: saved.ref, date: saved.date, time: saved.time, type: TYPE_LABEL[type], message: saved.notes.slice(0, 300), link: `/admin/bookings/?b=${saved.id}` }),
       bookingMail(saved, 'bookingNew'),
-      mailTeam(`New appointment ${saved.ref}: ${saved.name}`, `${TYPE_LABEL[type]}\n${when}\n\nName: ${saved.name}\nPhone: ${saved.phone}\nEmail: ${saved.email}\nService: ${saved.service}\n\n${saved.notes}`),
+      mailEventTeam('teamBooking', { name: saved.name, phone: saved.phone, email: saved.email, service: saved.service, ref: saved.ref, date: saved.date, time: saved.time, type: TYPE_LABEL[type], message: saved.notes, link: `/admin/bookings/?b=${saved.id}` }),
     ]);
     return NextResponse.json({ ok: true, ref: saved.ref, date: saved.date, time: saved.time, type });
   } catch (e) {

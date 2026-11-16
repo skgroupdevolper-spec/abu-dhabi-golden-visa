@@ -9,7 +9,7 @@ import { dict, PORTAL_LANGS } from '@/lib/portal-i18n';
 import { endClientSession, startClientSession } from '@/lib/server/auth';
 import { hashPassword, insert, list, notify, patch, verifyPassword, type Customer } from '@/lib/server/collections';
 import { saveUpload } from '@/lib/server/files';
-import { mailEvent } from '@/lib/server/mail';
+import { mailEvent, mailEventTeam } from '@/lib/server/mail';
 import { currentCustomer, portalBase, portalLang } from '@/lib/server/portal';
 import { addLead, getApplicationByToken, listApplications, newId, now, updateApplication } from '@/lib/server/store';
 import { sendTeam, sendWa } from '@/lib/server/whatsapp';
@@ -130,7 +130,9 @@ export async function requestService(_: State, f: FormData): Promise<State> {
   if (!service) return { error: d.invalid };
   await addLead({ name: me.name, phone: me.phone, email: me.email, service, message: s(f, 'message', 2000), source: 'portal', details: JSON.stringify({ customer: me.id, language: me.lang }) });
   await notify('request', `${me.name} requested: ${service}`, `/admin/leads/?q=${encodeURIComponent(me.email)}`);
-  void sendTeam('leadTeam', { name: me.name, phone: me.phone, service, message: s(f, 'message', 300) });
+  const link = `/admin/leads/?q=${encodeURIComponent(me.email)}`;
+  void sendTeam('clientTeam', { name: me.name, phone: me.phone, service, message: s(f, 'message', 300), link });
+  void mailEventTeam('teamClient', { name: me.name, phone: me.phone, email: me.email, service, message: s(f, 'message', 2000), link });
   revalidatePath('/portal/', 'layout');
   return { ok: d.requestSent };
 }

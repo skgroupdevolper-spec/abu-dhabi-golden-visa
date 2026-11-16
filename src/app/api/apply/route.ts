@@ -11,7 +11,7 @@ import { mailEvent, mailEventTeam } from '@/lib/server/mail';
 import { applyService } from '@/content/apply';
 import { getStages } from '@/lib/server/stages';
 import { stepServiceOf } from '@/lib/stage-defs';
-import { SITE, portalUrl } from '@/lib/site';
+import { portalUrl } from '@/lib/site';
 import { LOCALES } from '@/lib/i18n';
 
 export const runtime = 'nodejs';
@@ -118,9 +118,9 @@ export async function POST(req: NextRequest) {
     const account = await signIn(app.ref);
     void notify('lead', `New online application ${app.ref}: ${name} (${svc.label}), ${docs.length} document(s)`, `/admin/applications/${app.id}/`);
     void Promise.allSettled([
-      sendTeam('leadTeam', { name, phone, service: `${svc.label} · ${app.ref}`, message: notes.slice(0, 300) }),
+      sendTeam('applyTeam', { name, phone, service: svc.label, ref: app.ref, message: notes.slice(0, 300), link: `/admin/applications/${app.id}/` }),
       sendWa(phone, 'welcome', { name: name.split(' ')[0], ref: app.ref, service: svc.label, link }),
-      mailEventTeam('teamLead', { name, phone, email, service: `${svc.label} · ${app.ref}`, message: notes, link: `${SITE.url}/admin/applications/${app.id}/` }),
+      mailEventTeam('teamLead', { name, phone, email, service: `${svc.label} · ${app.ref}`, ref: app.ref, message: notes, link: `/admin/applications/${app.id}/` }),
       mailEvent(email, 'welcome', { name: name.split(' ')[0], ref: app.ref, service: svc.label, link }),
       account === 'created' ? mailEvent(email, 'account', { name: name.split(' ')[0], email, link: portalUrl('').replace(/t\/\/$/, '') }) : Promise.resolve(),
       // signed-in client: WhatsApp goes to the number saved in their account if it differs
