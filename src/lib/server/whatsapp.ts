@@ -1,6 +1,7 @@
 import 'server-only';
 import { createHash } from 'node:crypto';
 import { WA_EVENTS, type WaEvent } from '@/lib/settings-schema';
+import { SITE } from '@/lib/site';
 import { insert, list, type WaLog } from './collections';
 import { getSecrets } from './settings';
 import { newId, now, updateJsonFile } from './store';
@@ -88,7 +89,9 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
     if (i < 0) return '';
     lines[i] = lines[i].replace(link, '').replace(/[\s:·|-]+$/, '').trim();
     if (!lines[i] && i > 0 && /:\s*$/.test(lines[i - 1])) lines.splice(i - 1, 2); else if (!lines[i]) lines.splice(i, 1);
-    const t = lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+    // More information: a tappable link to the advisor's (main) WhatsApp number.
+    const adv = String(SITE.whatsapp || '971566556645').replace(/\D/g, '');
+    const t = `${lines.join('\n').replace(/\n{3,}/g, '\n\n').trim()}${adv ? `\n\n💬 For more information, chat with your advisor: https://wa.me/${adv}` : ''}`;
     return t.length > 0 && t.length <= 1024 ? t : '';
   })();
   // {chat} becomes a short wa.me/971… link (tappable on WhatsApp); the admin link is on the button.
