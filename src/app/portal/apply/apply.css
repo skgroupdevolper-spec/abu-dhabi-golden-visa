@@ -123,3 +123,11 @@ html[dir='rtl'] .wstep{ animation-name: wzin-rtl; }
   .papply .aw-cats { flex-wrap: wrap; overflow: visible; }
   .papply .apply-nav { position: sticky; bottom: 14px; margin: 22px 0 0; padding: 12px 14px; border: 1px solid rgba(212, 175, 55, .35); border-radius: 18px; background: rgba(255, 255, 255, .95); backdrop-filter: blur(10px); box-shadow: 0 14px 34px -18px rgba(20, 16, 6, .35); }
 }
+
+/* Your details: fields line up at the top (the WhatsApp country hint no longer pushes "Full name" down);
+   "Where are you now?" sits beside Nationality and its two buttons share the column. */
+.form.ap-details { align-items: start; }
+.form.ap-details .field > label small { font-weight: 400; }
+.form.ap-details .seg { display: flex; flex-wrap: nowrap; gap: 8px; width: 100%; }
+.form.ap-details .seg > button { flex: 1 1 0; min-width: 0; justify-content: center; white-space: nowrap; padding-inline: 10px; }
+@media (max-width: 640px) { .form.ap-details .seg { flex-wrap: wrap; } .form.ap-details .seg > button { flex-basis: 100%; } }

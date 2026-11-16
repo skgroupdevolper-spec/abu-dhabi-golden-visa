@@ -28,7 +28,7 @@ export type Application = {
   id: string; ref: string; token: string; createdAt: string; updatedAt: string; archived?: boolean;
   /** Team member (email) this file is assigned to. Staff only see their own files. */
   assignee?: string;
-  client: { name: string; phone: string; email: string; nationality: string; language: string };
+  client: { name: string; phone: string; email: string; nationality: string; language: string; contact?: string };
   route: string; location: 'in' | 'out'; adults: number; kids: number;
   /** Service id from the apply form and the step list it follows (Admin > Application steps). */
   service?: string; stepGroup?: string;

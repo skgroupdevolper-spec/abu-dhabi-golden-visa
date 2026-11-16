@@ -302,6 +302,7 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
               <div style={{ height: 4 }} className="full" />
               <div className="field"><label htmlFor="cname">Name</label><input id="cname" name="name" defaultValue={a.client.name} /></div>
               <div className="field"><label htmlFor="cphone">WhatsApp</label><input id="cphone" name="phone" defaultValue={a.client.phone} /></div>
+              <div className="field"><label htmlFor="ccontact">Contact number</label><input id="ccontact" name="contact" defaultValue={a.client.contact ?? ''} placeholder="Optional, if different from WhatsApp" /></div>
               <div className="field"><label htmlFor="cemail">Email</label><input id="cemail" name="email" defaultValue={a.client.email} /></div>
               <div className="field"><label htmlFor="cnat">Nationality</label><input id="cnat" name="nationality" defaultValue={a.client.nationality} /></div>
               <div className="field"><label htmlFor="croute">Route</label><select id="croute" name="route" defaultValue={a.route}>{[...new Set([a.route, ...ROUTE_LABELS])].map((r) => <option key={r}>{r}</option>)}</select></div>

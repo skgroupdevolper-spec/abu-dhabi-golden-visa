@@ -121,7 +121,7 @@ async function edit(f: FormData, fn: (a: Application) => void) {
 
 export async function saveClient(_: FormState, f: FormData): Promise<FormState> {
   await edit(f, (a) => {
-    a.client = { name: s(f, 'name', 120), phone: s(f, 'phone', 40), email: s(f, 'email', 160), nationality: s(f, 'nationality', 80), language: s(f, 'language', 40) };
+    a.client = { name: s(f, 'name', 120), phone: s(f, 'phone', 40), email: s(f, 'email', 160), nationality: s(f, 'nationality', 80), language: s(f, 'language', 40), ...(s(f, 'contact', 40) ? { contact: s(f, 'contact', 40) } : {}) };
     a.route = s(f, 'route', 80);
     a.location = s(f, 'location') === 'out' ? 'out' : 'in';
     a.adults = Math.max(0, Math.min(10, n(f, 'adults')));

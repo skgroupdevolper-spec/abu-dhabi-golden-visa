@@ -26,7 +26,7 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
   const [svc, setSvc] = useState<ApplyService | null>(null);
   const [q, setQ] = useState('');
   const [cat, setCat] = useState('All');
-  const [d, setD] = useState({ name: '', phone: '', email: '', nationality: '', where: 'in' as 'in' | 'out', visa: '', notes: '', pkg: 'normal' as 'normal' | 'vip', consent: false });
+  const [d, setD] = useState({ name: '', phone: '', contact: '', email: '', nationality: '', where: 'in' as 'in' | 'out', visa: '', notes: '', pkg: 'normal' as 'normal' | 'vip', consent: false });
   const [fam, setFam] = useState<Member[]>([]);
   const [files, setFiles] = useState<Record<string, File | null>>({});
   const [extra, setExtra] = useState<File[]>([]);
@@ -207,12 +207,13 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
                   <div><b>You are already signed in as {me.name || me.email}.</b><span><T>{"No account needed: this application is added to your client dashboard. Check the details below and continue."}</T></span></div>
                 </div>
               ) : <p className="muted" style={{ margin: '6px 0 16px' }}><T>{"As written in your passport. We use WhatsApp for updates."}</T></p>}
-              <div className="form">
+              <div className="form ap-details">
                 <div className="field"><label htmlFor="ap-name"><T>{"Full name"}</T></label><input id="ap-name" autoComplete="name" value={d.name} onChange={set('name')} /></div>
                 <div className="field"><label htmlFor="ap-phone"><T>{"WhatsApp number"}</T></label><input id="ap-phone" type="tel" autoComplete="tel" placeholder="+971 50 123 4567" value={d.phone} onChange={set('phone')} />{(() => { const c = dialCountry(d.phone); return d.phone.replace(/\D/g, '').length >= 3 ? <small className={`help ${c ? '' : 'err-t'}`}>{c ? <>Country: <b>{c}</b>. Please check this is right, we send your updates to this WhatsApp.</> : 'Start with + and your country code, e.g. +971 for the UAE, +92 for Pakistan.'}</small> : null; })()}</div>
+                <div className="field"><label htmlFor="ap-contact"><T>{"Contact number"}</T> <small className="muted">(<T>{"optional"}</T>)</small></label><input id="ap-contact" type="tel" autoComplete="tel-national" placeholder="If different from WhatsApp" value={d.contact} onChange={set('contact')} /></div>
                 <div className="field"><label htmlFor="ap-email"><T>{"Email"}</T>{!me && ' *'}</label><input id="ap-email" type="email" autoComplete="email" value={d.email} onChange={set('email')} readOnly={!!me} required={!me} /></div>
                 <div className="field"><label htmlFor="ap-nat"><T>{"Nationality"}</T></label><input id="ap-nat" autoComplete="country-name" value={d.nationality} onChange={set('nationality')} /></div>
-                <div className="field full">
+                <div className="field">
                   <span className="lbl"><T>{"Where are you now?"}</T></span>
                   <div className="seg" role="radiogroup" aria-label="Where are you now?">
                     <button type="button" role="radio" aria-checked={d.where === 'in'} onClick={() => setD({ ...d, where: 'in' })}><Icon name="pin" size={16} /> <T>{"Inside the UAE"}</T></button>
@@ -314,7 +315,7 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
               <h3><T>{"Review and submit"}</T></h3>
               <dl className="review">
                 <div><dt><T>{"Service"}</T></dt><dd>{svc.label}</dd></div>
-                <div><dt><T>{"Applicant"}</T></dt><dd>{d.name} · {d.phone}{d.email ? ` · ${d.email}` : ''}</dd></div>
+                <div><dt><T>{"Applicant"}</T></dt><dd>{d.name} · {d.phone}{d.contact ? ` · ${d.contact}` : ''}{d.email ? ` · ${d.email}` : ''}</dd></div>
                 <div><dt><T>{"Location"}</T></dt><dd>{d.where === 'in' ? 'Inside the UAE' : 'Outside the UAE'}{d.visa ? ` · ${d.visa}` : ''}</dd></div>
                 {famOn && <div><dt><T>{"Family"}</T></dt><dd>{fam.length ? fam.map((m) => `${m.relation}: ${m.name}`).join(', ') : 'None'}</dd></div>}
                 <div><dt><T>{"Documents"}</T></dt><dd>{Object.values(files).filter(Boolean).length + extra.length} file(s)</dd></div>

@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
     if (dup) { const a0 = (await listApplications()).find((a) => a.id === dup.applicationId); if (a0) return NextResponse.json({ ok: true, ref: a0.ref, link: portalUrl(a0.token), account: await signIn(a0.ref) }); }
     const lead = await addLead({ name, phone, email, service: svc.label, message: notes, source: 'apply', details: JSON.stringify({ language: lang?.name ?? 'English', service: svc.id }) });
     const app = await createApplication({
-      client: { name, phone, email, nationality: s(f, 'nationality', 80), language: lang?.name ?? 'English' },
+      client: { name, phone, email, nationality: s(f, 'nationality', 80), language: lang?.name ?? 'English', ...(s(f, 'contact', 40) ? { contact: s(f, 'contact', 40) } : {}) },
       route: s(f, 'route', 80) || svc.label, location: where, adults, kids, leadId: lead.id, notes,
     });
     await updateLead(lead.id, { status: 'converted', applicationId: app.id });
