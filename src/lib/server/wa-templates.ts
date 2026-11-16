@@ -6,7 +6,7 @@ import type { WaEvent } from '@/lib/settings-schema';
 
 const GRAPH = 'https://graph.facebook.com/v21.0';
 
-export const META_TPLS: { event: WaEvent; name: string; text: string; ex: string[] }[] = [
+export const META_TPLS: { event: WaEvent; name: string; text: string; ex: string[]; header?: 'DOCUMENT' }[] = [
   { event: 'leadTeam', name: 'adgv_new_enquiry', text: 'New website enquiry from {{1}} ({{2}}). Service: {{3}}. Message: {{4}}. Please reply soon.', ex: ['Ahmed', '+971501234567', 'Golden Visa property investor', 'I would like to know the fees'] },
   { event: 'welcome', name: 'adgv_file_opened_v3', text: 'Hello {{1}}, your file {{2}} for {{3}} has been opened. You can follow its status and upload your documents here: {{4}} Reply to this message if you have a question.', ex: ['Ahmed', 'ADGV-0001', 'Employment visa', 'https://app.abudhabigoldenvisa.com/'] },
   { event: 'status', name: 'adgv_status_update_v2', text: 'Hello {{1}}, the status of your application {{2}} has changed to: {{3}}. Next step: {{4}}. View your application here: {{5}} This is an automatic service update.', ex: ['Ahmed', 'ADGV-0001', 'Eligibility confirmed', 'We send your written quote', 'https://app.abudhabigoldenvisa.com/'] },
@@ -15,6 +15,8 @@ export const META_TPLS: { event: WaEvent; name: string; text: string; ex: string
   { event: 'payment', name: 'adgv_payment_request', text: 'Hello {{1}}, a payment is due for file {{2}}. For: {{3}}. Amount: {{4}}. Pay securely here: {{5}} Thank you.', ex: ['Ahmed', 'ADGV-0001', 'Government fees', 'AED 4,000.00', 'https://app.abudhabigoldenvisa.com/'] },
   { event: 'paid', name: 'adgv_payment_received', text: 'Hello {{1}}, we received your payment for file {{2}}. For: {{3}}. Amount: {{4}}. Receipt: {{5}}. Track your file here: {{6}} Thank you.', ex: ['Ahmed', 'ADGV-0001', 'Government fees', 'AED 4,000.00', 'RCPT-0001', 'https://app.abudhabigoldenvisa.com/'] },
   { event: 'message', name: 'adgv_new_message', text: 'Hello {{1}}, your advisor sent a message about file {{2}}: {{3}}. Reply here: {{4}} Thank you.', ex: ['Ahmed', 'ADGV-0001', 'Please upload your passport copy', 'https://app.abudhabigoldenvisa.com/'] },
+  // The file itself is attached to this message (document header), like the email attachment.
+  { event: 'document', name: 'adgv_document_file_v1', header: 'DOCUMENT', text: 'Hello {{1}}, a new document is ready on file {{2}}: {{3}}. It is attached to this message and saved in your dashboard: {{4}} Thank you.', ex: ['Ahmed', 'ADGV-0001', 'Entry permit', 'https://app.abudhabigoldenvisa.com/'] },
   { event: 'document', name: 'adgv_new_document', text: 'Hello {{1}}, a new document is ready on file {{2}}: {{3}}. View it here: {{4}} Thank you.', ex: ['Ahmed', 'ADGV-0001', 'Entry permit', 'https://app.abudhabigoldenvisa.com/'] },
 ];
 
@@ -29,10 +31,17 @@ export async function createMetaTemplates() {
   const w = (await getSecrets()).whatsapp;
   if (!w.businessId || !w.accessToken) return { ok: false, msg: 'Add the WhatsApp Business account ID and the access token first.' };
   const done: string[] = [], had: string[] = [], failed: string[] = [];
+  let handle = '';
   for (const t of META_TPLS) {
+    const comps: unknown[] = [{ type: 'BODY', text: t.text, example: { body_text: [t.ex] } }];
+    if (t.header === 'DOCUMENT') {
+      handle ||= await sampleDocHandle(w.accessToken).catch((e) => { failed.push(`${t.name}: sample file upload failed (${(e as Error).message})`); return ''; });
+      if (!handle) continue;
+      comps.unshift({ type: 'HEADER', format: 'DOCUMENT', example: { header_handle: [handle] } });
+    }
     const r = await graph(`${encodeURIComponent(w.businessId)}/message_templates`, w.accessToken, {
       method: 'POST',
-      body: JSON.stringify({ name: t.name, language: 'en', category: 'UTILITY', components: [{ type: 'BODY', text: t.text, example: { body_text: [t.ex] } }] }),
+      body: JSON.stringify({ name: t.name, language: 'en', category: 'UTILITY', components: comps }),
     });
     if (r.ok) done.push(t.name);
     else if (/already exists|duplicate|already (has |)?\w* ?content/i.test(r.err)) had.push(t.name);
@@ -40,6 +49,26 @@ export async function createMetaTemplates() {
   }
   const msg = [done.length ? `Sent to Meta for approval: ${done.length}.` : '', had.length ? `Already there: ${had.length}.` : '', failed.length ? `Not accepted: ${failed.join(' | ')}` : '', 'Approval usually takes a few minutes; then press “Check approval”.'].filter(Boolean).join(' ');
   return { ok: failed.length === 0, msg };
+}
+
+/** Meta needs an example file for a template with a document header: a small sample PDF is uploaded
+ *  with the resumable upload API of your app and its handle is returned. */
+async function sampleDocHandle(token: string): Promise<string> {
+  const app = await graph('app', token);
+  const appId = (app.j as { id?: string }).id;
+  if (!app.ok || !appId) throw new Error(app.err || 'app id not found');
+  const { PDFDocument, StandardFonts } = await import('pdf-lib');
+  const pdf = await PDFDocument.create();
+  const page = pdf.addPage([420, 300]);
+  page.drawText('Sample document - Abu Dhabi Golden Visa', { x: 30, y: 250, size: 14, font: await pdf.embedFont(StandardFonts.Helvetica) });
+  const bytes = await pdf.save();
+  const s = await graph(`${appId}/uploads?file_name=sample.pdf&file_length=${bytes.length}&file_type=application/pdf`, token, { method: 'POST' });
+  const sid = (s.j as { id?: string }).id;
+  if (!s.ok || !sid) throw new Error(s.err || 'no upload session');
+  const r = await fetch(`${GRAPH}/${sid}`, { method: 'POST', headers: { Authorization: `OAuth ${token}`, file_offset: '0' }, body: Buffer.from(bytes), signal: AbortSignal.timeout(20000) });
+  const j = (await r.json().catch(() => ({}))) as { h?: string; error?: { message?: string } };
+  if (!r.ok || !j.h) throw new Error(j.error?.message || `HTTP ${r.status}`);
+  return j.h;
 }
 
 /** Reads the templates from Meta and fills in the names of the approved ones. */
@@ -56,7 +85,9 @@ export async function syncMetaTemplates() {
     const st = m?.status ?? 'NOT CREATED';
     // Templates Meta moved to MARKETING are throttled for repeat updates, so they are not used: those
     // messages go out through the approved "new message" utility template instead.
-    if (st === 'APPROVED' && (!m?.category || m.category === 'UTILITY')) names[t.event] = t.name;
+    const better = META_TPLS.find((x) => x.event === t.event && x.name === names[t.event]);
+    const takenByBetter = better && better !== t && META_TPLS.indexOf(better) < META_TPLS.indexOf(t) && rows.find((x) => x.name === better.name)?.status === 'APPROVED';
+    if (st === 'APPROVED' && (!m?.category || m.category === 'UTILITY') && !takenByBetter) names[t.event] = t.name;
     else if (m?.category && m.category !== 'UTILITY' && names[t.event] === t.name) delete names[t.event];
     report.push(`${t.name}: ${st.toLowerCase().replace('_', ' ')}${m?.category && m.category !== 'UTILITY' ? ` (moved to ${m.category.toLowerCase()} by Meta)` : ''}`);
   }

@@ -238,7 +238,8 @@ export async function uploadTeamDoc(_: FormState, f: FormData): Promise<FormStat
       a.documents.push(doc);
       if (doc.shared) a.messages.push({ id: newId(6), by: 'team', at: now(), text: `New document for you: ${doc.name}.` });
     });
-    if (app && doc.shared) { await sendWa(app.client.phone, 'document', V(app, { document: doc.name })); void mailEvent(app.client.email, 'document', V(app, { document: doc.name })); }
+    // The file itself goes on WhatsApp too (like the email attachment), from its private dashboard link.
+    if (app && doc.shared) { await sendWa(app.client.phone, 'document', V(app, { document: doc.name, fileLink: `${portalUrl(app.token)}file/${doc.id}/`, fileName: doc.file.replace(/^[a-f0-9]+-/, '') || doc.name })); void mailEvent(app.client.email, 'document', V(app, { document: doc.name })); }
     return { ok: 'Uploaded.' };
   } catch (e) {
     return { error: (e as Error).message };

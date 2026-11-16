@@ -107,7 +107,9 @@ export async function mailTeam(subject: string, text: string) {
 /* ---------- branded HTML ---------- */
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const abs = (u: string) => (/^https?:\/\//.test(u) ? u : `${(SITE.url || '').replace(/\/$/, '')}${u.startsWith('/') ? '' : '/'}${u}`);
-const linkify = (s: string, gold: string) => esc(s).replace(/(https?:\/\/[^\s<]+)/g, `<a href="$1" style="color:${gold};font-weight:600;text-decoration:none">$1</a>`);
+// WhatsApp marks (*bold*, _italic_, ~strike~) used in message texts show as real bold/italic in the email.
+const marks = (h: string) => h.replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,!?:;]|$)/g, '$1<b>$2</b>').replace(/(^|[\s(])_([^_\n]+)_(?=[\s).,!?:;]|$)/g, '$1<i>$2</i>').replace(/(^|[\s(])~([^~\n]+)~(?=[\s).,!?:;]|$)/g, '$1<s>$2</s>');
+const linkify = (s: string, gold: string) => marks(esc(s)).replace(/(https?:\/\/[^\s<]+)/g, `<a href="$1" style="color:${gold};font-weight:600;text-decoration:none">$1</a>`);
 const isUrl = (s: string) => /^https?:\/\/\S+$/.test(s.trim());
 const ROW = /^([A-Z][A-Za-z0-9 ()/.&'-]{1,32}):\s+(.+)$/;
 const SIGN = /^(kind regards|regards|best regards|thank you|thanks),?$/i;
@@ -154,11 +156,11 @@ export function renderMail(subject: string, text: string, c: MailCfg, o: MailOpt
   const gold = c.accent || '#b8901f', ink = '#111111', soft = '#6b6252', line = '#efe6cf', cream = '#fbf7ec';
   const logo = abs(SITE.brand?.logo || '/brand/logo-pdf.png');
   const badge = (o.badge || subject.replace(/\s*·\s*Abu Dhabi Golden Visa$/i, '')).slice(0, 90);
-  const blocks = parse(text);
+  const blocks = parse(text.replace(/<br\s*\/?>/gi, '\n'));
   const body = blocks.map((b) => {
     if (b.k === 'hello') {
       const m = b.v.match(/^(\w+)\s+(.+?)(,?)$/);
-      return `<p style="margin:0 0 14px;font-size:17px;color:${ink}">${m ? `${esc(m[1])} <b>${esc(m[2])}</b>${m[3]}` : esc(b.v)}</p>`;
+      return `<p style="margin:0 0 14px;font-size:17px;color:${ink}">${m ? `${marks(esc(m[1]))} <b>${esc(m[2])}</b>${m[3]}` : marks(esc(b.v))}</p>`;
     }
     if (b.k === 'p') return `<p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#333">${linkify(b.v, gold).replace(/\n/g, '<br>')}</p>`;
     if (b.k === 'rows') return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:6px 0 18px;border:1px solid ${line}">${b.v.map(([k, v], i) => `<tr><td style="padding:11px 14px;background:${cream};border-top:${i ? `1px solid ${line}` : '0'};font-size:14px;font-weight:600;color:${soft};width:38%">${esc(k)}</td><td style="padding:11px 14px;border-top:${i ? `1px solid ${line}` : '0'};font-size:14px;color:${ink}">${linkify(v, gold)}</td></tr>`).join('')}</table>`;

@@ -13,6 +13,8 @@ import { WaCustomList } from '@/components/dash/WaCustomList';
 import { WA_EVENTS } from '@/lib/settings-schema';
 import { when } from '@/lib/stages';
 import { getStages } from '@/lib/server/stages';
+import { WaText } from '@/components/dash/WaText';
+import { waHtml } from '@/lib/wa-format';
 import { STEP_SERVICES } from '@/lib/stage-defs';
 import { saveWhatsApp, testWhatsApp, waTemplates } from '../../settings-actions';
 
@@ -88,7 +90,7 @@ export default async function WhatsApp({ searchParams }: { searchParams: Promise
                 <div key={e.key} className="notice">
                   <Toggle name={`auto_${e.key}`} label={e.label} help={`Variables: ${e.vars}`} on={w.autos[e.key]} />
                   <div className="form" style={{ marginTop: 10 }}>
-                    <F name={`tpl_${e.key}`} label="Message text" value={w.templates[e.key]} type="textarea" rows={2} full />
+                    <WaText name={`tpl_${e.key}`} label="Message text" value={w.templates[e.key]} rows={3} help="Bold, italic, lists and emojis show on WhatsApp. A new line (or <br>) starts a new line. WhatsApp has no colours." />
                     <F name={`name_${e.key}`} label="Approved template name (optional)" value={w.templateNames[e.key] ?? ''} />
                   </div>
                 </div>
@@ -108,7 +110,7 @@ export default async function WhatsApp({ searchParams }: { searchParams: Promise
               <summary style={{ cursor: 'pointer', fontWeight: 600 }}>{svc} <small className="muted">· {steps.length} steps · {steps.filter((x) => x.notify !== false).length} send WhatsApp</small></summary>
               <ol className="wa-steps">
                 {steps.map((x) => (
-                  <li key={x.id}><b>{x.name}</b> <span className={`pill ${x.notify !== false ? 'ok' : 'closed'}`}>{x.notify !== false ? 'WhatsApp + email' : 'off'}</span><p>{x.next}</p></li>
+                  <li key={x.id}><b>{x.name}</b> <span className={`pill ${x.notify !== false ? 'ok' : 'closed'}`}>{x.notify !== false ? 'WhatsApp + email' : 'off'}</span><div className="wt-bub wt-bub-sm" dangerouslySetInnerHTML={{ __html: waHtml(x.next) }} /></li>
                 ))}
               </ol>
               <a className="btn btn-sm" href={`/admin/steps/?svc=${encodeURIComponent(svc)}`}>Edit {svc} steps and messages</a>

@@ -1,4 +1,5 @@
 'use client';
+import { WaEditor } from './WaText';
 
 // Edit the application steps: rename, change the client message and the section, move up/down, add, remove.
 import { useState } from 'react';
@@ -34,7 +35,7 @@ export function StageListEditor({ initial, counts }: { initial: StageDef[]; coun
                     <input aria-label="Step name" value={r.name} placeholder="Step name, e.g. Medical test" onChange={(e) => upd(r.key, { name: e.target.value })} />
                     <input aria-label="Section" list="stage-groups" value={r.group} placeholder="Section" onChange={(e) => upd(r.key, { group: e.target.value })} className="sle-grp" />
                   </div>
-                  <textarea aria-label="Message the client sees" rows={2} value={r.next} placeholder="Message the client sees at this step" onChange={(e) => upd(r.key, { next: e.target.value })} />
+                  <WaEditor rows={3} value={r.next} placeholder="Message the client sees at this step" onChange={(v) => upd(r.key, { next: v })} />
                   <div className="sle-bot">
                     <label className="sle-notify"><input type="checkbox" checked={r.notify !== false} onChange={(e) => upd(r.key, { notify: e.target.checked })} /> Send this message on WhatsApp &amp; email</label>
                     {r.id && counts[r.id] ? <small className="muted">{counts[r.id]} file(s) on this step now</small> : null}

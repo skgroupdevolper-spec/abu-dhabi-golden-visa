@@ -6,6 +6,14 @@ import { getSecrets } from './settings';
 import { newId, now, updateJsonFile } from './store';
 
 const GRAPH = 'https://graph.facebook.com/v21.0';
+/** Message text for WhatsApp: <br> becomes a new line, and HTML-style bold/italic tags become WhatsApp marks. */
+export function toWa(t: string) {
+  return String(t ?? '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/?(b|strong)>/gi, '*').replace(/<\/?(i|em)>/gi, '_').replace(/<\/?(s|del|strike)>/gi, '~')
+    .replace(/[ \t]+\n/g, '\n');
+}
+
 export const digits = (p: string) => p.replace(/\D/g, '').replace(/^00/, '');
 
 export function fill(tpl: string, vars: Record<string, string | number | undefined>) {
@@ -36,7 +44,8 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   // Client messages use the same friendly text as the email (Admin > Emails & PDFs > Email messages),
   // so WhatsApp and email say the same thing. Turn off with "Use the email text" in WhatsApp settings.
   const mailText = !custom && !opts.text && w.useMailText !== false ? await mailTextFor(event, vars) : '';
-  const text = custom ? fill(custom.text, vars) : opts.text ?? (mailText || fill(w.templates[event] || '', vars));
+  // "<br>" in a message means a new line on WhatsApp.
+  const text = toWa(custom ? fill(custom.text, vars) : opts.text ?? (mailText || fill(w.templates[event] || '', vars)));
   const number = digits(to);
   if (!number || number.length < 8) return { ok: false, error: 'No valid number' };
   if (!custom && !opts.force && !w.autos[event]) return { ok: false, error: 'Automatic message is off' };
@@ -48,14 +57,22 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   const open = await wroteLast24h(number);
   const name = open ? '' : custom ? custom.name : w.templateNames[event];
   const keys = (WA_EVENTS.find((e) => e.key === event)?.vars.match(/\{(\w+)\}/g) ?? []).map((k) => k.slice(1, -1));
+  // A file to send with the message (document shared by the team): a link Meta can download.
+  const fileLink = typeof vars.fileLink === 'string' ? vars.fileLink : '', fileName = String(vars.fileName || vars.document || 'document');
   // Outside the 24-hour window with no approved template for this message: send it inside the approved
   // "new message" template ({{1}} name, {{2}} file, {{3}} text, {{4}} link), so it still reaches the client.
   const viaMsg = !open && !name && !custom && event !== 'message' && event !== 'leadTeam' && w.templateNames.message;
-  const flat = (v: unknown) => String(v ?? '').replace(/https?:\/\/\S+/g, '').replace(/[\r\n\t]+/g, ' ').replace(/ {2,}/g, ' ').trim();
+  const flat = (v: unknown) => String(v ?? '').replace(/<br\s*\/?>/gi, ' ').replace(/https?:\/\/\S+/g, '').replace(/[\r\n\t]+/g, ' ').replace(/ {2,}/g, ' ').trim();
   const body = viaMsg
     ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name: w.templateNames.message, language: { code: w.templateLang || 'en' }, components: [{ type: 'body', parameters: [vars.name, vars.ref || '-', flat(text).slice(0, 900) || '-', vars.link || SITE_URL()].map((x) => ({ type: 'text', text: String(x ?? '-') || '-' })) }] } }
     : name && (custom || !opts.text)
-    ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name, language: { code: w.templateLang || 'en' }, components: [{ type: 'body', parameters: keys.map((k) => ({ type: 'text', text: flat(vars[k]).slice(0, 900) || String(vars[k] ?? '-').slice(0, 900) || '-' })) }] } }
+    ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name, language: { code: w.templateLang || 'en' }, components: [
+        // Templates with a document header carry the file itself (e.g. a document the team uploaded).
+        ...(fileLink && /_file_v\d+$/.test(name) ? [{ type: 'header', parameters: [{ type: 'document', document: { link: fileLink, filename: fileName } }] }] : []),
+        { type: 'body', parameters: keys.map((k) => ({ type: 'text', text: flat(vars[k]).slice(0, 900) || String(vars[k] ?? '-').slice(0, 900) || '-' })) },
+      ] } }
+    : fileLink && open
+    ? { messaging_product: 'whatsapp', to: number, type: 'document', document: { link: fileLink, filename: fileName, caption: text.slice(0, 1000) } }
     : { messaging_product: 'whatsapp', to: number, type: 'text', text: { body: text.slice(0, 4000), preview_url: true } };
   let ok = false, error = '', mid = '';
   try {
