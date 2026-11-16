@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { DeleteButton } from '@/components/dash/DeleteButton';
+import { Bulk, BulkCheck } from '@/components/dash/Bulk';
 import Link from 'next/link';
 import { ActionForm, Submit } from '@/components/dash/ActionForm';
 import { F, Toggle } from '@/components/dash/Fields';
@@ -48,11 +49,12 @@ export default async function Customers({ searchParams }: { searchParams: Promis
             <form className="row" action="/admin/customers/"><input type="hidden" name="s" value={s} /><input name="q" defaultValue={q} placeholder="Search name, email, phone" style={{ width: 220 }} /><button className="btn btn-sm">Search</button></form>
           </div>
           {rows.length === 0 ? <p className="empty" style={{ marginTop: 12 }}>No client accounts yet. Clients sign up on the customer dashboard, or add one here.</p> : (
-            <div className="files" style={{ marginTop: 12 }}>
+            <Bulk kind="customers" what="clients"><div className="files" style={{ marginTop: 12 }}>
               {rows.map((c) => {
                 const mine = appsOf(c);
                 return (
-                  <div key={c.id} className="file" style={{ flexWrap: 'wrap', background: c.id === edit ? '#fffaf0' : undefined }}>
+                  <div key={c.id} className="file bulk-row" style={{ flexWrap: 'wrap', background: c.id === edit ? '#fffaf0' : undefined }}>
+                    {full && <BulkCheck id={c.id} />}
                     <span className="fi">{c.name.slice(0, 1).toUpperCase()}</span>
                     <span className="fn"><b>{c.name}</b><small>{c.email} · <a href={waTo(c.phone, `Hello ${c.name.split(' ')[0]}, `)} target="_blank" rel="noopener">{c.phone}</a> · {c.lang.toUpperCase()} · joined {day(c.createdAt)}{c.lastLogin ? ` · last login ${when(c.lastLogin)}` : ''}</small>
                       {mine.length > 0 && <small>{mine.map((a) => <Link key={a.id} href={`/admin/applications/${a.id}/`} style={{ marginInlineEnd: 8 }}>{a.ref}</Link>)}</small>}</span>
@@ -73,7 +75,7 @@ export default async function Customers({ searchParams }: { searchParams: Promis
                   </div>
                 );
               })}
-            </div>
+            </div></Bulk>
           )}
         </div>
         {full && (

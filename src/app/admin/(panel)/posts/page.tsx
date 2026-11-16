@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { DeleteButton } from '@/components/dash/DeleteButton';
+import { Bulk, BulkCheck } from '@/components/dash/Bulk';
 import { setPageDeleted } from '@/app/admin/delete-actions';
 import { getOverrides } from '@/lib/server/content';
 import { readJsonFile } from '@/lib/server/store';
@@ -31,9 +32,10 @@ export default async function Posts({ searchParams }: { searchParams: Promise<{ 
         {[['all', `All (${posts.length})`], ['review', `Review queue (${n('review')})`], ['published', `Published (${n('published')})`], ['draft', `Drafts (${n('draft')})`]].map(([k, l]) => <Link key={k} href={`/admin/posts/?s=${k}`} className={`btn btn-sm${s === k ? ' btn-gold' : ''}`}>{l}</Link>)}
       </div>
       {rows.length === 0 ? <p className="empty">No posts here. Write one, or let the Auto Publisher draft them for review.</p> : (
-        <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Article</th><th>Category</th><th>Status</th><th>SEO</th><th>Views</th><th>Languages</th><th>Source</th><th>Updated</th><th></th></tr></thead><tbody>
+        <Bulk kind="posts" what="articles"><div className="tbl-wrap"><table className="tbl"><thead><tr><th className="bulk-td" /><th>Article</th><th>Category</th><th>Status</th><th>SEO</th><th>Views</th><th>Languages</th><th>Source</th><th>Updated</th><th></th></tr></thead><tbody>
           {rows.map((p) => (
             <tr key={p.id}>
+              <td className="bulk-td"><BulkCheck id={p.id} /></td>
               <td><div className="row" style={{ flexWrap: 'nowrap' }}><span className="thumb"><img src={p.cover || coverUrl(p.title)} alt="" /></span><div><Link href={`/admin/posts/${p.id}/`}>{p.title}</Link><div className="small muted">/blog/{p.slug}/{p.similarity ? ` · similarity ${Math.round(p.similarity * 100)}%` : ''}{p.scheduledAt && p.scheduledAt > new Date().toISOString() ? ` · scheduled ${day(p.scheduledAt)}` : ''}</div></div></div></td>
               <td className="small">{cats.find((c) => c.slug === p.category)?.name ?? '—'}</td>
               <td><span className={`pill ${p.status === 'published' ? 'ok' : p.status === 'review' ? 'new' : ''}`}>{p.status}</span></td>
@@ -48,7 +50,7 @@ export default async function Posts({ searchParams }: { searchParams: Promise<{ 
                 <DeleteButton name="act" value="delete" /></form></td>
             </tr>
           ))}
-        </tbody></table></div>
+        </tbody></table></div></Bulk>
       )}
       <div className="panel" style={{ marginTop: 16 }}>
         <h2>Built-in guides ({BLOG.length})</h2>

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { DeleteButton } from '@/components/dash/DeleteButton';
+import { Bulk, BulkCheck } from '@/components/dash/Bulk';
 import { clearItems, deleteItems } from '@/app/admin/delete-actions';
 import { ActionForm, CopyButton as CopyBtn, Submit } from '@/components/dash/ActionForm';
 import type { ReactNode } from 'react';
@@ -130,9 +131,9 @@ export default async function WhatsApp({ searchParams }: { searchParams: Promise
       )}
       {tab === 'log' && (log.length === 0 ? <p className="empty">No messages yet.</p> : (<>
         {log.length > 0 && <form action={clearItems} style={{ margin: '0 0 10px' }}><input type="hidden" name="kind" value="walog" /><input type="hidden" name="scope" value="all" /><DeleteButton label="Clear the log" /></form>}
-        <div className="tbl-wrap"><table className="tbl"><thead><tr><th>When</th><th>Direction</th><th>Number</th><th>Event</th><th>Message</th><th>Result</th></tr></thead><tbody>
-          {log.slice(0, 300).map((l) => <tr key={l.id}><td>{when(l.at)}</td><td>{l.dir === 'in' ? 'Received' : 'Sent'}</td><td>+{l.to}</td><td>{l.event}</td><td style={{ maxWidth: 380 }}>{l.text}</td><td style={{ maxWidth: 320 }}>{l.ok ? <span className={`pill ${l.st === 'read' || l.st === 'delivered' ? 'ok' : 'new'}`}>{l.dir === 'in' ? 'OK' : l.st === 'read' ? 'Read' : l.st === 'delivered' ? 'Delivered' : 'Sent'}</span> : <><span className="pill due">Failed</span><div className="small" style={{ color: '#b42318', marginTop: 4 }}>{l.error}</div></>}</td></tr>)}
-        </tbody></table></div>
+        <Bulk kind="walog" what="messages"><div className="tbl-wrap"><table className="tbl"><thead><tr><th className="bulk-td" /><th>When</th><th>Direction</th><th>Number</th><th>Event</th><th>Message</th><th>Result</th></tr></thead><tbody>
+          {log.slice(0, 300).map((l) => <tr key={l.id}><td className="bulk-td"><BulkCheck id={l.id} /></td><td>{when(l.at)}</td><td>{l.dir === 'in' ? 'Received' : 'Sent'}</td><td>+{l.to}</td><td>{l.event}</td><td style={{ maxWidth: 380 }}>{l.text}</td><td style={{ maxWidth: 320 }}>{l.ok ? <span className={`pill ${l.st === 'read' || l.st === 'delivered' ? 'ok' : 'new'}`}>{l.dir === 'in' ? 'OK' : l.st === 'read' ? 'Read' : l.st === 'delivered' ? 'Delivered' : 'Sent'}</span> : <><span className="pill due">Failed</span><div className="small" style={{ color: '#b42318', marginTop: 4 }}>{l.error}</div></>}</td></tr>)}
+        </tbody></table></div></Bulk>
       </>))}
     </>
   );

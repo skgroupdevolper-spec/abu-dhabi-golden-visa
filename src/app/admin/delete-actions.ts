@@ -64,3 +64,21 @@ export async function setPageDeleted(f: FormData) {
 }
 /** @deprecated kept for old forms */
 export const togglePageHidden = setPageDeleted;
+
+/** Bulk delete from the checkboxes in a list ("Delete selected"). */
+export async function bulkDelete(kind: string, ids: string[]) {
+  const set = new Set(ids.map(String).filter(Boolean).slice(0, 2000));
+  if (!set.size) return { n: 0 };
+  if (KINDS[kind]) { const { n } = await drop(kind, (x) => !set.has(x.id)); return { n }; }
+  const { list, remove } = await import('@/lib/server/collections');
+  if (kind === 'customers' || kind === 'posts') {
+    await requireAdmin(kind === 'customers' ? FULL : EDIT);
+    const all = await list<{ id: string }>(kind);
+    let n = 0;
+    for (const x of all) if (set.has(x.id)) { await remove(kind, x.id); n++; }
+    revalidatePath('/admin', 'layout');
+    if (kind === 'posts') revalidatePath('/', 'layout');
+    return { n };
+  }
+  throw new Error('Unknown list');
+}

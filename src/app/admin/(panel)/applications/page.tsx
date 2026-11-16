@@ -1,6 +1,7 @@
 import { allStepNames, stepGroupOf } from '@/lib/server/stages';
 import type { Metadata } from 'next';
 import { DeleteButton } from '@/components/dash/DeleteButton';
+import { Bulk, BulkCheck } from '@/components/dash/Bulk';
 import { clearItems, deleteItems } from '@/app/admin/delete-actions';
 import Link from 'next/link';
 import { listApplications } from '@/lib/server/store';
@@ -38,14 +39,15 @@ export default async function Apps({ searchParams }: { searchParams: Promise<{ q
         ))}
       </div>
       {apps.length === 0 ? <p className="empty">No applications here.</p> : (
-        <div className="tbl-wrap"><table className="tbl">
-          <thead><tr><th>Ref</th><th>Client</th><th>Route</th><th>Progress</th><th>Payment</th><th>Messages</th><th>Updated</th><th /></tr></thead>
+        <Bulk kind="applications" what="files"><div className="tbl-wrap"><table className="tbl">
+          <thead><tr><th className="bulk-td" /><th>Ref</th><th>Client</th><th>Route</th><th>Progress</th><th>Payment</th><th>Messages</th><th>Updated</th><th /></tr></thead>
           <tbody>
             {apps.map((x) => {
               const due = x.payments.filter((p) => p.status === 'due').reduce((s, p) => s + p.amount, 0);
               const unread = x.messages.filter((m) => m.by === 'client' && !m.read).length;
               return (
                 <tr key={x.id}>
+                  <td className="bulk-td"><BulkCheck id={x.id} /></td>
                   <td><Link href={`/admin/applications/${x.id}/`}>{x.ref}</Link></td>
                   <td><b>{x.client.name}</b><div className="small muted">{x.client.phone}</div></td>
                   <td>{x.route}{sc.full && <div className="small">{x.assignee ? `→ ${x.assignee}` : <span className="muted">Not assigned</span>}</div>}<div className="small muted">{x.location === 'in' ? 'Inside UAE' : 'Outside UAE'} · {1 + x.adults + x.kids} people</div></td>
@@ -58,7 +60,7 @@ export default async function Apps({ searchParams }: { searchParams: Promise<{ q
               );
             })}
           </tbody>
-        </table></div>
+        </table></div></Bulk>
       )}
     </>
   );

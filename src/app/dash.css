@@ -969,3 +969,15 @@ code.k { overflow-wrap: anywhere; word-break: break-all; }
 .wt-emo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 3px; max-height: 190px; overflow-y: auto; }
 .wt-emo-grid button { font-size: 18px; border-color: transparent; }
 .wt-emo-tip { color: #8a8170; font-size: 11.5px; }
+
+/* bulk select + delete */
+.bulk-bar { position: sticky; top: 72px; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 8px 12px; margin: 0 0 10px; background: #fff; border: 1px solid #efe6cf; border-radius: 12px; }
+.bulk-bar.on { background: #fff8e6; border-color: #e6c66a; box-shadow: 0 8px 20px -14px rgba(0, 0, 0, .35); }
+.bulk-all { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer; }
+.bulk-n { color: #6b6b6b; font-size: 14px; margin-inline-end: auto; }
+.bulk-err { color: #b42318; font-size: 13px; width: 100%; }
+.bulk-ck, .bulk-all input { width: 18px; height: 18px; accent-color: #b8892b; cursor: pointer; vertical-align: middle; }
+tr.bulk-on > td, li.bulk-on { background: #fff8e6; }
+.tbl td.bulk-td, .tbl th.bulk-td { width: 34px; padding-inline-end: 0; }
+.bulk-row.bulk-on, .bulk-row.bulk-on > .file { background: #fff8e6 !important; }
+.bulk-row > .bulk-ck { align-self: center; flex: none; }

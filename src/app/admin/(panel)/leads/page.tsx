@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { DeleteButton } from '@/components/dash/DeleteButton';
+import { Bulk, BulkCheck } from '@/components/dash/Bulk';
 import { clearItems, deleteItems } from '@/app/admin/delete-actions';
 import Link from 'next/link';
 import { listLeads, type LeadStatus } from '@/lib/server/store';
@@ -32,11 +33,11 @@ export default async function Leads({ searchParams }: { searchParams: Promise<{ 
         {sc.full && s !== 'all' && leads.length > 0 && <form action={clearItems} style={{ marginInlineStart: 'auto' }}><input type="hidden" name="kind" value="leads" /><input type="hidden" name="scope" value={`status:${s}`} /><DeleteButton label={`Delete all ${s} (${leads.length})`} /></form>}
       </div>
       {leads.length === 0 ? <p className="empty">Nothing here yet.</p> : (
-        <div className="stack">
+        <Bulk kind="leads" what="enquiries"><div className="stack">
           {leads.map((l) => (
-            <div className="panel" key={l.id} style={{ padding: 18 }}>
+            <div className="panel bulk-row" key={l.id} style={{ padding: 18 }}>
               <div className="panel-h" style={{ marginBottom: 8 }}>
-                <div><b style={{ fontSize: 17 }}>{l.name}</b> <span className={`pill ${l.status}`}>{l.status}</span><div className="small muted">{when(l.at)} · from {l.source}</div></div>
+                <div>{sc.full && <><BulkCheck id={l.id} />{' '}</>}<b style={{ fontSize: 17 }}>{l.name}</b> <span className={`pill ${l.status}`}>{l.status}</span><div className="small muted">{when(l.at)} · from {l.source}</div></div>
                 <div className="row">
                   <a className="btn btn-sm btn-wa" href={waTo(l.phone, `Hello ${l.name}, thank you for your Golden Visa enquiry. `)} target="_blank" rel="noopener">WhatsApp</a>
                   {l.email && <a className="btn btn-sm" href={`mailto:${l.email}`}>Email</a>}
@@ -68,7 +69,7 @@ export default async function Leads({ searchParams }: { searchParams: Promise<{ 
               </form>
             </div>
           ))}
-        </div>
+        </div></Bulk>
       )}
     </>
   );

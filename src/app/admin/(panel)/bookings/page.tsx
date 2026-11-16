@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { DeleteButton } from '@/components/dash/DeleteButton';
+import { Bulk, BulkCheck } from '@/components/dash/Bulk';
 import Link from 'next/link';
 import { ActionForm, Submit } from '@/components/dash/ActionForm';
 import { F, Tabs, Toggle } from '@/components/dash/Fields';
@@ -46,13 +47,14 @@ export default async function Bookings({ searchParams }: { searchParams: Promise
       <Tabs base="/admin/bookings/" tabs={[['upcoming', `Upcoming (${upcoming.length})`], ['past', 'Past'], ['all', `All (${all.length})`], ...(full ? [['settings', 'Hours & settings'] as [string, string]] : [])]} cur={tab} />
       {tab !== 'settings' && (
         !rows.length ? <p className="empty">No appointments here yet.</p> : (
-          <div className="stack">
+          <Bulk kind="bookings" what="appointments"><div className="stack">
             {Object.entries(groups).map(([d, list]) => (
               <div key={d} className="panel">
                 <h2 style={{ marginBottom: 10 }}>{d === today ? 'Today · ' : ''}{nice(d)}</h2>
                 <div className="files">
                   {list.map((x) => (
-                    <div key={x.id} className="file" style={{ flexWrap: 'wrap', background: x.id === b ? '#fffaf0' : undefined }}>
+                    <div key={x.id} className="file bulk-row" style={{ flexWrap: 'wrap', background: x.id === b ? '#fffaf0' : undefined }}>
+                      {full && <BulkCheck id={x.id} />}
                       <span className="fi" style={{ width: 64 }}><b>{x.time}</b></span>
                       <span className="fn"><b>{x.name} · {TYPE_LABEL[x.type]}</b>
                         <small>{x.ref} · <a href={waTo(x.phone, `Hello ${x.name.split(' ')[0]}, your ${TYPE_LABEL[x.type].toLowerCase()} with Abu Dhabi Golden Visa is confirmed for ${nice(x.date)} at ${x.time} (UAE time). Reference ${x.ref}.`)} target="_blank" rel="noopener">{x.phone}</a>{x.email ? ` · ${x.email}` : ''} · booked {when(x.createdAt)}</small>
@@ -70,7 +72,7 @@ export default async function Bookings({ searchParams }: { searchParams: Promise
                 </div>
               </div>
             ))}
-          </div>
+          </div></Bulk>
         )
       )}
       {tab === 'settings' && full && (
