@@ -5,7 +5,7 @@ import { SITE } from '@/lib/site';
 import { fillTpl, type MailEvent } from '@/lib/mail-events';
 import type { Transporter } from 'nodemailer';
 
-export type MailOpts = { badge?: string; title?: string };
+export type MailOpts = { badge?: string; title?: string; attachments?: { filename: string; content: Buffer }[] };
 
 /** Sends an email through the SMTP account set in the admin. Silently skips when it is not set up.
  *  Every email goes out as a branded card (white, gold and black) with the plain text kept for simple mail apps. */
@@ -25,6 +25,7 @@ export async function sendMail(to: string, subject: string, text: string, opts: 
       replyTo: SITE.email || undefined,
       messageId: `<${Date.now().toString(36)}.${Math.random().toString(36).slice(2, 10)}@${fromAddr.split('@')[1]}>`,
       headers: { 'Auto-Submitted': 'auto-generated', 'X-Auto-Response-Suppress': 'OOF, AutoReply' },
+      ...(opts.attachments?.length ? { attachments: opts.attachments } : {}),
     });
     void logMail(to, subject, true);
     return { ok: true };
@@ -80,14 +81,14 @@ async function transport(m: { host: string; port: number; secure: boolean; user:
 }
 
 /** Sends the email for one event, using the text set in Admin > Emails & PDFs. Never throws. */
-export async function mailEvent(to: string | undefined, event: MailEvent, vars: Record<string, string | number | undefined>) {
+export async function mailEvent(to: string | undefined, event: MailEvent, vars: Record<string, string | number | undefined>, attachments?: MailOpts['attachments']) {
   try {
     if (!to || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return { ok: false, error: 'No email' };
     const c = (await docCfg()).mail;
     const tpl = c.events[event];
     if (!tpl?.on) return { ok: false, error: 'This email is switched off' };
     const v = { ...vars };
-    return await sendMail(to, fillTpl(tpl.subject, v).slice(0, 200), fillTpl(tpl.body, v), { badge: fillTpl(tpl.badge, v), title: event === 'teamLead' ? 'Team notice' : undefined });
+    return await sendMail(to, fillTpl(tpl.subject, v).slice(0, 200), fillTpl(tpl.body, v), { badge: fillTpl(tpl.badge, v), title: event === 'teamLead' ? 'Team notice' : undefined, attachments });
   } catch (e) {
     return { ok: false, error: (e as Error).message };
   }
@@ -160,7 +161,7 @@ export function renderMail(subject: string, text: string, c: MailCfg, o: MailOpt
   const body = blocks.map((b) => {
     if (b.k === 'hello') {
       const m = b.v.match(/^(\w+)\s+(.+?)(,?)$/);
-      return `<p style="margin:0 0 14px;font-size:17px;color:${ink}">${m ? `${marks(esc(m[1]))} <b>${esc(m[2])}</b>${m[3]}` : marks(esc(b.v))}</p>`;
+      return `<p style="margin:0 0 14px;font-size:17px;color:${ink}">${(m ? `${marks(esc(m[1]))} <b>${esc(m[2])}</b>${m[3]}` : marks(esc(b.v))).replace(/\n/g, '<br>')}</p>`;
     }
     if (b.k === 'p') return `<p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#333">${linkify(b.v, gold).replace(/\n/g, '<br>')}</p>`;
     if (b.k === 'rows') return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:6px 0 18px;border:1px solid ${line}">${b.v.map(([k, v], i) => `<tr><td style="padding:11px 14px;background:${cream};border-top:${i ? `1px solid ${line}` : '0'};font-size:14px;font-weight:600;color:${soft};width:38%">${esc(k)}</td><td style="padding:11px 14px;border-top:${i ? `1px solid ${line}` : '0'};font-size:14px;color:${ink}">${linkify(v, gold)}</td></tr>`).join('')}</table>`;

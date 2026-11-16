@@ -8,7 +8,7 @@ import { EDIT, FULL, checkLogin, endSession, requireAdmin as requireAny, startSe
 /** Editing needs staff or above; settings and fees need admin. */
 const requireAdmin = () => requireAny(EDIT);
 const requireFull = () => requireAny(FULL);
-import { saveUpload } from '@/lib/server/files';
+import { readUpload, saveUpload } from '@/lib/server/files';
 import { createApplication, getApplication, getFees, newId, now, saveFees, updateApplication, type Fees, updateLead, listLeads, type Application, type LeadStatus } from '@/lib/server/store';
 import { governmentLines, money } from '@/lib/stages';
 import { saveStages, stepGroupOf, stepsFor } from '@/lib/server/stages';
@@ -239,7 +239,7 @@ export async function uploadTeamDoc(_: FormState, f: FormData): Promise<FormStat
       if (doc.shared) a.messages.push({ id: newId(6), by: 'team', at: now(), text: `New document for you: ${doc.name}.` });
     });
     // The file itself goes on WhatsApp too (like the email attachment), from its private dashboard link.
-    if (app && doc.shared) { await sendWa(app.client.phone, 'document', V(app, { document: doc.name, fileLink: `${portalUrl(app.token)}file/${doc.id}/`, fileName: doc.file.replace(/^[a-f0-9]+-/, '') || doc.name })); void mailEvent(app.client.email, 'document', V(app, { document: doc.name })); }
+    if (app && doc.shared) { await sendWa(app.client.phone, 'document', V(app, { document: doc.name, fileLink: `${portalUrl(app.token)}file/${doc.id}/`, fileName: doc.file.replace(/^[a-f0-9]+-/, '') || doc.name })); const buf = await readUpload(app.id, doc).catch(() => null); void mailEvent(app.client.email, 'document', V(app, { document: doc.name }), buf ? [{ filename: doc.file.replace(/^[a-f0-9]+-/, '') || doc.name, content: buf }] : undefined); }
     return { ok: 'Uploaded.' };
   } catch (e) {
     return { error: (e as Error).message };

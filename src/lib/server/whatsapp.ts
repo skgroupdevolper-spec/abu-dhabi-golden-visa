@@ -17,7 +17,7 @@ export function toWa(t: string) {
 export const digits = (p: string) => p.replace(/\D/g, '').replace(/^00/, '');
 
 export function fill(tpl: string, vars: Record<string, string | number | undefined>) {
-  return tpl.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? '')).replace(/\s+\n/g, '\n').trim();
+  return tpl.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? '')).replace(/<br\s*\/?>/gi, '\n').replace(/[ \t]+\n/g, '\n').trim();
 }
 
 /** Sends one WhatsApp message through the Cloud API when it is set up; otherwise records it only. */
@@ -62,7 +62,8 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   // Outside the 24-hour window with no approved template for this message: send it inside the approved
   // "new message" template ({{1}} name, {{2}} file, {{3}} text, {{4}} link), so it still reaches the client.
   const viaMsg = !open && !name && !custom && event !== 'message' && event !== 'leadTeam' && w.templateNames.message;
-  const flat = (v: unknown) => String(v ?? '').replace(/<br\s*\/?>/gi, ' ').replace(/https?:\/\/\S+/g, '').replace(/[\r\n\t]+/g, ' ').replace(/ {2,}/g, ' ').trim();
+  // Meta does not allow new lines inside template values: a blank line (<br><br>) becomes " — ", one new line " · ".
+  const flat = (v: unknown) => String(v ?? '').replace(/<br\s*\/?>/gi, '\n').replace(/https?:\/\/\S+/g, '').replace(/[ \t]*\r?\n[ \t]*(\r?\n[ \t]*)+/g, ' — ').replace(/[ \t]*\r?\n[ \t]*/g, ' · ').replace(/\t/g, ' ').replace(/ {2,}/g, ' ').trim();
   const body = viaMsg
     ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name: w.templateNames.message, language: { code: w.templateLang || 'en' }, components: [{ type: 'body', parameters: [vars.name, vars.ref || '-', flat(text).slice(0, 900) || '-', vars.link || SITE_URL()].map((x) => ({ type: 'text', text: String(x ?? '-') || '-' })) }] } }
     : name && (custom || !opts.text)
