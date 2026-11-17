@@ -29,7 +29,7 @@ export default async function ChooseCard({ params }: { params: Promise<{ token: 
     <main className="paywrap">
       <div className="paycard">
         <div className="paytop"><img src="/brand/coin.webp" alt="" width={44} height={44} /><span>{SITE.name}</span></div>
-        <div className="paybody" style={{ textAlign: 'start' }}>
+        <div className="paybody cardpay">
           <h1 style={{ textAlign: 'center' }}>Choose your card</h1>
           <p className="muted" style={{ textAlign: 'center' }}>{p.label} · {a.ref}<br /><b style={{ fontSize: 20, color: 'inherit' }}>{aed(p.amount)}</b></p>
           {c.payText && <div className="paytext" dangerouslySetInnerHTML={{ __html: waHtml(c.payText) }} />}

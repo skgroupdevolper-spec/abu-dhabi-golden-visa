@@ -996,3 +996,9 @@ tr.bulk-on > td, li.bulk-on { background: #fff8e6; }
 .paybox.paybox-note { background: #fff; color: #333; border: 1px solid #ece4d0; box-shadow: none; align-items: flex-start; }
 .paybox.paybox-note .paynote { flex: 1 1 340px; color: #333; margin: 0; }
 .paybox.paybox-note .paynote b { color: #111; }
+/* card page: full-width blocks (the confirm page centres its items) */
+.paybody.cardpay { justify-items: stretch; text-align: start; }
+.paybody.cardpay > h1, .paybody.cardpay > p { text-align: center; }
+.paybody.cardpay .cardopts, .paybody.cardpay .cardalt, .paybody.cardpay .paytext { width: 100%; box-sizing: border-box; margin-inline: 0; }
+.paybody.cardpay .cardalt .btn { width: 100%; box-sizing: border-box; display: flex; }
+@media (max-width: 480px) { .paybody.cardpay { padding: 20px 16px; } .cardopt { padding: 12px; } .cardopt b { font-size: 15px; } .cardopt-amt b { font-size: 16px; } }
