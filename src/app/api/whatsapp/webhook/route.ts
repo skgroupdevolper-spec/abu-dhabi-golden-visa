@@ -29,13 +29,20 @@ export async function POST(req: NextRequest) {
   // Delivery reports: mark each sent message as delivered / read / failed (with the reason) in the Message log.
   const sts: { id: string; status: string; errors?: { code?: number; title?: string; message?: string; error_data?: { details?: string } }[] }[] = body?.entry?.flatMap((e: { changes?: { value?: { statuses?: unknown[] } }[] }) => e.changes?.flatMap((c) => c.value?.statuses ?? []) ?? []) ?? [];
   if (sts.length) {
+    const retry: WaLog[] = [];
     await updateJsonFile<WaLog[]>('whatsapp-log.json', [], (all) => all.map((x) => {
       const u = x.mid && sts.find((z) => z.id === x.mid);
       if (!u) return x;
       const st = u.status as WaLog['st'];
-      if (st === 'failed') { const er = u.errors?.[0]; return { ...x, st, ok: false, error: waAdvice(er?.error_data?.details || er?.message || er?.title || 'Not delivered', er?.code) }; }
+      if (st === 'failed') {
+        const er = u.errors?.[0];
+        // A company alert Meta did not deliver: send it again with the approved company template (once).
+        if (!x.resent && x.vars && /Team$/.test(x.event)) retry.push(x);
+        return { ...x, st, ok: false, resent: x.resent || (!!x.vars && /Team$/.test(x.event)), error: waAdvice(er?.error_data?.details || er?.message || er?.title || 'Not delivered', er?.code) };
+      }
       return x.st === 'read' ? x : { ...x, st };
     }));
+    if (retry.length) { const { resendTeamAlert } = await import('@/lib/server/whatsapp'); for (const x of retry) await resendTeamAlert(x).catch(() => false); }
   }
   if (!msgs.length) return NextResponse.json({ ok: true });
   void getSecrets().then((s) => saveSecrets({ whatsapp: { ...s.whatsapp, lastIncomingAt: new Date().toISOString() } })).catch(() => {});

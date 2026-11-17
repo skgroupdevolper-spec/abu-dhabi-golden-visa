@@ -26,7 +26,7 @@ export function fill(tpl: string, vars: Record<string, string | number | undefin
 }
 
 /** Sends one WhatsApp message through the Cloud API when it is set up; otherwise records it only. */
-export async function sendWa(to: string, event: WaEvent, vars: Record<string, string | number | undefined>, opts: { force?: boolean; text?: string; event?: string } = {}) {
+export async function sendWa(to: string, event: WaEvent, vars: Record<string, string | number | undefined>, opts: { force?: boolean; text?: string; event?: string; legacy?: boolean } = {}) {
   const r = await sendOne(to, event, vars, opts);
   // The company gets the very same message the client received (same text, same template), so the team
   // sees each update exactly as the client does (tests and resends are not copied). Off with "Copy client messages to team numbers".
@@ -68,7 +68,10 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   // Inside the 24-hour window (the client wrote to us in the last 24 h) a normal message always arrives and is free,
   // so the template is only used outside it. This also avoids templates Meta moved to "marketing".
   const open = await wroteLast24h(number);
-  const name = open ? '' : custom ? custom.name : team && !opts.legacy ? TEAM_TPL : w.templateNames[event] || (team ? w.templateNames.leadTeam : undefined);
+  // Company alerts: the template with your own text and buttons is filed as marketing by Meta, so Meta may stop
+  // delivering it. After a delivery failure in the last 24 hours, the approved utility template is used instead.
+  const throttled = team && !opts.legacy && !open && (await list<WaLog>('whatsapp-log')).some((x) => x.dir === 'out' && isTeamEvent(x.event) && x.st === 'failed' && x.text.startsWith(`[template ${TEAM_TPL}]`) && Date.now() - Date.parse(x.at) < 864e5);
+  const name = open ? '' : custom ? custom.name : team && !opts.legacy && !throttled ? TEAM_TPL : w.templateNames[event] || (team ? w.templateNames.leadTeam : undefined);
   let keys = (WA_EVENTS.find((e) => e.key === event)?.vars.match(/\{(\w+)\}/g) ?? []).map((k) => k.slice(1, -1));
   // The first company template had 4 values: name, phone, service, message.
   if (team && name === 'adgv_new_enquiry') keys = ['name', 'phone', 'service', 'message'];
@@ -142,7 +145,7 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   } catch (e) {
     error = (e as Error).message;
   }
-  await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: number, event: opts.event || event, text: `${body.type === 'template' ? `[template ${viaMsg ? w.templateNames.message : name}] ` : ''}${text}`.slice(0, 500), ok, error: error || undefined, dir: 'out', ...(mid ? { mid } : {}), ...(!team && !(opts.force && event === 'message') ? { full: text.slice(0, 1500) } : {}) }, 2000);
+  await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: number, event: opts.event || event, text: `${body.type === 'template' ? `[template ${viaMsg ? w.templateNames.message : name}] ` : body.type === 'interactive' ? `[button ${ctaLabel}] ` : ''}${body.type === 'interactive' ? ctaText : text}`.slice(0, 500), ok, error: error || undefined, dir: 'out', ...(mid ? { mid } : {}), ...(!team && !(opts.force && event === 'message') ? { full: text.slice(0, 1500) } : {}), ...(team ? { vars: Object.fromEntries(Object.entries(vars).filter(([, v]) => v !== undefined && v !== '').map(([k, v]) => [k, String(v).slice(0, 600)])) } : {}) }, 2000);
   if (!ok && team && name === TEAM_TPL && !custom) return sendOne(to, event, vars, { ...opts, legacy: true });
   return { ok, error };
 }
@@ -252,4 +255,12 @@ async function mailTextFor(event: WaEvent, vars: Record<string, string | number 
       .replace(/\n{3,}/g, '\n\n')
       .trim();
   } catch { return ''; }
+}
+
+/** A company alert sent with the marketing-type template was not delivered (Meta limits those):
+ *  send it again at once with the approved utility company template. Called from the delivery report. */
+export async function resendTeamAlert(x: WaLog) {
+  if (!isTeamEvent(x.event) || !x.vars || !x.text.startsWith(`[template ${TEAM_TPL}]`)) return false;
+  const r = await sendWa(x.to, x.event as WaEvent, x.vars, { legacy: true });
+  return r.ok;
 }
