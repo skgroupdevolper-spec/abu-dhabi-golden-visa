@@ -36,6 +36,12 @@ const nextConfig = {
       { source: '/my', destination: '/portal/', permanent: false, ...main },
       { source: '/my/:path*', destination: '/portal/', permanent: false, ...main },
       { source: '/login', destination: '/portal/login/', permanent: false, ...main },
+      // Common guessed addresses that would otherwise 404.
+      { source: '/favicon.ico', destination: '/icon.png', permanent: true },
+      { source: '/privacy-policy', destination: '/privacy/', permanent: true },
+      { source: '/privacy-policy/', destination: '/privacy/', permanent: true },
+      { source: '/cost-calculator', destination: '/golden-visa-cost/', permanent: true },
+      { source: '/cost-calculator/', destination: '/golden-visa-cost/', permanent: true },
     ];
   },
   async headers() {
