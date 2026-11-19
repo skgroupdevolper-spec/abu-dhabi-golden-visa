@@ -7,6 +7,10 @@ import { readiness } from '@/lib/server/translate';
 
 export const revalidate = 600;
 
+// Pages without their own change date use the time this release started (not "now" on every request),
+// so Google can trust lastmod and recrawl only what changed.
+const RELEASED = new Date();
+
 const abs = (u?: string) => (u ? (u.startsWith('http') ? u : SITE.url + u) : undefined);
 
 /** Every public page in all 20 languages, with hreflang alternates, images and last-change dates. */
@@ -22,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...cats.map((c) => ({ path: `/blog/category/${c.slug}/`, image: c.image, pri: 0.5 })),
     ...posts.filter((p) => !p.noindex).map((p) => ({ path: `/blog/${p.slug}/`, image: p.cover, at: p.updatedAt, pri: 0.7 })),
   ];
-  const now = new Date();
+  const now = RELEASED;
   const { at } = await readiness();
   return entries.flatMap((e) => {
     // Every page in every language that is switched on (like /ar/, /ru/, /tr/ …).
