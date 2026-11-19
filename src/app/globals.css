@@ -1836,3 +1836,9 @@ footer.site .legal-links a:hover, footer.site .legal-links a:focus-visible { bac
   footer.site .fbar-links a { justify-content: center; white-space: normal; text-align: center; background: #fff; border: 1px solid var(--line); padding: 10px 8px; font-size: 13.5px; }
   footer.site .legal { padding-bottom: 76px; }
 }
+/* Footer menu and legal links: plain text links, no background or border */
+footer.site .fbar-links, footer.site .fbar-links a, footer.site .legal-links a { background: transparent !important; border: 0 !important; box-shadow: none !important; }
+footer.site .fbar-links { padding: 4px 0; }
+footer.site .legal-links a { padding: 2px 6px; }
+footer.site .fbar-links a:hover, footer.site .fbar-links a:focus-visible { color: var(--gold-deep); text-decoration: underline; text-underline-offset: 3px; }
+footer.site .legal-links a:hover, footer.site .legal-links a:focus-visible { color: var(--navy); }
