@@ -1005,3 +1005,13 @@ tr.bulk-on > td, li.bulk-on { background: #fff8e6; }
 
 /* Google review request on a completed file */
 .review-ask { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 14px; padding: 10px 14px; border: 1px solid #f1d58a; background: #fffaeb; border-radius: 12px; font-size: 14px; }
+
+/* several notification emails */
+.emaillist .el-rows { display: grid; gap: 8px; }
+.emaillist .el-row { display: flex; align-items: center; gap: 8px; }
+.emaillist .el-row input { flex: 1; min-width: 0; }
+.emaillist .el-row input[aria-invalid="true"] { border-color: #d64545; }
+.emaillist .el-n { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; background: #f5ecd4; color: #8a6a12; }
+.emaillist .el-x { flex: none; width: 34px; height: 34px; border-radius: 10px; border: 1px solid #ecdcb2; background: #fff; color: #9b3b3b; cursor: pointer; }
+.emaillist .el-x:hover { background: #fdf0f0; }
+.emaillist .el-add { margin-top: 8px; justify-self: start; }
