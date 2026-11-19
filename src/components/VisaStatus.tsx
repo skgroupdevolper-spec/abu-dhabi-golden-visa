@@ -9,6 +9,7 @@ import { u } from '@/lib/ui';
 import { waLink } from '@/lib/site';
 import { Icon } from './Icon';
 import { COMMON_NATIONALITIES, NATIONALITIES } from '@/lib/nationalities';
+import { PORTALS } from '@/lib/visa-portals';
 
 type Emirate = 'Dubai' | 'Abu Dhabi' | 'Sharjah' | 'Ajman' | 'Ras Al Khaimah' | 'Fujairah' | 'Umm Al Quwain' | 'Not sure';
 type Kind = 'residence' | 'property' | 'golden' | 'visit' | 'arrival';
@@ -35,10 +36,7 @@ const GRACE: Record<Kind, string> = {
   visit: 'Visit and tourist visas usually have no grace period: the last day on the visa is your last day.',
   arrival: 'A visa on arrival usually has no grace period: count your days from the entry stamp.',
 };
-export const PORTALS = {
-  gdrfa: { name: 'GDRFA Dubai', title: 'GDRFA Dubai · Visa status enquiry', holds: 'Holds every entry permit and residence visa issued in Dubai.', url: 'https://gdrfad.gov.ae/en', call: '800 5111', app: 'Also on the GDRFA Dubai app.' },
-  icp: { name: 'ICP Smart Services', title: 'ICP · File validity', holds: 'Holds the visas of Abu Dhabi, Sharjah, Ajman, Ras Al Khaimah, Fujairah and Umm Al Quwain.', url: 'https://smartservices.icp.gov.ae', call: '600 522222', app: 'Also on the UAEICP app.' },
-};
+
 
 function stepsFor(portal: 'gdrfa' | 'icp', id: Id): string[] {
   const by: Record<Id, string> = {

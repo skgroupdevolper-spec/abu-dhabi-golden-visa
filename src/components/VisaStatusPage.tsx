@@ -5,7 +5,8 @@ import { u } from '@/lib/ui';
 import { SITE, waLink } from '@/lib/site';
 import { Icon } from './Icon';
 import { L } from './L';
-import { AskCheckButton, PORTALS } from './VisaStatus';
+import { AskCheckButton } from './VisaStatus';
+import { PORTALS } from '@/lib/visa-portals';
 
 const GUIDE: { id: string; t: string; p: string[]; extra?: 'grace' | 'auth' | 'portal' | 'ours'; note?: string }[] = [
   { id: 'what', t: 'What a visa status check really tells you', p: [
