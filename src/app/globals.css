@@ -1802,38 +1802,37 @@ footer.site .fc-mail { font-weight: 600; overflow-wrap: normal; word-break: keep
 footer.site .fc-line { display: block; }
 footer.site .fgrid ul:not(.fcontact) li { line-height: 1.45; }
 
-/* ===== Footer: quick-links bar with email updates, disclaimer, legal line ===== */
-footer.site .fbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 24px; margin-top: 34px; padding: 14px 18px; border-radius: 20px; background: rgba(255, 255, 255, .72); border: 1px solid var(--line); box-shadow: 0 18px 40px -32px rgba(0, 0, 0, .35); }
-footer.site .fbar-links { display: flex; flex-wrap: wrap; gap: 6px 8px; }
-footer.site .fbar-links a { display: inline-flex; align-items: center; gap: 7px; padding: 8px 13px; border-radius: 999px; font: 600 14px var(--body); color: var(--navy); text-decoration: none; border: 1px solid transparent; transition: background .2s, border-color .2s, color .2s; white-space: nowrap; }
+/* ===== Footer: email updates band, quick-links menu, legal line ===== */
+footer.site .fbar { margin-top: 34px; display: grid; gap: 14px; }
+footer.site .fbar-nl { display: flex; align-items: center; gap: 18px 28px; padding: 18px 22px; border-radius: 22px; background: linear-gradient(120deg, #111 0%, #1d1a12 55%, #2a2310 100%); color: #fff; box-shadow: 0 24px 50px -36px rgba(0, 0, 0, .6); }
+footer.site .fbar-nl-t { flex: 0 1 auto; min-width: 0; display: grid; gap: 2px; }
+footer.site .fbar-nl-t b { font: 700 16px var(--body); color: #f1dc94; letter-spacing: .01em; }
+footer.site .fbar-nl-t small { font-size: 13px; color: #cfc8b6; }
+footer.site .nl.nl-inline { flex: 1 1 auto; min-width: 0; margin: 0; }
+footer.site .nl.nl-inline > div { display: flex; gap: 8px; width: 100%; }
+footer.site .nl.nl-inline input { flex: 1 1 auto; width: 100%; min-width: 0; min-height: 48px; padding: 0 18px; font-size: 15px; border-color: rgba(212, 175, 55, .45); }
+footer.site .nl.nl-inline button { flex: none; min-height: 48px; padding: 0 26px; font-size: 14px; }
+footer.site .nl.nl-inline small { display: block; margin-top: 6px; color: #f6c9c9; }
+footer.site .nl-ok { margin: 0; color: #f1dc94; }
+footer.site .fbar-links { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 6px; padding: 10px 14px; border-radius: 18px; background: rgba(255, 255, 255, .7); border: 1px solid var(--line); }
+footer.site .fbar-links a { display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 999px; font: 600 14px var(--body); color: var(--navy); text-decoration: none; white-space: nowrap; transition: background .2s, color .2s; }
 footer.site .fbar-links a svg { color: var(--gold-deep); }
-footer.site .fbar-links a:hover, footer.site .fbar-links a:focus-visible { background: #fff7df; border-color: var(--line); color: var(--gold-deep); }
-footer.site .fbar-nl { flex: 0 1 470px; min-width: 0; }
-footer.site .nl.nl-inline { margin: 0; display: flex; align-items: center; gap: 12px; }
-footer.site .nl.nl-inline label { margin: 0; white-space: nowrap; }
-footer.site .nl.nl-inline > div { flex: 1; min-width: 0; }
-footer.site .nl.nl-inline small { flex-basis: 100%; }
-footer.site .fdisc { margin-top: 22px; display: grid; gap: 8px; font-size: 12.5px; line-height: 1.65; color: var(--navy-soft); max-width: 1100px; margin-inline: auto; text-align: center; }
-footer.site .fdisc p { margin: 0; }
-footer.site .fdisc a { color: var(--gold-deep); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
-footer.site .fdisc a:hover { color: var(--navy); }
-footer.site .fdisc b { color: var(--navy); }
-footer.site .fdisc-date { font-style: italic; opacity: .85; }
+footer.site .fbar-links a:hover, footer.site .fbar-links a:focus-visible { background: #fff3cf; color: var(--gold-deep); }
 footer.site .legal { margin-top: 18px; }
 footer.site .legal > span { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 14px; max-width: none; }
 footer.site .legal-links { display: inline-flex; flex-wrap: wrap; gap: 6px 8px; }
 footer.site .legal-links a { padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--gold-deep); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: rgba(138, 106, 18, .45); transition: background .2s, color .2s; }
 footer.site .legal-links a:hover, footer.site .legal-links a:focus-visible { background: var(--gold); color: #111; text-decoration-color: currentColor; }
+/* tablets: title above, form full width */
 @media (max-width: 900px) {
-  footer.site .fbar { flex-direction: column; align-items: stretch; padding: 14px; }
-  footer.site .fbar-links { justify-content: center; }
-  footer.site .fbar-nl { flex-basis: auto; }
+  footer.site .fbar-nl { flex-direction: column; align-items: stretch; text-align: center; }
 }
+/* phones: input and button stacked full width, menu as a tidy 2-column grid */
 @media (max-width: 560px) {
-  footer.site .fbar-links { display: grid; grid-template-columns: 1fr 1fr; }
-  footer.site .fbar-links a { justify-content: center; white-space: normal; text-align: center; background: #fff; border-color: var(--line); padding: 9px 8px; font-size: 13.5px; }
-  footer.site .nl.nl-inline { flex-direction: column; align-items: stretch; gap: 8px; }
-  footer.site .nl.nl-inline label { text-align: center; white-space: normal; }
-  footer.site .fdisc { text-align: start; font-size: 12.5px; }
+  footer.site .fbar-nl { padding: 16px; }
+  footer.site .nl.nl-inline > div { flex-direction: column; }
+  footer.site .nl.nl-inline button { width: 100%; }
+  footer.site .fbar-links { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px; }
+  footer.site .fbar-links a { justify-content: center; white-space: normal; text-align: center; background: #fff; border: 1px solid var(--line); padding: 10px 8px; font-size: 13.5px; }
   footer.site .legal { padding-bottom: 76px; }
 }

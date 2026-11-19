@@ -15,7 +15,7 @@ export function Newsletter({ inline = false }: { inline?: boolean }) {
   if (state === 'ok') return <p className="nl-ok"><T>{"Thank you. You will get our Golden Visa updates."}</T></p>;
   return (
     <form className={`nl${inline ? ' nl-inline' : ''}`} onSubmit={submit}>
-      <label htmlFor="nl-email"><T>{"Golden Visa updates by email"}</T></label>
+      <label htmlFor="nl-email" className={inline ? 'sr-only' : undefined}><T>{"Golden Visa updates by email"}</T></label>
       <div><input id="nl-email" name="email" type="email" required placeholder="you@example.com" autoComplete="email" /><button type="submit" disabled={state === 'busy'}><T>{"Subscribe"}</T></button></div>
       {state === 'err' && <small><T>{"Please check the email address."}</T></small>}
     </form>
