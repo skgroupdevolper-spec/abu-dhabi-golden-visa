@@ -99,7 +99,7 @@ export function VisaStatusPage({ locale }: { locale: Locale }) {
       </section>
 
       {/* 03 · Complete guide */}
-      <section className="block vsp vsp-guide" id="guide" data-reveal>
+      <section className="block vsp vsp-guide" id="guide" data-reveal data-nofx="">
         <p className="eyebrow vsp-k">03 · {t('Complete guide')}</p>
         <h2>{t('How to check a UAE visa status online')}</h2>
         <div className="vsp-gwrap">
@@ -146,7 +146,7 @@ export function VisaStatusPage({ locale }: { locale: Locale }) {
       </section>
 
       {/* Questions */}
-      <section className="block faq" id="questions" data-reveal>
+      <section className="block faq" id="questions" data-reveal data-nofx="">
         <div className="bh"><h2>{t('Visa status questions, answered')}</h2></div>
         {VISA_STATUS_FAQ.map((f, k) => (
           <details key={f.q} open={k === 0}>

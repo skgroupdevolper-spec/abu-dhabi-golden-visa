@@ -1708,7 +1708,7 @@ body.c-view .cur-dot { opacity: 0; }
 .btn-dark { color: #fff; background: #0d0d0d; border: 1px solid #0d0d0d; }
 .btn-dark:hover { background: #222; color: #fff; }
 /* "Ask us to check" form */
-.vs-back { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 16px; background: rgba(10, 10, 10, .55); backdrop-filter: blur(4px); }
+.vs-back { position: fixed; inset: 0; z-index: 2147483000; display: grid; place-items: center; padding: 16px; background: rgba(10, 10, 10, .55); backdrop-filter: blur(4px); }
 .vs-dlg { width: min(520px, 100%); max-height: calc(100dvh - 32px); overflow: auto; background: #fff; border-radius: 22px; padding: 18px 20px 20px; box-shadow: 0 40px 90px -30px rgba(0, 0, 0, .6); }
 .vs-dlg-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; font: 700 17px var(--body); }
 .vs-x { width: 34px; height: 34px; border-radius: 10px; border: 1px solid #eee; background: #fff; cursor: pointer; font-size: 15px; }

@@ -76,7 +76,7 @@ export function VisaStatusChecker() {
     </button>
   );
   return (
-    <div className="vs-card" id="checker">
+    <div className="vs-card" id="checker" data-nofx="">
       <div className="vs-top"><span className="vs-ic"><Icon name="doc" size={18} /></span><b>{t('Visa Validity Checker')}</b><span className="vs-tag">{t('Portal finder')}</span></div>
       <div className="vs-body">
         {step > 1 && (
