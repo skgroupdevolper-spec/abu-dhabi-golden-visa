@@ -81,10 +81,14 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   const portal = `https://${process.env.PORTAL_HOST || 'app.abudhabigoldenvisa.com'}/`;
   const link = typeof vars.link === 'string' ? vars.link : '';
   const btnTpl = !team && !!name && /_btn_v\d+$/.test(name);
+  // Review request: Google Reviews picture on top, two fixed buttons (Leave a Google review, Chat with advisor).
+  const reviewTpl = !!name && /_review_request_v\d+$/.test(name);
+  const reviewImg = `${SITE_URL()}brand/google-reviews.jpg`;
+  if (reviewTpl) keys = keys.filter((k) => k !== 'link');
   if (btnTpl) keys = keys.filter((k) => k !== 'link');
   const btnSuffix = link.startsWith(portal) ? link.slice(portal.length) || 'login/' : 'login/';
   // Inside the 24-hour window: a normal message with a tappable button (WhatsApp "call to action" link).
-  const ctaLabel = ({ welcome: 'Open my file', status: 'View my application', quote: 'View my quote', confirmed: 'Track my file', payment: 'Pay now', paid: 'Track my file', message: 'Reply to advisor', document: 'Open my file' } as Partial<Record<WaEvent, string>>)[event];
+  const ctaLabel = ({ review: 'Leave a review', welcome: 'Open my file', status: 'View my application', quote: 'View my quote', confirmed: 'Track my file', payment: 'Pay now', paid: 'Track my file', message: 'Reply to advisor', document: 'Open my file' } as Partial<Record<WaEvent, string>>)[event];
   const ctaText = (() => {
     if (!link || !ctaLabel || !/^https:\/\//.test(link)) return '';
     const lines = text.split('\n');
@@ -108,6 +112,11 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   const flat = (v: unknown) => String(v ?? '').replace(/<br\s*\/?>/gi, '\n').replace(/https?:\/\/\S+/g, '').replace(/[ \t]*\r?\n[ \t]*(\r?\n[ \t]*)+/g, ' — ').replace(/[ \t]*\r?\n[ \t]*/g, ' · ').replace(/\t/g, ' ').replace(/ {2,}/g, ' ').trim();
   const body = viaMsg
     ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name: w.templateNames.message, language: { code: w.templateLang || 'en' }, components: [{ type: 'body', parameters: [vars.name, vars.ref || '-', flat(text).slice(0, 900) || '-', vars.link || SITE_URL()].map((x) => ({ type: 'text', text: String(x ?? '-') || '-' })) }] } }
+    : reviewTpl && (custom || !opts.text)
+    ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name, language: { code: w.templateLang || 'en' }, components: [
+        { type: 'header', parameters: [{ type: 'image', image: { link: reviewImg } }] },
+        { type: 'body', parameters: keys.map((k) => ({ type: 'text', text: flat(vars[k]).slice(0, 900) || String(vars[k] ?? '-').slice(0, 900) || '-' })) },
+      ] } }
     : btnTpl && (custom || !opts.text)
     ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name, language: { code: w.templateLang || 'en' }, components: [
         { type: 'body', parameters: keys.map((k) => ({ type: 'text', text: flat(vars[k]).slice(0, 900) || String(vars[k] ?? '-').slice(0, 900) || '-' })) },
@@ -128,7 +137,7 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
     : fileLink && open
     ? { messaging_product: 'whatsapp', to: number, type: 'document', document: { link: fileLink, filename: fileName, caption: text.slice(0, 1000) } }
     : open && ctaText && !team
-    ? { messaging_product: 'whatsapp', to: number, type: 'interactive', interactive: { type: 'cta_url', body: { text: ctaText }, action: { name: 'cta_url', parameters: { display_text: ctaLabel, url: link } } } }
+    ? { messaging_product: 'whatsapp', to: number, type: 'interactive', interactive: { type: 'cta_url', ...(event === 'review' ? { header: { type: 'image', image: { link: reviewImg } } } : {}), body: { text: ctaText }, action: { name: 'cta_url', parameters: { display_text: ctaLabel, url: link } } } }
     : { messaging_product: 'whatsapp', to: number, type: 'text', text: { body: text.slice(0, 4000), preview_url: true } };
   let ok = false, error = '', mid = '';
   try {

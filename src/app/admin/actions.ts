@@ -13,7 +13,8 @@ import { createApplication, getApplication, getFees, newId, now, saveFees, updat
 import { governmentLines, money } from '@/lib/stages';
 import { saveStages, stepGroupOf, stepsFor } from '@/lib/server/stages';
 import type { StageState } from '@/lib/stage-defs';
-import { portalUrl } from '@/lib/site';
+import { SITE, portalUrl } from '@/lib/site';
+import { getSecrets } from '@/lib/server/settings';
 import { sendWa } from '@/lib/server/whatsapp';
 import { DECISION_TEXT } from '@/lib/decision';
 
@@ -139,6 +140,7 @@ export async function setStage(_: FormState, f: FormData): Promise<FormState> {
   const list = await stepsFor(cur0);
   const stage = Math.max(0, Math.min(list.length - 1, n(f, 'stage')));
   const STATES: StageState[] = ['done', 'progress', 'pending', 'hold', 'action', 'na'];
+  const wasLast = cur0.stage >= list.length - 1;
   const app = await edit(f, (a) => {
     a.stage = stage; a.stageId = list[stage].id;
     // Every step up to this one gets a date (first time it was reached); moving back clears later dates.
@@ -156,14 +158,35 @@ export async function setStage(_: FormState, f: FormData): Promise<FormState> {
   if (app && f.get('saveDefault') && app.nextStep) {
     await saveStages(list.map((x, i) => (i === stage ? { ...x, next: app.nextStep } : x)), stepGroupOf(app));
   }
+  // File complete (last step reached for the first time): thank the client and ask for a Google review, once.
+  let review = '';
+  if (app && stage === list.length - 1 && !wasLast && !app.reviewAskedAt) review = await askReview(app.id);
   // Steps switched off in Admin > Application steps ("Message the client") only update the portal.
   if (app && f.get('notify') && list[stage].notify !== false) {
     const r = await sendWa(app.client.phone, 'status', V(app, { status: list[stage].name, next: app.nextStep, expected: app.expected }));
     void mailEvent(app.client.email, 'status', V(app, { status: list[stage].name, next: app.nextStep, expected: app.expected }));
     const pay = list[stage].id === 'pay-wait' ? await payNowLink(app.id) : '';
-    return { ok: `Status updated.${r.ok ? ' WhatsApp sent.' : ''}${pay}` };
+    return { ok: `Status updated.${r.ok ? ' WhatsApp sent.' : ''}${pay}${review}` };
   }
-  return { ok: 'Status updated.' };
+  return { ok: `Status updated.${review}` };
+}
+
+/** Thank-you + Google review request on WhatsApp (picture, "Leave a Google review" and "Chat with advisor"). */
+async function askReview(id: string, force = false): Promise<string> {
+  const app = await getApplication(id);
+  if (!app) return '';
+  const w = (await getSecrets()).whatsapp;
+  if (!force && (w.reviewAuto === false || app.reviewAskedAt)) return '';
+  const r = await sendWa(app.client.phone, 'review', V(app, { service: app.service || app.route || 'visa', link: `${SITE.url.replace(/\/$/, '')}/review/` }));
+  if (r.ok) await updateApplication(app.id, (a) => { a.reviewAskedAt = now(); });
+  return r.ok ? ' Google review request sent on WhatsApp.' : '';
+}
+
+/** Admin button: send the Google review request now (again). */
+export async function sendReviewRequest(f: FormData) {
+  await requireAdmin();
+  await askReview(s(f, 'app', 40), true);
+  revalidatePath(`/admin/applications/${s(f, 'app', 40)}/`);
 }
 
 export async function fillQuote(f: FormData) {

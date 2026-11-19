@@ -76,6 +76,11 @@ export default async function WhatsApp({ searchParams }: { searchParams: Promise
               <div className="field"><label>Webhook URL (paste in Meta)</label><code className="k" style={{ padding: 12, display: 'block', overflowWrap: 'anywhere' }}>{SITE.url}/api/whatsapp/webhook/</code><p className="help">Subscribe to “messages”. Client replies then appear in their application.</p></div>
               <F name="teamNumbers" label="Company numbers for alerts (enquiries, applications, appointments)" value={w.teamNumbers} type="textarea" rows={2} help="One per line, with country code" full />
               <div className="full"><input type="hidden" name="copyTeam_present" value="1" /><Toggle name="copyTeam" label="Copy client messages to team numbers" help="The team numbers above also receive every update sent to a client (welcome, status, quote, payment), exactly as the client sees it." on={w.copyTeam !== false} /></div>
+              <fieldset className="full pay-keys"><legend>⭐ Google review request</legend>
+                <input type="hidden" name="reviewUrl_present" value="1" />
+                <F name="reviewUrl" label="Your Google review link" value={w.reviewUrl ?? ''} placeholder="https://g.page/r/…/review" help="Google Business Profile → Ask for reviews → copy the link. Empty = your Google Maps listing (Site settings)." full />
+                <div className="full"><Toggle name="reviewAuto" label="Ask for a review when a file reaches its last step" help="Sent once per file on WhatsApp: thank-you, the Google Reviews picture and a “Leave a Google review” button. The text is under Automatic messages." on={w.reviewAuto !== false} /></div>
+              </fieldset>
               <F name="templateLang" label="Template language code" value={w.templateLang} help="For approved templates, e.g. en, ar" />
             </div>
           </div>

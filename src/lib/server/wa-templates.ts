@@ -9,7 +9,7 @@ const GRAPH = 'https://graph.facebook.com/v21.0';
 /** Second button on client messages: opens a chat with the advisor (main WhatsApp number, through the site's /chat link). */
 const ADVISOR = 'https://www.abudhabigoldenvisa.com/chat/971566556645';
 
-export const META_TPLS: { event: WaEvent; name: string; text: string; ex: string[]; header?: 'DOCUMENT'; buttons?: { text: string; url: string; ex?: string }[] }[] = [
+export const META_TPLS: { event: WaEvent; name: string; text: string; ex: string[]; header?: 'DOCUMENT' | 'IMAGE'; marketing?: boolean; buttons?: { text: string; url: string; ex?: string }[] }[] = [
   // Company alert: {{1}} is your own edited text (Admin > WhatsApp), the buttons open a chat with the client and the file in the admin.
   { event: 'leadTeam', name: 'adgv_team_alert_v1', text: 'New alert from your website: {{1}} Please follow up with the client soon.', ex: ['New application ADGV-0001 · Ahmed · +971501234567 · Golden Visa property investor'],
     buttons: [{ text: 'Chat with client', url: 'https://www.abudhabigoldenvisa.com/chat/{{1}}', ex: 'https://www.abudhabigoldenvisa.com/chat/971501234567' }, { text: 'Open in admin', url: 'https://www.abudhabigoldenvisa.com/admin/{{1}}', ex: 'https://www.abudhabigoldenvisa.com/admin/leads/' }] },
@@ -37,6 +37,10 @@ export const META_TPLS: { event: WaEvent; name: string; text: string; ex: string
   { event: 'payment', name: 'adgv_payment_request', text: 'Hello {{1}}, a payment is due for file {{2}}. For: {{3}}. Amount: {{4}}. Pay securely here: {{5}} Thank you.', ex: ['Ahmed', 'ADGV-0001', 'Government fees', 'AED 4,000.00', 'https://app.abudhabigoldenvisa.com/'] },
   { event: 'paid', name: 'adgv_payment_received', text: 'Hello {{1}}, we received your payment for file {{2}}. For: {{3}}. Amount: {{4}}. Receipt: {{5}}. Track your file here: {{6}} Thank you.', ex: ['Ahmed', 'ADGV-0001', 'Government fees', 'AED 4,000.00', 'RCPT-0001', 'https://app.abudhabigoldenvisa.com/'] },
   { event: 'message', name: 'adgv_new_message', text: 'Hello {{1}}, your advisor sent a message about file {{2}}: {{3}}. Reply here: {{4}} Thank you.', ex: ['Ahmed', 'ADGV-0001', 'Please upload your passport copy', 'https://app.abudhabigoldenvisa.com/'] },
+  // File complete: thank-you with the Google Reviews picture and a "Leave a review" button (/review opens your Google review page).
+  // Meta files review requests as marketing; it is sent once per client, so this one is used even as marketing.
+  { event: 'review', name: 'adgv_review_request_v1', header: 'IMAGE', marketing: true, text: 'Congratulations {{1}}! Your file {{2}} for {{3}} is complete. Thank you for trusting us, it was a pleasure to help you. If you are happy with our service, please share a short Google review. It takes less than a minute and helps other families find us. Thank you!', ex: ['Ahmed', 'ADGV-0001', 'Golden Visa'],
+    buttons: [{ text: 'Leave a Google review', url: 'https://www.abudhabigoldenvisa.com/review/' }, { text: 'Chat with advisor', url: ADVISOR }] },
   // The file itself is attached to this message (document header), like the email attachment.
   { event: 'document', name: 'adgv_document_file_v1', header: 'DOCUMENT', text: 'Hello {{1}}, a new document is ready on file {{2}}: {{3}}. It is attached to this message and saved in your dashboard: {{4}} Thank you.', ex: ['Ahmed', 'ADGV-0001', 'Entry permit', 'https://app.abudhabigoldenvisa.com/'] },
   { event: 'document', name: 'adgv_new_document', text: 'Hello {{1}}, a new document is ready on file {{2}}: {{3}}. View it here: {{4}} Thank you.', ex: ['Ahmed', 'ADGV-0001', 'Entry permit', 'https://app.abudhabigoldenvisa.com/'] },
@@ -53,7 +57,7 @@ export async function createMetaTemplates() {
   const w = (await getSecrets()).whatsapp;
   if (!w.businessId || !w.accessToken) return { ok: false, msg: 'Add the WhatsApp Business account ID and the access token first.' };
   const done: string[] = [], had: string[] = [], failed: string[] = [];
-  let handle = '';
+  let handle = '', img = '';
   for (const t of META_TPLS) {
     const comps: unknown[] = [{ type: 'BODY', text: t.text, example: { body_text: [t.ex] } }];
     if (t.buttons) comps.push({ type: 'BUTTONS', buttons: t.buttons.map((b) => ({ type: 'URL', text: b.text, url: b.url, ...(b.url.includes('{{1}}') && b.ex ? { example: [b.ex] } : {}) })) });
@@ -62,9 +66,14 @@ export async function createMetaTemplates() {
       if (!handle) continue;
       comps.unshift({ type: 'HEADER', format: 'DOCUMENT', example: { header_handle: [handle] } });
     }
+    if (t.header === 'IMAGE') {
+      img ||= await reviewImageHandle(w.accessToken).catch((e) => { failed.push(`${t.name}: picture upload failed (${(e as Error).message})`); return ''; });
+      if (!img) continue;
+      comps.unshift({ type: 'HEADER', format: 'IMAGE', example: { header_handle: [img] } });
+    }
     const r = await graph(`${encodeURIComponent(w.businessId)}/message_templates`, w.accessToken, {
       method: 'POST',
-      body: JSON.stringify({ name: t.name, language: 'en', category: 'UTILITY', components: comps }),
+      body: JSON.stringify({ name: t.name, language: 'en', category: t.marketing ? 'MARKETING' : 'UTILITY', components: comps }),
     });
     if (r.ok) done.push(t.name);
     else if (/already exists|duplicate|already (has |)?\w* ?content/i.test(r.err)) had.push(t.name);
@@ -76,6 +85,27 @@ export async function createMetaTemplates() {
 
 /** Meta needs an example file for a template with a document header: a small sample PDF is uploaded
  *  with the resumable upload API of your app and its handle is returned. */
+/** Example picture for the review template: the Google Reviews image shipped with the site. */
+async function reviewImageHandle(token: string): Promise<string> {
+  const { readFile } = await import('node:fs/promises');
+  const path = await import('node:path');
+  const bytes = await readFile(path.join(process.cwd(), 'public', 'brand', 'google-reviews.jpg'));
+  return uploadHandle(token, bytes, 'google-reviews.jpg', 'image/jpeg');
+}
+
+async function uploadHandle(token: string, bytes: Uint8Array, name: string, type: string): Promise<string> {
+  const app = await graph('app', token);
+  const appId = (app.j as { id?: string }).id;
+  if (!app.ok || !appId) throw new Error(app.err || 'app id not found');
+  const s = await graph(`${appId}/uploads?file_name=${encodeURIComponent(name)}&file_length=${bytes.length}&file_type=${encodeURIComponent(type)}`, token, { method: 'POST' });
+  const sid = (s.j as { id?: string }).id;
+  if (!s.ok || !sid) throw new Error(s.err || 'no upload session');
+  const r = await fetch(`${GRAPH}/${sid}`, { method: 'POST', headers: { Authorization: `OAuth ${token}`, file_offset: '0' }, body: Buffer.from(bytes), signal: AbortSignal.timeout(20000) });
+  const j = (await r.json().catch(() => ({}))) as { h?: string; error?: { message?: string } };
+  if (!r.ok || !j.h) throw new Error(j.error?.message || `HTTP ${r.status}`);
+  return j.h;
+}
+
 async function sampleDocHandle(token: string): Promise<string> {
   const app = await graph('app', token);
   const appId = (app.j as { id?: string }).id;
@@ -110,9 +140,10 @@ export async function syncMetaTemplates() {
     // messages go out through the approved "new message" utility template instead.
     const better = META_TPLS.find((x) => x.event === t.event && x.name === names[t.event]);
     const takenByBetter = better && better !== t && META_TPLS.indexOf(better) < META_TPLS.indexOf(t) && rows.find((x) => x.name === better.name)?.status === 'APPROVED';
-    if (st === 'APPROVED' && (!m?.category || m.category === 'UTILITY') && !takenByBetter) names[t.event] = t.name;
-    else if (m?.category && m.category !== 'UTILITY' && names[t.event] === t.name) delete names[t.event];
-    report.push(`${t.name}: ${st.toLowerCase().replace('_', ' ')}${m?.category && m.category !== 'UTILITY' ? ` (moved to ${m.category.toLowerCase()} by Meta)` : ''}`);
+    const catOk = !m?.category || m.category === 'UTILITY' || (t.marketing && m.category === 'MARKETING');
+    if (st === 'APPROVED' && catOk && !takenByBetter) names[t.event] = t.name;
+    else if (!catOk && names[t.event] === t.name) delete names[t.event];
+    report.push(`${t.name}: ${st.toLowerCase().replace('_', ' ')}${m?.category && m.category !== 'UTILITY' && !(t.marketing && m.category === 'MARKETING') ? ` (moved to ${m.category.toLowerCase()} by Meta)` : ''}`);
   }
   await saveSecrets({ whatsapp: { ...w, templateNames: names, templateLang: 'en' } });
   const ok = report.filter((x) => x.endsWith('approved')).length;

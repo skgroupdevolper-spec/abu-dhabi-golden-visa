@@ -33,7 +33,7 @@ export function middleware(req: NextRequest) {
 
   // Dashboards have their own pages (no language prefix). The admin path is passed on for section permissions.
   if (first === 'admin') { const h = new Headers(req.headers); h.set('x-admin-path', pathname.endsWith('/') ? pathname : `${pathname}/`); return NextResponse.next({ request: { headers: h } }); }
-  if (first === 'portal' || first === 'chat') return NextResponse.next();
+  if (first === 'portal' || first === 'chat' || first === 'review') return NextResponse.next();
 
   // /en/... is never public: send it to the unprefixed address.
   if (first === DEFAULT_LOCALE) {

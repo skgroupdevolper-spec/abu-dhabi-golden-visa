@@ -20,7 +20,7 @@ import { applyService } from '@/content/apply';
 import { listLeads } from '@/lib/server/store';
 import { STATE_LABEL, stageState } from '@/lib/stage-defs';
 import {
-  addPayment, archiveApplication, clearMessages, fillQuote, markPaid, newPortalLink, assignApp, removePayment, saveClient, saveQuote, setDecision, setRequests, setStage, teamMessage, toggleShare, uploadTeamDoc,
+  addPayment, archiveApplication, clearMessages, fillQuote, markPaid, sendReviewRequest, newPortalLink, assignApp, removePayment, saveClient, saveQuote, setDecision, setRequests, setStage, teamMessage, toggleShare, uploadTeamDoc,
 } from '../../../actions';
 
 export const metadata: Metadata = { title: 'Application' };
@@ -69,6 +69,13 @@ export default async function AppPage({ params }: { params: Promise<{ id: string
           <section className="panel" id="status">
             <div className="panel-h"><h2>Status</h2><span className="pill new">Step {a.stage + 1} of {STAGES.length}</span></div>
             <div className="bar" style={{ marginBottom: 16 }}><i style={{ width: `${((a.stage + 1) / STAGES.length) * 100}%` }} /></div>
+            {a.stage === STAGES.length - 1 && (
+              <form action={sendReviewRequest} className="review-ask">
+                <input type="hidden" name="app" value={a.id} />
+                <span>⭐ {a.reviewAskedAt ? `Google review request sent ${new Date(a.reviewAskedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}.` : 'File complete: ask the client for a Google review.'}</span>
+                <button className="btn btn-sm" type="submit">{a.reviewAskedAt ? 'Send again' : 'Send review request'}</button>
+              </form>
+            )}
             <ActionForm action={setStage} className="form">
               {H}
               <StageFields stages={STAGES} groups={steps.map((x) => x.group)} defaults={nextDefaults} stage={a.stage} next={a.nextStep} expected={a.expected} />

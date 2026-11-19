@@ -30,7 +30,7 @@ export type MenuItem = { label: string; href: string; groups?: MenuGroup[] };
 
 export type Secrets = {
   whatsapp: {
-    mode: 'link' | 'cloud'; phoneNumberId: string; accessToken: string; businessId: string; verifyToken: string; useMailText?: boolean; copyTeam?: boolean; senderNumber?: string; teamNumbers: string;
+    mode: 'link' | 'cloud'; phoneNumberId: string; accessToken: string; businessId: string; verifyToken: string; useMailText?: boolean; copyTeam?: boolean; /** Your Google "write a review" link. */ reviewUrl?: string; /** Ask for a Google review when a file reaches its last step. */ reviewAuto?: boolean; senderNumber?: string; teamNumbers: string;
     autos: Record<WaEvent, boolean>; templates: Record<WaEvent, string>; templateNames: Partial<Record<WaEvent, string>>; templateLang: string;
     /** Extra messages the team adds: each one is sent too when its trigger happens. */
     customs?: WaCustom[];
@@ -49,7 +49,7 @@ export type Secrets = {
 
 export type WaCustom = { id: string; label: string; on: boolean; when: WaEvent; text: string; templateName?: string };
 export type AiUse = 'chat' | 'translate' | 'writer' | 'editor';
-export type WaEvent = 'leadTeam' | 'applyTeam' | 'bookingTeam' | 'clientTeam' | 'welcome' | 'status' | 'quote' | 'confirmed' | 'payment' | 'paid' | 'message' | 'document' | 'reset';
+export type WaEvent = 'leadTeam' | 'applyTeam' | 'bookingTeam' | 'clientTeam' | 'welcome' | 'status' | 'quote' | 'confirmed' | 'payment' | 'paid' | 'message' | 'document' | 'review' | 'reset';
 
 export const WA_EVENTS: { key: WaEvent; label: string; to: 'team' | 'client'; vars: string }[] = [
   { key: 'leadTeam', label: 'New website enquiry (to your company)', to: 'team', vars: '{name} {phone} {service} {message} {chat} {link}' },
@@ -64,6 +64,7 @@ export const WA_EVENTS: { key: WaEvent; label: string; to: 'team' | 'client'; va
   { key: 'paid', label: 'Payment received (to client)', to: 'client', vars: '{name} {ref} {item} {amount} {receipt} {link}' },
   { key: 'message', label: 'New message from advisor (to client)', to: 'client', vars: '{name} {ref} {text} {link}' },
   { key: 'document', label: 'New document shared (to client)', to: 'client', vars: '{name} {ref} {document} {link}' },
+  { key: 'review', label: 'Google review request: file complete (to client)', to: 'client', vars: '{name} {ref} {service} {link}' },
   { key: 'reset', label: 'Password reset code (to client)', to: 'client', vars: '{name} {code}' },
 ];
 
@@ -100,7 +101,7 @@ export const DEFAULT_SITE: PublicSite = {
 export const DEFAULT_SECRETS: Secrets = {
   whatsapp: {
     mode: 'link', phoneNumberId: '', accessToken: '', businessId: '', verifyToken: '', teamNumbers: '',
-    autos: { leadTeam: true, applyTeam: true, bookingTeam: true, clientTeam: true, welcome: true, status: true, quote: true, confirmed: true, payment: true, paid: true, message: true, document: true, reset: true },
+    autos: { leadTeam: true, applyTeam: true, bookingTeam: true, clientTeam: true, welcome: true, status: true, quote: true, confirmed: true, payment: true, paid: true, message: true, document: true, review: true, reset: true },
     templates: {
       leadTeam: '🔔 *New website enquiry*\n\n👤 {name}\n📞 {phone}\n📄 {service}\n\n{message}\n\n💬 Chat with client: {chat}\n🔗 Open in admin: {link}',
       applyTeam: '🔔 *New application {ref}*\n\n👤 {name}\n📞 {phone}\n📄 {service}\n\n{message}\n\n💬 Chat with client: {chat}\n🔗 Open in admin: {link}',
@@ -114,6 +115,7 @@ export const DEFAULT_SECRETS: Secrets = {
       paid: '✅ Payment Received, thank you! 🙏\nAmount: {amount}\nRef: {ref} | {receipt}\nFor: {item}\nAll dues for this request are cleared. 🌹\nTrack your file: {link}',
       message: 'Hello {name}, your advisor wrote on {ref}: "{text}" Reply here: {link}',
       document: 'Hello {name}, a new document is ready on {ref}: {document}. {link}',
+      review: '🎉 *Congratulations, {name}!*\n\nYour *{service}* file *{ref}* is complete. Thank you for trusting us. It was a pleasure to help you. 🙏\n\n⭐⭐⭐⭐⭐\nIf you are happy with our service, would you share a short *Google review*? It takes less than a minute and helps other families find us.\n\n👉 {link}\n\nThank you!',
       reset: 'Your Abu Dhabi Golden Visa portal code is {code}. It expires in 15 minutes.',
     },
     templateNames: {}, templateLang: 'en',

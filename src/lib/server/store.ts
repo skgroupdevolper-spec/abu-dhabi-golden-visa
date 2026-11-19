@@ -26,6 +26,8 @@ export type Message = { id: string; by: 'client' | 'team'; text: string; at: str
 
 export type Application = {
   id: string; ref: string; token: string; createdAt: string; updatedAt: string; archived?: boolean;
+  /** When the Google review request was sent (sent once, when the file reached its last step). */
+  reviewAskedAt?: string;
   /** Team member (email) this file is assigned to. Staff only see their own files. */
   assignee?: string;
   client: { name: string; phone: string; email: string; nationality: string; language: string; contact?: string };
