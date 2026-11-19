@@ -73,8 +73,9 @@ export async function saveSmtp(_: St, f: FormData): Promise<St> {
   const cur = (await getSecrets()).smtp;
   await saveSecrets({ smtp: { host: s(f, 'host', 200), port: Number(s(f, 'port', 6)) || 465, secure: b(f, 'secure'), user: s(f, 'user', 200), pass: s(f, 'pass', 300) || cur.pass, from: s(f, 'from', 200), notify: s(f, 'notify', 300) } });
   if (f.get('test')) {
-    const r = await sendMail(s(f, 'notify', 300) || s(f, 'user', 200), 'Test email from your website', 'Your email settings work.');
-    return r.ok ? { ok: 'Saved and test email sent.' } : { error: `Saved, but the test failed: ${r.error}` };
+    const to = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s(f, 'testTo', 200)) ? s(f, 'testTo', 200) : (s(f, 'notify', 300).split(/[,;\n]/)[0] || '').trim() || s(f, 'user', 200);
+    const r = await sendMail(to, 'Test email from your website', `Your email settings work.\n\nSent from: ${s(f, 'from', 200) || s(f, 'user', 200)}`);
+    return r.ok ? { ok: `Saved and test email sent to ${to}.` } : { error: `Saved, but the test failed: ${r.error}` };
   }
   return { ok: 'Saved.' };
 }

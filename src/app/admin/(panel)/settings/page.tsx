@@ -92,6 +92,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
             <F name="from" label="From (e.g. Abu Dhabi Golden Visa <info@…>)" value={sec.smtp.from} />
             <F name="notify" label="Send website notifications to" value={sec.smtp.notify} help="New enquiries, applications, appointments and client requests. Several emails: separate with a comma (e.g. owner@…, sales@…)." />
             <Toggle name="secure" label="Use SSL" help="Set automatically from the port: 465 = SSL, 587 = STARTTLS. Only matters for other ports." on={sec.smtp.secure} />
+            <F name="testTo" label="Send the test to (optional)" type="email" placeholder="your personal email, e.g. name@gmail.com" help="Use an address outside your company Gmail to see the email exactly as a client sees it. Gmail does not show emails you send to yourself in the Inbox (only in Sent)." />
             <div className="full row"><Submit className="btn">Save</Submit><Submit name="test" value="1">Save and send a test email</Submit></div>
           </ActionForm>
         )}
