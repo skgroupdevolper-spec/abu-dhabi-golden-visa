@@ -91,7 +91,7 @@ export const SERVICE_CATALOG: CatalogGroup[] = [
       { label: 'Medical & EID Centres', href: '/services/medical-emirates-id-centres/' },
       { label: 'Visa Validity Check', href: '/services/visa-validity-check/' },
       { label: 'Cost Calculator', href: '/golden-visa-cost/' },
-      { label: 'Eligibility Checker', href: '/visa-check/' },
+      { label: 'Eligibility Checker', href: '/eligibility-check/' },
     ],
   },
 ];

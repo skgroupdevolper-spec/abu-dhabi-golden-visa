@@ -14,6 +14,7 @@ import { liveLocales, SITE, waLink } from '@/lib/site';
 import { iconForText } from '@/lib/icon-match';
 import { Icon } from './Icon';
 import { L } from './L';
+import { eligLink } from '@/lib/elig-link';
 
 export const CURRENCY_EVENT = 'adgv:currency';
 
@@ -262,7 +263,7 @@ export function Header({ locale }: { locale: Locale }) {
             </nav>
             <div className="tools">
               {langChip('m')}
-              <L locale={locale} href={SITE.nav.ctaLink || '/visa-check/'} className="btn btn-red btn-s hide-sm">
+              <L locale={locale} href={eligLink(SITE.nav.ctaLink || '/eligibility-check/', SITE.nav.ctaLabel)} className="btn btn-red btn-s hide-sm">
                 {u(SITE.nav.ctaLabel || 'Check Eligibility', locale)}
               </L>
               <ApplyA className="btn btn-gold btn-s hide-xs">{u('Apply Now', locale)}</ApplyA>

@@ -48,7 +48,10 @@ async function resolve(locale: string, slug: string[]): Promise<Resolved | null>
     if (post) page = postToPage(post);
   }
   if (!page) return null;
-  const o: PageOverride = custom ?? over[path] ?? {};
+  let o: PageOverride = custom ?? over[path] ?? {};
+  // /visa-check/ used to be the eligibility checker: texts saved for that old page are not shown on the new one.
+  const oldPage = path === '/visa-check/';
+  if (oldPage && /eligib/i.test(JSON.stringify(o))) o = { hidden: o.hidden };
   if (o.hidden || svc.hidden.includes(path)) return null;
   if (path === '/blog/') blog = {};
   let sections: Section[] = page.sections;
@@ -69,7 +72,8 @@ async function resolve(locale: string, slug: string[]): Promise<Resolved | null>
   };
 
   let translated = false;
-  const t = loc !== 'en' ? tr[loc]?.[path] : undefined;
+  // A translation of the old eligibility page (its sections still name the 'eligibility' tool) is skipped.
+  const t = loc !== 'en' && !(oldPage && !JSON.stringify(tr[loc]?.[path] ?? '').includes('visa-status')) ? tr[loc]?.[path] : undefined;
   if (t) {
     translated = true;
     page = { ...page, seoTitle: t.seoTitle || page.seoTitle, meta: t.meta || page.meta, eyebrow: t.eyebrow || page.eyebrow, h1: t.h1 || page.h1, intro: t.intro || page.intro, sections: t.sections?.length ? t.sections : page.sections, facts: t.facts?.length ? t.facts : page.facts };

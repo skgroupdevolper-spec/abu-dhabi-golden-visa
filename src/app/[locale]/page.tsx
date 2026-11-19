@@ -1,4 +1,5 @@
 import type React from 'react';
+import { eligLink } from '@/lib/elig-link';
 import type { Metadata } from 'next';
 import '../home.css';
 import { FEE_SCHEDULE as F, aed } from '@/lib/fees';
@@ -100,8 +101,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </h1>
             <p className="lead in-hero">{u(H.lead, locale)}</p>
             <div className="cta in-hero">
-              <a className="btn btn-gold mag" href={/^https?:/.test(H.btn1Link) ? H.btn1Link : lp(H.btn1Link)}>{u(H.btn1, locale)} <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></a>
-              <a className="btn btn-glass mag" href={/^https?:/.test(H.btn2Link) ? H.btn2Link : lp(H.btn2Link)} {...(H.btn2Link === '/golden-visa-cost/' ? { 'data-open-calc': '' } : {})}>{u(H.btn2, locale)}</a>
+              <a className="btn btn-gold mag" href={/^https?:/.test(H.btn1Link) ? H.btn1Link : lp(eligLink(H.btn1Link, H.btn1))}>{u(H.btn1, locale)} <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></a>
+              <a className="btn btn-glass mag" href={/^https?:/.test(H.btn2Link) ? H.btn2Link : lp(eligLink(H.btn2Link, H.btn2))} {...(H.btn2Link === '/golden-visa-cost/' ? { 'data-open-calc': '' } : {})}>{u(H.btn2, locale)}</a>
             </div>
             <div className="trust in-hero">{H.trust.map((t) => <span key={t}>{u(t, locale)}</span>)}</div>
           </div>

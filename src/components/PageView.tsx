@@ -4,6 +4,8 @@ import { u } from '@/lib/ui';
 import { preload } from 'react-dom';
 import { Booking } from './Booking';
 import { AboutHub, ContactHub } from './CompanyPages';
+import { AskCheckButton, VisaStatusChecker } from './VisaStatus';
+import { VisaStatusPage } from './VisaStatusPage';
 import { FlightPath } from './FlightPath';
 import type { Block } from '@/lib/blocks';
 import type { PageOverride } from '@/lib/server/content';
@@ -150,6 +152,7 @@ export function SectionView({ s, locale, i }: { s: Section; locale: Locale; i: n
     case 'tool':
       if (s.tool === 'contact-hub') return <ContactHub locale={locale} />;
       if (s.tool === 'about-hub') return <AboutHub locale={locale} />;
+      if (s.tool === 'visa-status') return <VisaStatusPage key={i} locale={locale} />;
       return (
         <section className={`block${s.tool === 'flight' ? ' block-flight' : ''}`} id={s.tool === 'apply' ? 'apply' : s.tool === 'booking' ? 'book' : sid(s.title)} data-reveal={s.tool === 'apply' || s.tool === 'flight' ? undefined : ''}>
           {s.title && s.tool !== 'booking' && s.tool !== 'flight' && <Head title={s.title} k={i} icon={s.tool === 'calculator' ? 'calc' : s.tool === 'eligibility' ? 'check' : 'wa'} />}
@@ -170,7 +173,9 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
   const facts = price ? [{ label: 'Price', value: price }, ...(page.facts ?? []).filter((f) => !/price|fees? from|cost/i.test(f.label))] : page.facts ?? [];
   const jump = (blocks ? [] : page.sections).filter((x) => 'title' in x && x.title && x.type !== 'tool').slice(0, 8) as { title: string }[];
   const wa = waLink(`Hello, I would like help with: ${page.h1}`);
-  const hub = page.sections.some((x) => x.type === 'tool' && (x.tool === 'contact-hub' || x.tool === 'about-hub'));
+  // UAE visa status check page: the checker sits in the hero, its own sections follow.
+  const vs = page.sections.some((x) => x.type === 'tool' && x.tool === 'visa-status');
+  const hub = vs || page.sections.some((x) => x.type === 'tool' && (x.tool === 'contact-hub' || x.tool === 'about-hub'));
   const showAside = !withSide && !isApply && !page.article && !o.hideAside && !before && !hub;
   const postSide = !!page.article && !o.hideAside;
   const heroImg = page.image;
@@ -185,12 +190,28 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
             {crumbs.map((c) => getPage(c) && (<span key={c}>/ <L locale={locale} href={c}>{u(getPage(c)!.eyebrow, locale)}</L></span>))}
             <span aria-current="page">/ {page.eyebrow}</span>
           </nav>
-          <div className={`phero-grid${isApply || page.article || (!heroImg && (!factsOn || !facts.length)) ? ' solo' : ''}`}>
+          <div className={`phero-grid${vs ? ' vs-hero' : isApply || page.article || (!heroImg && (!factsOn || !facts.length)) ? ' solo' : ''}`}>
             <div>
               <p className="eyebrow pill-eyebrow"><Icon name="star" size={14} /> {page.eyebrow}</p>
               <h1>{page.h1}</h1>
               <p className="lead">{page.intro}</p>
-              {!isApply && !page.article && !o.hideCta && (
+              {vs && (
+                <>
+                  <ul className="vs-gets">
+                    {['Validity and expiry date of your file', 'Days of grace period you have left', 'Overstay fines, if any are due'].map((x) => <li key={x}><Icon name="check" size={16} /> {u(x, locale)}</li>)}
+                  </ul>
+                  <div className="cta">
+                    <a className="btn btn-gold" href={waLink('Hello, please check my UAE visa status.')} target="_blank" rel="noopener"><Icon name="wa" size={18} /> {u('Ask us to check on WhatsApp', locale)}</a>
+                    <AskCheckButton label="Send my passport details" className="btn btn-glass" />
+                  </div>
+                  <ul className="trust-row">
+                    <li><Icon name="lock" size={16} /> {u('No UAE PASS login needed', locale)}</li>
+                    <li><Icon name="shield" size={16} /> {u('Nothing saved on this website', locale)}</li>
+                    <li><Icon name="gift" size={16} /> {u('Free of charge', locale)}</li>
+                  </ul>
+                </>
+              )}
+              {!vs && !isApply && !page.article && !o.hideCta && (
                 <div className="cta">
                   <L locale={locale} href={applyHref} className="btn btn-gold">{u('Apply Now', locale)} <Icon name="arrow" size={18} className="arrow" /></L>
                   {page.cta && page.cta.href !== '/free-consultation/' ? (
@@ -201,7 +222,7 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
                   <a className="btn btn-glass" href={wa} target="_blank" rel="noopener"><Icon name="wa" size={18} /> {u('WhatsApp', locale)}</a>
                 </div>
               )}
-              {!isApply && !page.article && (
+              {!vs && !isApply && !page.article && (
                 <ul className="trust-row">
                   <li><Icon name="check" size={16} /> {u('Free first review', locale)}</li>
                   <li><Icon name="coins" size={16} /> {u('Fees itemised before you pay', locale)}</li>
@@ -210,13 +231,14 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
               )}
               {!translated && <TranslationNotice locale={locale} />}
             </div>
-            {heroImg && !page.article && (!factsOn || !facts.length) && (
+            {vs && <div className="vs-side"><VisaStatusChecker /></div>}
+            {!vs && heroImg && !page.article && (!factsOn || !facts.length) && (
               <div className="phero-img"><img decoding="async" fetchPriority="high" width={1200} height={800} src={heroImg} alt={page.imageAlt || page.h1} /></div>
             )}
-            {!isApply && !page.article && factsOn && facts.length > 0 && heroImg && (
+            {!vs && !isApply && !page.article && factsOn && facts.length > 0 && heroImg && (
               <div className="phero-img hero-pic"><img decoding="async" fetchPriority="high" width={1200} height={800} src={heroImg} alt={page.imageAlt || page.h1} /></div>
             )}
-            {!isApply && !page.article && factsOn && facts.length > 0 && !heroImg && (
+            {!vs && !isApply && !page.article && factsOn && facts.length > 0 && !heroImg && (
               <div className="phero-side">
               <aside className="facts" aria-label={u('Quick facts', locale)}>
                 <p className="eyebrow">{u('Quick facts', locale)}</p>
@@ -232,7 +254,7 @@ export function PageView({ page, locale, translated, price, hidden = [], blocks,
           </div>
         </div>
       </header>
-      {!isApply && !page.article && factsOn && facts.length > 0 && heroImg && (
+      {!vs && !isApply && !page.article && factsOn && facts.length > 0 && heroImg && (
         <section className="facts-strip" aria-label={u('Quick facts', locale)}>
           <div className="wrap">
             <div className="fs-in">

@@ -26,7 +26,7 @@ export const COUNTRY_PAGES: Page[] = COUNTRIES.map((c) => ({
   eyebrow: `Golden Visa · ${c.menu}`,
   h1: `Abu Dhabi Golden Visa for ${c.people}`,
   intro: `${c.people} apply for the Abu Dhabi Golden Visa on exactly the same terms as everyone else: the route you qualify for depends on your property, investment, business, profession or talent, not your passport. What changes is how your documents are prepared. ${c.extra}`,
-  cta: { label: 'Check My Eligibility', href: '/visa-check/' },
+  cta: { label: 'Check My Eligibility', href: '/eligibility-check/' },
   sections: [
     {
       type: 'cards',

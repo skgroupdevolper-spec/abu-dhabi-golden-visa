@@ -78,7 +78,7 @@ export const NAV: NavItem[] = [
         title: 'Resources',
         links: [
           { label: 'Apply Online', href: '/apply/' },
-          { label: 'Eligibility Checker', href: '/visa-check/' },
+          { label: 'Eligibility Checker', href: '/eligibility-check/' },
           { label: 'Cost Calculator', href: '/golden-visa-cost/' },
           { label: 'Requirements & Documents', href: '/requirements-documents/' },
           { label: 'Application Process', href: '/how-to-apply/' },

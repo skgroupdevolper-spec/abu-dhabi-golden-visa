@@ -51,7 +51,7 @@ export const getTranslations = cache(() => readJsonFile<Translations>('translati
 export function postToPage(p: Post): Page {
   return {
     path: `/blog/${p.slug}/`, seoTitle: p.seoTitle || `${p.title} | Abu Dhabi Golden Visa`, meta: p.meta || p.summary, eyebrow: catName(p.category), h1: p.title, intro: p.summary, image: p.cover || coverUrl(p.title, catName(p.category)), imageAlt: p.coverAlt || p.title,
-    cta: { label: 'Check My Eligibility', href: '/visa-check/' },
+    cta: { label: 'Check My Eligibility', href: '/eligibility-check/' },
     sections: [
       { type: 'html', html: md(p.body) },
       ...(p.faq.length ? [{ type: 'faq', title: 'Frequently asked questions', items: p.faq } as Section] : []),

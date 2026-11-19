@@ -93,9 +93,9 @@ export const DEFAULT_SITE: PublicSite = {
   footerAbout: '',
   social: { facebook: 'https://www.facebook.com/brightlinkconsulting.uae/', instagram: 'https://www.instagram.com/brightlink.consulting/', linkedin: 'https://www.linkedin.com/company/brightlink-management-consultancy/', tiktok: 'https://www.tiktok.com/@brightlink.consulting', youtube: 'https://www.youtube.com/@brightlinkconsulting', x: 'https://twitter.com/BRIGHTLINKCONS1' },
   features: { topBar: false, topBarText: '', floatingWhatsApp: true, mobileBar: true, dock: true, newsletter: true, clientLogin: true, chatbot: true, offer: false, preloader: false, languageSwitcher: true },
-  offer: { title: 'Free eligibility check', text: 'Send us your details and get a written answer on your Golden Visa route.', button: 'Start my free check', link: '/visa-check/', delaySeconds: 12 },
+  offer: { title: 'Free eligibility check', text: 'Send us your details and get a written answer on your Golden Visa route.', button: 'Start my free check', link: '/eligibility-check/', delaySeconds: 12 },
   colors: { gold: '#d4af37', goldDeep: '#8a6a12', ink: '#0d0d0d', paper: '#f8f7f5' },
-  nav: { ctaLabel: 'Check Eligibility', ctaLink: '/visa-check/', extra: [], footerLinks: [], copyright: '' },
+  nav: { ctaLabel: 'Check Eligibility', ctaLink: '/eligibility-check/', extra: [], footerLinks: [], copyright: '' },
 };
 
 export const DEFAULT_SECRETS: Secrets = {

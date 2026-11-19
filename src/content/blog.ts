@@ -42,7 +42,7 @@ function art(a: A): Page {
     imageAlt: a.title,
     h1: a.title,
     intro: a.summary,
-    cta: a.cta ?? { label: 'Check My Eligibility', href: '/visa-check/' },
+    cta: a.cta ?? { label: 'Check My Eligibility', href: '/eligibility-check/' },
     sections,
     related: a.links,
     article: { author: AUTHOR, reviewer: REVIEWER, reviewed: REVIEWED, minutes: a.minutes, summary: a.summary },
@@ -79,7 +79,7 @@ export const BLOG: Page[] = [
       ['Good to know', NOTE],
     ],
     faq: [['Can I apply myself?', 'Yes. A consultant is optional; we save time by getting the file right the first time and following every step.'], ['How long does it take?', 'It depends on the route and the authorities. We give you a realistic estimate after reviewing your documents.']],
-    links: ['/how-to-apply/', '/requirements-documents/', '/visa-check/'],
+    links: ['/how-to-apply/', '/requirements-documents/', '/eligibility-check/'],
   }),
   art({
     slug: 'abu-dhabi-golden-visa-cost', minutes: 6,
@@ -109,7 +109,7 @@ export const BLOG: Page[] = [
     ],
     faq: [['Can jointly owned property count?', 'It is assessed case by case. Send us the title deed and we check it.'], ['Do I need to live in the property?', 'No. It can be rented out.']],
     links: ['/golden-visa/property-investment/', '/document-services/valuation-certificate/', '/golden-visa-cost/'],
-    cta: { label: 'Check My Property Eligibility', href: '/visa-check/' },
+    cta: { label: 'Check My Property Eligibility', href: '/eligibility-check/' },
   }),
   art({
     slug: 'off-plan-property-golden-visa', minutes: 5,
@@ -320,6 +320,6 @@ export const BLOG: Page[] = [
       ['Note', NOTE],
     ],
     faq: [['Can a rejected application be resubmitted?', 'Often yes, once the issue is fixed.'], ['Does a consultant guarantee approval?', 'No one can guarantee approval; the authorities decide.']],
-    links: ['/requirements-documents/', '/visa-check/'],
+    links: ['/requirements-documents/', '/eligibility-check/'],
   }),
 ];

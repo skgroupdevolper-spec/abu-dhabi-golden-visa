@@ -10,7 +10,7 @@ export const HOME_HERO: HomeHero = {
   line2: 'Abu Dhabi starts',
   gold: 'with a Golden Visa.',
   lead: 'Explore long-term UAE residency through property investment, business ownership, professional achievements and exceptional talent. From eligibility assessment to Emirates ID issuance, our specialists guide you through every stage.',
-  btn1: 'Check My Eligibility', btn1Link: '/visa-check/',
+  btn1: 'Check My Eligibility', btn1Link: '/eligibility-check/',
   btn2: 'Calculate Visa Cost', btn2Link: '/golden-visa-cost/',
   trust: ['Free Initial Consultation', 'Family Applications', 'VIP Assistance'],
 };

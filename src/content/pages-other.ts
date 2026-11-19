@@ -220,7 +220,16 @@ export const OTHER_PAGES: Page[] = [
   // ---------------- Resources ----------------
   {
     path: '/visa-check/',
-    seoTitle: 'Abu Dhabi Golden Visa Eligibility Checker | Free Visa Check',
+    seoTitle: 'UAE Visa Status Check | Free File Validity Check | Abu Dhabi Golden Visa',
+    meta: 'Check your UAE visa status and file validity: which portal holds your file (GDRFA Dubai or ICP), grace period and overstay fines. Or send your passport details on WhatsApp and we check it free.',
+    eyebrow: 'Free visa status check',
+    h1: 'UAE visa status check and file validity',
+    intro: 'Is your visa still active, already cancelled or past its end date? Use the checker to see which official portal holds your file and exactly what to type in. If you would rather not deal with the portals, send us your passport details on WhatsApp and our team looks it up for you, free.',
+    sections: [{ type: 'tool', tool: 'visa-status' }],
+  },
+  {
+    path: '/eligibility-check/',
+    seoTitle: 'Abu Dhabi Golden Visa Eligibility Checker | Free Check',
     meta: 'Answer a few questions to see which Abu Dhabi Golden Visa route may suit you. Free, quick and followed up by a consultant.',
     eyebrow: 'Eligibility checker',
     h1: 'Check your Golden Visa eligibility',
@@ -261,7 +270,7 @@ export const OTHER_PAGES: Page[] = [
     eyebrow: 'Application process',
     h1: 'How to Apply for Abu Dhabi Golden Visa – Step-by-Step Guide',
     intro: 'The order changes with your route and whether you are already in the UAE. Here is the full path.',
-    cta: { label: 'Start With a Free Check', href: '/visa-check/' },
+    cta: { label: 'Start With a Free Check', href: '/eligibility-check/' },
     sections: [
       { type: 'tool', tool: 'flight', title: 'Your flight to a Golden Visa', intro: 'Scroll and follow the plane: each stop is a stage we handle for you.' },
       {

@@ -49,11 +49,13 @@ export function Footer({ locale }: { locale: Locale }) {
           <div>
             <h4>{u('Contact', locale)}</h4>
             <ul className="fcontact">
-              <li><a href={waLink('Hello, I would like help with the Abu Dhabi Golden Visa.')} target="_blank" rel="noopener"><Icon name="wa" size={17} /><span>WhatsApp {SITE.whatsappDisplay}</span></a></li>
-              {SITE.phone && SITE.phone !== SITE.whatsappDisplay && <li><a href={`tel:${SITE.phone.replace(/[^\d+]/g, '')}`}><Icon name="phone" size={17} /><span>{SITE.phone}</span></a></li>}
-              <li><a href={`mailto:${SITE.email}`}><Icon name="mail" size={17} /><span>{SITE.email}</span></a></li>
-              <li>{SITE.mapsUrl ? <a href={SITE.mapsUrl} target="_blank" rel="noopener"><Icon name="pin" size={17} /><span>{SITE.office}</span></a> : <span className="fc-row"><Icon name="pin" size={17} /><span>{SITE.office}</span></span>}</li>
-              {SITE.hours && <li><span className="fc-row"><Icon name="clock" size={17} /><span>{SITE.hours}</span></span></li>}
+              <li><a href={waLink('Hello, I would like help with the Abu Dhabi Golden Visa.')} target="_blank" rel="noopener"><Icon name="wa" size={17} /><span><small className="fc-l">{u('WhatsApp', locale)}</small><b className="fc-nw" dir="ltr">{SITE.whatsappDisplay}</b></span></a></li>
+              {/* Same number as WhatsApp: shown once (call it from the WhatsApp line's number). */}
+              {SITE.phone && SITE.phone.replace(/\D/g, '') !== SITE.whatsappDisplay.replace(/\D/g, '') && <li><a href={`tel:${SITE.phone.replace(/[^\d+]/g, '')}`}><Icon name="phone" size={17} /><span><small className="fc-l">{u('Call', locale)}</small><b className="fc-nw" dir="ltr">{SITE.phone}</b></span></a></li>}
+              {SITE.phone && SITE.phone.replace(/\D/g, '') === SITE.whatsappDisplay.replace(/\D/g, '') && <li><a href={`tel:${SITE.phone.replace(/[^\d+]/g, '')}`}><Icon name="phone" size={17} /><span><small className="fc-l">{u('Call us', locale)}</small><b className="fc-nw" dir="ltr">{SITE.whatsappDisplay}</b></span></a></li>}
+              <li><a href={`mailto:${SITE.email}`}><Icon name="mail" size={17} /><span><small className="fc-l">{u('Email', locale)}</small><b className="fc-mail" dir="ltr">{SITE.email.split('@')[0]}@<wbr />{SITE.email.split('@')[1]}</b></span></a></li>
+              <li>{SITE.mapsUrl ? <a href={SITE.mapsUrl} target="_blank" rel="noopener"><Icon name="pin" size={17} /><span><small className="fc-l">{u('Office', locale)}</small>{SITE.office}</span></a> : <span className="fc-row"><Icon name="pin" size={17} /><span><small className="fc-l">{u('Office', locale)}</small>{SITE.office}</span></span>}</li>
+              {SITE.hours && <li><span className="fc-row"><Icon name="clock" size={17} /><span><small className="fc-l">{u('Opening hours', locale)}</small>{SITE.hours.split(/\s*·\s*/).map((h) => <span key={h} className="fc-line">{h}</span>)}</span></span></li>}
               <li><L locale={locale} href="/apply/"><Icon name="doc" size={17} /><span>{u('Apply online', locale)}</span></L></li>
               <li><L locale={locale} href="/contact/"><Icon name="user" size={17} /><span>{u('Contact us', locale)}</span></L></li>
               <li><L locale={locale} href="/about/"><Icon name="star" size={17} /><span>{u('About us', locale)}</span></L></li>

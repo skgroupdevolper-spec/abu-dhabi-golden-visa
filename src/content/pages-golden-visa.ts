@@ -2,7 +2,7 @@ import type { Page } from './types';
 
 // Golden Visa category pages (spec sections 3 and 4). Facts from ADDED, ICP, Invest Abu Dhabi and
 // the Ministry of Culture, checked 5 November 2026, written in our own words.
-const ELIGIBILITY_CTA = { label: 'Check My Eligibility', href: '/visa-check/' };
+const ELIGIBILITY_CTA = { label: 'Check My Eligibility', href: '/eligibility-check/' };
 
 export const GOLDEN_VISA_PAGES: Page[] = [
   {
@@ -53,7 +53,7 @@ export const GOLDEN_VISA_PAGES: Page[] = [
     h1: 'Get Your 10-Year Abu Dhabi Golden Visa Through Property Investment',
     intro:
       'Invest in qualifying Abu Dhabi real estate and explore your eligibility for long-term UAE residency. Our consultants handle property documents, eligibility checks, entry permits, medical fitness, Emirates ID and residence issuance.',
-    cta: { label: 'Check My Property Eligibility', href: '/visa-check/' },
+    cta: { label: 'Check My Property Eligibility', href: '/eligibility-check/' },
     sections: [
       {
         type: 'text',

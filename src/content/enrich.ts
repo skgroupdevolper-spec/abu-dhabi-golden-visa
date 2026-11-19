@@ -335,7 +335,7 @@ export const RICH: Record<string, Rich> = {
       ], note: 'Visas issued in Dubai are held by GDRFA Dubai; visas from Abu Dhabi and the other emirates are held by ICP.' },
     ],
   },
-  '/visa-check/': { apply: 'golden-visa', facts: [{ label: 'Price', value: 'Free' }, { label: 'Time', value: 'About 1 minute' }, { label: 'Result', value: 'Possible routes + next steps' }, { label: 'Follow-up', value: 'WhatsApp, in your language' }] },
+  '/eligibility-check/': { apply: 'golden-visa', facts: [{ label: 'Price', value: 'Free' }, { label: 'Time', value: 'About 1 minute' }, { label: 'Result', value: 'Possible routes + next steps' }, { label: 'Follow-up', value: 'WhatsApp, in your language' }] },
   '/document-services/valuation-certificate/': {
     apply: 'valuation',
     facts: [
