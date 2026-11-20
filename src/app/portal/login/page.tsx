@@ -4,7 +4,7 @@ import { ActionForm, Submit } from '@/components/dash/ActionForm';
 import { AuthShell } from '@/components/dash/AuthShell';
 import { LangSelect, PasswordInput } from '@/components/dash/LangSelect';
 import { currentCustomer, portalBase, T } from '@/lib/server/portal';
-import { waLink } from '@/lib/site';
+import { SITE, waLink } from '@/lib/site';
 import { findFile, login, setLang } from '../actions';
 
 export const metadata: Metadata = { title: 'Sign in' };
@@ -16,7 +16,7 @@ export default async function Login() {
   const { t, lang } = await T();
   return (
     <AuthShell eyebrow={t.leftEyebrow} title={t.leftTitle} text={t.leftText} ticks={[t.tick1, t.tick2, t.tick3]}
-      top={<div className="auth-top"><img decoding="async" src="/brand/logo.webp" alt="Abu Dhabi Golden Visa" /><LangSelect action={setLang} current={lang.code} back={`${base}/login/`} label={t.language} /></div>}>
+      top={<div className="auth-top"><a href={`${SITE.url}/`} className="auth-logo"><img decoding="async" src="/brand/logo.webp" alt="Abu Dhabi Golden Visa" /></a><a href={`${SITE.url}/`} className="auth-back">‹ {t.backToSite}</a><LangSelect action={setLang} current={lang.code} back={`${base}/login/`} label={t.language} /></div>}>
       <p className="eyebrow">{t.signIn}</p>
       <h2>{t.welcomeBack}</h2>
       <p className="muted">{t.enterDetails}</p>

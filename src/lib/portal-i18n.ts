@@ -3,7 +3,7 @@
 import { OTHER } from './portal-i18n-langs';
 
 export const EN = {
-  signIn: 'Sign in', welcomeBack: 'Welcome back', enterDetails: 'Enter your email and password to continue.',
+  signIn: 'Sign in', backToSite: 'Back to website', welcomeBack: 'Welcome back', enterDetails: 'Enter your email and password to continue.',
   email: 'Email', phone: 'WhatsApp number', password: 'Password', forgot: 'Forgot password?',
   newHere: 'New here?', createAccount: 'Create an account', haveAccount: 'Already have an account?', name: 'Full name', register: 'Create my account',
   orRef: 'Have a reference number?', reference: 'Reference', openFile: 'Open my file', needHelp: 'Need help? Chat on WhatsApp',

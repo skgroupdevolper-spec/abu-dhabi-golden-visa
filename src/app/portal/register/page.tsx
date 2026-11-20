@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { SITE } from '@/lib/site';
 import { redirect } from 'next/navigation';
 import { ActionForm, Submit } from '@/components/dash/ActionForm';
 import { AuthShell } from '@/components/dash/AuthShell';
@@ -15,7 +16,7 @@ export default async function Register() {
   const { t, lang } = await T();
   return (
     <AuthShell eyebrow={t.leftEyebrow} title={t.createAccount} text={t.leftText} ticks={[t.tick1, t.tick2, t.tick3]}
-      top={<div className="auth-top"><img decoding="async" src="/brand/logo.webp" alt="Abu Dhabi Golden Visa" /><LangSelect action={setLang} current={lang.code} back={`${base}/register/`} label={t.language} /></div>}>
+      top={<div className="auth-top"><a href={`${SITE.url}/`} className="auth-logo"><img decoding="async" src="/brand/logo.webp" alt="Abu Dhabi Golden Visa" /></a><a href={`${SITE.url}/`} className="auth-back">‹ {t.backToSite}</a><LangSelect action={setLang} current={lang.code} back={`${base}/register/`} label={t.language} /></div>}>
       <p className="eyebrow">{t.newHere}</p>
       <h2>{t.createAccount}</h2>
       <ActionForm action={register} className="stack">
