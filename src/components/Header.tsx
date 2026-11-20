@@ -332,7 +332,7 @@ export function Header({ locale }: { locale: Locale }) {
           <span className="ic g"><Icon name="calc" /></span>
           <span className="lb">{u('Cost calculator', locale)}</span>
         </L>
-        <a href={waLink('Hello, I would like help with the Abu Dhabi Golden Visa.')} target="_blank" rel="noopener">
+        <a href={waLink('Hello, I would like help with the Abu Dhabi Golden Visa.')} target="_blank" rel="noopener" className="dock-wa">
           <span className="ic w"><Icon name="wa" /></span>
           <span className="lb">{u('WhatsApp us', locale)}</span>
         </a>
@@ -359,9 +359,9 @@ export function Header({ locale }: { locale: Locale }) {
       {F.mobileBar && <nav className="mnav" aria-label={u('Mobile', locale)}>
         <L locale={locale} href="/"><Icon name="home" />{u('Home', locale)}</L>
         <L locale={locale} href="/golden-visa/"><Icon name="star" />{u('Golden Visa', locale)}</L>
-        <L locale={locale} href="/golden-visa-cost/" className="mid" aria-label={u('Cost calculator', locale)} data-open-calc=""><Icon name="calc" size={26} /></L>
+        <ApplyA className="mid apply-mid"><span className="am-ic" aria-hidden="true"><Icon name="pen" size={24} /></span><span className="am-lb">{u('Apply Now', locale)}</span></ApplyA>
         <L locale={locale} href="/visa-check/"><Icon name="check" />{u('Visa Check', locale)}</L>
-        <a href={waLink('Hello, I would like help with the Abu Dhabi Golden Visa.')} target="_blank" rel="noopener"><Icon name="wa" />{u('WhatsApp', locale)}</a>
+        <L locale={locale} href="/golden-visa-cost/" data-open-calc=""><Icon name="calc" />{u('Calculator', locale)}</L>
       </nav>}
       {F.floatingWhatsApp && !F.dock && (
         <a className="wa-float" href={waLink('Hello, I would like help with the Abu Dhabi Golden Visa.')} target="_blank" rel="noopener" aria-label={u('WhatsApp us', locale)}><Icon name="wa" size={26} /></a>

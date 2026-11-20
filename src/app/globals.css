@@ -1842,3 +1842,22 @@ footer.site .fbar-links { padding: 4px 0; }
 footer.site .legal-links a { padding: 2px 6px; }
 footer.site .fbar-links a:hover, footer.site .fbar-links a:focus-visible { color: var(--gold-deep); text-decoration: underline; text-underline-offset: 3px; }
 footer.site .legal-links a:hover, footer.site .legal-links a:focus-visible { color: var(--navy); }
+
+/* Phones: the centre button of the bottom menu is "Apply Now" (gently pulsing so it invites a tap),
+   and a small WhatsApp button sits on the right, just above the back-to-top button. */
+@media (max-width: 760px) {
+  .mnav a.mid.apply-mid { position: relative; overflow: visible; font-size: 0; gap: 0; background: linear-gradient(140deg, var(--gold-light), var(--gold) 60%, var(--gold-deep)); animation: am-breathe 2.6s ease-in-out infinite; }
+  .mnav a.mid.apply-mid::before, .mnav a.mid.apply-mid::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--gold); opacity: 0; animation: am-ring 2.6s ease-out infinite; pointer-events: none; }
+  .mnav a.mid.apply-mid::after { animation-delay: 1.3s; }
+  .mnav a.mid.apply-mid .am-ic { display: grid; place-items: center; animation: am-tap 2.6s ease-in-out infinite; }
+  .mnav a.mid.apply-mid .am-lb { position: absolute; top: calc(100% + 2px); left: 50%; transform: translateX(-50%); white-space: nowrap; font: 800 10.5px var(--body); color: var(--gold-deep); letter-spacing: .01em; }
+  .mnav a.mid.apply-mid:active { transform: scale(.94); }
+  .dock > a.dock-wa { display: flex !important; max-width: 40px !important; height: 40px !important; padding: 0 !important; background: transparent !important; box-shadow: none !important; }
+  .dock > a.dock-wa .ic { width: 40px !important; height: 40px !important; background: #25d366 !important; color: #fff !important; border-color: transparent !important; box-shadow: 0 10px 22px -10px rgba(18, 140, 70, .7) !important; }
+  .dock > a.dock-wa .ic svg { width: 20px; height: 20px; }
+  .dock > a.dock-wa .lb { display: none; }
+}
+@keyframes am-ring { 0% { transform: scale(1); opacity: .75; } 100% { transform: scale(1.55); opacity: 0; } }
+@keyframes am-breathe { 0%, 100% { box-shadow: 0 0 0 5px #fff, 0 14px 26px -10px rgba(160, 120, 10, .8); } 50% { box-shadow: 0 0 0 5px #fff, 0 16px 32px -8px rgba(200, 150, 20, 1); } }
+@keyframes am-tap { 0%, 60%, 100% { transform: translate(0, 0) rotate(0); } 70% { transform: translate(-2px, 2px) rotate(-10deg); } 80% { transform: translate(1px, -1px) rotate(6deg); } 90% { transform: translate(0, 1px) rotate(-3deg); } }
+@media (prefers-reduced-motion: reduce) { .mnav a.mid.apply-mid, .mnav a.mid.apply-mid::before, .mnav a.mid.apply-mid::after, .mnav a.mid.apply-mid .am-ic { animation: none; } }
