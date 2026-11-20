@@ -4,8 +4,8 @@
 import { chromium, devices } from 'playwright';
 import fs from 'node:fs';
 
-const SITES = (process.env.SITES || 'https://www.abudhabigoldenvisa.com,https://familyvisauae.com').split(',');
-const EXTRA = (process.env.EXTRA || 'https://app.abudhabigoldenvisa.com/login/,https://app.abudhabigoldenvisa.com/register/,https://app.abudhabigoldenvisa.com/forgot/,https://app.familyvisauae.com/login/,https://app.familyvisauae.com/register/,https://app.familyvisauae.com/forgot/,https://app.abudhabigoldenvisa.com/apply/,https://app.familyvisauae.com/apply/').split(',').filter(Boolean);
+const SITES = (process.env.SITES || 'https://www.abudhabigoldenvisa.com,https://familyvisauae.com').split(',').filter(Boolean);
+const EXTRA = (process.env.EXTRA ?? 'https://app.abudhabigoldenvisa.com/login/,https://app.abudhabigoldenvisa.com/register/,https://app.abudhabigoldenvisa.com/forgot/,https://app.familyvisauae.com/login/,https://app.familyvisauae.com/register/,https://app.familyvisauae.com/forgot/,https://app.abudhabigoldenvisa.com/apply/,https://app.familyvisauae.com/apply/').split(',').filter(Boolean);
 const MAX = Number(process.env.MAX_PAGES || 400);
 const LANGS_TOO = process.env.LANGS === '1';
 const OUT = 'audit';

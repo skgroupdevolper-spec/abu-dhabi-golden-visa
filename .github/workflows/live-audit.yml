@@ -8,6 +8,9 @@ on:
       sites:
         description: 'Websites to check (comma separated)'
         default: 'https://www.abudhabigoldenvisa.com,https://familyvisauae.com'
+      extra:
+        description: 'Extra pages checked on every device with screenshots (comma separated)'
+        default: ''
       conc:
         description: 'Pages checked at the same time'
         default: '4'
@@ -30,6 +33,7 @@ jobs:
           LANGS: ${{ inputs.langs }}
           SITES: ${{ inputs.sites }}
           CONC: ${{ inputs.conc }}
+          EXTRA: ${{ inputs.extra }}
         run: |
           cp scripts/live-audit.mjs /tmp/a/ && cd /tmp/a && node live-audit.mjs
       - name: Save report to the audit branch
