@@ -1,0 +1,33 @@
+name: Live audit
+on:
+  workflow_dispatch:
+    inputs:
+      langs:
+        description: 'Also check every language page (1 = yes)'
+        default: '0'
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: |
+          mkdir -p /tmp/a && cd /tmp/a && npm init -y >/dev/null && npm i playwright@1.49.1 >/dev/null && npx playwright install --with-deps chromium >/dev/null
+      - name: Audit
+        env:
+          LANGS: ${{ inputs.langs }}
+        run: |
+          cp scripts/live-audit.mjs /tmp/a/ && cd /tmp/a && node live-audit.mjs
+      - name: Save report to the audit branch
+        if: always()
+        run: |
+          cd /tmp/a/audit || exit 0
+          git init -q -b audit && git add -A
+          git -c user.name=ci -c user.email=ci@example.com commit -qm "Live audit ${{ github.run_id }}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" audit
