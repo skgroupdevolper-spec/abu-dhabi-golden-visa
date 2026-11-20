@@ -1861,3 +1861,11 @@ footer.site .legal-links a:hover, footer.site .legal-links a:focus-visible { col
 @keyframes am-breathe { 0%, 100% { box-shadow: 0 0 0 5px #fff, 0 14px 26px -10px rgba(160, 120, 10, .8); } 50% { box-shadow: 0 0 0 5px #fff, 0 16px 32px -8px rgba(200, 150, 20, 1); } }
 @keyframes am-tap { 0%, 60%, 100% { transform: translate(0, 0) rotate(0); } 70% { transform: translate(-2px, 2px) rotate(-10deg); } 80% { transform: translate(1px, -1px) rotate(6deg); } 90% { transform: translate(0, 1px) rotate(-3deg); } }
 @media (prefers-reduced-motion: reduce) { .mnav a.mid.apply-mid, .mnav a.mid.apply-mid::before, .mnav a.mid.apply-mid::after, .mnav a.mid.apply-mid .am-ic { animation: none; } }
+
+/* Phones: the account button (sign in / my dashboard) sits next to the menu button, since the top line is hidden there. */
+.hdr-user { display: none; }
+@media (max-width: 640px) {
+  .hdr-user { position: relative; display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: #fff; color: var(--navy); text-decoration: none; }
+  .hdr-user.in { color: var(--gold-deep); border-color: rgba(184, 144, 31, .45); background: #fffaf0; }
+  .hdr-user.in::after { content: ''; position: absolute; top: 3px; inset-inline-end: 3px; width: 10px; height: 10px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 2px #fff; }
+}

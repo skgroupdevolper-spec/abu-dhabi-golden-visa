@@ -267,6 +267,7 @@ export function Header({ locale }: { locale: Locale }) {
                 {u(SITE.nav.ctaLabel || 'Check Eligibility', locale)}
               </L>
               <ApplyA className="btn btn-gold btn-s hide-xs">{u('Apply Now', locale)}</ApplyA>
+              {F.clientLogin && <a href={portal} className={`hdr-user${me ? ' in' : ''}`} aria-label={me ? `${loginLabel} (${me})` : loginLabel} title={me || loginLabel}><Icon name="user" size={20} /></a>}
               <button type="button" className="burger" aria-label={u('Open menu', locale)} onClick={() => setMobile(true)}>
                 <Icon name="menu" />
               </button>
