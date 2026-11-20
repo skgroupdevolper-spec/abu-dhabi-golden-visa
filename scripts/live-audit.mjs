@@ -46,6 +46,7 @@ const issues = [];
 const add = (site, page, device, kind, detail) => issues.push({ site, page, device, kind, detail: String(detail).slice(0, 400) });
 
 const linkStatus = new Map();
+const opts503 = new Set();
 async function checkLink(u) {
   if (linkStatus.has(u)) return linkStatus.get(u);
   let st = 0;
@@ -74,6 +75,7 @@ async function auditPage(browser, site, url, device, { shot = false, links = fal
     const resp = await page.goto(url, { waitUntil: 'networkidle', timeout: 45000 }).catch(async () => page.goto(url, { waitUntil: 'load', timeout: 45000 }));
     status = resp?.status() ?? 0;
   } catch (e) { add(site, url, device, 'page did not load', e.message); await ctx.close(); return []; }
+  if (status === 503 && !opts503.has(url + device)) { opts503.add(url + device); await ctx.close(); await new Promise((r) => setTimeout(r, 4000)); return auditPage(browser, site, url, device, { shot, links }); }
   if (status >= 400) add(site, url, device, `page HTTP ${status}`, url);
   await page.waitForTimeout(800);
   // scroll down to trigger lazy images
@@ -144,12 +146,12 @@ for (const site of SITES) {
       if (i % 20 === 0) console.log(`  ${i}/${urls.length}`);
     }
   }
-  await Promise.all([worker(), worker(), worker(), worker()]);
+  await Promise.all(Array.from({ length: Number(process.env.CONC || 4) }, () => worker()));
   // check every internal link found
   const internal = [...allLinks].filter((l) => { try { return new URL(l).host.replace(/^www\./, '').endsWith(host); } catch { return false; } });
   summary[site].links = internal.length;
   const lq = [...internal];
-  await Promise.all(Array.from({ length: 8 }, async () => { while (lq.length) { const l = lq.shift(); const st = await checkLink(l); if (st >= 400 || st < 0) add(site, l, '-', `broken link (${st})`, l); } }));
+  await Promise.all(Array.from({ length: Number(process.env.CONC || 4) * 2 }, async () => { while (lq.length) { const l = lq.shift(); const st = await checkLink(l); if (st >= 400 || st < 0) add(site, l, '-', `broken link (${st})`, l); } }));
 }
 for (const u of EXTRA) {
   const site = new URL(u).origin;
