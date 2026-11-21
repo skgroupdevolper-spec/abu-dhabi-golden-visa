@@ -13,6 +13,21 @@ import { PageView } from '@/components/PageView';
 import { readJsonFile } from '@/lib/server/store';
 import { BlogIndex } from '@/components/BlogIndex';
 import { BLOG } from '@/content/blog';
+import { localizePath } from '@/lib/i18n';
+
+const plain = (h: string) => h.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
+/** Breadcrumbs (Home > section > page) and FAQ answers, so Google shows them in results. */
+function structured(page: Page, loc: Locale) {
+  const parts = page.path.split('/').filter(Boolean);
+  const crumbs = [{ name: 'Home', path: '/' }, ...parts.map((p, i) => ({ path: '/' + parts.slice(0, i + 1).join('/') + '/', name: i === parts.length - 1 ? page.h1 : p.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase()) }))];
+  const out: object[] = [{
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+    itemListElement: crumbs.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: plain(c.name).slice(0, 110), item: SITE.url + localizePath(c.path, loc) })),
+  }];
+  const qa = page.sections.flatMap((s) => (s.type === 'faq' ? s.items : [])).filter((x) => x.q && x.a).slice(0, 30);
+  if (qa.length) out.push({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: qa.map((x) => ({ '@type': 'Question', name: plain(x.q), acceptedAnswer: { '@type': 'Answer', text: plain(x.a) } })) });
+  return JSON.stringify(out).replace(/</g, '\\u003c');
+}
 
 type Params = Promise<{ locale: string; slug: string[] }>;
 
@@ -113,6 +128,7 @@ export default async function ContentPage({ params }: { params: Params }) {
           publisher: { '@type': 'Organization', name: SITE.operator, logo: { '@type': 'ImageObject', url: SITE.url + '/brand/coin.webp' } }, mainEntityOfPage: SITE.url + r.page.path,
         }).replace(/</g, '\\u003c') }} />
       )}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: structured(r.page, r.loc) }} />
       {r.o.css && <style dangerouslySetInnerHTML={{ __html: r.o.css.replace(/<\/?style/gi, '') }} />}
     </>
   );

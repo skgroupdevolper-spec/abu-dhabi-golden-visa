@@ -14,7 +14,20 @@ const RELEASED = new Date();
 const abs = (u?: string) => (u ? (u.startsWith('http') ? u : SITE.url + u) : undefined);
 
 /** Every public page in all 20 languages, with hreflang alternates, images and last-change dates. */
+const KEEP = 10 * 60_000;
+const memo = globalThis as unknown as { __adgvSitemap?: { at: number; data: MetadataRoute.Sitemap; busy?: Promise<MetadataRoute.Sitemap> } };
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const m = memo.__adgvSitemap;
+  if (m && Date.now() - m.at < KEEP) return m.data;
+  // Old list answered at once while a fresh one is built in the background.
+  if (m) { m.busy ??= build().then((data) => { memo.__adgvSitemap = { at: Date.now(), data }; return data; }).finally(() => { if (memo.__adgvSitemap) memo.__adgvSitemap.busy = undefined; }); return m.data; }
+  const data = await build();
+  if (data.length > 1) memo.__adgvSitemap = { at: Date.now(), data };
+  return data;
+}
+
+async function build(): Promise<MetadataRoute.Sitemap> {
   const [posts, over, customs, cats, svc] = await Promise.all([
     getPublishedPosts().catch(() => []), getOverrides().catch(() => ({})), getCustomPages().catch(() => []), getCategories().catch(() => []), getServiceOverrides().catch(() => ({ hidden: [] as string[], prices: {}, notes: {} })),
   ]);

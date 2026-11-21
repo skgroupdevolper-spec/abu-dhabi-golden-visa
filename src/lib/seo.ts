@@ -12,7 +12,7 @@ export function pageMetadata(path: string, locale: Locale, title: string, descri
   return {
     title,
     description,
-    alternates: { canonical: o.canonical || url, languages },
+    alternates: { canonical: o.canonical || url, languages, types: { 'application/rss+xml': SITE.url + '/feed.xml' } },
     robots: o.noindex ? { index: false, follow: true } : { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
     openGraph: { title, description, url, siteName: SITE.name, images: [{ url: img }], type: o.type ?? 'website', ...(o.published ? { publishedTime: o.published } : {}) },
     twitter: { card: 'summary_large_image', title, description, images: [img] },
