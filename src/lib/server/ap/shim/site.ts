@@ -73,9 +73,10 @@ async function created(f: Row): Promise<Row> {
   const posts = await list<Post>('posts');
   let slug = String(f.slug || '').trim() || newId(4);
   if (posts.some((p) => p.slug === slug)) slug = `${slug}-${newId(2)}`;
+  const st: Partial<Post> = statusOf(f);
   const p: Post = {
-    id: newId(6), slug, title: '', meta: '', summary: '', body: '', faq: [], status: 'draft', source: 'auto', author: String(f.author || 'Abu Dhabi Golden Visa editorial team'), reviewer: '',
-    createdAt: now(), updatedAt: now(), ...(await postFields(f)), ...statusOf(f), keyword: f.focusKeyword || undefined,
+    id: newId(6), slug, title: '', meta: '', summary: '', body: '', faq: [], source: 'auto', author: String(f.author || 'Abu Dhabi Golden Visa editorial team'),
+    createdAt: now(), updatedAt: now(), ...(await postFields(f)), ...st, status: st.status || 'draft', reviewer: st.reviewer || '', keyword: f.focusKeyword || undefined,
   };
   await insert<Post>('posts', p);
   return (await toRow(p));
