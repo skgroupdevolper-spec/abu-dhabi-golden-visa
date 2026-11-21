@@ -10,6 +10,7 @@ import { SectionView } from './PageView';
 import { iconForText } from '@/lib/icon-match';
 import { Icon } from './Icon';
 import { L } from './L';
+import { designCss } from '@/lib/section-design';
 
 type Btn = { label?: string; href?: string };
 
@@ -107,14 +108,16 @@ function Inner({ b, locale, i, reviews }: { b: Block; locale: Locale; i: number;
 }
 
 export function BlockView({ blocks, locale, reviews = [] }: { blocks: Block[]; locale: Locale; reviews?: { name: string; country: string; text: string; rating: number }[] }) {
+  const css = blocks.filter((b) => !b.hidden && b.style?.d).map((b) => designCss(`[data-bid="${b.id.replace(/[^\w-]/g, '')}"]`, b.style!.d)).filter(Boolean).join('\n');
   return (
     <>
+      {css && <style data-pbcss="" dangerouslySetInnerHTML={{ __html: css.replace(/<\/?style/gi, '') }} />}
       {blocks.filter((b) => !b.hidden).map((b, i) => {
         const st = b.style ?? {};
         const cls = ['bk', `bk-${b.type}`, `bg-${st.bg || 'none'}`, `pad-${st.pad || 'm'}`, `w-${st.width || 'normal'}`, `al-${st.align || 'left'}`, `ts-${st.titleSize || 'm'}`, `rd-${st.radius || 'm'}`, `sh-${st.shadow || 'none'}`, st.border ? 'bd' : '', `an-${st.anim || 'up'}`, st.hideMobile ? 'hide-m' : '', st.hideDesktop ? 'hide-d' : '', (st.className || '').replace(/[^\w\- ]/g, '')].filter(Boolean).join(' ');
         const style = st.bg === 'image' && st.bgImage ? ({ backgroundImage: `linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),url("${st.bgImage}")` } as CSSProperties) : undefined;
         return (
-          <section key={b.id} id={st.anchor?.replace(/[^\w-]/g, '') || undefined} className={cls} style={style} data-reveal={st.anim === 'none' ? undefined : ''}>
+          <section key={b.id} data-bid={b.id.replace(/[^\w-]/g, '')} id={st.anchor?.replace(/[^\w-]/g, '') || undefined} className={cls} style={style} data-reveal={st.anim === 'none' ? undefined : ''}>
             <div className="bk-in"><Inner b={b} locale={locale} i={i} reviews={reviews} /></div>
           </section>
         );

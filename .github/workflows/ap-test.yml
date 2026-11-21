@@ -32,6 +32,10 @@ jobs:
           for i in $(seq 1 40); do curl -sf -o /dev/null http://localhost:3000/admin/login/ && break; sleep 2; done
           npm i --no-save playwright@1 >/dev/null 2>&1 && npx playwright install --with-deps chromium >/dev/null 2>&1
           node scripts/ap-test/run.mjs || (echo '--- server log'; tail -80 server.log; exit 1)
+      - name: Page builder (design panel, live preview, order)
+        run: |
+          curl -s -o /dev/null -D - -H "Host: app.abudhabigoldenvisa.com" "http://localhost:3000/?__pv=1" | grep -iE "^HTTP|x-robots|x-frame|location" || true
+          node scripts/ap-test/pb.mjs || (echo '--- server log'; tail -60 server.log; exit 1)
       - name: Screenshots to the ap-shots branch
         if: always()
         run: |

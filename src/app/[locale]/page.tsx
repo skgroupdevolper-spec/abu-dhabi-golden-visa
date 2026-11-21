@@ -18,6 +18,7 @@ import { getBlock, getSecrets } from '@/lib/server/settings';
 import { mergeHero, type HomeHero } from '@/lib/home-hero';
 import { coinImg } from '@/components/BrandLogo';
 import { u } from '@/lib/ui';
+import { homeLayoutCss } from '@/lib/home-layout';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -75,6 +76,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const ho = over['/'] ?? {};
   const hb: Block[] = (locale !== 'en' && tr[locale]?.['/']?.blocks?.length ? tr[locale]['/'].blocks! : ho.blocks) ?? [];
   const show = (k: string) => !(ho.homeHide ?? []).includes(k);
+  const homeCss = homeLayoutCss(ho.homeOrder, ho.homeStyle);
   const at = (k: string) => { const list = hb.filter((b) => (b.style?.place || 'contact') === k); return list.length ? <div className="home-blocks"><BlockView blocks={list} locale={locale} reviews={reviews} /></div> : null; };
   const faqItems = (storedFaqs.length ? storedFaqs.map((f) => ({ q: f.q, a: f.a })) : FAQ).map((f) => ({ q: u(f.q, locale), a: u(f.a, locale) }));
   const example = F.perPerson.visa.aed + F.medical.normal.aed + F.perPerson.emiratesId.aed + F.perPerson.changeOfStatus.aed + F.propertyValuation.aed;
@@ -88,6 +90,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <HomeEffects />
 
       {at('top')}
+      <div className="hs" data-hs="hero">
       {show('hero') && (<>
       {/* HERO */}
       <section className="hero">
@@ -137,7 +140,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
       </>)}
       {at('hero')}
+      </div>
 
+      <div className="hs" data-hs="band">
       {show('band') && (<>
       {/* GIANT BAND */}
       <div className="band" aria-hidden="true">
@@ -145,7 +150,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </div>
       </>)}
       {at('band')}
+      </div>
 
+      <div className="hs" data-hs="manifesto">
       {show('manifesto') && (<>
       {/* MANIFESTO */}
       <section className="manifesto">
@@ -163,7 +170,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
       </>)}
       {at('manifesto')}
+      </div>
 
+      <div className="hs" data-hs="routes">
       {show('routes') && (<>
       {/* ROUTES */}
       <section className="routes" id="routes">
@@ -193,7 +202,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
       </>)}
       {at('routes')}
+      </div>
 
+      <div className="hs" data-hs="eligibility">
       {show('eligibility') && (<>
       {/* ELIGIBILITY CHECKER (spec) */}
       <section className="elig" id="eligibility">
@@ -207,7 +218,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
       </>)}
       {at('eligibility')}
+      </div>
 
+      <div className="hs" data-hs="services">
       {show('services') && (<>
       {/* SERVICES */}
       <section className="services" id="services">
@@ -221,7 +234,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
       </>)}
       {at('services')}
+      </div>
 
+      <div className="hs" data-hs="journey">
       {show('journey') && (<>
       {/* JOURNEY */}
       <section className="journey" id="journey">
@@ -245,10 +260,14 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
       </>)}
       {at('journey')}
+      </div>
 
+      <div className="hs" data-hs="flight">
       {show('flight') && (<section className="home-flight"><div className="wrap"><FlightPath locale={locale} /></div></section>)}
       {at('flight')}
+      </div>
 
+      <div className="hs" data-hs="portal">
       {show('portal') && (<>
       {/* PORTAL */}
       <section className="portal" id="portal">
@@ -270,7 +289,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
       </>)}
       {at('portal')}
+      </div>
 
+      <div className="hs" data-hs="calculator">
       {show('calculator') && (<>
       {/* CALCULATOR */}
       <section className="calc" id="calculator">
@@ -307,7 +328,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
       </>)}
       {at('calculator')}
+      </div>
 
+      <div className="hs" data-hs="family">
       {show('family') && (<>
       {/* FAMILY (spec) */}
       <section className="famband">
@@ -337,7 +360,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
       </>)}
       {at('family')}
+      </div>
 
+      <div className="hs" data-hs="why">
       {show('why') && (<>
       {/* WHY */}
       <section className="why">
@@ -354,7 +379,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
       </>)}
       {at('why')}
+      </div>
 
+      <div className="hs" data-hs="partners">
       {show('partners') && (<>
       {partners.length > 0 && (
         <section className="partners">
@@ -366,7 +393,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       )}
       </>)}
       {at('partners')}
+      </div>
 
+      <div className="hs" data-hs="benefits">
       {show('benefits') && (<>
       {/* BENEFITS (spec) */}
       <section className="benefits">
@@ -389,7 +418,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
       </>)}
       {at('benefits')}
+      </div>
 
+      <div className="hs" data-hs="faq">
       {show('faq') && (<>
       {/* FAQ */}
       <section className="faq" id="faq">
@@ -406,7 +437,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
       </>)}
       {at('faq')}
+      </div>
 
+      <div className="hs" data-hs="guides">
       {show('guides') && (<>
       {/* GUIDES (spec) */}
       <section className="guides">
@@ -429,7 +462,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
       </>)}
       {at('guides')}
+      </div>
 
+      <div className="hs" data-hs="reviews">
       {show('reviews') && (<>
       {reviews.length > 0 && (
         <section className="reviews">
@@ -450,7 +485,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       )}
       </>)}
       {at('reviews')}
+      </div>
 
+      <div className="hs" data-hs="contact">
       {show('contact') && (<>
       {/* CONTACT */}
       <section className="contact" id="contact-form">
@@ -473,10 +510,14 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
       </>)}
       {at('contact')}
+      </div>
 
+      <div className="hs" data-hs="booking">
       {show('booking') && (<section className="home-booking" id="book"><div className="wrap"><Booking locale={locale} /></div></section>)}
       {at('booking')}
+      </div>
 
+      <div className="hs" data-hs="finale">
       {show('finale') && (<>
       {/* FINALE */}
       <section className="finale" id="contact">
@@ -496,7 +537,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
       </>)}
       {at('finale')}
+      </div>
 
+      {homeCss && <style data-pbcss="" dangerouslySetInnerHTML={{ __html: homeCss.replace(/<\/?style/gi, '') }} />}
       {ho.css && <style dangerouslySetInnerHTML={{ __html: ho.css.replace(/<\/?style/gi, '') }} />}
     </div>
   );

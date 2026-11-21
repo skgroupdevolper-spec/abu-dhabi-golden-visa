@@ -7,6 +7,8 @@ import { getPage } from '@/content/pages';
 import { newId, now, updateJsonFile } from '@/lib/server/store';
 import { slugify } from '@/lib/markdown';
 import { pingIndexNow } from '@/lib/server/indexnow';
+import { cleanDesign } from '@/lib/section-design';
+import { HOME_KEYS } from '@/lib/home-layout';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -24,6 +26,8 @@ function clean(o: Record<string, unknown>): PageOverride {
     heroStyle: (['default', 'image', 'minimal'].includes(s(o.heroStyle)) ? s(o.heroStyle) : 'default') as PageOverride['heroStyle'],
     facts, blocks: blocks?.length ? blocks : undefined, css: s(o.css, 30000), at: now(),
     homeHide: Array.isArray(o.homeHide) ? (o.homeHide as unknown[]).map((x) => s(x, 30)).filter(Boolean).slice(0, 30) : undefined,
+    homeOrder: Array.isArray(o.homeOrder) ? (o.homeOrder as unknown[]).map((x) => s(x, 30)).filter((k) => HOME_KEYS.includes(k)).slice(0, 30) : undefined,
+    homeStyle: o.homeStyle && typeof o.homeStyle === 'object' ? Object.fromEntries(Object.entries(o.homeStyle as Record<string, unknown>).filter(([k]) => HOME_KEYS.includes(k)).map(([k, v]) => [k, cleanDesign(v)]).filter(([, v]) => v)) : undefined,
   };
 }
 

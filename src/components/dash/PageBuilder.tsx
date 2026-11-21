@@ -1,11 +1,14 @@
 'use client';
 
 // Page builder: edit every section of a page, add widgets, change styles, page hero, featured image and SEO.
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BLOCKS, HOME_SECTIONS, STYLE_FIELDS, arr, str, uid, type Block, type BlockType, type Field } from '@/lib/blocks';
 import { Icon } from '@/components/Icon';
 import { MediaPicker } from './MediaPicker';
 import { RichEditor } from './RichEditor';
+import { DesignPanel } from './DesignPanel';
+import { designCss, type SectionDesign } from '@/lib/section-design';
+import { homeLayoutCss, homeOrder, homeSel } from '@/lib/home-layout';
 
 type Over = Record<string, unknown> & { facts?: { label: string; value: string }[] };
 type Props = { path: string; custom: boolean; original: { h1: string; intro: string; eyebrow: string; seoTitle: string; meta: string; facts: { label: string; value: string }[] }; initial: Over; blocks: Block[]; hasOverride: boolean; home?: boolean };
@@ -90,12 +93,53 @@ export function PageBuilder({ path, custom, original, initial, blocks: start, ha
   const [placeFor, setPlaceFor] = useState('contact');
   const [msg, setMsg] = useState<{ ok?: string; error?: string }>({});
   const [busy, setBusy] = useState(false);
-  const [preview, setPreview] = useState(false);
+  const [preview, setPreview] = useState(true);
+  const [homeOpen, setHomeOpen] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
   const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop');
   const frame = useRef<HTMLIFrameElement>(null);
 
   const cur = blocks.find((b) => b.id === sel) ?? null;
+  const pv = (v?: number) => `${path}${path.includes('?') ? '&' : '?'}__pv=1${v ? `&v=${v}` : ''}`;
+  const bsel = (id: string) => `[data-bid="${id.replace(/[^\w-]/g, '')}"]`;
+  const hideList = (o.homeHide as string[] | undefined) ?? [];
+  const homeStyle = (o.homeStyle as Record<string, SectionDesign> | undefined) ?? {};
+  const order = homeOrder(o.homeOrder as string[] | undefined);
+
+  // Live preview: the design of every section is drawn into the preview frame as you change it.
+  const liveCss = useMemo(() => {
+    const parts: string[] = [];
+    for (const b of blocks) {
+      if (b.hidden) parts.push(`${bsel(b.id)}{display:none!important}`);
+      else if (b.style?.d) parts.push(designCss(bsel(b.id), b.style.d));
+    }
+    if (home) {
+      parts.push(homeLayoutCss(o.homeOrder as string[] | undefined, homeStyle));
+      for (const k of hideList) parts.push(`.home [data-hs="${k}"]>*{display:none!important}`);
+    }
+    if (typeof o.css === 'string') parts.push(o.css);
+    const hl = tab === 'home' && homeOpen ? homeSel(homeOpen) : tab === 'sections' && sel ? bsel(sel) : '';
+    if (hl) parts.push(`${hl}{outline:3px dashed #c9961a!important;outline-offset:-3px}`);
+    return parts.join('\n');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blocks, o, home, tab, homeOpen, sel]);
+  const paint = useCallback(() => {
+    const doc = frame.current?.contentDocument;
+    if (!doc?.head) return;
+    doc.querySelectorAll<HTMLStyleElement>('style[data-pbcss]').forEach((s) => { s.media = 'not all'; });
+    let st = doc.getElementById('pb-live') as HTMLStyleElement | null;
+    if (!st) { st = doc.createElement('style'); st.id = 'pb-live'; doc.head.appendChild(st); }
+    st.textContent = liveCss;
+  }, [liveCss]);
+  useEffect(() => { paint(); }, [paint]);
+  // Scroll the preview to the section being edited.
+  useEffect(() => {
+    const doc = frame.current?.contentDocument, win = frame.current?.contentWindow;
+    if (!doc || !win) return;
+    const el = tab === 'home' && homeOpen ? doc.querySelector(`.home [data-hs="${homeOpen}"]>:not(style)`) : sel ? doc.querySelector(bsel(sel)) : null;
+    if (el) win.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + win.scrollY - 80), behavior: 'smooth' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sel, homeOpen, tab]);
   const setOv = (k: string, v: unknown) => { setO((x) => ({ ...x, [k]: v })); setDirty(true); };
   const upd = (id: string, fn: (b: Block) => Block) => { setBlocks((bs) => bs.map((b) => (b.id === id ? fn(b) : b))); setDirty(true); };
   const move = (i: number, d: number) => { setBlocks((bs) => { const c = [...bs]; const j = i + d; if (j < 0 || j >= c.length) return bs; [c[i], c[j]] = [c[j], c[i]]; return c; }); setDirty(true); };
@@ -109,7 +153,7 @@ export function PageBuilder({ path, custom, original, initial, blocks: start, ha
       const j = await r.json();
       if (!j.ok) throw new Error(j.error || 'Not saved.');
       setMsg({ ok: 'Saved. The page is live with your changes.' }); setDirty(false);
-      if (frame.current) frame.current.src = `${path}?v=${Date.now()}`;
+      if (frame.current) frame.current.src = pv(Date.now());
     } catch (e) { setMsg({ error: (e as Error).message }); } finally { setBusy(false); }
   }
   async function reset() {
@@ -155,6 +199,7 @@ export function PageBuilder({ path, custom, original, initial, blocks: start, ha
                       <span className="pb-acts" onClick={(e) => e.stopPropagation()}>
                         <button type="button" className="ib" onClick={() => move(i, -1)} disabled={i === 0} aria-label="Move up"><Icon name="up" size={14} /></button>
                         <button type="button" className="ib" onClick={() => move(i, 1)} disabled={i === blocks.length - 1} aria-label="Move down"><Icon name="down" size={14} /></button>
+                        <button type="button" className={`ib${b.style?.d ? ' on' : ''}`} onClick={() => { setSel(b.id); setSide('style'); }} aria-label="Design" title="Design (colours, background, spacing)">🎨</button>
                         <button type="button" className="ib" onClick={() => upd(b.id, (x) => ({ ...x, hidden: !x.hidden }))} aria-label={b.hidden ? 'Show' : 'Hide'}><Icon name="eye" size={14} /></button>
                         <button type="button" className="ib" onClick={() => { const c = { ...JSON.parse(JSON.stringify(b)), id: uid() }; setBlocks((bs) => [...bs.slice(0, i + 1), c, ...bs.slice(i + 1)]); setDirty(true); }} aria-label="Duplicate"><Icon name="copy" size={14} /></button>
                         <button type="button" className="ib" onClick={() => { if (confirm('Delete this section?')) { setBlocks((bs) => bs.filter((x) => x.id !== b.id)); setDirty(true); } }} aria-label="Delete"><Icon name="trash" size={14} /></button>
@@ -184,9 +229,14 @@ export function PageBuilder({ path, custom, original, initial, blocks: start, ha
                           <div className="field full"><label>Show this section on the homepage after</label>
                             <select value={cur.style?.place || 'contact'} onChange={(e) => upd(cur.id, (x) => ({ ...x, style: { ...x.style, place: e.target.value } }))}>{HOME_SECTIONS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></div>
                         )}
-                        {STYLE_FIELDS.filter((f) => f.k !== 'bgImage' || cur.style?.bg === 'image').map((f) => (
-                          <div className={`field${f.kind === 'image' ? ' full' : ''}`} key={f.k}>{f.kind !== 'check' && <label>{f.label}</label>}<FieldInput f={f} value={(cur.style as Record<string, unknown> | undefined)?.[f.k]} set={(v) => upd(cur.id, (x) => ({ ...x, style: { ...x.style, [f.k]: v } }))} /></div>
-                        ))}
+                        <div className="full"><DesignPanel title={str(cur.data.title) || BLOCKS[cur.type].label} value={cur.style?.d} onChange={(dd) => upd(cur.id, (x) => ({ ...x, style: { ...x.style, d: dd } }))} /></div>
+                        <details className="full dp-more"><summary>More options (ready-made styles, animation, anchor, CSS class)</summary>
+                          <div className="pb-fields two">
+                            {STYLE_FIELDS.filter((f) => f.k !== 'bgImage' || cur.style?.bg === 'image').map((f) => (
+                              <div className={`field${f.kind === 'image' ? ' full' : ''}`} key={f.k}>{f.kind !== 'check' && <label>{f.label}</label>}<FieldInput f={f} value={(cur.style as Record<string, unknown> | undefined)?.[f.k]} set={(v) => upd(cur.id, (x) => ({ ...x, style: { ...x.style, [f.k]: v } }))} /></div>
+                            ))}
+                          </div>
+                        </details>
                       </div>
                     )}
                   </>
@@ -195,25 +245,34 @@ export function PageBuilder({ path, custom, original, initial, blocks: start, ha
             </div>
           )}
 
-          {tab === 'home' && (() => {
-            const hide = (o.homeHide as string[] | undefined) ?? [];
-            return (
-              <div className="pb-fields panel-in">
-                <p className="help">Turn built-in homepage parts on or off, and add your own sections between them in “Added sections &amp; widgets”. Each added section has a “Show after” choice in its Design tab.</p>
-                <div className="home-parts">
-                  {HOME_SECTIONS.filter(([k]) => k !== 'top').map(([k, l]) => {
-                    const added = blocks.filter((b) => (b.style?.place || 'contact') === k).length;
-                    return (
-                      <div key={k} className={`home-part${hide.includes(k) ? ' off' : ''}`}>
-                        <label className="switch"><input type="checkbox" checked={!hide.includes(k)} onChange={(e) => setOv('homeHide', e.target.checked ? hide.filter((x) => x !== k) : [...hide, k])} /><span><b>{l}</b><small>{hide.includes(k) ? 'Hidden' : 'Shown'}{added ? ` · ${added} added section${added > 1 ? 's' : ''} after it` : ''}</small></span></label>
-                        <button type="button" className="btn btn-sm" onClick={() => { setPlaceFor(k); setTab('sections'); setAdding(blocks.length); }}><Icon name="plus" size={13} /> Add after</button>
+          {tab === 'home' && (
+            <div className="pb-fields panel-in">
+              <p className="help">Every built-in part of the homepage: move it up or down, show or hide it, open 🎨 to change its colours, background photo and spacing, or add your own section after it. The preview shows each change at once; press Save to put it live.</p>
+              <div className="home-parts">
+                {order.map((k, i) => {
+                  const l = HOME_SECTIONS.find(([x]) => x === k)?.[1] ?? k;
+                  const off = hideList.includes(k);
+                  const added = blocks.filter((b) => (b.style?.place || 'contact') === k).length;
+                  const mv = (dir: number) => { const c = [...order]; const j = i + dir; if (j < 0 || j >= c.length) return; [c[i], c[j]] = [c[j], c[i]]; setOv('homeOrder', c); setHomeOpen(k); };
+                  return (
+                    <div key={k} className={`home-part-w${homeOpen === k ? ' open' : ''}`}>
+                      <div className={`home-part${off ? ' off' : ''}`}>
+                        <span className="hp-n">{i + 1}</span>
+                        <label className="switch"><input type="checkbox" checked={!off} onChange={(e) => setOv('homeHide', e.target.checked ? hideList.filter((x) => x !== k) : [...hideList, k])} /><span><b>{l}</b><small>{off ? 'Hidden' : 'Shown'}{homeStyle[k] ? ' · own design' : ''}{added ? ` · ${added} added section${added > 1 ? 's' : ''} after it` : ''}</small></span></label>
+                        <span className="pb-acts">
+                          <button type="button" className="ib" onClick={() => mv(-1)} disabled={i === 0} aria-label="Move up"><Icon name="up" size={14} /></button>
+                          <button type="button" className="ib" onClick={() => mv(1)} disabled={i === order.length - 1} aria-label="Move down"><Icon name="down" size={14} /></button>
+                          <button type="button" className={`ib${homeOpen === k || homeStyle[k] ? ' on' : ''}`} onClick={() => setHomeOpen(homeOpen === k ? null : k)} aria-label="Design" title="Design (colours, background, spacing)">🎨</button>
+                          <button type="button" className="btn btn-sm" onClick={() => { setPlaceFor(k); setTab('sections'); setAdding(blocks.length); }}><Icon name="plus" size={13} /> Add after</button>
+                        </span>
                       </div>
-                    );
-                  })}
-                </div>
+                      {homeOpen === k && <DesignPanel title={l} value={homeStyle[k]} onChange={(dd) => { const next = { ...homeStyle }; if (dd) next[k] = dd; else delete next[k]; setOv('homeStyle', next); }} />}
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })()}
+            </div>
+          )}
 
           {tab === 'page' && (
             <div className="pb-fields two panel-in">
@@ -264,7 +323,8 @@ export function PageBuilder({ path, custom, original, initial, blocks: start, ha
         {preview && (
           <div className={`pb-preview ${device}`}>
             <div className="pb-dev"><button type="button" className={device === 'desktop' ? 'on' : ''} onClick={() => setDevice('desktop')}>Desktop</button><button type="button" className={device === 'mobile' ? 'on' : ''} onClick={() => setDevice('mobile')}>Mobile</button></div>
-            <iframe ref={frame} src={path} title="Live preview" />
+            <iframe ref={frame} src={pv()} title="Live preview" onLoad={paint} />
+            {dirty && <p className="pb-pv-note">Colours, spacing and order show here at once. Text and new sections show after you save.</p>}
           </div>
         )}
       </div>

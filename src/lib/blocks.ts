@@ -1,6 +1,7 @@
 // Page builder: blocks (sections and widgets), their editable fields and style options.
 // Used by the admin editor (client) and the public renderer (server).
 import type { Section } from '@/content/types';
+import type { SectionDesign } from './section-design';
 
 export type BlockStyle = {
   bg?: 'none' | 'white' | 'cream' | 'gold' | 'dark' | 'image';
@@ -19,6 +20,8 @@ export type BlockStyle = {
   hideDesktop?: boolean;
   /** Homepage only: built-in section after which this block shows. */
   place?: string;
+  /** Free design (colours, background, spacing, boxes) from the design panel. */
+  d?: SectionDesign;
 };
 
 export type Block = { id: string; type: BlockType; hidden?: boolean; style?: BlockStyle; data: Record<string, unknown> };

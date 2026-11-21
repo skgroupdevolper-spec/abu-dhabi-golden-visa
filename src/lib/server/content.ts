@@ -24,6 +24,8 @@ export type PageOverride = {
   eyebrow?: string; image?: string; imageAlt?: string; ogImage?: string; canonical?: string; noindex?: boolean; keyword?: string;
   heroStyle?: 'default' | 'image' | 'minimal'; hideFacts?: boolean; hideCta?: boolean; hideAside?: boolean; facts?: { label: string; value: string }[];
   blocks?: Block[]; css?: string; homeHide?: string[];
+  /** Homepage: order of the built-in sections and their designs. */
+  homeOrder?: string[]; homeStyle?: Record<string, import('@/lib/section-design').SectionDesign>;
 };
 export type Faq = { id: string; q: string; a: string; order: number };
 export type Testimonial = { id: string; name: string; country: string; text: string; rating: number; approved: boolean; consent: boolean; at: string };

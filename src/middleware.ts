@@ -19,8 +19,13 @@ export function middleware(req: NextRequest) {
 
   const first = pathname.split('/')[1];
 
+  // Page builder preview (?__pv=1): the dashboard on the portal subdomain shows website pages in its
+  // own preview frame (same address, so the frame is allowed and the editor can style it live).
+  const pv = host === PORTAL_HOST && url.searchParams.has('__pv') && first !== 'admin';
+  const robots = (r: NextResponse) => { if (pv) r.headers.set('X-Robots-Tag', 'noindex, nofollow'); return r; };
+
   // Customer dashboard subdomain: everything is served from /portal.
-  if (host === PORTAL_HOST) {
+  if (host === PORTAL_HOST && !pv) {
     if (first === 'admin') { const h = new Headers(req.headers); h.set('x-admin-path', pathname.endsWith('/') ? pathname : `${pathname}/`); return NextResponse.next({ request: { headers: h } }); }
     if (first === 'portal' || first === 'media') return NextResponse.next();
     if (!PORTAL_PAGES.has(first) && MAIN_HOST !== PORTAL_HOST) {
@@ -41,10 +46,10 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(url, 308);
   }
 
-  if (isLocale(first)) { const h = new Headers(req.headers); h.set('x-path', pathname); return NextResponse.next({ request: { headers: h } }); }
+  if (isLocale(first)) { const h = new Headers(req.headers); h.set('x-path', pathname); return robots(NextResponse.next({ request: { headers: h } })); }
 
   url.pathname = `/${DEFAULT_LOCALE}${pathname}`;
-  return NextResponse.rewrite(url);
+  return robots(NextResponse.rewrite(url));
 }
 
 export const config = {
