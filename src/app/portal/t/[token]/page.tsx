@@ -35,6 +35,8 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
   const base = await portalBase();
   const signedIn = !!(await currentCustomer());
   const area = signedIn ? await clientArea() : null;
+  const em = (a.client.email || '').toLowerCase();
+  const hasAccount = !signedIn && !!em && (await list<{ email: string }>('customers')).some((c) => c.email?.toLowerCase() === em);
   const first = a.client.name.split(' ')[0];
   const gov = a.quote.lines.reduce((s, l) => s + l.amount, 0);
   const total = gov + a.quote.serviceFee + a.quote.vat;
@@ -71,6 +73,15 @@ export default async function ClientFile({ params, searchParams }: { params: Pro
     <>
       {!area && <PortalTop t={t} lang={lang.code} base={base} back={`${base}/t/${a.token}/`} signedIn={signedIn} right={<span className="small muted"><b style={{ color: 'var(--ink)' }}>{a.ref}</b></span>} />}
       <main className={area ? 'pwrap in-shell' : 'pwrap'}>
+        {!signedIn && (
+          <div className="notice dash-cta">
+            <div><b>{t.dashTitle}</b><br /><span className="small">{hasAccount ? t.dashHave : t.dashNew}</span></div>
+            <div className="dash-cta-b">
+              <a className="btn btn-gold" href={`${base}/login/?email=${encodeURIComponent(a.client.email || '')}`}>{t.signIn}</a>
+              {!hasAccount && <a className="btn btn-line" href={`${base}/register/?${new URLSearchParams({ name: a.client.name || '', email: a.client.email || '', phone: a.client.phone || '' })}`}>{t.createAccount}</a>}
+            </div>
+          </div>
+        )}
         <section className={`ohero st-${stKey}`}>
           <div className="oh-l">
             <p className="oh-k">{t.orderLabel}</p>

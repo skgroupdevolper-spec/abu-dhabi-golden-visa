@@ -10,7 +10,9 @@ import { register, setLang } from '../actions';
 export const metadata: Metadata = { title: 'Create account' };
 export const dynamic = 'force-dynamic';
 
-export default async function Register() {
+export default async function Register({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  const q = await searchParams;
+  const v = (k: string, n: number) => (q[k] || '').slice(0, n);
   const base = await portalBase();
   if (await currentCustomer()) redirect(`${base}/`);
   const { t, lang } = await T();
@@ -20,9 +22,9 @@ export default async function Register() {
       <p className="eyebrow">{t.newHere}</p>
       <h2>{t.createAccount}</h2>
       <ActionForm action={register} className="stack">
-        <div className="field"><label htmlFor="name">{t.name}</label><input id="name" name="name" autoComplete="name" required /></div>
-        <div className="field"><label htmlFor="email">{t.email}</label><input id="email" name="email" type="email" autoComplete="email" required /></div>
-        <div className="field"><label htmlFor="phone">{t.phone}</label><input id="phone" name="phone" type="tel" placeholder="+971" autoComplete="tel" required /></div>
+        <div className="field"><label htmlFor="name">{t.name}</label><input id="name" name="name" autoComplete="name" defaultValue={v('name', 100)} required /></div>
+        <div className="field"><label htmlFor="email">{t.email}</label><input id="email" name="email" type="email" autoComplete="email" defaultValue={v('email', 160)} required /></div>
+        <div className="field"><label htmlFor="phone">{t.phone}</label><input id="phone" name="phone" type="tel" placeholder="+971" autoComplete="tel" defaultValue={v('phone', 40)} required /></div>
         <PasswordInput id="password" name="password" label={`${t.password} (8+)`} autoComplete="new-password" />
         <Submit className="btn btn-gold">{t.register}</Submit>
       </ActionForm>

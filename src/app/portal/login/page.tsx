@@ -10,7 +10,8 @@ import { findFile, login, setLang } from '../actions';
 export const metadata: Metadata = { title: 'Sign in' };
 export const dynamic = 'force-dynamic';
 
-export default async function Login() {
+export default async function Login({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  const q = await searchParams;
   const base = await portalBase();
   if (await currentCustomer()) redirect(`${base}/`);
   const { t, lang } = await T();
@@ -21,7 +22,7 @@ export default async function Login() {
       <h2>{t.welcomeBack}</h2>
       <p className="muted">{t.enterDetails}</p>
       <ActionForm action={login} className="stack">
-        <div className="field"><label htmlFor="email">{t.email}</label><input id="email" name="email" type="email" autoComplete="username" required /></div>
+        <div className="field"><label htmlFor="email">{t.email}</label><input id="email" name="email" type="email" autoComplete="username" defaultValue={(q.email || '').slice(0, 160)} required /></div>
         <PasswordInput id="password" name="password" label={t.password} autoComplete="current-password" />
         <p className="small" style={{ textAlign: 'end', margin: '6px 0 0' }}><a href={`${base}/forgot/`}>{t.forgot}</a></p>
         <Submit className="btn btn-gold">{t.signIn}</Submit>

@@ -47,6 +47,7 @@ export const EN = {
   dRequest: 'Golden Visa, family, valuation and more.', dRequests: 'Your service requests and replies.', dCalendar: 'Dates and deadlines this month.', dProfile: 'Your details, language and password.',
   evStage: 'Progress', evPaid: 'Payment received', evDue: 'Payment requested', evQuote: 'Quote sent', evMsg: 'Message from your advisor', evDoc: 'New document',
   live: 'Live', updatedAt: 'updated', communication: 'Communication', balance: 'Balance', date: 'Date', print: 'Print / Save as PDF', statementIntro: 'All quotes, payments and receipts across your files.',
+  dashTitle: 'Open your full dashboard', dashHave: 'You already have an account. Sign in to see all your files, payments and messages in one place.', dashNew: 'Create your free account with the same email to see all your files, payments and messages in one place.',
   stages: ['Enquiry received', 'Eligibility confirmed', 'Quote accepted and paid', 'Documents and attestation', 'Nomination or valuation certificate', 'Application submitted', 'Entry permit or change of status', 'Medical and biometrics', 'Emirates ID and residence issued'],
 };
 

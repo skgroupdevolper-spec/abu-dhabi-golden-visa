@@ -153,7 +153,7 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
           <a className="btn btn-glass btn-sm" href="/contact.vcf" download><T>{"Save our contact (shows our name on WhatsApp)"}</T></a>
         </div>
         <div className="row-actions" style={{ justifyContent: 'center' }}>
-          <a className="btn btn-red" href={done.account === 'created' || done.account === 'signed-in' ? portalHome() : done.link}><T>{"Open my client dashboard"}</T> <Icon name="arrow" size={18} /></a>
+          <a className="btn btn-red" href={done.account === 'created' || done.account === 'signed-in' ? portalHome() : done.account === 'exists' ? `${portalLogin()}?email=${encodeURIComponent(d.email)}` : done.link}><T>{"Open my client dashboard"}</T> <Icon name="arrow" size={18} /></a>
           <a className="btn btn-glass" href={waLink(waText)} target="_blank" rel="noopener"><Icon name="wa" size={18} /> WhatsApp {SITE.whatsappDisplay}</a>
         </div>
       </div>

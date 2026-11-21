@@ -121,6 +121,7 @@ const ar: T = {
   date: "التاريخ",
   print: "طباعة / حفظ PDF",
   statementIntro: "كل عروض الأسعار والدفعات والإيصالات لملفاتك.",
+  newApp: "طلب جديد", dashTitle: "افتح لوحة التحكم الكاملة", dashHave: "لديك حساب بالفعل. سجّل الدخول لرؤية كل ملفاتك ودفعاتك ورسائلك في مكان واحد.", dashNew: "أنشئ حسابك المجاني بنفس البريد الإلكتروني لرؤية كل ملفاتك ودفعاتك ورسائلك في مكان واحد.",
 };
 
 const ru: T = {
@@ -241,6 +242,7 @@ const ru: T = {
   date: "Дата",
   print: "Печать / PDF",
   statementIntro: "Все предложения, платежи и квитанции по вашим делам.",
+  newApp: "Новая заявка", dashTitle: "Откройте полный личный кабинет", dashHave: "У вас уже есть аккаунт. Войдите, чтобы видеть все ваши дела, платежи и сообщения в одном месте.", dashNew: "Создайте бесплатный аккаунт с тем же email, чтобы видеть все ваши дела, платежи и сообщения в одном месте.",
 };
 
 const tr: T = {
@@ -361,6 +363,7 @@ const tr: T = {
   date: "Tarih",
   print: "Yazdır / PDF kaydet",
   statementIntro: "Tüm dosyalarınızdaki teklifler, ödemeler ve makbuzlar.",
+  newApp: "Yeni başvuru", dashTitle: "Tam panelinizi açın", dashHave: "Zaten bir hesabınız var. Tüm dosyalarınızı, ödemelerinizi ve mesajlarınızı tek yerde görmek için giriş yapın.", dashNew: "Tüm dosyalarınızı, ödemelerinizi ve mesajlarınızı tek yerde görmek için aynı e-posta ile ücretsiz hesabınızı oluşturun.",
 };
 
 const zh: T = {
@@ -481,6 +484,7 @@ const zh: T = {
   date: "日期",
   print: "打印 / 保存 PDF",
   statementIntro: "您所有档案的报价、付款和收据。",
+  newApp: "新申请", dashTitle: "打开您的完整控制台", dashHave: "您已有账户。登录即可在一处查看您的所有档案、付款和消息。", dashNew: "使用同一邮箱创建免费账户，即可在一处查看您的所有档案、付款和消息。",
 };
 
 const fr: T = {
@@ -601,6 +605,7 @@ const fr: T = {
   date: "Date",
   print: "Imprimer / PDF",
   statementIntro: "Tous les devis, paiements et reçus de vos dossiers.",
+  newApp: "Nouvelle demande", dashTitle: "Ouvrez votre tableau de bord complet", dashHave: "Vous avez déjà un compte. Connectez-vous pour voir tous vos dossiers, paiements et messages au même endroit.", dashNew: "Créez votre compte gratuit avec le même e-mail pour voir tous vos dossiers, paiements et messages au même endroit.",
 };
 
 const de: T = {
@@ -721,6 +726,7 @@ const de: T = {
   date: "Datum",
   print: "Drucken / als PDF",
   statementIntro: "Alle Angebote, Zahlungen und Quittungen Ihrer Akten.",
+  newApp: "Neuer Antrag", dashTitle: "Öffnen Sie Ihr vollständiges Dashboard", dashHave: "Sie haben bereits ein Konto. Melden Sie sich an, um alle Ihre Akten, Zahlungen und Nachrichten an einem Ort zu sehen.", dashNew: "Erstellen Sie Ihr kostenloses Konto mit derselben E-Mail, um alle Ihre Akten, Zahlungen und Nachrichten an einem Ort zu sehen.",
 };
 
 const it: T = {
@@ -841,6 +847,7 @@ const it: T = {
   date: "Data",
   print: "Stampa / Salva PDF",
   statementIntro: "Tutti i preventivi, pagamenti e ricevute delle tue pratiche.",
+  newApp: "Nuova domanda", dashTitle: "Apri la tua dashboard completa", dashHave: "Hai già un account. Accedi per vedere tutte le tue pratiche, i pagamenti e i messaggi in un unico posto.", dashNew: "Crea il tuo account gratuito con la stessa email per vedere tutte le tue pratiche, i pagamenti e i messaggi in un unico posto.",
 };
 
 const es: T = {
@@ -961,6 +968,7 @@ const es: T = {
   date: "Fecha",
   print: "Imprimir / Guardar PDF",
   statementIntro: "Todos los presupuestos, pagos y recibos de sus expedientes.",
+  newApp: "Nueva solicitud", dashTitle: "Abra su panel completo", dashHave: "Ya tiene una cuenta. Inicie sesión para ver todos sus expedientes, pagos y mensajes en un solo lugar.", dashNew: "Cree su cuenta gratuita con el mismo correo para ver todos sus expedientes, pagos y mensajes en un solo lugar.",
 };
 
 const ro: T = {
@@ -1081,6 +1089,7 @@ const ro: T = {
   date: "Data",
   print: "Tipărire / Salvare PDF",
   statementIntro: "Toate ofertele, plățile și chitanțele dosarelor dvs.",
+  newApp: "Cerere nouă", dashTitle: "Deschideți panoul complet", dashHave: "Aveți deja un cont. Autentificați-vă pentru a vedea toate dosarele, plățile și mesajele într-un singur loc.", dashNew: "Creați-vă contul gratuit cu același e-mail pentru a vedea toate dosarele, plățile și mesajele într-un singur loc.",
 };
 
 const pt: T = {
@@ -1201,6 +1210,7 @@ const pt: T = {
   date: "Data",
   print: "Imprimir / Guardar PDF",
   statementIntro: "Todos os orçamentos, pagamentos e recibos dos seus processos.",
+  newApp: "Novo pedido", dashTitle: "Abra o seu painel completo", dashHave: "Já tem uma conta. Inicie sessão para ver todos os seus processos, pagamentos e mensagens num só lugar.", dashNew: "Crie a sua conta gratuita com o mesmo e-mail para ver todos os seus processos, pagamentos e mensagens num só lugar.",
 };
 
 const pl: T = {
@@ -1321,6 +1331,7 @@ const pl: T = {
   date: "Data",
   print: "Drukuj / Zapisz PDF",
   statementIntro: "Wszystkie oferty, płatności i pokwitowania Twoich teczek.",
+  newApp: "Nowy wniosek", dashTitle: "Otwórz pełny panel", dashHave: "Masz już konto. Zaloguj się, aby zobaczyć wszystkie sprawy, płatności i wiadomości w jednym miejscu.", dashNew: "Załóż bezpłatne konto z tym samym adresem e-mail, aby zobaczyć wszystkie sprawy, płatności i wiadomości w jednym miejscu.",
 };
 
 const hu: T = {
@@ -1441,6 +1452,7 @@ const hu: T = {
   date: "Dátum",
   print: "Nyomtatás / PDF mentése",
   statementIntro: "Minden ügye árajánlatai, fizetései és nyugtái.",
+  newApp: "Új kérelem", dashTitle: "Nyissa meg a teljes irányítópultot", dashHave: "Már van fiókja. Jelentkezzen be, hogy minden ügyét, fizetését és üzenetét egy helyen lássa.", dashNew: "Hozza létre ingyenes fiókját ugyanazzal az e-mail-címmel, hogy minden ügyét, fizetését és üzenetét egy helyen lássa.",
 };
 
 const hr: T = {
@@ -1561,6 +1573,7 @@ const hr: T = {
   date: "Datum",
   print: "Ispis / Spremi PDF",
   statementIntro: "Sve ponude, plaćanja i potvrde vaših predmeta.",
+  newApp: "Novi zahtjev", dashTitle: "Otvorite svoju punu nadzornu ploču", dashHave: "Već imate račun. Prijavite se da vidite sve svoje predmete, uplate i poruke na jednom mjestu.", dashNew: "Izradite besplatni račun s istom e-poštom da vidite sve svoje predmete, uplate i poruke na jednom mjestu.",
 };
 
 const sk: T = {
@@ -1681,6 +1694,7 @@ const sk: T = {
   date: "Dátum",
   print: "Tlač / Uložiť PDF",
   statementIntro: "Všetky ponuky, platby a doklady vašich spisov.",
+  newApp: "Nová žiadosť", dashTitle: "Otvorte si celý prehľad", dashHave: "Už máte účet. Prihláste sa a uvidíte všetky svoje spisy, platby a správy na jednom mieste.", dashNew: "Vytvorte si bezplatný účet s rovnakým e-mailom a uvidíte všetky svoje spisy, platby a správy na jednom mieste.",
 };
 
 const cs: T = {
@@ -1801,6 +1815,7 @@ const cs: T = {
   date: "Datum",
   print: "Tisk / Uložit PDF",
   statementIntro: "Všechny nabídky, platby a doklady vašich spisů.",
+  newApp: "Nová žádost", dashTitle: "Otevřete si celý přehled", dashHave: "Už máte účet. Přihlaste se a uvidíte všechny své spisy, platby a zprávy na jednom místě.", dashNew: "Vytvořte si bezplatný účet se stejným e-mailem a uvidíte všechny své spisy, platby a zprávy na jednom místě.",
 };
 
 const hi: T = {
@@ -1921,6 +1936,7 @@ const hi: T = {
   date: "तिथि",
   print: "प्रिंट / PDF सेव करें",
   statementIntro: "आपकी सभी फ़ाइलों के कोटेशन, भुगतान और रसीदें।",
+  newApp: "नया आवेदन", dashTitle: "अपना पूरा डैशबोर्ड खोलें", dashHave: "आपका खाता पहले से है। अपनी सभी फ़ाइलें, भुगतान और संदेश एक ही जगह देखने के लिए साइन इन करें।", dashNew: "अपनी सभी फ़ाइलें, भुगतान और संदेश एक ही जगह देखने के लिए उसी ईमेल से अपना मुफ़्त खाता बनाएं।",
 };
 
 const id: T = {
@@ -2041,6 +2057,7 @@ const id: T = {
   date: "Tanggal",
   print: "Cetak / Simpan PDF",
   statementIntro: "Semua penawaran, pembayaran, dan kuitansi berkas Anda.",
+  newApp: "Permohonan baru", dashTitle: "Buka dasbor lengkap Anda", dashHave: "Anda sudah punya akun. Masuk untuk melihat semua berkas, pembayaran, dan pesan Anda di satu tempat.", dashNew: "Buat akun gratis dengan email yang sama untuk melihat semua berkas, pembayaran, dan pesan Anda di satu tempat.",
 };
 
 const ur: T = {
@@ -2161,6 +2178,7 @@ const ur: T = {
   date: "تاریخ",
   print: "پرنٹ / PDF محفوظ کریں",
   statementIntro: "آپ کی تمام فائلوں کی کوٹیشنز، ادائیگیاں اور رسیدیں۔",
+  newApp: "نئی درخواست", dashTitle: "اپنا مکمل ڈیش بورڈ کھولیں", dashHave: "آپ کا اکاؤنٹ پہلے سے موجود ہے۔ اپنی تمام فائلیں، ادائیگیاں اور پیغامات ایک جگہ دیکھنے کے لیے سائن اِن کریں۔", dashNew: "اپنی تمام فائلیں، ادائیگیاں اور پیغامات ایک جگہ دیکھنے کے لیے اسی ای میل سے اپنا مفت اکاؤنٹ بنائیں۔",
 };
 
 export const OTHER: Record<string, T> = { ar, ru, tr, zh, fr, de, it, es, ro, pt, pl, hu, hr, sk, cs, hi, id, ur };
