@@ -46,6 +46,14 @@ export async function POST(req: NextRequest) {
   if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return NextResponse.json({ ok: false, error: 'Please check your email address.' }, { status: 400 });
   if (!me && password && (password.length < 8 || !email)) return NextResponse.json({ ok: false, error: !email ? 'Please add your email: it is your login for the client dashboard.' : 'Please choose a password of at least 8 characters.' }, { status: 400 });
   if (f.get('consent') !== 'true') return NextResponse.json({ ok: false, error: 'Please agree to be contacted about your application.' }, { status: 400 });
+  // This email already has an account: the client signs in with that account's password, so the application lands
+  // in their dashboard and they are signed in. Nothing is saved until the password is right.
+  if (!me && password && email) {
+    const found = (await list<Customer>('customers')).find((c) => c.email === email);
+    if (found && !(found.active && (await verifyPassword(password, found.pass)))) {
+      return NextResponse.json({ ok: false, code: 'login', error: 'You already have an account with this email. Enter the password of that account (the one you use to sign in), or reset it with “Forgot password”.' }, { status: 409 });
+    }
+  }
 
   let family: { relation: string; name: string; adult: boolean }[] = [];
   try { family = (JSON.parse(s(f, 'family', 4000)) as typeof family).slice(0, 12).map((m) => ({ relation: String(m.relation).slice(0, 20), name: String(m.name).slice(0, 100), adult: !!m.adult })); } catch {}

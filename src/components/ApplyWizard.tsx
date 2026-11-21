@@ -39,6 +39,8 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
   const [pw, setPw] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [pw2, setPw2] = useState('');
+  // The email already has an account: one password field (the account's own password) instead of creating one.
+  const [existing, setExisting] = useState(false);
   const [me, setMe] = useState<{ name: string; email: string; phone: string } | null>(null);
 
   useEffect(() => {
@@ -85,8 +87,8 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
       if (d.email && !/^\S+@\S+\.\S+$/.test(d.email)) return setErr('Please check your email address.');
       if (!me) {
         if (!d.email) return setErr('Please add your email: it is your login for the client dashboard.');
-        if (pw.length < 8) return setErr('Please choose a password of at least 8 characters.');
-        if (pw !== pw2) return setErr('The two passwords do not match.');
+        if (existing ? !pw : pw.length < 8) return setErr(existing ? 'Please enter the password of your account.' : 'Please choose a password of at least 8 characters.');
+        if (!existing && pw !== pw2) return setErr('The two passwords do not match.');
       }
     }
     if (step === 2 && fam.some((m) => !m.name.trim())) return setErr('Add a name for each family member, or remove the empty row.');
@@ -116,7 +118,7 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
     for (const f of extra) { fd.append('files', f); fd.append('labels', f.name); }
     try {
       // The server can be busy for a moment (for example while it restarts): try again up to 3 times.
-      let r: Response | null = null, j: { ok?: boolean; error?: string; ref?: string; link?: string; account?: string } = {};
+      let r: Response | null = null, j: { ok?: boolean; error?: string; code?: string; ref?: string; link?: string; account?: string } = {};
       for (let i = 0; i < 6; i++) {
         try {
           r = await fetch('/api/apply/', { method: 'POST', body: fd });
@@ -127,6 +129,8 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
         await new Promise((res) => setTimeout(res, 3000 * (i + 1)));
       }
       if (!r) throw new Error('We could not reach the server. Please check your internet and press Submit again.');
+      // Account already there with another password: back to the details step to enter the account's password.
+      if (j.code === 'login') { setExisting(true); setPw(''); setPw2(''); setStep(1); window.scrollTo({ top: 0, behavior: 'smooth' }); throw new Error(j.error || 'Please enter the password of your account.'); }
       if (!r.ok || !j.ok) throw new Error(j.error || 'We could not submit your application just now. Please press Submit again in a minute, or send it on WhatsApp.');
       setErr('');
       setDone({ ref: j.ref ?? '', link: j.link ?? '', account: j.account });
@@ -232,29 +236,29 @@ export function ApplyWizard({ inPortal = false }: { inPortal?: boolean } = {}) {
                     <div className="acct-head">
                       <span className="acct-ic"><Icon name="lock" size={20} /></span>
                       <div>
-                        <h4 id="acct-h"><T>{"Create your client account"}</T></h4>
-                        <p><T>{"Your email above is your login. Choose a password to follow your file, upload documents, message your advisor and pay online."}</T></p>
+                        <h4 id="acct-h">{existing ? <T>{"Sign in to your account"}</T> : <T>{"Create your client account"}</T>}</h4>
+                        <p>{existing ? <T>{"This email already has an account. Enter its password and your application goes straight into your dashboard."}</T> : <T>{"Your email above is your login. Choose a password to follow your file, upload documents, message your advisor and pay online."}</T>}</p>
                       </div>
                     </div>
                     <div className="acct-grid">
                       <div className="field">
-                        <label htmlFor="ap-pw"><T>{"Create password"}</T> *</label>
+                        <label htmlFor="ap-pw">{existing ? <T>{"Your password"}</T> : <T>{"Create password"}</T>} *</label>
                         <div className="pw-wrap">
-                          <input id="ap-pw" type={showPw ? 'text' : 'password'} autoComplete="new-password" minLength={8} value={pw} onChange={(e) => setPw(e.target.value)} aria-describedby="ap-pw-help" placeholder="••••••••" />
+                          <input id="ap-pw" type={showPw ? 'text' : 'password'} autoComplete={existing ? 'current-password' : 'new-password'} minLength={existing ? undefined : 8} value={pw} onChange={(e) => setPw(e.target.value)} aria-describedby="ap-pw-help" placeholder="••••••••" />
                           <button type="button" className="pw-eye" onClick={() => setShowPw((x) => !x)} aria-label={showPw ? 'Hide password' : 'Show password'} aria-pressed={showPw}><Icon name={showPw ? 'eyeoff' : 'eye'} size={18} /></button>
                         </div>
                       </div>
-                      <div className="field">
+                      {!existing && <div className="field">
                         <label htmlFor="ap-pw2"><T>{"Confirm password"}</T> *</label>
                         <div className="pw-wrap">
                           <input id="ap-pw2" type={showPw ? 'text' : 'password'} autoComplete="new-password" value={pw2} onChange={(e) => setPw2(e.target.value)} placeholder="••••••••" />
                         </div>
-                      </div>
+                      </div>}
                     </div>
-                    <ul className="pw-rules" id="ap-pw-help">
+                    {existing ? <p className="acct-foot" id="ap-pw-help"><a href={portalLogin().replace(/login\/?$/, 'forgot/')}><T>{"Forgot password?"}</T></a> · <button type="button" className="linkish" onClick={() => { setExisting(false); setPw(''); setErr(''); }}><T>{"Use another email"}</T></button></p> : <ul className="pw-rules" id="ap-pw-help">
                       <li className={pw.length >= 8 ? 'ok' : ''}><Icon name="check" size={14} /> <T>{"At least 8 characters"}</T></li>
                       <li className={pw && pw === pw2 ? 'ok' : ''}><Icon name="check" size={14} /> <T>{"Both passwords match"}</T></li>
-                    </ul>
+                    </ul>}
                     <p className="acct-foot"><T>{"Already have an account?"}</T> <a href={portalLogin()}><T>{"Sign in first"}</T></a> <T>{"and your details are filled in for you."}</T></p>
                   </section>
                 )}
