@@ -386,7 +386,8 @@ for (const [name, vp] of Object.entries(VP)) {
   await a1.dispose();
   const a2 = await request.newContext({ baseURL: base, extraHTTPHeaders: { 'x-forwarded-for': '10.8.8.2' } });
   const r2 = await (await a2.post('/api/apply/', { multipart: form('a-wrong-password', 'ci-apply@example.com') })).json().catch(() => ({}));
-  if (!r2.ok || r2.account !== 'exists') fail('apply-account', `existing email with wrong password: ${JSON.stringify(r2).slice(0, 160)}`);
+  // Existing email with a wrong password: nothing is saved, the client is asked for the password of that account.
+  if (r2.ok || r2.code !== 'login') fail('apply-account', `existing email with wrong password: ${JSON.stringify(r2).slice(0, 160)}`);
   if ((await (await a2.get('/api/me/')).json().catch(() => ({}))).signedIn) fail('security', 'wrong password on apply signed the visitor in');
   const r3 = await (await a2.post('/api/apply/', { multipart: form('ci-pass-12345', 'ci-apply@example.com') })).json().catch(() => ({}));
   if (r3.account !== 'signed-in') fail('apply-account', `existing account with the right password not signed in: ${JSON.stringify(r3).slice(0, 160)}`);
