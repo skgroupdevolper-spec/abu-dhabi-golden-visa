@@ -168,8 +168,12 @@ export async function acceptQuote(f: FormData) {
   const total = a.quote.lines.reduce((s, l) => s + l.amount, 0) + a.quote.serviceFee + a.quote.vat;
   const { sendWa } = await import('@/lib/server/whatsapp');
   const { portalUrl } = await import('@/lib/site');
-  await sendWa(a.client.phone, 'confirmed', { name: a.client.name, ref: a.ref, route: a.route, total: `AED ${total.toFixed(2)}`, date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), link: portalUrl(a.token) }).catch(() => {});
-  void mailEvent(a.client.email, 'confirmed', { name: a.client.name.split(' ')[0], ref: a.ref, route: a.route, total: `AED ${total.toFixed(2)}`, date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), link: portalUrl(a.token) });
+  // Pay now: the online payment page of the whole order (card payments on), otherwise the payment details on the file.
+  const { getPayCfg, online } = await import('@/lib/server/payments');
+  const payLink = total > 0 ? `${portalUrl(a.token)}${online(await getPayCfg()) ? 'pay/order/' : '#payments'}` : portalUrl(a.token);
+  const pay = total > 0 ? { cta: 'Pay now' } : {};
+  await sendWa(a.client.phone, 'confirmed', { name: a.client.name, ref: a.ref, route: a.route, total: `AED ${total.toFixed(2)}`, date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), link: payLink, ...pay }).catch(() => {});
+  void mailEvent(a.client.email, 'confirmed', { name: a.client.name.split(' ')[0], ref: a.ref, route: a.route, total: `AED ${total.toFixed(2)}`, date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), link: payLink });
   await updateApplication(a.id, (x) => { x.confirmedAt = now(); });
   refresh(a.token);
 }

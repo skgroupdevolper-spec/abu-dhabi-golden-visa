@@ -215,7 +215,7 @@ export async function saveQuote(_: FormState, f: FormData): Promise<FormState> {
   });
   if (app && f.get('send')) {
     const total = app.quote.lines.reduce((x, l) => x + l.amount, 0) + app.quote.serviceFee + app.quote.vat;
-    const r = await sendWa(app.client.phone, 'quote', V(app, { total: money(total) }));
+    const r = await sendWa(app.client.phone, 'quote', V(app, { total: money(total), fileLink: `${portalUrl(app.token)}quote/`, fileName: `${app.ref}-quote.pdf`, fileCaption: `${app.ref} quotation` }));
     void mailEvent(app.client.email, 'quote', V(app, { route: app.route, total: money(total) }));
     return { ok: `Quote saved and sent to the client portal.${r.ok ? ' WhatsApp sent.' : ''}` };
   }

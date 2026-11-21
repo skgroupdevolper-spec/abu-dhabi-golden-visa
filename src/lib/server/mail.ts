@@ -5,13 +5,13 @@ import { SITE } from '@/lib/site';
 import { fillTpl, type MailEvent } from '@/lib/mail-events';
 import type { Transporter } from 'nodemailer';
 
-export type MailOpts = { badge?: string; title?: string; attachments?: { filename: string; content: Buffer }[] };
+export type MailOpts = { badge?: string; title?: string; attachments?: { filename: string; content: Buffer }[]; retry?: boolean };
 
 /** Sends an email through the SMTP account set in the admin. Silently skips when it is not set up.
  *  Every email goes out as a branded card (white, gold and black) with the plain text kept for simple mail apps. */
 export async function sendMail(to: string, subject: string, text: string, opts: MailOpts = {}) {
   const m = (await getSecrets()).smtp;
-  if (!m.host || !m.user || !m.pass || !to) { void logMail(to, subject, false, 'Email is not set up (Admin > Settings > Email)'); return { ok: false, error: 'Email is not set up' }; }
+  if (!m.host || !m.user || !m.pass || !to) { if (!opts.retry) void logMail(to, subject, false, 'Email is not set up (Admin > Settings > Email)'); return { ok: false, error: 'Email is not set up' }; }
   try {
     const t = await transport(m);
     const html = renderMail(subject, text, (await docCfg()).mail, opts);
@@ -32,9 +32,42 @@ export async function sendMail(to: string, subject: string, text: string, opts: 
   } catch (e) {
     cached?.t.close(); cached = null; // next email connects fresh
     const error = friendly((e as Error).message);
-    void logMail(to, subject, false, `${error} [${(e as Error).message.slice(0, 160)}]`);
+    // Not lost: the email is kept and sent again after 1, 2, 5, 15 and 30 minutes (for example when the
+    // mail server was busy, or the website was restarting during an update).
+    const queued = !opts.retry && (await queueMail(to, subject, text, opts));
+    void logMail(to, subject, false, `${error}${queued ? ' (sent again automatically in 1 minute)' : ''} [${(e as Error).message.slice(0, 160)}]`);
     return { ok: false, error };
   }
+}
+
+/* ---------- emails that could not be sent are tried again ---------- */
+type Queued = { id: string; at: string; next: number; tries: number; to: string; subject: string; text: string; badge?: string; title?: string; files?: { filename: string; b64: string }[] };
+const WAIT = [60_000, 120_000, 300_000, 900_000, 1_800_000];
+async function queueMail(to: string, subject: string, text: string, opts: MailOpts) {
+  try {
+    const { insert } = await import('./collections');
+    const { newId, now } = await import('./store');
+    const files = (opts.attachments ?? []).filter((a) => a.content.length < 4_000_000).map((a) => ({ filename: a.filename, b64: a.content.toString('base64') }));
+    await insert<Queued>('mail-queue', { id: newId(6), at: now(), next: Date.now() + WAIT[0], tries: 0, to, subject, text, badge: opts.badge, title: opts.title, ...(files.length ? { files } : {}) }, 300);
+    return true;
+  } catch { return false; }
+}
+let retrying = false;
+/** Sends the emails waiting in the queue whose time has come (called every minute). */
+export async function retryMail() {
+  if (retrying) return 0;
+  retrying = true;
+  let sent = 0;
+  try {
+    const { list, remove, patch } = await import('./collections');
+    const due = (await list<Queued>('mail-queue')).filter((q) => q.next <= Date.now()).slice(0, 20);
+    for (const q of due) {
+      const r = await sendMail(q.to, q.subject, q.text, { badge: q.badge, title: q.title, retry: true, attachments: q.files?.map((f) => ({ filename: f.filename, content: Buffer.from(f.b64, 'base64') })) });
+      if (r.ok || q.tries + 1 >= WAIT.length) { await remove<Queued>('mail-queue', q.id); if (r.ok) sent++; }
+      else await patch<Queued>('mail-queue', q.id, (x) => { x.tries++; x.next = Date.now() + WAIT[x.tries]; });
+    }
+  } catch {} finally { retrying = false; }
+  return sent;
 }
 
 /** Last 300 emails (sent or failed), shown in Admin > Emails & PDFs > Email log. */

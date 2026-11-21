@@ -88,7 +88,7 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   if (btnTpl) keys = keys.filter((k) => k !== 'link');
   const btnSuffix = link.startsWith(portal) ? link.slice(portal.length) || 'login/' : 'login/';
   // Inside the 24-hour window: a normal message with a tappable button (WhatsApp "call to action" link).
-  const ctaLabel = ({ review: 'Leave a review', welcome: 'Open my file', status: 'View my application', quote: 'View my quote', confirmed: 'Track my file', payment: 'Pay now', paid: 'Track my file', message: 'Reply to advisor', document: 'Open my file' } as Partial<Record<WaEvent, string>>)[event];
+  const ctaLabel = (typeof vars.cta === 'string' && vars.cta) || ({ review: 'Leave a review', welcome: 'Open my file', status: 'View my application', quote: 'View my quote', confirmed: 'Track my file', payment: 'Pay now', paid: 'Track my file', message: 'Reply to advisor', document: 'Open my file' } as Partial<Record<WaEvent, string>>)[event];
   const ctaText = (() => {
     if (!link || !ctaLabel || !/^https:\/\//.test(link)) return '';
     const lines = text.split('\n');
@@ -119,6 +119,8 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
       ] } }
     : btnTpl && (custom || !opts.text)
     ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name, language: { code: w.templateLang || 'en' }, components: [
+        // Templates named *_pdf_* carry the file itself on top (e.g. the quotation PDF).
+        ...(fileLink && /_pdf_/.test(name) ? [{ type: 'header', parameters: [{ type: 'document', document: { link: fileLink, filename: fileName } }] }] : []),
         { type: 'body', parameters: keys.map((k) => ({ type: 'text', text: flat(vars[k]).slice(0, 900) || String(vars[k] ?? '-').slice(0, 900) || '-' })) },
         { type: 'button', sub_type: 'url', index: '0', parameters: [{ type: 'text', text: btnSuffix }] },
       ] } }
@@ -134,11 +136,13 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
         ...(fileLink && /_file_v\d+$/.test(name) ? [{ type: 'header', parameters: [{ type: 'document', document: { link: fileLink, filename: fileName } }] }] : []),
         { type: 'body', parameters: keys.map((k) => ({ type: 'text', text: flat(vars[k]).slice(0, 900) || String(vars[k] ?? '-').slice(0, 900) || '-' })) },
       ] } }
-    : fileLink && open
+    : fileLink && open && !(ctaText && !team)
     ? { messaging_product: 'whatsapp', to: number, type: 'document', document: { link: fileLink, filename: fileName, caption: text.slice(0, 1000) } }
     : open && ctaText && !team
     ? { messaging_product: 'whatsapp', to: number, type: 'interactive', interactive: { type: 'cta_url', ...(event === 'review' ? { header: { type: 'image', image: { link: reviewImg } } } : {}), body: { text: ctaText }, action: { name: 'cta_url', parameters: { display_text: ctaLabel, url: link } } } }
     : { messaging_product: 'whatsapp', to: number, type: 'text', text: { body: text.slice(0, 4000), preview_url: true } };
+  // Inside the 24-hour window a message with a button cannot carry a file: the file goes first, then the button message.
+  if (fileLink && open && ctaText && !team && body.type === 'interactive') await sendWaDoc(number, fileLink, fileName, String(vars.fileCaption || fileName), opts.event || event).catch(() => null);
   let ok = false, error = '', mid = '';
   try {
     const r = await fetch(`${GRAPH}/${encodeURIComponent(w.phoneNumberId)}/messages`, {
@@ -197,7 +201,7 @@ export async function sendTeam(event: WaEvent, vars: Record<string, string | num
 }
 
 /** Sends a PDF (or other file) by link with a caption, e.g. the payment receipt. Cloud API only. */
-export async function sendWaDoc(to: string, link: string, filename: string, caption: string) {
+export async function sendWaDoc(to: string, link: string, filename: string, caption: string, event = 'paid') {
   const w = (await getSecrets()).whatsapp;
   const number = digits(to);
   if (!number || number.length < 8) return { ok: false, error: 'No valid number' };
@@ -212,7 +216,7 @@ export async function sendWaDoc(to: string, link: string, filename: string, capt
     const j = await r.json().catch(() => ({}));
     ok = r.ok; if (!r.ok) error = j?.error?.message || `HTTP ${r.status}`;
   } catch (e) { error = (e as Error).message; }
-  await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: number, event: 'paid', text: `[PDF] ${filename} · ${caption}`.slice(0, 500), ok, error: error || undefined, dir: 'out' }, 2000);
+  await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: number, event, text: `[PDF] ${filename} · ${caption}`.slice(0, 500), ok, error: error || undefined, dir: 'out' }, 2000);
   return { ok, error };
 }
 

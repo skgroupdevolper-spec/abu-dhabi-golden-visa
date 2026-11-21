@@ -3,6 +3,8 @@ export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     const { applyRuntimeSync } = await import('./lib/server/settings');
     applyRuntimeSync();
+    // Emails that could not be sent (mail server busy, website restarting) are sent again every minute.
+    setInterval(() => { void import('./lib/server/mail').then((m) => m.retryMail()).catch(() => {}); }, 60_000);
     // After each deploy, translate new or changed pages into all website languages in the background.
     // Texts shown without a translation are collected by u() and translated every 3 minutes.
     setInterval(() => { void import('./lib/server/translate').then((m) => m.flushMissingUi()).catch(() => {}); }, 180_000);
