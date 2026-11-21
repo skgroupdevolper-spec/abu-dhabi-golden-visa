@@ -18,11 +18,15 @@ export async function sendMail(to: string, subject: string, text: string, opts: 
     // Better inbox placement: the From address is the account that signs in (Gmail/Outlook rewrite anything else,
     // which looks like spoofing), replies go to your office address, and the mail says it is an automatic service email.
     const addr = (m.from.match(/<([^>]+)>/)?.[1] || m.from || m.user).trim();
-    const fromAddr = addr.toLowerCase() === m.user.toLowerCase() || !/@/.test(addr) ? m.user : addr;
+    // An address on another domain than the login (e.g. info@site.com sent through a Gmail account of another company)
+    // fails Gmail/Outlook's sender checks, so those mails arrive late or in spam: they go out from the login address,
+    // with the site name shown and replies going to the site address.
+    const dom = (x: string) => x.split('@')[1]?.toLowerCase() || '';
+    const fromAddr = !/@/.test(addr) || dom(addr) !== dom(m.user) ? m.user : addr;
     const fromName = (m.from.match(/^\s*"?([^"<]+?)"?\s*</)?.[1] || SITE.name).trim();
     await t.sendMail({
       from: { name: fromName, address: fromAddr }, to, subject, text: cleanText(text), html,
-      replyTo: SITE.email || undefined,
+      replyTo: (fromAddr !== addr && /@/.test(addr) ? addr : SITE.email) || undefined,
       messageId: `<${Date.now().toString(36)}.${Math.random().toString(36).slice(2, 10)}@${fromAddr.split('@')[1]}>`,
       headers: { 'Auto-Submitted': 'auto-generated', 'X-Auto-Response-Suppress': 'OOF, AutoReply' },
       ...(opts.attachments?.length ? { attachments: opts.attachments } : {}),
