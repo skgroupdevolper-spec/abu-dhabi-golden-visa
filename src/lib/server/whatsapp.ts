@@ -111,7 +111,11 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   // Meta does not allow new lines inside template values: a blank line (<br><br>) becomes " — ", one new line " · ".
   const flat = (v: unknown) => String(v ?? '').replace(/<br\s*\/?>/gi, '\n').replace(/https?:\/\/\S+/g, '').replace(/[ \t]*\r?\n[ \t]*(\r?\n[ \t]*)+/g, ' — ').replace(/[ \t]*\r?\n[ \t]*/g, ' · ').replace(/\t/g, ' ').replace(/ {2,}/g, ' ').trim();
   const body = viaMsg
-    ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name: w.templateNames.message, language: { code: w.templateLang || 'en' }, components: [{ type: 'body', parameters: [vars.name, vars.ref || '-', flat(text).slice(0, 900) || '-', vars.link || SITE_URL()].map((x) => ({ type: 'text', text: String(x ?? '-') || '-' })) }] } }
+    ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name: w.templateNames.message, language: { code: w.templateLang || 'en' }, components: /_btn_v\d+$/.test(w.templateNames.message)
+        // "New message" template with a button: 3 values (name, file, text); the button opens the client's link.
+        ? [{ type: 'body', parameters: [vars.name, vars.ref || '-', flat(text).slice(0, 900) || '-'].map((x) => ({ type: 'text', text: String(x ?? '-') || '-' })) },
+           { type: 'button', sub_type: 'url', index: '0', parameters: [{ type: 'text', text: btnSuffix }] }]
+        : [{ type: 'body', parameters: [vars.name, vars.ref || '-', flat(text).slice(0, 900) || '-', vars.link || SITE_URL()].map((x) => ({ type: 'text', text: String(x ?? '-') || '-' })) }] } }
     : reviewTpl && (custom || !opts.text)
     ? { messaging_product: 'whatsapp', to: number, type: 'template', template: { name, language: { code: w.templateLang || 'en' }, components: [
         { type: 'header', parameters: [{ type: 'image', image: { link: reviewImg } }] },
