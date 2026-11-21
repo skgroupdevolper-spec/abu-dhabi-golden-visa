@@ -7,6 +7,9 @@ export async function register() {
     // Texts shown without a translation are collected by u() and translated every 3 minutes.
     setInterval(() => { void import('./lib/server/translate').then((m) => m.flushMissingUi()).catch(() => {}); }, 180_000);
     setTimeout(() => { void import('./lib/server/translate').then((m) => m.autoCatchUp()).catch(() => {}); }, 60_000);
+    // Auto Publisher: one step every minute (research, write, check, pictures, publish; a step that is
+    // still running holds a lock). Published articles are translated by the languages engine.
+    if (process.env.DISABLE_AUTOPUBLISHER !== '1' && !process.env.CI) setInterval(() => { void import('./lib/server/ap/pipeline').then((m) => m.tick()).catch(() => {}); }, 60_000);
   }
 }
 

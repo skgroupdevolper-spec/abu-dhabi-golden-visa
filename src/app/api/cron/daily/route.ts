@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { autoRun } from '@/lib/server/autopub';
+import { tick } from '@/lib/server/ap/pipeline';
 import { getBlock } from '@/lib/server/settings';
 import { JOB0, runTranslation, type TranslateJob } from '@/lib/server/translate';
 
@@ -18,7 +18,8 @@ export async function GET(req: NextRequest) {
     const { LOCALES } = await import('@/lib/i18n');
     return m.translateUi(LOCALES.filter((l) => l.code !== 'en' && (!on?.length || on.includes(l.code))).map((l) => l.code));
   }).catch(() => 0);
-  const pub = await autoRun();
+  // The Auto Publisher also runs every minute by itself (instrumentation.ts); this is one extra step.
+  const pub = { message: (await tick().catch((e) => ({ did: `error: ${e instanceof Error ? e.message : e}` }))).did };
   const job = await getBlock<TranslateJob>('translateJob', JOB0);
   if (job.auto && job.langs.length) void runTranslation(job.langs, true);
   else await import('@/lib/server/translate').then((m) => m.autoCatchUp()).catch(() => {});
