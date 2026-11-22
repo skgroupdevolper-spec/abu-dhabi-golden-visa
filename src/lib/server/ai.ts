@@ -5,19 +5,19 @@ import type { AiUse } from '@/lib/settings-schema';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 const GEMINI_FALLBACK = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite'];
-const DEFAULT_MODEL = { openai: 'gpt-4.1-mini', gemini: 'gemini-3.8-flash', anthropic: 'claude-haiku-4-5' } as const;
+const DEFAULT_MODEL = { openai: 'gpt-4.1-mini', gemini: 'gemini-3.8-flash', anthropic: 'claude-haiku-4-5', kingmaker: '' } as const;
 
 async function pick(use?: AiUse) {
   const a = (await getSecrets()).ai;
   const r = use ? a.routes?.[use] : undefined;
-  const p = (r?.provider || a.provider) as 'openai' | 'gemini' | 'anthropic' | '';
+  const p = (r?.provider || a.provider) as 'openai' | 'gemini' | 'anthropic' | 'kingmaker' | '';
   const model = r?.provider ? r.model || (p ? DEFAULT_MODEL[p] : '') : a.model || (p ? DEFAULT_MODEL[p] : '');
   return { a, p, model };
 }
 
 export async function aiReady(use?: AiUse) {
   const { a, p } = await pick(use);
-  return !!p && !!(p === 'openai' ? a.openaiKey : p === 'gemini' ? a.geminiKey : a.anthropicKey);
+  return !!p && !!(p === 'openai' ? a.openaiKey : p === 'gemini' ? a.geminiKey : p === 'kingmaker' ? a.kingmakerKey : a.anthropicKey);
 }
 
 /** Counts automatic AI requests per day so background jobs stay inside the admin's daily limit. */
@@ -39,7 +39,10 @@ export async function complete(system: string, messages: Msg[], o: { json?: bool
   if (!p) throw new Error('AI is switched off. Add a key in the AI settings.');
   const max = o.maxTokens ?? 1200;
   let text = '';
-  if (p === 'openai') {
+  if (p === 'kingmaker') {
+    const { kmChat } = await import('./kingmaker');
+    text = await kmChat({ url: a.kingmakerUrl, key: a.kingmakerKey || '', model, system, messages, json: o.json, maxTokens: max, timeoutMs: 120000 });
+  } else if (p === 'openai') {
     if (!a.openaiKey) throw new Error('OpenAI key missing');
     const r = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST', headers: { Authorization: `Bearer ${a.openaiKey}`, 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(90000),
