@@ -62,8 +62,10 @@ export async function complete(opts: CompleteOpts): Promise<string> {
     const key = await providerKey(cfg, pid);
     if (!key) throw new AiError('config', `No API key for ${pid}. Add it in Auto Publisher → AI & pictures.`);
     const model = cfg.providers[pid]?.model?.trim();
-    if (!model) throw new AiError('config', `No model name set for ${pid}.`);
+    // King Maker picks the server's first model when none is typed.
+    if (!model && pid !== 'kingmaker') throw new AiError('config', `No model name set for ${pid}.`);
     await countAiCall();
+    if (pid === 'kingmaker') return callModel(pid, key, model || '', { ...opts, temperature, maxTokens, timeoutMs });
     try {
       if (pid === 'gemini') return await callGemini(key, model, opts, temperature, maxTokens, timeoutMs);
       if (pid === 'claude') return await callClaude(key, model, opts, temperature, maxTokens, timeoutMs);
@@ -155,7 +157,7 @@ export async function testProvider(id: ProviderId): Promise<{ answer: string; ms
     timeoutMs: 45_000,
     skipBudget: true,
   });
-  return { answer: answer.slice(0, 500), ms: Date.now() - t, model: isFakeAi() ? 'fake' : cfg.providers[id].model };
+  return { answer: answer.slice(0, 500), ms: Date.now() - t, model: isFakeAi() ? 'fake' : cfg.providers[id].model || (id === 'kingmaker' ? 'server default' : '') };
 }
 
 /** Text embedding (256 numbers) for the meaning check. Returns null when switched off. */
