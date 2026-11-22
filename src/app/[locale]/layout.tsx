@@ -6,6 +6,7 @@ import type { Metadata, Viewport } from 'next';
 import { mergeCatalog } from '@/content/services-catalog';
 import { getServiceOverrides } from '@/lib/server/content';
 import type { ReactNode } from 'react';
+import { connection } from 'next/server';
 import { notFound, redirect } from 'next/navigation';
 import { Instrument_Serif, Manrope, Noto_Naskh_Arabic } from 'next/font/google';
 import { Header } from '@/components/Header';
@@ -63,6 +64,9 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   const uiAll = await readJsonFile<Record<string, Record<string, string>>>('ui-translations.json', {});
   globalThis.__ADGV_UI = uiAll;
   const svcCat = mergeCatalog(await getServiceOverrides());
+  // The automatic test builds every page fresh, so owner edits show at once; the live site keeps pages cached
+  // (they refresh on their own within about a minute).
+  if (process.env.CI) await connection();
   const fx = await siteRates();
   (globalThis as { __ADGV_FX?: typeof fx }).__ADGV_FX = fx;
   globalThis.__ADGV_SVC = svcCat;
