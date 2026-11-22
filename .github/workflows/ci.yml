@@ -21,6 +21,8 @@ jobs:
       ADMIN_PASSWORD: ci-password-123
       SESSION_SECRET: ci-secret-0123456789abcdef
       CI: 'true'
+      # Owner edits refresh the public pages at once in the test (live pages refresh on their own within about a minute).
+      ADGV_REVALIDATE: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
