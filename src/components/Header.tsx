@@ -13,6 +13,7 @@ import { RATES, siteFx } from '@/lib/fees';
 import { liveLocales, SITE, waLink } from '@/lib/site';
 import { iconForText } from '@/lib/icon-match';
 import { Icon } from './Icon';
+import { AdvisorAvatar } from './ChatWidget';
 import { L } from './L';
 import { eligLink } from '@/lib/elig-link';
 
@@ -337,10 +338,10 @@ export function Header({ locale }: { locale: Locale }) {
           <span className="ic w"><Icon name="wa" /></span>
           <span className="lb">{u('WhatsApp us', locale)}</span>
         </a>
-        <L locale={locale} href="/visa-check/">
-          <span className="ic r"><Icon name="verify" /></span>
-          <span className="lb">{u('Check eligibility', locale)}</span>
-        </L>
+        <a href="#ask-advisor" data-open-chat="" className="dock-ai">
+          <span className="ic ai"><AdvisorAvatar size={54} /></span>
+          <span className="lb">{u('Ask our AI advisor', locale)}</span>
+        </a>
         <L locale={locale} href="/free-consultation/">
           <span className="ic"><Icon name="gift" /></span>
           <span className="lb">{u('Free consultation', locale)}</span>
