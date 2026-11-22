@@ -1903,3 +1903,8 @@ footer.site .legal-links a:hover, footer.site .legal-links a:focus-visible { col
   body:has(.dock .dock-ai) .chatw .chatbox { bottom: 0; inset-inline-start: auto; inset-inline-end: 0; }
   body:has(.dock .dock-ai) .chatw .ch-teaser { bottom: 50vh; inset-inline-start: auto; inset-inline-end: 0; }
 }
+/* Menu promo buttons keep their own colour on hover (the menu's light link hover was painting over them) */
+.mega .mega-promo a.btn-gold, .mega .mega-promo a.btn-gold:hover { color: #fff; background: linear-gradient(110deg, #7a5a08, var(--gold) 35%, var(--gold-light) 50%, var(--gold) 65%, #7a5a08); background-size: 220% 100%; }
+.mega .mega-promo a.btn-gold:hover { background-position: 0 0; box-shadow: 0 16px 30px -14px rgba(160, 120, 10, 0.85); }
+.mega .mega-promo a.btn-red, .mega .mega-promo a.btn-red:hover { background: linear-gradient(135deg, #1c1c1c, #000); }
+.mega .mega-promo a.btn-red:hover { color: #fff; box-shadow: 0 18px 34px -14px rgba(212, 175, 55, 0.7), inset 0 0 0 1px var(--gold); }
