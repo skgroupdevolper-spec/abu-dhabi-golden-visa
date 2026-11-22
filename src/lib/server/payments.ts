@@ -219,7 +219,7 @@ export async function settle(appId: string, pid: string, method: string, txn: st
 }
 
 async function afterPaid(a: Application, p: Payment, confirmed = false) {
-  const [{ notify }, { sendWa, sendWaDoc }, { money }, { portalUrl }, { mailEvent }] = await Promise.all([import('./collections'), import('./whatsapp'), import('@/lib/stages'), import('@/lib/site'), import('./mail')]);
+  const [{ notify }, { sendWa }, { money }, { portalUrl }, { mailEvent }] = await Promise.all([import('./collections'), import('./whatsapp'), import('@/lib/stages'), import('@/lib/site'), import('./mail')]);
   await notify('payment', `Payment received: ${a.client.name}, AED ${charged(p).toFixed(2)}${p.fee ? ` incl. card fee ${p.fee.toFixed(2)}` : ''} (${a.ref})`, `/admin/applications/${a.id}/#payments`);
   const link = portalUrl(a.token);
   if (confirmed) {
@@ -227,9 +227,13 @@ async function afterPaid(a: Application, p: Payment, confirmed = false) {
     await sendWa(a.client.phone, 'confirmed', { name: a.client.name, ref: a.ref, route: a.route, total: `AED ${total.toFixed(2)}`, date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), link }).catch(() => {});
     void mailEvent(a.client.email, 'confirmed', { name: a.client.name.split(' ')[0], ref: a.ref, route: a.route, total: `AED ${total.toFixed(2)}`, date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), link });
   }
-  await sendWa(a.client.phone, 'paid', { name: a.client.name.split(' ')[0], ref: a.ref, item: p.label, amount: money(charged(p)), receipt: p.receiptNo, link });
-  if ((await getPayCfg()).receiptWa) await sendWaDoc(a.client.phone, `${link}receipt/${p.id}/pdf/`, `Payment Receipt - ${p.receiptNo}.pdf`, `✅ Payment Received, thank you! 🙏\nAmount: AED ${charged(p).toFixed(2)}\nRef: ${a.ref} | ${p.receiptNo}\nYour official receipt is attached.`);
-  void mailEvent(a.client.email, 'paid', { name: a.client.name.split(' ')[0], ref: a.ref, item: p.label, amount: money(charged(p)), receipt: p.receiptNo, link: `${link}receipt/${p.id}/pdf/` });
+  // The receipt PDF goes with the message: on top of the approved receipt template, or as a file just before it
+  // while the client's 24-hour window is open. The email carries the same PDF as an attachment.
+  const receiptLink = `${link}receipt/${p.id}/pdf/`, receiptName = `Payment Receipt - ${p.receiptNo}.pdf`;
+  const pdf = await import('./receipt-pdf').then((m) => m.receiptPdfFor(a, p)).then((b) => Buffer.from(b)).catch((e) => { console.error('Receipt PDF failed', e); return null; });
+  const withFile = (await getPayCfg()).receiptWa ? { fileLink: receiptLink, fileName: receiptName, fileCaption: `✅ Payment Received, thank you! 🙏\nAmount: AED ${charged(p).toFixed(2)}\nRef: ${a.ref} | ${p.receiptNo}\nYour official receipt is attached.` } : {};
+  await sendWa(a.client.phone, 'paid', { name: a.client.name.split(' ')[0], ref: a.ref, item: p.label, amount: money(charged(p)), receipt: p.receiptNo, link, ...withFile });
+  void mailEvent(a.client.email, 'paid', { name: a.client.name.split(' ')[0], ref: a.ref, item: p.label, amount: money(charged(p)), receipt: p.receiptNo, link: `${link}receipt/${p.id}/pdf/` }, pdf ? [{ filename: receiptName, content: pdf }] : undefined);
 }
 
 /** Finds a payment from a provider reference (webhooks). */
