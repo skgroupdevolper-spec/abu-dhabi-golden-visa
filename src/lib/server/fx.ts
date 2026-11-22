@@ -7,7 +7,6 @@ import { getFees, now } from './store';
 
 type Rates = Record<string, { rate: number; symbol: string; name: string }>;
 type Live = { at: string; rates: Record<string, number> };
-const DAY = 864e5;
 let busy = false;
 
 export async function refreshRates(): Promise<Live | null> {
@@ -31,7 +30,8 @@ export async function refreshRates(): Promise<Live | null> {
 export async function siteRates(): Promise<Rates & { _at?: never }> {
   const [fees, live] = await Promise.all([getFees(), getBlock<Live | null>('fx', null)]);
   const base: Rates = Object.keys(fees.rates ?? {}).length ? { ...RATES, ...fees.rates } : { ...RATES };
-  if (!live || Date.now() - Date.parse(live.at) > DAY) void refreshRates();
+  // Rates are refreshed by a timer (instrumentation), never while a page is being built: a live fetch during
+  // rendering turns the cached pages dynamic and every page answered 500.
   if (fees.fxManual || !live) return base;
   const out: Rates = {};
   for (const [c, r] of Object.entries(base)) out[c] = { ...r, rate: c === 'AED' ? 1 : live.rates[c] ?? r.rate };

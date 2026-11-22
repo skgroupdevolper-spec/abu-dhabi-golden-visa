@@ -3,6 +3,9 @@ export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     const { applyRuntimeSync } = await import('./lib/server/settings');
     applyRuntimeSync();
+    // Currency rates: refreshed shortly after start and every 6 hours, outside page rendering.
+    const fx = () => { void import('./lib/server/fx').then((m) => m.refreshRates()).catch(() => {}); };
+    setTimeout(fx, 20_000); setInterval(fx, 6 * 3600_000);
     // Emails that could not be sent (mail server busy, website restarting) are sent again every minute.
     setInterval(() => { void import('./lib/server/mail').then((m) => m.retryMail()).catch(() => {}); }, 60_000);
     // After each deploy, translate new or changed pages into all website languages in the background.
