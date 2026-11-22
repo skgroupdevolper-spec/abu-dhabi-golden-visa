@@ -35,7 +35,7 @@ export const isFakeAi = () => process.env.AUTOPUBLISHER_FAKE_AI === '1';
 export async function providerKey(cfg: AutoConfig, id: ProviderId): Promise<string> {
   const own = cfg.providers[id]?.key?.trim();
   if (own) return own;
-  const env = { gemini: process.env.GEMINI_API_KEY, claude: process.env.ANTHROPIC_API_KEY, openai: process.env.OPENAI_API_KEY, openrouter: process.env.OPENROUTER_API_KEY }[id];
+  const env = { gemini: process.env.GEMINI_API_KEY, claude: process.env.ANTHROPIC_API_KEY, openai: process.env.OPENAI_API_KEY, openrouter: process.env.OPENROUTER_API_KEY, kingmaker: process.env.KINGMAKER_API_KEY }[id];
   if (env) return env.trim();
   if (id === 'gemini' && cfg.useTranslationGeminiKey) {
     const t: any = await getSetting('translation');
@@ -43,7 +43,7 @@ export async function providerKey(cfg: AutoConfig, id: ProviderId): Promise<stri
   }
   // The keys saved in the dashboard's Settings → AI are used when the publisher has none of its own.
   const ai = (await getSecrets()).ai;
-  const shared = { gemini: ai.geminiKey, claude: ai.anthropicKey, openai: ai.openaiKey, openrouter: '' }[id];
+  const shared = { gemini: ai.geminiKey, claude: ai.anthropicKey, openai: ai.openaiKey, openrouter: '', kingmaker: ai.kingmakerKey || '' }[id];
   return String(shared || '').trim();
 }
 
@@ -93,8 +93,8 @@ export async function complete(opts: CompleteOpts): Promise<string> {
 
 /** Another provider with a key and a model (Gemini first), for when the chosen one's key is wrong */
 async function workingBackup(cfg: AutoConfig, failed: ProviderId): Promise<ProviderId | null> {
-  for (const pid of ['gemini', 'claude', 'openrouter', 'openai'] as ProviderId[]) {
-    if (pid === failed || !cfg.providers[pid]?.model?.trim()) continue;
+  for (const pid of ['gemini', 'claude', 'openrouter', 'openai', 'kingmaker'] as ProviderId[]) {
+    if (pid === failed || (pid !== 'kingmaker' && !cfg.providers[pid]?.model?.trim())) continue;
     if (await providerKey(cfg, pid)) return pid;
   }
   return null;
@@ -116,6 +116,14 @@ export async function callModel(id: ProviderId, key: string, model: string, opts
   try {
     if (id === 'gemini') return await callGemini(key, model, opts, temperature, maxTokens, timeoutMs);
     if (id === 'claude') return await callClaude(key, model, opts, temperature, maxTokens, timeoutMs);
+    if (id === 'kingmaker') {
+      const { kmChat } = await import('../kingmaker');
+      const url = (await getSecrets()).ai.kingmakerUrl;
+      const out = await kmChat({ url, key, model, system: opts.system, messages: [{ role: 'user', content: opts.prompt }], json: opts.json, maxTokens, temperature, timeoutMs: Math.max(timeoutMs, 120_000) })
+        .catch((e: { status?: number; message?: string }) => { throw new AiError(e.status === 401 || e.status === 403 ? 'auth' : e.status === 429 ? 'quota' : 'other', e.message || 'King Maker API error'); });
+      if (!out) throw new AiError('bad_output', 'King Maker API returned no text');
+      return out;
+    }
     return await callOpenAiCompatible(id, key, model, opts, temperature, maxTokens, timeoutMs);
   } catch (e: any) {
     throw e instanceof AiError ? e : new AiError(e?.name === 'TimeoutError' || e?.name === 'AbortError' ? 'network' : 'other', e?.message || String(e));

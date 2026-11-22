@@ -22,7 +22,7 @@ export async function AiPanel({ uses, images = false, title = 'AI provider & API
           return (
             <div key={u} className="full form" style={{ gridTemplateColumns: '1fr 1fr' }}>
               <div className="field"><label htmlFor={`p_${u}`}>{LABEL[u]}</label>
-                <select id={`p_${u}`} name={`p_${u}`} defaultValue={r?.provider ?? ''}><option value="">Same as main ({a.provider || 'off'})</option><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option><option value="anthropic">Anthropic Claude</option></select></div>
+                <select id={`p_${u}`} name={`p_${u}`} defaultValue={r?.provider ?? ''}><option value="">Same as main ({a.provider || 'off'})</option><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option><option value="anthropic">Anthropic Claude</option><option value="kingmaker">King Maker API</option></select></div>
               <div className="field"><label htmlFor={`m_${u}`}>Model</label><input id={`m_${u}`} name={`m_${u}`} defaultValue={r?.model ?? ''} placeholder={MODELS} /></div>
             </div>
           );
@@ -35,12 +35,14 @@ export async function AiPanel({ uses, images = false, title = 'AI provider & API
           </div>
         )}
         <div className="field"><label htmlFor="provider">Main provider (used when a feature says “same as main”)</label>
-          <select id="provider" name="provider" defaultValue={a.provider}><option value="">Off</option><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option><option value="anthropic">Anthropic Claude</option></select></div>
+          <select id="provider" name="provider" defaultValue={a.provider}><option value="">Off</option><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option><option value="anthropic">Anthropic Claude</option><option value="kingmaker">King Maker API</option></select></div>
         <div className="field"><label htmlFor="dailyBudget">Daily limit of automatic AI requests</label><input id="dailyBudget" name="dailyBudget" type="number" defaultValue={a.dailyBudget} /></div>
         <div className="field"><label htmlFor="openaiKey">OpenAI API key</label><PwInput id="openaiKey" name="openaiKey"  autoComplete="off" placeholder={mask(a.openaiKey)} /></div>
         <div className="field"><label htmlFor="geminiKey">Google Gemini API key</label><PwInput id="geminiKey" name="geminiKey"  autoComplete="off" placeholder={mask(a.geminiKey)} /></div>
         <div className="field"><label htmlFor="anthropicKey">Anthropic Claude API key</label><PwInput id="anthropicKey" name="anthropicKey"  autoComplete="off" placeholder={mask(a.anthropicKey)} /></div>
-        <div className="field small"><span className="lbl">Remove a key</span><label className="row"><input type="checkbox" name="clear_openaiKey" /> OpenAI</label><label className="row"><input type="checkbox" name="clear_geminiKey" /> Gemini</label><label className="row"><input type="checkbox" name="clear_anthropicKey" /> Claude</label></div>
+        <div className="field"><label htmlFor="kingmakerKey">King Maker API key</label><PwInput id="kingmakerKey" name="kingmakerKey"  autoComplete="off" placeholder={mask(a.kingmakerKey || '')} /></div>
+        <div className="field"><label htmlFor="kingmakerUrl">King Maker API address</label><input id="kingmakerUrl" name="kingmakerUrl" defaultValue={a.kingmakerUrl || 'https://ollama-lrok.srv2184834.hstgr.cloud/api/v1'} /></div>
+        <div className="field small"><span className="lbl">Remove a key</span><label className="row"><input type="checkbox" name="clear_openaiKey" /> OpenAI</label><label className="row"><input type="checkbox" name="clear_geminiKey" /> Gemini</label><label className="row"><input type="checkbox" name="clear_anthropicKey" /> Claude</label><label className="row"><input type="checkbox" name="clear_kingmakerKey" /> King Maker</label></div>
         <p className="help full">Get keys at platform.openai.com, aistudio.google.com and console.anthropic.com.</p>
         <div className="full"><Submit>Save AI settings</Submit></div>
       </ActionForm>

@@ -100,17 +100,20 @@ export default async function Settings({ searchParams }: { searchParams: Promise
         {tab === 'ai' && (
           <ActionForm action={saveAi} className="form">
             <div className="field full"><label htmlFor="provider">Main AI provider</label>
-              <select id="provider" name="provider" defaultValue={sec.ai.provider}><option value="">Off</option><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option><option value="anthropic">Anthropic Claude</option></select>
+              <select id="provider" name="provider" defaultValue={sec.ai.provider}><option value="">Off</option><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option><option value="anthropic">Anthropic Claude</option><option value="kingmaker">King Maker API</option></select>
               <p className="help">Used by the chatbot, automatic translation and the Auto Publisher.</p></div>
             <F name="openaiKey" label="OpenAI API key" type="password" help={mask(sec.ai.openaiKey)} placeholder={sec.ai.openaiKey ? "•••••••••••• saved" : ""} />
             <F name="geminiKey" label="Google Gemini API key" type="password" help={mask(sec.ai.geminiKey)} placeholder={sec.ai.geminiKey ? "•••••••••••• saved" : ""} />
             <F name="anthropicKey" label="Anthropic API key" type="password" help={mask(sec.ai.anthropicKey)} placeholder={sec.ai.anthropicKey ? "•••••••••••• saved" : ""} />
+            <F name="kingmakerKey" label="King Maker API key" type="password" help={mask(sec.ai.kingmakerKey || '')} placeholder={sec.ai.kingmakerKey ? "•••••••••••• saved" : ""} />
+            <F name="kingmakerUrl" label="King Maker API address" value={sec.ai.kingmakerUrl || 'https://ollama-lrok.srv2184834.hstgr.cloud/api/v1'} />
             <F name="model" label="Model (optional)" value={sec.ai.model} placeholder="Leave empty for a sensible default" />
             <F name="dailyBudget" label="Daily limit of automatic AI requests (translation, Auto Publisher)" value={sec.ai.dailyBudget} type="number" />
             <div className="full row small">
               <label className="row"><input type="checkbox" name="clear_openaiKey" /> Remove OpenAI key</label>
               <label className="row"><input type="checkbox" name="clear_geminiKey" /> Remove Gemini key</label>
               <label className="row"><input type="checkbox" name="clear_anthropicKey" /> Remove Anthropic key</label>
+              <label className="row"><input type="checkbox" name="clear_kingmakerKey" /> Remove King Maker key</label>
             </div>
             <div className="full"><Submit>Save</Submit></div>
           </ActionForm>

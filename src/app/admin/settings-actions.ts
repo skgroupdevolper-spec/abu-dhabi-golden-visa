@@ -82,8 +82,9 @@ export async function saveSmtp(_: St, f: FormData): Promise<St> {
 export async function saveAi(_: St, f: FormData): Promise<St> {
   await requireAdmin(FULL);
   const cur = (await getSecrets()).ai;
-  const keep = (k: 'openaiKey' | 'geminiKey' | 'anthropicKey') => (f.get(`clear_${k}`) ? '' : s(f, k, 400) || cur[k]);
-  await saveSecrets({ ai: { provider: s(f, 'provider', 20) as 'openai' | 'gemini' | 'anthropic' | '', openaiKey: keep('openaiKey'), geminiKey: keep('geminiKey'), anthropicKey: keep('anthropicKey'), model: s(f, 'model', 80), dailyBudget: Math.max(0, Number(s(f, 'dailyBudget', 8)) || 0), routes: cur.routes, images: cur.images } });
+  const keep = (k: 'openaiKey' | 'geminiKey' | 'anthropicKey' | 'kingmakerKey') => (f.get(`clear_${k}`) ? '' : s(f, k, 400) || cur[k] || '');
+  const kmUrl = f.has('kingmakerUrl') ? s(f, 'kingmakerUrl', 300).replace(/\/+$/, '') : cur.kingmakerUrl;
+  await saveSecrets({ ai: { provider: s(f, 'provider', 20) as 'openai' | 'gemini' | 'anthropic' | 'kingmaker' | '', openaiKey: keep('openaiKey'), geminiKey: keep('geminiKey'), anthropicKey: keep('anthropicKey'), kingmakerKey: keep('kingmakerKey'), kingmakerUrl: kmUrl, model: s(f, 'model', 80), dailyBudget: Math.max(0, Number(s(f, 'dailyBudget', 8)) || 0), routes: cur.routes, images: cur.images } });
   return { ok: 'Saved.' };
 }
 
@@ -289,14 +290,15 @@ export async function saveDesign(_: St, f: FormData): Promise<St> {
 export async function saveAiRoute(_: St, f: FormData): Promise<St> {
   await requireAdmin(FULL);
   const cur = (await getSecrets()).ai;
-  const keep = (k: 'openaiKey' | 'geminiKey' | 'anthropicKey') => (f.get(`clear_${k}`) ? '' : s(f, k, 400) || cur[k]);
+  const keep = (k: 'openaiKey' | 'geminiKey' | 'anthropicKey' | 'kingmakerKey') => (f.get(`clear_${k}`) ? '' : s(f, k, 400) || cur[k] || '');
+  const kmUrl = f.has('kingmakerUrl') ? s(f, 'kingmakerUrl', 300).replace(/\/+$/, '') : cur.kingmakerUrl;
   const routes = { ...(cur.routes ?? {}) };
   for (const use of ['chat', 'translate', 'writer', 'editor'] as const) {
-    if (f.has(`p_${use}`)) routes[use] = { provider: s(f, `p_${use}`, 20) as 'openai' | 'gemini' | 'anthropic' | '', model: s(f, `m_${use}`, 80) };
+    if (f.has(`p_${use}`)) routes[use] = { provider: s(f, `p_${use}`, 20) as 'openai' | 'gemini' | 'anthropic' | 'kingmaker' | '', model: s(f, `m_${use}`, 80) };
   }
   const images = f.has('p_images') ? { provider: (['openai', 'gemini'].includes(s(f, 'p_images')) ? s(f, 'p_images') : 'none') as 'none' | 'openai' | 'gemini', model: s(f, 'm_images', 80) } : cur.images;
-  const provider = f.has('provider') ? (s(f, 'provider', 20) as 'openai' | 'gemini' | 'anthropic' | '') : cur.provider;
-  await saveSecrets({ ai: { ...cur, provider, openaiKey: keep('openaiKey'), geminiKey: keep('geminiKey'), anthropicKey: keep('anthropicKey'), routes, images, dailyBudget: f.has('dailyBudget') ? Math.max(0, Number(s(f, 'dailyBudget', 8)) || 0) : cur.dailyBudget } });
+  const provider = f.has('provider') ? (s(f, 'provider', 20) as 'openai' | 'gemini' | 'anthropic' | 'kingmaker' | '') : cur.provider;
+  await saveSecrets({ ai: { ...cur, provider, openaiKey: keep('openaiKey'), geminiKey: keep('geminiKey'), anthropicKey: keep('anthropicKey'), kingmakerKey: keep('kingmakerKey'), kingmakerUrl: kmUrl, routes, images, dailyBudget: f.has('dailyBudget') ? Math.max(0, Number(s(f, 'dailyBudget', 8)) || 0) : cur.dailyBudget } });
   revalidatePath('/admin/', 'layout');
   return { ok: 'AI settings saved.' };
 }
