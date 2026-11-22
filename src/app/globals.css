@@ -1889,8 +1889,16 @@ footer.site .legal-links a:hover, footer.site .legal-links a:focus-visible { col
 .ch-teaser i { position: absolute; top: 6px; inset-inline-end: 8px; font-style: normal; font-size: 11px; color: #9a8f74; padding: 2px; }
 @keyframes chteaser { from { opacity: 0; transform: translateY(10px) scale(.96); } to { opacity: 1; transform: none; } }
 /* Computers: the advisor opens from the side bar, so the chat sits next to it and the extra round button hides */
+/* The round chat button bottom-left is gone: the advisor opens only from the side bar (phones too) */
+.chatw .ch-btn { display: none; }
+@media (max-width: 760px) {
+  .dock > a.dock-ai { display: flex; }
+  .dock .dock-ai .ic { width: 50px; height: 50px; }
+  .chatw, .chatw.left, .chatw.right { inset-inline-start: auto; inset-inline-end: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+  .chatw .chatbox { bottom: 0; inset-inline-start: auto; inset-inline-end: 0; height: min(600px, calc(100dvh - 90px)); }
+  .chatw .ch-teaser { bottom: 210px; inset-inline-start: auto; inset-inline-end: 0; }
+}
 @media (min-width: 761px) {
-  body:has(.dock .dock-ai) .ch-btn { display: none; }
   body:has(.dock .dock-ai) .chatw, body:has(.dock .dock-ai) .chatw.left, body:has(.dock .dock-ai) .chatw.right { inset-inline-start: auto; inset-inline-end: 96px; bottom: 24px; }
   body:has(.dock .dock-ai) .chatw .chatbox { bottom: 0; inset-inline-start: auto; inset-inline-end: 0; }
   body:has(.dock .dock-ai) .chatw .ch-teaser { bottom: 50vh; inset-inline-start: auto; inset-inline-end: 0; }
