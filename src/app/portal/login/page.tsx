@@ -6,7 +6,7 @@ import { LangSelect, PasswordInput } from '@/components/dash/LangSelect';
 import { currentCustomer, portalBase, T } from '@/lib/server/portal';
 import { SITE, waLink } from '@/lib/site';
 import { findFile, login, setLang } from '../actions';
-import { BRAND_CODE } from '@/lib/brand';
+import { BRAND_CODE, BRAND_DIR } from '@/lib/brand';
 
 export const metadata: Metadata = { title: 'Sign in' };
 export const dynamic = 'force-dynamic';
@@ -18,7 +18,7 @@ export default async function Login({ searchParams }: { searchParams: Promise<Re
   const { t, lang } = await T();
   return (
     <AuthShell eyebrow={t.leftEyebrow} title={t.leftTitle} text={t.leftText} ticks={[t.tick1, t.tick2, t.tick3]}
-      top={<div className="auth-top"><a href={`${SITE.url}/`} className="auth-logo"><img decoding="async" src={SITE.brand?.logo || '/brand/logo.webp'} alt={SITE.name} /></a><a href={`${SITE.url}/`} className="auth-back">‹ {t.backToSite}</a><LangSelect action={setLang} current={lang.code} back={`${base}/login/`} label={t.language} /></div>}>
+      top={<div className="auth-top"><a href={`${SITE.url}/`} className="auth-logo"><img decoding="async" src={SITE.brand?.logo || `${BRAND_DIR}/logo.webp`} alt={SITE.name} /></a><a href={`${SITE.url}/`} className="auth-back">‹ {t.backToSite}</a><LangSelect action={setLang} current={lang.code} back={`${base}/login/`} label={t.language} /></div>}>
       <p className="eyebrow">{t.signIn}</p>
       <h2>{t.welcomeBack}</h2>
       <p className="muted">{t.enterDetails}</p>

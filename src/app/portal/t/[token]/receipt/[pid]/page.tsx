@@ -4,6 +4,7 @@ import { PrintButton } from '@/components/dash/ActionForm';
 import { getApplicationByToken } from '@/lib/server/store';
 import { SITE } from '@/lib/site';
 import { money, when } from '@/lib/stages';
+import { BRAND_DIR } from '@/lib/brand';
 
 export const metadata: Metadata = { title: 'Receipt' };
 export const dynamic = 'force-dynamic';
@@ -17,7 +18,7 @@ export default async function Receipt({ params }: { params: Promise<{ token: str
     <main className="pwrap" style={{ maxWidth: 760 }}>
       <div className="panel">
         <div className="panel-h">
-          <img decoding="async" src={SITE.brand?.logo || '/brand/logo.webp'} alt={SITE.name} style={{ height: 48, width: 'auto' }} />
+          <img decoding="async" src={SITE.brand?.logo || `${BRAND_DIR}/logo.webp`} alt={SITE.name} style={{ height: 48, width: 'auto' }} />
           <div style={{ textAlign: 'end' }}><p className="eyebrow">Payment receipt</p><b style={{ fontSize: 18 }}>{p.receiptNo}</b></div>
         </div>
         <div className="lines" style={{ marginTop: 10 }}>

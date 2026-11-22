@@ -3,13 +3,14 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { DATA_DIR } from '@/lib/server/store';
 import path from 'node:path';
+import { BRAND_DIR } from '@/lib/brand';
 
 export const runtime = 'nodejs';
 
 let bg: string | null = null, coin: string | null = null;
 async function assets() {
   if (!bg) bg = `data:image/jpeg;base64,${(await readFile(path.join(process.cwd(), 'public/images/cover-bg.jpg'))).toString('base64')}`;
-  if (!coin) coin = `data:image/png;base64,${(await readFile(path.join(process.cwd(), 'public/brand/coin-pdf.png'))).toString('base64')}`;
+  if (!coin) coin = `data:image/png;base64,${(await readFile(path.join(process.cwd(), `public${BRAND_DIR}/coin-pdf.png`))).toString('base64')}`;
   return { bg, coin };
 }
 

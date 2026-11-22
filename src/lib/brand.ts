@@ -7,3 +7,5 @@ export const BRAND_CODE = (process.env.NEXT_PUBLIC_BRAND_CODE || 'ADGV').toUpper
 export const BRAND_PX = BRAND_CODE.toLowerCase();
 /** Puts this site's name in a text written for the default brand. */
 export const brandText = (s: string) => (BRAND_NAME === DEFAULT_BRAND ? s : s.split(DEFAULT_BRAND).join(BRAND_NAME));
+/** Folder of this brand's logo and coin images (public/brand for Abu Dhabi, public/brand/<code> for the others). */
+export const BRAND_DIR = BRAND_PX === 'adgv' ? '/brand' : `/brand/${BRAND_PX}`;

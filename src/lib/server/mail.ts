@@ -4,7 +4,7 @@ import { docCfg, type MailCfg } from './doccfg';
 import { SITE } from '@/lib/site';
 import { fillTpl, type MailEvent } from '@/lib/mail-events';
 import type { Transporter } from 'nodemailer';
-import { BRAND_NAME } from '@/lib/brand';
+import { BRAND_NAME, BRAND_DIR } from '@/lib/brand';
 
 export type MailOpts = { badge?: string; title?: string; attachments?: { filename: string; content: Buffer }[]; retry?: boolean };
 
@@ -199,7 +199,7 @@ function parse(text: string): Block[] {
 
 export function renderMail(subject: string, text: string, c: MailCfg, o: MailOpts = {}) {
   const gold = c.accent || '#b8901f', ink = '#111111', soft = '#6b6252', line = '#efe6cf', cream = '#fbf7ec';
-  const logo = abs(SITE.brand?.logo || '/brand/logo-pdf.png');
+  const logo = abs(SITE.brand?.logo || (BRAND_DIR === '/brand' ? '/brand/logo-pdf.png' : `https://${process.env.PORTAL_HOST || ''}${BRAND_DIR}/logo-pdf.png`));
   const badge = (o.badge || subject.replace(/\s*·\s*Abu Dhabi Golden Visa$/i, '').replace(` · ${BRAND_NAME}`, '')).slice(0, 90);
   const blocks = parse(text.replace(/<br\s*\/?>/gi, '\n'));
   const body = blocks.map((b) => {

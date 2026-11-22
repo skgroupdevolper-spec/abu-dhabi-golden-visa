@@ -4,7 +4,7 @@ import path from 'node:path';
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from 'pdf-lib';
 import { SITE } from '@/lib/site';
 import { docCfg, type PdfCfg } from './doccfg';
-import { BRAND_NAME } from '@/lib/brand';
+import { BRAND_NAME, BRAND_DIR } from '@/lib/brand';
 
 export type QuotePdf = {
   title?: string; label?: string; name?: string; ref?: string; desc: string; lines: [string, string][]; total: string; converted?: string | null;
@@ -88,7 +88,7 @@ export async function quotePdf(q: QuotePdf): Promise<Uint8Array> {
   /* ---- header ---- */
   let logoH = 0;
   if (c.showLogo) try {
-    const logo = await doc.embedPng(await readFile(path.join(process.cwd(), 'public/brand/logo-pdf.png')));
+    const logo = await doc.embedPng(await readFile(path.join(process.cwd(), `public${BRAND_DIR}/logo-pdf.png`)));
     logoH = 44; const w = (logo.width / logo.height) * logoH;
     page.drawImage(logo, { x: M, y: y - logoH, width: w, height: logoH });
   } catch {}

@@ -5,6 +5,7 @@ import { AuthShell } from '@/components/dash/AuthShell';
 import { LangSelect, PasswordInput } from '@/components/dash/LangSelect';
 import { portalBase, T } from '@/lib/server/portal';
 import { resetPassword, sendResetCode, setLang } from '../actions';
+import { BRAND_DIR } from '@/lib/brand';
 
 export const metadata: Metadata = { title: 'Reset password' };
 export const dynamic = 'force-dynamic';
@@ -14,7 +15,7 @@ export default async function Forgot() {
   const { t, lang } = await T();
   return (
     <AuthShell eyebrow={t.leftEyebrow} title={t.resetTitle} text={t.leftText} ticks={[t.tick1, t.tick2, t.tick3]}
-      top={<div className="auth-top"><a href={`${SITE.url}/`} className="auth-logo"><img decoding="async" src={SITE.brand?.logo || '/brand/logo.webp'} alt={SITE.name} /></a><a href={`${SITE.url}/`} className="auth-back">‹ {t.backToSite}</a><LangSelect action={setLang} current={lang.code} back={`${base}/forgot/`} label={t.language} /></div>}>
+      top={<div className="auth-top"><a href={`${SITE.url}/`} className="auth-logo"><img decoding="async" src={SITE.brand?.logo || `${BRAND_DIR}/logo.webp`} alt={SITE.name} /></a><a href={`${SITE.url}/`} className="auth-back">‹ {t.backToSite}</a><LangSelect action={setLang} current={lang.code} back={`${base}/forgot/`} label={t.language} /></div>}>
       <h2>{t.resetTitle}</h2>
       <p className="muted">{t.resetText}</p>
       <ActionForm action={sendResetCode} className="stack">

@@ -6,6 +6,7 @@ import { AuthShell } from '@/components/dash/AuthShell';
 import { LangSelect, PasswordInput } from '@/components/dash/LangSelect';
 import { currentCustomer, portalBase, T } from '@/lib/server/portal';
 import { register, setLang } from '../actions';
+import { BRAND_DIR } from '@/lib/brand';
 
 export const metadata: Metadata = { title: 'Create account' };
 export const dynamic = 'force-dynamic';
@@ -18,7 +19,7 @@ export default async function Register({ searchParams }: { searchParams: Promise
   const { t, lang } = await T();
   return (
     <AuthShell eyebrow={t.leftEyebrow} title={t.createAccount} text={t.leftText} ticks={[t.tick1, t.tick2, t.tick3]}
-      top={<div className="auth-top"><a href={`${SITE.url}/`} className="auth-logo"><img decoding="async" src={SITE.brand?.logo || '/brand/logo.webp'} alt={SITE.name} /></a><a href={`${SITE.url}/`} className="auth-back">‹ {t.backToSite}</a><LangSelect action={setLang} current={lang.code} back={`${base}/register/`} label={t.language} /></div>}>
+      top={<div className="auth-top"><a href={`${SITE.url}/`} className="auth-logo"><img decoding="async" src={SITE.brand?.logo || `${BRAND_DIR}/logo.webp`} alt={SITE.name} /></a><a href={`${SITE.url}/`} className="auth-back">‹ {t.backToSite}</a><LangSelect action={setLang} current={lang.code} back={`${base}/register/`} label={t.language} /></div>}>
       <p className="eyebrow">{t.newHere}</p>
       <h2>{t.createAccount}</h2>
       <ActionForm action={register} className="stack">

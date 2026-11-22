@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Icon } from '@/components/Icon';
+import { BRAND_NAME, BRAND_DIR } from '@/lib/brand';
 
 type Item = { id: string; kind: string; text: string; href: string; at: string };
 type Pulse = { notes: number; leads: number; messages: number; latest: Item[] };
@@ -57,7 +58,7 @@ export function AdminBell({ initial }: { initial: number }) {
         let on = true; try { on = localStorage.getItem(KEY) !== 'off'; } catch {}
         if (on) { try { ctx.current = ctx.current ?? new AudioContext(); chime(ctx.current); } catch {} }
         if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
-          const n = new Notification('Abu Dhabi Golden Visa', { body: top.text, icon: '/brand/coin.webp', tag: top.id });
+          const n = new Notification(BRAND_NAME, { body: top.text, icon: `${BRAND_DIR}/coin.webp`, tag: top.id });
           n.onclick = () => { window.focus(); router.push(top.href); };
         }
         document.title = `(${j.notes}) ${document.title.replace(/^\(\d+\)\s*/, '')}`;
