@@ -1,6 +1,7 @@
 import 'server-only';
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { getBlock, saveBlock } from './settings';
+import { BRAND_NAME } from '@/lib/brand';
 
 // Two-step login (TOTP, RFC 6238): works with Google Authenticator, Microsoft Authenticator, 1Password, Authy.
 const B32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
@@ -24,7 +25,7 @@ export function verify(secret: string, input: string) {
   const now = Math.floor(Date.now() / 30000);
   return [-1, 0, 1].some((d) => { const a = Buffer.from(code(secret, now + d)), b = Buffer.from(c); return timingSafeEqual(a, b); });
 }
-export const uri = (secret: string, email: string) => `otpauth://totp/${encodeURIComponent('Abu Dhabi Golden Visa:' + email)}?secret=${secret}&issuer=${encodeURIComponent('Abu Dhabi Golden Visa')}&digits=6&period=30`;
+export const uri = (secret: string, email: string) => `otpauth://totp/${encodeURIComponent(BRAND_NAME + ':' + email)}?secret=${secret}&issuer=${encodeURIComponent(BRAND_NAME)}&digits=6&period=30`;
 
 type Entry = { secret: string; enabled: boolean; backup: string[] };
 const hash = (s: string) => createHash('sha256').update(s.replace(/\s|-/g, '').toLowerCase()).digest('hex');

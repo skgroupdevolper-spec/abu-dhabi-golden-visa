@@ -4,6 +4,7 @@ import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import { FEE_SCHEDULE } from '@/lib/fees';
+import { BRAND_CODE } from '@/lib/brand';
 
 /** Folder for all saved data. Keep it outside the release folder on the server so it survives deploys. */
 // "~/adgv-data" means a folder in the site user's home: it survives every redeploy.
@@ -129,7 +130,7 @@ export function createApplication(data: Pick<Application, 'client' | 'route' | '
     const n = all.reduce((m, a) => Math.max(m, Number(a.ref.split('-')[1]) || 0), 0) + 1;
     const t = now();
     const app: Application = {
-      id: newId(6), ref: `ADGV-${String(n).padStart(4, '0')}`, token: newId(16), createdAt: t, updatedAt: t,
+      id: newId(6), ref: `${BRAND_CODE}-${String(n).padStart(4, '0')}`, token: newId(16), createdAt: t, updatedAt: t,
       client: data.client, route: data.route, location: data.location, adults: data.adults, kids: data.kids,
       stage: 0, stageDates: { '0': t }, nextStep: 'We review your documents and confirm your route.', expected: '', notes: data.notes ?? '',
       quote: { lines: [], serviceFee: 0, vat: 0, insurance: 'Quoted separately' },

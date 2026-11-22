@@ -4,6 +4,7 @@ import path from 'node:path';
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from 'pdf-lib';
 import { SITE } from '@/lib/site';
 import { docCfg, type PdfCfg } from './doccfg';
+import { BRAND_NAME } from '@/lib/brand';
 
 export type QuotePdf = {
   title?: string; label?: string; name?: string; ref?: string; desc: string; lines: [string, string][]; total: string; converted?: string | null;
@@ -38,7 +39,7 @@ export async function quotePdf(q: QuotePdf): Promise<Uint8Array> {
   if (q.kind === 'quote') q = { ...q, title: c.quoteTitle || q.title, label: c.quoteLabel || q.label };
   if (q.kind === 'receipt') q = { ...q, title: c.receiptTitle || q.title, label: c.receiptLabel || q.label };
   const doc = await PDFDocument.create();
-  doc.setTitle(t(q.title ?? 'Abu Dhabi Golden Visa quote'));
+  doc.setTitle(t(q.title ?? `${BRAND_NAME} quote`));
   doc.setAuthor(SITE.operator);
   const reg = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
@@ -101,7 +102,7 @@ export async function quotePdf(q: QuotePdf): Promise<Uint8Array> {
   y -= 26;
 
   /* ---- title and client block ---- */
-  para(q.title ?? 'Abu Dhabi Golden Visa estimate', { size: 24, font: serif, lh: 30, after: 8 });
+  para(q.title ?? `${BRAND_NAME} estimate`, { size: 24, font: serif, lh: 30, after: 8 });
   const facts: [string, string][] = [];
   if (q.name) facts.push(['Prepared for', q.name]);
   if (q.ref) facts.push(['Reference', q.ref]);

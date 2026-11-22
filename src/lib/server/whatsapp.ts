@@ -5,6 +5,7 @@ import { SITE } from '@/lib/site';
 import { insert, list, type WaLog } from './collections';
 import { getSecrets } from './settings';
 import { newId, now, updateJsonFile } from './store';
+import { BRAND_PX } from '@/lib/brand';
 
 const GRAPH = 'https://graph.facebook.com/v21.0';
 /** Message text for WhatsApp: <br> becomes a new line, and HTML-style bold/italic tags become WhatsApp marks. */
@@ -46,7 +47,7 @@ export async function sendWa(to: string, event: WaEvent, vars: Record<string, st
 
 // Company alert template (your own text + Chat/Admin buttons). Meta files it as marketing, so if it is
 // ever refused the alert is sent again with the older fixed company template.
-const TEAM_TPL = 'adgv_team_alert_v1';
+const TEAM_TPL = `${BRAND_PX}_team_alert_v1`;
 
 async function sendOne(to: string, event: WaEvent, vars: Record<string, string | number | undefined>, opts: { force?: boolean; text?: string; event?: string; legacy?: boolean } = {}, custom?: { text: string; name?: string }): Promise<{ ok: boolean; error: string }> {
   const w = (await getSecrets()).whatsapp;
@@ -74,7 +75,7 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   const name = open ? '' : custom ? custom.name : team && !opts.legacy && !throttled ? TEAM_TPL : w.templateNames[event] || (team ? w.templateNames.leadTeam : undefined);
   let keys = (WA_EVENTS.find((e) => e.key === event)?.vars.match(/\{(\w+)\}/g) ?? []).map((k) => k.slice(1, -1));
   // The first company template had 4 values: name, phone, service, message.
-  if (team && name === 'adgv_new_enquiry') keys = ['name', 'phone', 'service', 'message'];
+  if (team && name === `${BRAND_PX}_new_enquiry`) keys = ['name', 'phone', 'service', 'message'];
   // The company alert template carries your whole text as one value (lines with links are left out, the buttons do that).
   const teamTpl = !!name && /_team_alert_v\d+$/.test(name);
   // Client templates with a button: the button opens the client's link; the link is not repeated in the text.

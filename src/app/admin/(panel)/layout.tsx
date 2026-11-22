@@ -12,6 +12,7 @@ import { AdminNav, AdminSearch } from './nav';
 import { AdminBell } from '@/components/dash/AdminBell';
 import { scopeOf } from '@/lib/server/scope';
 import { coinImg, fullLogo } from '@/components/BrandLogo';
+import { BRAND_NAME } from '@/lib/brand';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,7 +35,7 @@ export default async function Panel({ children }: { children: ReactNode }) {
       <SubmitterFix />
       <HScroll />
       <aside className="side">
-        <Link href="/admin/" className="brand"><img src={fullLogo()} alt="Abu Dhabi Golden Visa" /></Link>
+        <Link href="/admin/" className="brand"><img src={fullLogo()} alt={BRAND_NAME} /></Link>
         <AdminNav counts={counts} role={who.role} perms={who.perms} />
       </aside>
       <div className="admin-body">

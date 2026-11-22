@@ -3,6 +3,7 @@ import 'server-only';
 // Edited in Admin > Emails & PDFs. Empty text fields fall back to the defaults below.
 import { getBlock } from './settings';
 import { MAIL_TPL0, type MailEvent, type MailTpl } from '@/lib/mail-events';
+import { BRAND_NAME } from '@/lib/brand';
 
 export type PdfCfg = {
   accent: string; showLogo: boolean; showDate: boolean;
@@ -24,7 +25,7 @@ export type DocCfg = { pdf: PdfCfg; mail: MailCfg };
 export const DOC0: DocCfg = {
   pdf: {
     accent: '#b8901f', showLogo: true, showDate: true,
-    quoteTitle: 'Abu Dhabi Golden Visa quotation', quoteLabel: 'QUOTATION', receiptTitle: 'Payment receipt', receiptLabel: 'PAYMENT RECEIPT',
+    quoteTitle: `${BRAND_NAME} quotation`, quoteLabel: 'QUOTATION', receiptTitle: 'Payment receipt', receiptLabel: 'PAYMENT RECEIPT',
     intro: '', notes: '',
     showTimeline: true, showChecklist: true, showAssumptions: true, showDisclaimer: false,
     signName: '', signTitle: '',
@@ -32,7 +33,7 @@ export const DOC0: DocCfg = {
   },
   mail: {
     accent: '#b8901f', headerTitle: 'Client update', buttonLabel: 'Open your dashboard', showWhatsApp: true, whatsAppLabel: 'Chat on WhatsApp',
-    helpText: 'Have a question or need help?', signOff: 'Kind regards,\nAbu Dhabi Golden Visa', footer: '', showSocial: true, showContact: true, contactText: '',
+    helpText: 'Have a question or need help?', signOff: `Kind regards,\n${BRAND_NAME}`, footer: '', showSocial: true, showContact: true, contactText: '',
     events: MAIL_TPL0,
   },
 };

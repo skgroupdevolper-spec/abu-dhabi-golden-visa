@@ -1,3 +1,4 @@
+import { BRAND_NAME } from '@/lib/brand';
 // Everything the main admin controls. Public fields are safe to send to browsers; secrets never are.
 export type PublicSite = {
   name: string; tagline: string; url: string; operator: string; licence: string;
@@ -69,7 +70,7 @@ export const WA_EVENTS: { key: WaEvent; label: string; to: 'team' | 'client'; va
 ];
 
 export const DEFAULT_SITE: PublicSite = {
-  name: 'Abu Dhabi Golden Visa',
+  name: BRAND_NAME,
   tagline: 'Long-Term Residency & Investment Advisory',
   url: (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.abudhabigoldenvisa.com').replace(/\/$/, ''),
   operator: 'Brightlink Management Consultancy LLC',
@@ -116,7 +117,7 @@ export const DEFAULT_SECRETS: Secrets = {
       message: 'Hello {name}, your advisor wrote on {ref}: "{text}" Reply here: {link}',
       document: 'Hello {name}, a new document is ready on {ref}: {document}. {link}',
       review: '🎉 *Congratulations, {name}!*\n\nYour *{service}* file *{ref}* is complete. Thank you for trusting us. It was a pleasure to help you. 🙏\n\n⭐⭐⭐⭐⭐\nIf you are happy with our service, would you share a short *Google review*? It takes less than a minute and helps other families find us.\n\n👉 {link}\n\nThank you!',
-      reset: 'Your Abu Dhabi Golden Visa portal code is {code}. It expires in 15 minutes.',
+      reset: `Your ${BRAND_NAME} portal code is {code}. It expires in 15 minutes.`,
     },
     templateNames: {}, templateLang: 'en',
   },

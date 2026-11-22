@@ -27,7 +27,7 @@ export function middleware(req: NextRequest) {
   // Customer dashboard subdomain: everything is served from /portal.
   if (host === PORTAL_HOST && !pv) {
     if (first === 'admin') { const h = new Headers(req.headers); h.set('x-admin-path', pathname.endsWith('/') ? pathname : `${pathname}/`); return NextResponse.next({ request: { headers: h } }); }
-    if (first === 'portal' || first === 'media') return NextResponse.next();
+    if (first === 'portal' || first === 'media' || first === 'chat' || first === 'review') return NextResponse.next();
     if (!PORTAL_PAGES.has(first) && MAIN_HOST !== PORTAL_HOST) {
       const to = new URL(`https://${MAIN_HOST}${pathname}${url.search}`);
       return NextResponse.redirect(to, 308);

@@ -3,13 +3,26 @@ import 'server-only';
 // Each template uses the same variable order the website sends ({{1}} = first variable of that event, and so on).
 import { getSecrets, saveSecrets } from './settings';
 import type { WaEvent } from '@/lib/settings-schema';
+import { BRAND_PX, BRAND_CODE, brandText } from '@/lib/brand';
 
 const GRAPH = 'https://graph.facebook.com/v21.0';
 
 /** Second button on client messages: opens a chat with the advisor (main WhatsApp number, through the site's /chat link). */
 const ADVISOR = 'https://www.abudhabigoldenvisa.com/chat/971566556645';
 
-export const META_TPLS: { event: WaEvent; name: string; text: string; ex: string[]; header?: 'DOCUMENT' | 'IMAGE'; marketing?: boolean; buttons?: { text: string; url: string; ex?: string }[] }[] = [
+type Tpl = { event: WaEvent; name: string; text: string; ex: string[]; header?: 'DOCUMENT' | 'IMAGE'; marketing?: boolean; buttons?: { text: string; url: string; ex?: string }[] };
+
+/** Same templates on another install: its prefix, file codes, name and addresses (chat and review links open on its dashboard address). */
+function rebrand(list: Tpl[]): Tpl[] {
+  const portal = process.env.PORTAL_HOST || 'app.abudhabigoldenvisa.com';
+  if (BRAND_PX === 'adgv' && portal === 'app.abudhabigoldenvisa.com') return list;
+  const s = JSON.stringify(list).split('adgv_').join(`${BRAND_PX}_`).split('ADGV-').join(`${BRAND_CODE}-`)
+    .split('https://app.abudhabigoldenvisa.com/').join(`https://${portal}/`).split('https://www.abudhabigoldenvisa.com/').join(`https://${portal}/`)
+    .split('/chat/971566556645').join(`/chat/${(process.env.ADVISOR_WHATSAPP || '971566556645').replace(/\D/g, '')}`);
+  return JSON.parse(brandText(s)) as Tpl[];
+}
+
+const RAW_TPLS: Tpl[] = [
   // Quote with the PDF itself attached (document header), and after the client accepts: a Pay now button.
   { event: 'quote', name: 'adgv_quote_pdf_btn_v1', header: 'DOCUMENT', text: 'Hello {{1}}, your quote for file {{2}} is ready. Total: {{3}}. Your detailed quotation is attached as a PDF. Tap the button below to review and accept it, then pay securely online. Thank you.', ex: ['Ahmed', 'ADGV-0001', 'AED 6,795.00'], buttons: [{ text: 'View my quote', url: 'https://app.abudhabigoldenvisa.com/{{1}}', ex: 'https://app.abudhabigoldenvisa.com/t/abc123/' }, { text: 'Chat with advisor', url: ADVISOR }] },
   { event: 'confirmed', name: 'adgv_order_accepted_pay_btn_v1', text: 'Hello {{1}}, thank you for accepting the quote for file {{2}}. Service: {{3}}. Total: {{4}}. Date: {{5}}. Tap Pay now below to pay securely online, so we can start your application. Thank you.', ex: ['Ahmed', 'ADGV-0001', 'Golden Visa property investor', 'AED 6,795.00', '12 Nov 2026'], buttons: [{ text: 'Pay now', url: 'https://app.abudhabigoldenvisa.com/{{1}}', ex: 'https://app.abudhabigoldenvisa.com/t/abc123/' }, { text: 'Chat with advisor', url: ADVISOR }] },
@@ -48,6 +61,7 @@ export const META_TPLS: { event: WaEvent; name: string; text: string; ex: string
   { event: 'document', name: 'adgv_document_file_v1', header: 'DOCUMENT', text: 'Hello {{1}}, a new document is ready on file {{2}}: {{3}}. It is attached to this message and saved in your dashboard: {{4}} Thank you.', ex: ['Ahmed', 'ADGV-0001', 'Entry permit', 'https://app.abudhabigoldenvisa.com/'] },
   { event: 'document', name: 'adgv_new_document', text: 'Hello {{1}}, a new document is ready on file {{2}}: {{3}}. View it here: {{4}} Thank you.', ex: ['Ahmed', 'ADGV-0001', 'Entry permit', 'https://app.abudhabigoldenvisa.com/'] },
 ];
+export const META_TPLS = rebrand(RAW_TPLS);
 
 async function graph(path: string, token: string, init?: RequestInit) {
   const r = await fetch(`${GRAPH}/${path}`, { ...init, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(20000) });

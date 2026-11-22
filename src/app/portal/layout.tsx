@@ -6,8 +6,9 @@ import { fontVars } from '@/lib/fonts';
 import { applyRuntimeSync } from '@/lib/server/settings';
 import { T } from '@/lib/server/portal';
 import '../dash.css';
+import { BRAND_NAME } from '@/lib/brand';
 
-export const metadata: Metadata = { title: { default: 'Client portal | Abu Dhabi Golden Visa', template: '%s | Client portal' }, robots: { index: false, follow: false }, referrer: 'no-referrer' };
+export const metadata: Metadata = { title: { default: `Client portal | ${BRAND_NAME}`, template: '%s | Client portal' }, robots: { index: false, follow: false }, referrer: 'no-referrer' };
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#f8f7f5' };
 
 export default async function PortalRoot({ children }: { children: ReactNode }) {

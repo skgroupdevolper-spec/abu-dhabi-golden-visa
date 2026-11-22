@@ -6,6 +6,7 @@ import 'server-only';
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { getBlock, saveBlock } from './settings';
 import { getApplicationByToken, listApplications, newId, now, updateApplication, type Application, type Payment } from './store';
+import { BRAND_CODE } from '@/lib/brand';
 
 export type Provider = 'none' | 'stripe' | 'ziina' | 'ngenius' | 'telr' | 'totalpay';
 export type PayCfg = {
@@ -99,7 +100,7 @@ export async function startCheckout(a: Application, p: Payment, file: string): P
   // file = absolute link of the client's file page, ending in '/'
   const ret = `${file}pay/${p.id}/return/`;
   const back = `${file}?cancelled=1#payments`;
-  const ref = `ADGV-${a.ref}-${p.id}`.replace(/[^\w-]/g, '').slice(0, 40);
+  const ref = `${BRAND_CODE}-${a.ref}-${p.id}`.replace(/[^\w-]/g, '').slice(0, 40);
   const desc = `${p.label} (${a.ref})${p.fee ? ` + card fee ${p.fee.toFixed(2)}` : ''}`.slice(0, 120);
   const total = charged(p);
   const cur = c.currency || 'AED';

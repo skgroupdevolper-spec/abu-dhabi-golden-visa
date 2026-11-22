@@ -3,8 +3,9 @@ import type { ReactNode } from 'react';
 import { fontVars } from '@/lib/fonts';
 import { applyRuntimeSync } from '@/lib/server/settings';
 import '../dash.css';
+import { BRAND_NAME } from '@/lib/brand';
 
-export const metadata: Metadata = { title: { default: 'Admin | Abu Dhabi Golden Visa', template: '%s | Admin' }, robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: { default: `Admin | ${BRAND_NAME}`, template: '%s | Admin' }, robots: { index: false, follow: false } };
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#f8f7f5' };
 
 export default function AdminRoot({ children }: { children: ReactNode }) {

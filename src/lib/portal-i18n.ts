@@ -1,6 +1,7 @@
 // Customer dashboard and login text in all 20 website languages.
 // English is the source; other languages are in portal-i18n-langs.ts. Native-speaker review is recommended.
 import { OTHER } from './portal-i18n-langs';
+import { BRAND_NAME, DEFAULT_BRAND, brandText } from '@/lib/brand';
 
 export const EN = {
   signIn: 'Sign in', backToSite: 'Back to website', welcomeBack: 'Welcome back', enterDetails: 'Enter your email and password to continue.',
@@ -69,7 +70,8 @@ export const PORTAL_LANGS: { code: string; native: string; dir: 'ltr' | 'rtl'; h
 export function dict(code?: string | null): Dict {
   const c = code === 'at' ? 'de' : code || 'en';
   const o = OTHER[c];
-  return o ? { ...EN, ...o, stages: o.stages ?? EN.stages } : EN;
+  const d = o ? { ...EN, ...o, stages: o.stages ?? EN.stages } : EN;
+  return BRAND_NAME === DEFAULT_BRAND ? d : { ...d, leftEyebrow: brandText(d.leftEyebrow) };
 }
 export function langInfo(code?: string | null) {
   return PORTAL_LANGS.find((l) => l.code === code) ?? PORTAL_LANGS[0];

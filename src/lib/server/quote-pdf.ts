@@ -5,6 +5,7 @@ import { ROUTES } from '@/lib/fees';
 import { money } from '@/lib/stages';
 import { getFees } from '@/lib/server/store';
 import type { Application } from '@/lib/server/store';
+import { BRAND_NAME } from '@/lib/brand';
 
 /** The quotation PDF of a file: the same one the client downloads, sent with the email and on WhatsApp. */
 export async function quotePdfFor(a: Application) {
@@ -17,7 +18,7 @@ export async function quotePdfFor(a: Application) {
   ];
   const route = ROUTES.find((r) => r.label === a.route)?.id ?? 'property';
   const pdf = await quotePdf({
-    kind: 'quote', title: 'Abu Dhabi Golden Visa quotation', name: a.client.name, ref: a.ref,
+    kind: 'quote', title: `${BRAND_NAME} quotation`, name: a.client.name, ref: a.ref,
     desc: `${a.route} - ${a.location === 'in' ? 'Inside the UAE' : 'Outside the UAE'} - ${1 + a.adults + a.kids} people`,
     lines, total: money(gov + a.quote.serviceFee + a.quote.vat), checklist: CHECKLISTS[route], timeline: TIMELINE, date: fees.date, assumptions: fees.assumptions,
   });
