@@ -21,8 +21,8 @@ export default async function ChooseCard({ params }: { params: Promise<{ token: 
   const c = await getPayCfg();
   if (!online(c) || !c.feeOn) redirect(`${file}pay/${pid}/?card=local`);
   const opts = [
-    { k: 'local', t: 'UAE bank card', s: `Card issued by a bank in the UAE · ${c.feeLocalPct}% + AED ${c.feeFixed}` },
-    { k: 'intl', t: 'International bank card', s: `Card issued outside the UAE · ${c.feeIntlPct}% + AED ${c.feeFixed}` },
+    { k: 'local', t: 'UAE bank card', s: `Card issued by a bank in the UAE · ${c.feeLocalPct}% + AED ${c.feeFixed}${(c.feeVatPct ?? 5) ? ` + ${c.feeVatPct ?? 5}% VAT` : ''}` },
+    { k: 'intl', t: 'International bank card', s: `Card issued outside the UAE · ${c.feeIntlPct}% + AED ${c.feeFixed}${(c.feeVatPct ?? 5) ? ` + ${c.feeVatPct ?? 5}% VAT` : ''}` },
   ] as const;
   const bankMsg = `Hello, I would like to pay ${p.label} for my file ${a.ref} (${aed(p.amount)}) by bank transfer. Please send me your bank details.`;
   return (

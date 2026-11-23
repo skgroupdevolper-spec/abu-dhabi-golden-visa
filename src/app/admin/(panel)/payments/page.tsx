@@ -59,7 +59,7 @@ export default async function Payments() {
             <fieldset className="full pay-keys"><legend>Card fee (added on top of card payments)</legend>
               <div className="full"><Toggle name="feeOn" label="Add the card fee automatically" help="Before paying, the client picks a UAE or an international card and sees the fee and the total. Bank transfer has no fee." on={c.feeOn} /></div>
               <F name="feeLocalPct" label="UAE bank cards (%)" value={c.feeLocalPct} placeholder="2.99" /><F name="feeIntlPct" label="International bank cards (%)" value={c.feeIntlPct} placeholder="3.99" />
-              <F name="feeFixed" label="Plus a fixed amount (AED)" value={c.feeFixed} placeholder="1" />
+              <F name="feeFixed" label="Plus a fixed amount (AED)" value={c.feeFixed} placeholder="1" /><F name="feeVatPct" label="VAT on the card fee (%)" value={c.feeVatPct ?? 5} placeholder="5" />
               <WaText name="payText" label="Text shown above the payment buttons" value={c.payText} rows={6} help="Shown on the client's file and on the card page. *bold*, _italic_ and new lines work." />
               <div className="full"><Toggle name="bankWa" label="Show “+ WhatsApp: pay by bank transfer” on the client dashboard" on={c.bankWa} /></div></fieldset>
             <fieldset className="full pay-keys"><legend>Bank transfer (second way to pay)</legend>

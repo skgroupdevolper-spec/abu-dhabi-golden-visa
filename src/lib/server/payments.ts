@@ -22,7 +22,7 @@ export type PayCfg = {
   /** Bank transfer shown on the order page as a second way to pay (client uploads the transfer slip). */
   bankOn: boolean; bankName: string; bankHolder: string; bankIban: string; bankAccount: string; bankSwift: string; bankNote: string;
   /** Card fee added on top (the client picks a UAE or an international card before paying). */
-  feeOn: boolean; feeLocalPct: number; feeIntlPct: number; feeFixed: number;
+  feeOn: boolean; feeLocalPct: number; feeIntlPct: number; feeFixed: number; /** VAT on the card fee (%), as Ziina charges it */ feeVatPct?: number;
   /** Text shown above the payment buttons (WhatsApp marks allowed: *bold*, _italic_). */
   payText: string;
   /** "Pay by bank transfer" WhatsApp button on the client dashboard. */
@@ -34,7 +34,7 @@ export const PAY0: PayCfg = {
   totalpayKey: '', totalpayPass: '', totalpayHost: 'https://checkout.totalpay.global',
   termsUrl: '/terms/', validDays: 7, autoStage: true, receiptWa: true,
   payOnQuote: true, bankOn: false, bankName: '', bankHolder: '', bankIban: '', bankAccount: '', bankSwift: '', bankNote: '',
-  feeOn: true, feeLocalPct: 2.99, feeIntlPct: 3.99, feeFixed: 1,
+  feeOn: true, feeLocalPct: 2.6, feeIntlPct: 4.1, feeFixed: 1, feeVatPct: 5,
   payText: '*Secure Online Payment (Ziina)*\n\nPay conveniently using our secure online payment link.\n\n*Payment Gateway Fee:* For local UAE bank cards, 2.99% + AED 1. For international bank cards, 3.99% + AED 1. The fee is shown before you confirm the payment.\n\nAlternatively, you may pay by bank transfer to our official company account.',
   bankWa: true,
 };
@@ -44,7 +44,9 @@ export type CardKind = 'local' | 'intl';
 export function cardFee(c: PayCfg, amount: number, card: CardKind) {
   if (!c.feeOn) return 0;
   const pct = card === 'intl' ? c.feeIntlPct : c.feeLocalPct;
-  return Math.round((amount * (pct || 0) / 100 + (c.feeFixed || 0)) * 100) / 100;
+  // Ziina: (amount × fee % + fixed AED) + VAT on that fee
+  const base = amount * (pct || 0) / 100 + (c.feeFixed || 0);
+  return Math.round(base * (1 + (c.feeVatPct ?? 5) / 100) * 100) / 100;
 }
 /** What the card is charged: the requested amount plus the card fee chosen for it. */
 export const charged = (p: Payment) => Math.round((p.amount + (p.fee || 0)) * 100) / 100;

@@ -359,7 +359,7 @@ export async function savePayments(_: St, f: FormData): Promise<St> {
     totalpayHost: s(f, 'totalpayHost', 200) || cur.totalpayHost, ngeniusOutlet: s(f, 'ngeniusOutlet', 120), telrStore: s(f, 'telrStore', 40),
     payOnQuote: f.get('payOnQuote') === 'on', bankOn: f.get('bankOn') === 'on', bankName: s(f, 'bankName', 120), bankHolder: s(f, 'bankHolder', 160),
     bankIban: s(f, 'bankIban', 40).replace(/\s+/g, ' ').toUpperCase(), bankAccount: s(f, 'bankAccount', 40), bankSwift: s(f, 'bankSwift', 20).toUpperCase(), bankNote: s(f, 'bankNote', 300),
-    feeOn: f.get('feeOn') === 'on', feeLocalPct: pct(s(f, 'feeLocalPct', 8)), feeIntlPct: pct(s(f, 'feeIntlPct', 8)), feeFixed: Math.max(0, Math.min(100, Number(s(f, 'feeFixed', 8)) || 0)),
+    feeOn: f.get('feeOn') === 'on', feeLocalPct: pct(s(f, 'feeLocalPct', 8)), feeIntlPct: pct(s(f, 'feeIntlPct', 8)), feeFixed: Math.max(0, Math.min(100, Number(s(f, 'feeFixed', 8)) || 0)), feeVatPct: f.has('feeVatPct') ? Math.max(0, Math.min(20, Number(s(f, 'feeVatPct', 8)) || 0)) : 5,
     payText: s(f, 'payText', 2000), bankWa: f.get('bankWa') === 'on' };
   for (const k of ['stripeSecret', 'stripeWebhook', 'ziinaToken', 'ngeniusKey', 'telrKey', 'totalpayKey', 'totalpayPass'] as const) { const v = keep(k, 600); if (v !== undefined) next[k] = v; }
   await savePayCfg(next);
