@@ -72,7 +72,10 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
   // Company alerts: the template with your own text and buttons is filed as marketing by Meta, so Meta may stop
   // delivering it. After a delivery failure in the last 24 hours, the approved utility template is used instead.
   const throttled = team && !opts.legacy && !open && (await list<WaLog>('whatsapp-log')).some((x) => x.dir === 'out' && isTeamEvent(x.event) && x.st === 'failed' && x.text.startsWith(`[template ${TEAM_TPL}]`) && Date.now() - Date.parse(x.at) < 864e5);
-  const name = open ? '' : custom ? custom.name : team && !opts.legacy && !throttled ? TEAM_TPL : w.templateNames[event] || (team ? w.templateNames.leadTeam : undefined);
+  // The older company template: never the alert template itself (settings may name it there too, which made the
+  // fallback send the same failing template again and again).
+  const older = (n?: string) => (n && /_team_alert_v\d+$/.test(n) ? `${BRAND_PX}_new_enquiry` : n);
+  const name = open ? '' : custom ? custom.name : team && !opts.legacy && !throttled ? TEAM_TPL : team ? older(w.templateNames[event] || w.templateNames.leadTeam) : w.templateNames[event];
   let keys = (WA_EVENTS.find((e) => e.key === event)?.vars.match(/\{(\w+)\}/g) ?? []).map((k) => k.slice(1, -1));
   // The first company template had 4 values: name, phone, service, message.
   if (team && name === `${BRAND_PX}_new_enquiry`) keys = ['name', 'phone', 'service', 'message'];
@@ -164,7 +167,8 @@ async function sendOne(to: string, event: WaEvent, vars: Record<string, string |
     error = (e as Error).message;
   }
   await insert<WaLog>('whatsapp-log', { id: newId(6), at: now(), to: number, event: opts.event || event, text: `${body.type === 'template' ? `[template ${viaMsg ? w.templateNames.message : name}] ` : body.type === 'interactive' ? `[button ${ctaLabel}] ` : ''}${body.type === 'interactive' ? ctaText : text}`.slice(0, 500), ok, error: error || undefined, dir: 'out', ...(mid ? { mid } : {}), ...(!team && !(opts.force && event === 'message') ? { full: text.slice(0, 1500) } : {}), ...(team ? { vars: Object.fromEntries(Object.entries(vars).filter(([, v]) => v !== undefined && v !== '').map(([k, v]) => [k, String(v).slice(0, 600)])) } : {}) }, 2000);
-  if (!ok && team && name === TEAM_TPL && !custom) return sendOne(to, event, vars, { ...opts, legacy: true });
+  // one retry with the older company template, never more (the alert template can not come back in that retry)
+  if (!ok && team && name === TEAM_TPL && !custom && !opts.legacy) return sendOne(to, event, vars, { ...opts, legacy: true });
   return { ok, error };
 }
 
