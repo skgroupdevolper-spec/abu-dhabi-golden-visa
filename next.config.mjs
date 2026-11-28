@@ -42,6 +42,14 @@ const nextConfig = {
       { source: '/privacy-policy/', destination: '/privacy/', permanent: true },
       { source: '/cost-calculator', destination: '/golden-visa-cost/', permanent: true },
       { source: '/cost-calculator/', destination: '/golden-visa-cost/', permanent: true },
+      // Pages of the old website that Google still has: sent (301) to the matching new pages, so they are not lost.
+      ...[
+        ['/abu-dhabi-retirement-visa', '/retirement-visa/'],
+        ['/uae-virtual-work-residency-visa-through-icp', '/remote-work-visa/'],
+        ['/category/abu-dhabi-golden-visa', '/golden-visa/'],
+        ['/category/virtual-work-residency', '/remote-work-visa/'],
+      ].flatMap(([from, to]) => [{ source: from, destination: to, permanent: true }, { source: `${from}/`, destination: to, permanent: true }]),
+      { source: '/category/:slug*', destination: '/blog/', permanent: true },
     ];
   },
   async headers() {
