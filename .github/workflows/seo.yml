@@ -1,0 +1,20 @@
+name: SEO check
+on: push
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch as Googlebot and as a browser
+        run: |
+          GB='Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+          GBM='Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+          BR='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36'
+          for u in https://www.abudhabigoldenvisa.com/ http://abudhabigoldenvisa.com/ https://abudhabigoldenvisa.com/ http://www.abudhabigoldenvisa.com/ https://www.abudhabigoldenvisa.com/robots.txt https://www.abudhabigoldenvisa.com/sitemap.xml https://www.abudhabigoldenvisa.com/golden-visa/ https://www.abudhabigoldenvisa.com/blog/; do
+            for ua in "$GB" "$GBM" "$BR"; do
+              r=$(curl -s -o /tmp/b -D /tmp/h -A "$ua" --max-time 25 -w '%{http_code} %{redirect_url} %{size_download}B %{time_total}s' "$u" || echo ERR)
+              echo "$(echo "$ua" | grep -o 'Nexus\|Googlebot\|Safari' | head -1) | $u | $r | xrt=$(grep -i '^x-robots-tag' /tmp/h | tr -d '\r') | robots-meta=$(grep -o '<meta name="robots" content="[^"]*"' /tmp/b | head -1)"
+            done
+          done
+          echo; echo "== headers www home (Googlebot)"; curl -s -I -A "$GB" https://www.abudhabigoldenvisa.com/ | head -25
+          echo "== DNS"; dig +short www.abudhabigoldenvisa.com; dig +short abudhabigoldenvisa.com
+          echo "== sitemap first lines"; curl -s -A "$GB" https://www.abudhabigoldenvisa.com/sitemap.xml | head -c 600
